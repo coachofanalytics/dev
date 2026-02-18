@@ -1,0 +1,622 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Join Professional Directory</title>
+    
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        :root {
+            --primary-green: #0d9f6e;
+            --dark-green: #0b8a60;
+            --light-green: #d1fae5;
+            --white: #ffffff;
+            --gray-50: #f6f7fb;
+            --gray-100: #f3f4f6;
+            --gray-200: #e5e7eb;
+            --gray-300: #d1d5db;
+            --gray-600: #4b5563;
+            --gray-700: #374151;
+            --gray-900: #111827;
+        }
+        
+        body {
+            background: linear-gradient(135deg, var(--white) 0%, var(--light-green) 100%);
+            min-height: 100vh;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            padding: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .directory-form-container {
+            width: 100%;
+            max-width: 650px;
+        }
+        
+        /* ===== HEADER CARD ===== */
+        .header-card {
+            background: var(--white);
+            border-radius: 16px;
+            padding: 2.5rem;
+            margin-bottom: 1.5rem;
+            border: 1px solid var(--gray-200);
+            box-shadow: 0 8px 32px rgba(13, 159, 110, 0.08);
+            text-align: center;
+            border-top: 5px solid var(--primary-green);
+        }
+        
+        .directory-icon {
+            width: 70px;
+            height: 70px;
+            background: linear-gradient(135deg, var(--primary-green) 0%, var(--dark-green) 100%);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 1.5rem;
+            color: white;
+            font-size: 1.8rem;
+        }
+        
+        .directory-title {
+            color: var(--dark-green);
+            font-weight: 800;
+            font-size: 2.25rem;
+            margin-bottom: 0.75rem;
+        }
+        
+        .directory-subtitle {
+            color: var(--gray-600);
+            font-size: 1.1rem;
+            line-height: 1.6;
+            max-width: 500px;
+            margin: 0 auto;
+        }
+        
+        /* ===== FORM CARD ===== */
+        .form-card {
+            background: var(--white);
+            border-radius: 16px;
+            padding: 2.5rem;
+            border: 1px solid var(--gray-200);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+        }
+        
+        /* ===== FORM SECTIONS ===== */
+        .form-section {
+            margin-bottom: 2rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 1px solid var(--gray-100);
+        }
+        
+        .section-title {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: var(--dark-green);
+            margin-bottom: 1.25rem;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+        
+        .section-title i {
+            font-size: 1.2rem;
+        }
+        
+        /* ===== FORM CONTROLS ===== */
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+        
+        .form-label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+            color: var(--gray-900);
+            font-size: 0.95rem;
+        }
+        
+        .form-control, .form-select {
+            width: 100%;
+            padding: 0.875rem 1rem;
+            font-size: 1rem;
+            border: 2px solid var(--gray-200);
+            border-radius: 10px;
+            transition: all 0.3s ease;
+            background: var(--white);
+        }
+        
+        .form-control:focus, .form-select:focus {
+            border-color: var(--primary-green);
+            box-shadow: 0 0 0 3px rgba(13, 159, 110, 0.15);
+            outline: none;
+        }
+        
+        .form-control:hover, .form-select:hover {
+            border-color: var(--gray-300);
+        }
+        
+        textarea.form-control {
+            min-height: 120px;
+            resize: vertical;
+            line-height: 1.5;
+        }
+        
+        /* ===== MEMBERSHIP OPTIONS ===== */
+        .membership-options {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+        
+        .membership-card {
+            border: 2px solid var(--gray-200);
+            border-radius: 12px;
+            padding: 1.5rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            background: var(--white);
+        }
+        
+        .membership-card:hover {
+            border-color: var(--gray-300);
+            transform: translateY(-2px);
+        }
+        
+        .membership-card.selected {
+            border-color: var(--primary-green);
+            background: linear-gradient(135deg, rgba(13, 159, 110, 0.05) 0%, rgba(11, 138, 96, 0.05) 100%);
+        }
+        
+        .membership-radio {
+            position: absolute;
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+        
+        .membership-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+        
+        .membership-title {
+            font-weight: 700;
+            font-size: 1.1rem;
+            color: var(--gray-900);
+        }
+        
+        .membership-badge {
+            padding: 0.35rem 0.85rem;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+        
+        .badge-free {
+            background: var(--light-green);
+            color: var(--dark-green);
+        }
+        
+        .badge-premium {
+            background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+            color: #92400e;
+        }
+        
+        .membership-features {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        
+        .membership-features li {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 0.5rem;
+            color: var(--gray-700);
+            font-size: 0.9rem;
+        }
+        
+        .membership-features i {
+            color: var(--primary-green);
+            font-size: 0.8rem;
+        }
+        
+        /* ===== BUTTONS ===== */
+        .button-group {
+            display: flex;
+            gap: 1rem;
+            margin-top: 2.5rem;
+            padding-top: 2rem;
+            border-top: 1px solid var(--gray-200);
+        }
+        
+        .submit-btn {
+            flex: 1;
+            background: linear-gradient(135deg, var(--primary-green) 0%, var(--dark-green) 100%);
+            color: white;
+            border: none;
+            padding: 1rem 2rem;
+            font-size: 1.1rem;
+            font-weight: 600;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.75rem;
+        }
+        
+        .submit-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(13, 159, 110, 0.3);
+        }
+        
+        .cancel-btn {
+            flex: 1;
+            background: var(--white);
+            color: var(--gray-700);
+            border: 2px solid var(--gray-300);
+            padding: 1rem 2rem;
+            font-size: 1.1rem;
+            font-weight: 600;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            text-align: center;
+        }
+        
+        .cancel-btn:hover {
+            background: var(--gray-50);
+            border-color: var(--gray-400);
+            transform: translateY(-2px);
+            color: var(--gray-900);
+            text-decoration: none;
+        }
+        
+        /* ===== HELPER TEXT ===== */
+        .helper-text {
+            font-size: 0.85rem;
+            color: var(--gray-600);
+            margin-top: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .helper-text i {
+            color: var(--primary-green);
+        }
+        
+        /* ===== RESPONSIVE ===== */
+        @media (max-width: 768px) {
+            .header-card,
+            .form-card {
+                padding: 1.75rem;
+            }
+            
+            .directory-title {
+                font-size: 1.9rem;
+            }
+            
+            .membership-options {
+                grid-template-columns: 1fr;
+            }
+            
+            .button-group {
+                flex-direction: column;
+            }
+            
+            body {
+                padding: 15px;
+            }
+        }
+        
+        @media (max-width: 576px) {
+            .header-card,
+            .form-card {
+                padding: 1.5rem;
+            }
+            
+            .directory-title {
+                font-size: 1.7rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="directory-form-container">
+        
+        <!-- ===== HEADER ===== -->
+        <div class="header-card">
+            <div class="directory-icon">
+                <i class="fas fa-user-tie"></i>
+            </div>
+            <h1 class="directory-title">Join Professional Directory</h1>
+            <p class="directory-subtitle">
+                Create your verified profile to connect with members, offer services, 
+                and find mentorship opportunities.
+            </p>
+        </div>
+        <div class="message-container">
+            {% if messages %}
+                {% for message in messages %}
+                    <div class="alert-success">{{ message }}</div>
+                {% endfor %}
+            {% endif %}
+        </div>
+        
+        <!-- ===== FORM ===== -->
+        <div class="form-card">
+            <form method="POST" action="{% url 'communities:join_directory_form' %}" enctype="multipart/form-data">
+                {% csrf_token %}
+                
+                <!-- Basic Information Section -->
+                <div class="form-section">
+                    <h3 class="section-title">
+                        <i class="fas fa-user-circle"></i> Basic Information
+                    </h3>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Full Name</label>
+                        <input type="text" 
+                               name="name" 
+                               class="form-control" 
+                               placeholder="e.g., Jane Doe"
+                               value="{{ name }}"
+                               required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Profession / Job Title</label>
+                        <input type="text" 
+                               name="profession" 
+                               class="form-control" 
+                               placeholder="e.g., Civil Engineer"
+                               value="{{ profession }}"
+                               required>
+                        <div class="helper-text">
+                            <i class="fas fa-info-circle"></i>
+                            Your current profession or job title
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Region / City</label>
+                        <input type="text" 
+                               name="region" 
+                               class="form-control" 
+                               placeholder="e.g., Seattle, WA"
+                               value="{{ region }}"
+                               required>
+                        <div class="helper-text">
+                            <i class="fas fa-map-marker-alt"></i>
+                            Your primary location
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Professional Category</label>
+                        <select name="category" class="form-select" required>
+                            <option value="">Select your category</option>
+                            <option value="tech">Tech & IT</option>
+                            <option value="legal">Legal</option>
+                            <option value="finance">Finance & Accounting</option>
+                            <option value="health">Healthcare</option>
+                            <option value="education">Education</option>
+                            <option value="business">Business & Consulting</option>
+                            <option value="creative">Creative & Media</option>
+                            <option value="engineering">Engineering</option>
+                            <option value="other">Other</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <!-- Membership Type Section -->
+                <div class="form-section">
+                    <h3 class="section-title">
+                        <i class="fas fa-crown"></i> Membership Type
+                    </h3>
+                    
+                    <div class="membership-options">
+                        <!-- Verified (Free) Option -->
+                        <label class="membership-card selected">
+                            <input type="radio" 
+                                   name="membership_type" 
+                                   value="verified" 
+                                   class="membership-radio"
+                                   checked>
+                            <div class="membership-header">
+                                <div class="membership-title">Verified</div>
+                                <span class="membership-badge badge-free">Free</span>
+                            </div>
+                            <ul class="membership-features">
+                                <li><i class="fas fa-check"></i> Basic profile listing</li>
+                                <li><i class="fas fa-check"></i> Connect with members</li>
+                                <li><i class="fas fa-check"></i> Community access</li>
+                                <li><i class="fas fa-check"></i> Basic search visibility</li>
+                            </ul>
+                        </label>
+                        
+                        <!-- Premium Option -->
+                        <label class="membership-card">
+                            <input type="radio" 
+                                   name="membership_type" 
+                                   value="premium" 
+                                   class="membership-radio">
+                            <div class="membership-header">
+                                <div class="membership-title">Premium</div>
+                                <span class="membership-badge badge-premium">$9/month</span>
+                            </div>
+                            <ul class="membership-features">
+                                <li><i class="fas fa-star"></i> Premium badge on profile</li>
+                                <li><i class="fas fa-star"></i> Top search ranking</li>
+                                <li><i class="fas fa-star"></i> Advanced analytics</li>
+                                <li><i class="fas fa-star"></i> Priority support</li>
+                            </ul>
+                        </label>
+                    </div>
+                </div>
+                
+                <!-- Expertise Section -->
+                <div class="form-section" style="border-bottom: none;">
+                    <h3 class="section-title">
+                        <i class="fas fa-lightbulb"></i> Expertise & Profile
+                    </h3>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Expertise Summary</label>
+                        <textarea name="expertise" 
+                                  class="form-control" 
+                                  rows="4"
+                                  placeholder="Briefly describe your skills, experience, and what you offer to the community..."
+                                  required></textarea>
+                        <div class="helper-text">
+                            <i class="fas fa-info-circle"></i>
+                            Share your professional background and what you can offer
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Profile Photo (Optional)</label>
+                        <div class="input-group">
+                            <input type="file" 
+                                   name="profile_photo" 
+                                   class="form-control" 
+                                   accept="image/*">
+                        </div>
+                        <div class="helper-text">
+                            <i class="fas fa-camera"></i>
+                            Recommended: Square JPG or PNG, max 2MB
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Submit Buttons -->
+                <div class="button-group">
+                    <a href="{% url 'communities:member_directory' %}" class="cancel-btn">
+                        <i class="fas fa-times"></i> Cancel
+                    </a>
+                    <button type="submit" class="submit-btn">
+                        <i class="fas fa-check-circle"></i> Save Profile
+                    </button>
+                </div>
+                
+                <!-- Form Protection Note -->
+                <div class="text-center mt-4">
+                    <p class="text-muted small">
+                        <i class="fas fa-shield-alt" style="color: var(--primary-green);"></i>
+                        Your information is secure and will only be visible to verified community members
+                    </p>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Membership card selection
+            const membershipCards = document.querySelectorAll('.membership-card');
+            membershipCards.forEach(card => {
+                card.addEventListener('click', function() {
+                    // Remove selected class from all cards
+                    membershipCards.forEach(c => c.classList.remove('selected'));
+                    // Add selected class to clicked card
+                    this.classList.add('selected');
+                    // Check the radio button inside
+                    const radio = this.querySelector('.membership-radio');
+                    if (radio) radio.checked = true;
+                });
+            });
+            
+            // Character counter for expertise
+            const expertiseTextarea = document.querySelector('textarea[name="expertise"]');
+            const charCounter = document.createElement('div');
+            charCounter.className = 'helper-text';
+            charCounter.innerHTML = '<i class="fas fa-keyboard"></i> <span id="char-count">0</span>/500 characters';
+            expertiseTextarea.parentNode.appendChild(charCounter);
+            
+            expertiseTextarea.addEventListener('input', function() {
+                const length = this.value.length;
+                document.getElementById('char-count').textContent = length;
+                
+                // Update color based on length
+                if (length > 500) {
+                    this.style.borderColor = '#ef4444';
+                    charCounter.style.color = '#ef4444';
+                } else if (length > 450) {
+                    this.style.borderColor = '#f59e0b';
+                    charCounter.style.color = '#f59e0b';
+                } else {
+                    this.style.borderColor = '';
+                    charCounter.style.color = '';
+                }
+            });
+            
+            // Form validation and loading state
+            const form = document.querySelector('form');
+            const submitBtn = form.querySelector('.submit-btn');
+            
+            form.addEventListener('submit', function(e) {
+                // Show loading state
+                const originalText = submitBtn.innerHTML;
+                submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving...';
+                submitBtn.disabled = true;
+                
+                // Re-enable after 3 seconds if validation fails
+                setTimeout(() => {
+                    if (!form.checkValidity()) {
+                        submitBtn.innerHTML = originalText;
+                        submitBtn.disabled = false;
+                    }
+                }, 3000);
+            });
+            
+            // Auto-select category if provided in context
+            const categorySelect = document.querySelector('select[name="category"]');
+            if ('{{ category }}' && '{{ category }}' !== 'None') {
+                categorySelect.value = '{{ category }}';
+            }
+            
+            // File upload preview
+            const fileInput = document.querySelector('input[type="file"]');
+            if (fileInput) {
+                const fileNameDisplay = document.createElement('div');
+                fileNameDisplay.className = 'helper-text mt-2';
+                fileInput.parentNode.parentNode.appendChild(fileNameDisplay);
+                
+                fileInput.addEventListener('change', function() {
+                    if (this.files && this.files[0]) {
+                        const file = this.files[0];
+                        fileNameDisplay.innerHTML = `<i class="fas fa-file-image"></i> Selected: ${file.name} (${(file.size / 1024 / 1024).toFixed(2)} MB)`;
+                        
+                        // Validate file size
+                        const maxSize = 2 * 1024 * 1024; // 2MB
+                        if (file.size > maxSize) {
+                            fileNameDisplay.style.color = '#ef4444';
+                            fileNameDisplay.innerHTML += ' - File too large!';
+                        } else {
+                            fileNameDisplay.style.color = '';
+                        }
+                    }
+                });
+            }
+        });
+    </script>
+</body>
+</html>

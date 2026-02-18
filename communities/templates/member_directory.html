@@ -1,0 +1,650 @@
+<!-- templates/member_directory.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Verified Member Directory</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        :root {
+            --primary-blue: #1f3bb3;
+            --secondary-blue: #3a56d6;
+            --light-blue: #eef2ff;
+            --success-green: #0d9f6e;
+            --dark-green: #0b8a60;
+            --white: #ffffff;
+            --gray-50: #f5f7fb;
+            --gray-100: #f3f4f6;
+            --gray-200: #e5e7eb;
+            --gray-600: #4b5563;
+            --gray-700: #374151;
+            --gray-900: #111827;
+            --gold: #f59e0b;
+        }
+        
+        body {
+            background: var(--gray-50);
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+        }
+
+        /* ===== TOP HEADER ===== */
+        .directory-header {
+            background: var(--white);
+            padding: 32px 28px;
+            border-radius: 14px;
+            box-shadow: 0 8px 24px rgba(31, 59, 179, 0.08);
+            margin-bottom: 32px;
+            border-left: 5px solid var(--primary-blue);
+        }
+
+        .directory-header h1 {
+            color: var(--primary-blue);
+            font-weight: 800;
+            font-size: 2.5rem;
+            margin-bottom: 8px;
+            letter-spacing: -0.5px;
+        }
+
+        .directory-subtitle {
+            color: var(--gray-600);
+            font-size: 1.1rem;
+            margin-bottom: 24px;
+        }
+
+        /* ===== SEARCH BAR ===== */
+        .search-form-container {
+            background: var(--light-blue);
+            padding: 20px;
+            border-radius: 10px;
+            margin-top: 20px;
+        }
+
+        .search-row {
+            display: flex;
+            gap: 15px;
+            align-items: flex-end;
+            margin-bottom: 15px;
+        }
+
+        .search-main {
+            flex: 1;
+        }
+
+        .join-directory-btn {
+            background: linear-gradient(135deg, var(--success-green) 0%, var(--dark-green) 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 10px 20px;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            height: 44px;
+        }
+
+        .join-directory-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 15px rgba(13, 159, 110, 0.3);
+            color: white;
+        }
+
+        .filter-row {
+            display: flex;
+            gap: 15px;
+            align-items: flex-end;
+        }
+
+        .form-control, .form-select {
+            border: 2px solid var(--gray-200);
+            border-radius: 8px;
+            padding: 10px 15px;
+            font-size: 0.95rem;
+            transition: all 0.3s ease;
+        }
+
+        .form-control:focus, .form-select:focus {
+            border-color: var(--primary-blue);
+            box-shadow: 0 0 0 3px rgba(31, 59, 179, 0.1);
+        }
+
+        .search-btn {
+            background: var(--primary-blue);
+            border: none;
+            border-radius: 8px;
+            padding: 10px 20px;
+            font-weight: 600;
+            height: 44px;
+        }
+
+        .search-btn:hover {
+            background: var(--secondary-blue);
+        }
+
+        /* ===== STATS ===== */
+        .stats-bar {
+            background: var(--white);
+            padding: 16px 24px;
+            border-radius: 10px;
+            margin-bottom: 24px;
+            border: 1px solid var(--gray-200);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .stats-count {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--primary-blue);
+        }
+
+        .stats-label {
+            color: var(--gray-600);
+            font-size: 0.9rem;
+        }
+
+        /* ===== MEMBER CARD ===== */
+        .member-card {
+            border: none;
+            border-radius: 14px;
+            background: var(--white);
+            box-shadow: 0 6px 18px rgba(0, 0, 0, 0.08);
+            transition: all 0.3s ease;
+            height: 100%;
+            overflow: hidden;
+            border-top: 4px solid var(--primary-blue);
+        }
+
+        .member-card:hover {
+            transform: translateY(-6px);
+            box-shadow: 0 12px 28px rgba(31, 59, 179, 0.12);
+        }
+
+        /* ===== AVATAR ===== */
+        .profile-img-container {
+            text-align: center;
+            padding: 24px 20px 16px;
+            background: linear-gradient(135deg, var(--light-blue) 0%, rgba(238, 242, 255, 0.5) 100%);
+        }
+
+        .profile-img {
+            width: 90px;
+            height: 90px;
+            border-radius: 50%;
+            border: 3px solid var(--white);
+            box-shadow: 0 4px 12px rgba(31, 59, 179, 0.2);
+            object-fit: cover;
+            background: var(--primary-blue);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 32px;
+            font-weight: 700;
+            margin: 0 auto;
+        }
+
+        /* ===== CARD CONTENT ===== */
+        .card-content {
+            padding: 20px;
+        }
+
+        .member-name {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: var(--gray-900);
+            margin-bottom: 6px;
+            text-align: center;
+        }
+
+        .member-title {
+            color: var(--primary-blue);
+            font-weight: 600;
+            font-size: 1rem;
+            margin-bottom: 4px;
+            text-align: center;
+        }
+
+        .member-location {
+            color: var(--gray-600);
+            font-size: 0.9rem;
+            margin-bottom: 16px;
+            text-align: center;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 5px;
+        }
+
+        .member-bio {
+            color: var(--gray-700);
+            font-size: 0.9rem;
+            line-height: 1.5;
+            margin-bottom: 16px;
+            text-align: center;
+            min-height: 60px;
+        }
+
+        /* ===== BADGES ===== */
+        .badge-container {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .verified-badge {
+            background: linear-gradient(135deg, var(--success-green) 0%, var(--dark-green) 100%);
+            color: white;
+            font-size: 0.8rem;
+            padding: 6px 16px;
+            border-radius: 20px;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .premium-badge {
+            background: linear-gradient(135deg, var(--gold) 0%, #d97706 100%);
+            color: white;
+            font-size: 0.8rem;
+            padding: 6px 16px;
+            border-radius: 20px;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        /* ===== GREEN SEND MESSAGE BUTTON ===== */
+        .message-btn {
+            background: linear-gradient(135deg, var(--success-green) 0%, var(--dark-green) 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 10px;
+            font-weight: 600;
+            width: 100%;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .message-btn:hover {
+            background: linear-gradient(135deg, var(--dark-green) 0%, #0a7a52 100%);
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(13, 159, 110, 0.3);
+        }
+
+        /* ===== EMPTY STATE ===== */
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            background: var(--white);
+            border-radius: 14px;
+            border: 2px dashed var(--gray-200);
+            margin: 40px 0;
+        }
+
+        .empty-icon {
+            font-size: 4rem;
+            color: var(--gray-200);
+            margin-bottom: 20px;
+        }
+
+        .empty-title {
+            color: var(--gray-700);
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+
+        .empty-text {
+            color: var(--gray-600);
+            margin-bottom: 25px;
+            max-width: 400px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        /* ===== PAGINATION ===== */
+        .pagination-container {
+            margin-top: 40px;
+        }
+
+        .page-link {
+            color: var(--primary-blue);
+            border: 1px solid var(--gray-200);
+            padding: 8px 16px;
+        }
+
+        .page-item.active .page-link {
+            background-color: var(--primary-blue);
+            border-color: var(--primary-blue);
+        }
+
+        /* ===== RESPONSIVE ===== */
+        @media (max-width: 768px) {
+            .search-row, .filter-row {
+                flex-direction: column;
+            }
+            
+            .search-main, .join-directory-btn, .search-btn {
+                width: 100%;
+            }
+            
+            .directory-header {
+                padding: 24px 20px;
+            }
+            
+            .directory-header h1 {
+                font-size: 2rem;
+            }
+            
+            .stats-bar {
+                flex-direction: column;
+                gap: 10px;
+                text-align: center;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="container mt-4 mb-5">
+
+    <!-- ===== HEADER ===== -->
+    <div class="directory-header">
+        <h1>Verified Member Directory</h1>
+        <p class="directory-subtitle">Connect with trusted professionals in our community</p>
+        
+        <!-- Search Form -->
+        <div class="search-form-container">
+            <form method="GET" action="{% url 'communities:member_directory' %}">
+                <!-- First Row: Search + Join Directory -->
+                <div class="search-row">
+                    <div class="search-main">
+                        <label class="form-label fw-semibold">Search by name or profession</label>
+                        <input type="text"
+                               name="search"
+                               class="form-control"
+                               placeholder="e.g., lawyer, engineer, designer..."
+                               value="{{ search_query }}">
+                    </div>
+                    
+                    <div>
+                        <a href="{% url 'communities:join_directory_form' %}" class="join-directory-btn">
+                            <i class="fas fa-plus-circle"></i> Join Directory
+                        </a>
+                    </div>
+                </div>
+                
+                <!-- Second Row: Filters -->
+                <div class="filter-row">
+                    <div style="flex: 1;">
+                        <label class="form-label">Region</label>
+                        <select name="region" class="form-select">
+                            <option value="">All Regions</option>
+                            {% for region in unique_regions %}
+                                <option value="{{ region }}" {% if region_filter == region %}selected{% endif %}>
+                                    {{ region }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    
+                    <div style="flex: 1;">
+                        <label class="form-label">Profession</label>
+                        <select name="profession" class="form-select">
+                            <option value="">All Professions</option>
+                            {% for profession in unique_professions %}
+                                <option value="{{ profession }}" {% if profession_filter == profession %}selected{% endif %}>
+                                    {{ profession }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    
+                    <div>
+                        <label class="form-label">&nbsp;</label>
+                        <button type="submit" class="search-btn w-100 text-white">
+                            <i class="fas fa-search"></i> Search
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- ===== STATS ===== -->
+    <div class="stats-bar">
+        <div>
+            <span class="stats-count">{{ total_members }}</span>
+            <span class="stats-label">verified members in directory</span>
+        </div>
+        {% if members %}
+        <div class="text-muted small">
+            Showing {{ members|length }} result{% if members|length != 1 %}s{% endif %}
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- ===== MEMBERS GRID ===== -->
+    {% if members %}
+    <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+
+        {% for member in members %}
+        <div class="col">
+            <div class="member-card">
+                <!-- Avatar Section -->
+                <div class="profile-img-container">
+                    {% if member.profile_picture %}
+                        <img src="{{ member.profile_picture.url }}" class="profile-img" alt="{{ member.name }}">
+                    {% else %}
+                        <div class="profile-img">
+                            {{ member.name|first|upper }}
+                        </div>
+                    {% endif %}
+                </div>
+                
+                <!-- Content Section -->
+                <div class="card-content">
+                    <!-- Name -->
+                    <h5 class="member-name">{{ member.name }}</h5>
+                    
+                    <!-- Profession -->
+                    <div class="member-title">{{ member.profession }}</div>
+                    
+                    <!-- Location -->
+                    <div class="member-location">
+                        <i class="fas fa-map-marker-alt"></i>
+                        {{ member.region }}
+                    </div>
+                    
+                    <!-- Bio -->
+                    <p class="member-bio">
+                        {% if member.bio %}
+                            {{ member.bio|truncatechars:100 }}
+                        {% else %}
+                            {% if member.specialization %}
+                                Specializing in {{ member.specialization }}
+                            {% else %}
+                                Professional community member
+                            {% endif %}
+                        {% endif %}
+                    </p>
+                    
+                    <!-- Badge -->
+                    <div class="badge-container">
+                        {% if member.is_premium %}
+                            <span class="premium-badge">
+                                <i class="fas fa-crown"></i> PREMIUM
+                            </span>
+                        {% else %}
+                            <span class="verified-badge">
+                                <i class="fas fa-check-circle"></i> VERIFIED
+                            </span>
+                        {% endif %}
+                    </div>
+                    
+                    <!-- GREEN Send Message Button -->
+                    <button class="message-btn">
+                        <i class="fas fa-envelope"></i> Send Message
+                    </button>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+
+    </div>
+    
+    <!-- ===== PAGINATION ===== -->
+    {% if members.has_other_pages %}
+    <div class="pagination-container">
+        <nav>
+            <ul class="pagination justify-content-center">
+                {% if members.has_previous %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ members.previous_page_number }}&search={{ search_query }}&region={{ region_filter }}&profession={{ profession_filter }}">
+                            <i class="fas fa-chevron-left"></i>
+                        </a>
+                    </li>
+                {% endif %}
+                
+                {% for i in members.paginator.page_range %}
+                    {% if members.number == i %}
+                        <li class="page-item active">
+                            <span class="page-link">{{ i }}</span>
+                        </li>
+                    {% else %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ i }}&search={{ search_query }}&region={{ region_filter }}&profession={{ profession_filter }}">
+                                {{ i }}
+                            </a>
+                        </li>
+                    {% endif %}
+                {% endfor %}
+                
+                {% if members.has_next %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ members.next_page_number }}&search={{ search_query }}&region={{ region_filter }}&profession={{ profession_filter }}">
+                            <i class="fas fa-chevron-right"></i>
+                        </a>
+                    </li>
+                {% endif %}
+            </ul>
+        </nav>
+    </div>
+    {% endif %}
+    
+    {% else %}
+    <!-- ===== EMPTY STATE ===== -->
+    <div class="empty-state">
+        <div class="empty-icon">
+            <i class="fas fa-users-slash"></i>
+        </div>
+        <h4 class="empty-title">No members found</h4>
+        <p class="empty-text">
+            {% if search_query or region_filter or profession_filter %}
+                Try adjusting your search filters or <a href="{% url 'communities:member_directory' %}" class="text-primary">clear all filters</a>
+            {% else %}
+                Be the first to join our professional directory!
+            {% endif %}
+        </p>
+        <a href="{% url 'communities:join_directory_form' %}" class="join-directory-btn" style="width: auto; display: inline-flex;">
+            <i class="fas fa-user-plus"></i> Create Profile
+        </a>
+    </div>
+    {% endif %}
+
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Auto-submit form when filters change
+        const regionSelect = document.querySelector('select[name="region"]');
+        const professionSelect = document.querySelector('select[name="profession"]');
+        const searchForm = document.querySelector('form');
+        
+        [regionSelect, professionSelect].forEach(select => {
+            select.addEventListener('change', function() {
+                searchForm.submit();
+            });
+        });
+        
+        // GREEN Message button functionality
+        document.querySelectorAll('.message-btn').forEach(button => {
+            button.addEventListener('click', function() {
+                const card = this.closest('.member-card');
+                const memberName = card.querySelector('.member-name').textContent;
+                const memberProfession = card.querySelector('.member-title').textContent;
+                
+                // Visual feedback
+                const originalText = this.innerHTML;
+                this.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Opening...';
+                this.disabled = true;
+                
+                setTimeout(() => {
+                    alert(`Message interface would open for:\n\n${memberName}\n${memberProfession}\n\nThis would connect to a messaging system in production.`);
+                    this.innerHTML = originalText;
+                    this.disabled = false;
+                }, 800);
+            });
+        });
+        
+        // Add clear filters button if filters are active
+        const urlParams = new URLSearchParams(window.location.search);
+        const searchQuery = urlParams.get('search');
+        const region = urlParams.get('region');
+        const profession = urlParams.get('profession');
+        
+        if (searchQuery || region || profession) {
+            const clearBtn = document.createElement('a');
+            clearBtn.href = '{% url "communities:member_directory" %}';
+            clearBtn.className = 'btn btn-outline-primary btn-sm';
+            clearBtn.innerHTML = '<i class="fas fa-times"></i> Clear Filters';
+            
+            const statsBar = document.querySelector('.stats-bar');
+            statsBar.appendChild(clearBtn);
+        }
+        
+        // Add loading animation to search button
+        const searchBtn = document.querySelector('.search-btn');
+        if (searchBtn) {
+            searchBtn.addEventListener('click', function() {
+                const originalHTML = this.innerHTML;
+                this.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Searching...';
+                this.disabled = true;
+                
+                setTimeout(() => {
+                    this.innerHTML = originalHTML;
+                    this.disabled = false;
+                }, 2000);
+            });
+        }
+        
+        // Add hover effect to cards
+        document.querySelectorAll('.member-card').forEach(card => {
+            card.addEventListener('mouseenter', function() {
+                this.style.borderTopColor = 'var(--success-green)';
+            });
+            
+            card.addEventListener('mouseleave', function() {
+                this.style.borderTopColor = 'var(--primary-blue)';
+            });
+        });
+    });
+</script>
+</body>
+</html>
