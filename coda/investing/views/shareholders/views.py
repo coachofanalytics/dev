@@ -325,6 +325,7 @@ def member_detail(request, member_id):
     Phase 3: Real queries with aggregated contribution data using services.
     """
     from investing.services.shareholders.member_metrics import MemberMetricsService
+    from investing.services.shareholders.dashboard_service import EquityEstimationService
     
     try:
         deal = get_active_deal()
@@ -340,6 +341,14 @@ def member_detail(request, member_id):
         metrics = metrics_service.get_all_metrics()
         contribution_history = metrics_service.get_contribution_history(limit=10)
         
+        # Calculate equity percentage using EquityEstimationService
+        equity_service = EquityEstimationService(deal)
+        equity_data = equity_service.calculate_equity_for_all_members()
+        member_equity = next(
+            (item['equity_percentage'] for item in equity_data if item['member'].id == member.id),
+            Decimal('0.00')
+        )
+        
         # Build member dict for template
         member_data = {
             'id': member.id,
@@ -348,7 +357,7 @@ def member_detail(request, member_id):
             'type': member.get_member_type_display(),
             'type_code': member.member_type,
             'verified': member.verified,
-            'equity_percentage': '—',  # Phase 4
+            'equity_percentage': float(member_equity),
             'cash_invested': float(metrics['cash_invested']),
             'in_kind_value': float(metrics['in_kind_value']),
             'time_logged': float(metrics['time_logged']),
