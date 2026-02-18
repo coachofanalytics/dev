@@ -179,6 +179,7 @@ def get_deal_member_summary(deal: Deal, include_submitted: bool = False) -> List
             'pending_count': service.get_pending_count(),
             # Equity calculated from approved contributions with tier weights
             'equity_percentage': float(equity_by_member.get(member.id, Decimal('0.00'))),
+            'profile_photo': member.profile_photo.url if member.profile_photo else None,
         })
     
     return summaries

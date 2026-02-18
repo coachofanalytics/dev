@@ -369,6 +369,7 @@ def member_detail(request, member_id):
             'bio': member.bio or '',
             'contribution_count': metrics_service.get_contribution_count(),
             'pending_count': metrics_service.get_pending_count(),
+            'profile_photo': member.profile_photo.url if member.profile_photo else None,
         }
         
         context = {

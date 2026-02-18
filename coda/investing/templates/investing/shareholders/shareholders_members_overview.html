@@ -554,7 +554,11 @@ Members & Equity Overview - Main listing page with member cards
                         <div class="sh-member-card-body">
                             <div class="sh-member-card-header">
                                 <div class="sh-member-avatar">
-                                    {% for word in member.name.split %}{{ word.0 }}{% endfor %}
+                                    {% if member.profile_photo %}
+                                        <img src="{{ member.profile_photo }}" alt="{{ member.name }}" style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;">
+                                    {% else %}
+                                        {% for word in member.name.split %}{{ word.0 }}{% endfor %}
+                                    {% endif %}
                                 </div>
                                 <div class="sh-member-badges">
                                     <span class="sh-badge {% if member.type == 'Entity' %}sh-badge-info{% else %}sh-badge-default{% endif %}">
