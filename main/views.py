@@ -280,6 +280,25 @@ def service_list(request):
     services = Service.objects.all()  # Fetch all services and related subservices
     return render(request, 'main/services.html', {'services': services})
 
+def consular_assistance(request):
+    """
+    Render the Consular Assistance landing page.
+    """
+    # Get or create a Page for consular assistance if you want to use the page/description pattern
+    page_instance, _ = Page.objects.get_or_create(page_name='Consular Assistance')
+    description = Description.objects.filter(page=page_instance)
+    
+    # Get active emergency hotlines for the emergency section
+    hotlines = EmergencyHotline.objects.filter(is_active=True).order_by("sort_order", "id")
+    
+    context = {
+        'description': description,
+        'hotlines': hotlines,
+        'title': 'Consular Assistance',
+    }
+    
+    return render(request, 'main/consular_assistance.html', context)
+
 
 def consular_information_updates(request):
     """
