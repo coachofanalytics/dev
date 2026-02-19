@@ -331,6 +331,28 @@ class ContributionLogForm(forms.ModelForm):
                 deal=self.deal,
                 is_archived=False
             ).order_by('legal_name')
+            
+            # Phase 2: Set currency and exchange rate from DealConfig (read-only)
+            try:
+                config = self.deal.config
+                # Set initial values from DealConfig
+                self.fields['currency'].initial = config.base_currency
+                self.fields['exchange_rate'].initial = config.fx_peg_rate
+                
+                # Make currency and exchange_rate read-only
+                self.fields['currency'].widget.attrs['readonly'] = True
+                self.fields['currency'].widget.attrs['class'] = 'form-control bg-light'
+                self.fields['exchange_rate'].widget.attrs['readonly'] = True
+                self.fields['exchange_rate'].widget.attrs['class'] = 'form-control bg-light'
+                
+            except Exception as e:
+                # If no DealConfig, use defaults
+                self.fields['currency'].initial = 'USD'
+                self.fields['exchange_rate'].initial = Decimal('1.0000')
+        
+        # Make value_usd not required for TIME and WORK tiers (will be auto-calculated)
+        # User can still override if needed
+        self.fields['value_usd'].required = False
 
     def clean_date(self):
         """Validate date is not in the future."""
@@ -340,8 +362,9 @@ class ContributionLogForm(forms.ModelForm):
         return contribution_date
 
     def clean_value_usd(self):
-        """Validate value is positive."""
+        """Validate value is positive (if provided)."""
         value = self.cleaned_data.get('value_usd')
+        # Allow None for TIME and WORK tiers (will be auto-calculated)
         if value is not None and value <= 0:
             raise ValidationError("Value must be greater than zero.")
         return value
@@ -352,6 +375,46 @@ class ContributionLogForm(forms.ModelForm):
         if units is not None and units <= 0:
             raise ValidationError("Internal units must be greater than zero.")
         return units
+    
+    def _get_dealconfig_rate(self, tier):
+        """Get the valuation rate from DealConfig for a given tier."""
+        if not self.deal:
+            return None
+        
+        try:
+            config = self.deal.config
+            if tier == 'TIME':
+                return config.time_rate
+            elif tier == 'WORK':
+                return config.work_rate
+            else:
+                return None
+        except:
+            return None
+    
+    def _calculate_value_for_tier(self, tier, internal_units_value, tier_metadata):
+        """Calculate USD value based on tier and DealConfig rates."""
+        rate = self._get_dealconfig_rate(tier)
+        
+        if rate is None:
+            return None
+        
+        # Base calculation
+        calculated_value = internal_units_value * rate
+        
+        # Apply impact multiplier for WORK tier
+        if tier == 'WORK' and tier_metadata:
+            impact_tier = tier_metadata.get('impact_tier', '')
+            multipliers = {
+                'LOW': Decimal('0.8'),
+                'MEDIUM': Decimal('1.0'),
+                'HIGH': Decimal('1.3'),
+                'CRITICAL': Decimal('1.7'),
+            }
+            multiplier = multipliers.get(impact_tier, Decimal('1.0'))
+            calculated_value = calculated_value * multiplier
+        
+        return calculated_value.quantize(Decimal('0.01'))
 
     def clean(self):
         """Tier-aware cross-field validation."""
@@ -419,5 +482,47 @@ class ContributionLogForm(forms.ModelForm):
             ).strip()
 
         cleaned_data['tier_metadata'] = tier_metadata
+        
+        # ------------------------------------------------------------------
+        # Auto-calculate value_usd for TIME and WORK tiers if not manually provided
+        # ------------------------------------------------------------------
+        value_usd = cleaned_data.get('value_usd')
+        internal_units_value = cleaned_data.get('internal_units_value')
+        
+        # Only auto-calculate if value_usd is not provided and we have internal_units
+        if tier in ['TIME', 'WORK'] and not value_usd and internal_units_value:
+            calculated_value = self._calculate_value_for_tier(tier, internal_units_value, tier_metadata)
+            
+            if calculated_value is not None:
+                cleaned_data['value_usd'] = calculated_value
+                # Store flag to indicate this was auto-calculated (for audit purposes)
+                cleaned_data['_auto_calculated'] = True
+            else:
+                # If we can't auto-calculate, require manual entry
+                self.add_error(
+                    'value_usd',
+                    f'Unable to auto-calculate value. Please enter value manually or ensure DealConfig has a {tier.lower()}_rate configured.'
+                )
+        
+        # Ensure value_usd is always provided for CASH and IN_KIND tiers
+        if tier in ['CASH', 'IN_KIND'] and not value_usd:
+            self.add_error(
+                'value_usd',
+                'Value in USD is required for this contribution type.'
+            )
+        
+        # ------------------------------------------------------------------
+        # Phase 2: Enforce currency and exchange_rate from DealConfig (read-only enforcement)
+        # ------------------------------------------------------------------
+        if self.deal:
+            try:
+                config = self.deal.config
+                # Always override with DealConfig values (security: prevent tampering)
+                cleaned_data['currency'] = config.base_currency
+                cleaned_data['exchange_rate'] = config.fx_peg_rate
+            except Exception:
+                # Fallback to defaults if DealConfig not available
+                cleaned_data['currency'] = 'USD'
+                cleaned_data['exchange_rate'] = Decimal('1.0000')
 
         return cleaned_data

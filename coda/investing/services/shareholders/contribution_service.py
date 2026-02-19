@@ -48,7 +48,8 @@ class ContributionSubmissionService:
         notes: Optional[str] = None,
         proof_document: Optional[UploadedFile] = None,
         ip_address: Optional[str] = None,
-        tier_metadata: Optional[dict] = None
+        tier_metadata: Optional[dict] = None,
+        is_auto_calculated: bool = False
     ) -> LedgerEntry:
         """
         Submit a new contribution (creates LedgerEntry in SUBMITTED status).
@@ -69,6 +70,7 @@ class ContributionSubmissionService:
             ip_address: IP address of submitter
             tier_metadata: Tier-specific structured data (valuation_method,
                            role_multiplier, deliverable_title, impact_tier)
+            is_auto_calculated: Whether value_usd was auto-calculated (Phase 3)
             
         Returns:
             The created LedgerEntry instance
@@ -92,6 +94,7 @@ class ContributionSubmissionService:
             status='SUBMITTED',  # Always start as SUBMITTED
             notes=notes or '',
             tier_metadata=tier_metadata or {},
+            is_auto_calculated=is_auto_calculated,  # Phase 3: Track auto-calculation
         )
         
         # Upload proof document if provided

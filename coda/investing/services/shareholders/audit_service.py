@@ -122,10 +122,57 @@ class AuditService:
             'asset_class': entry.asset_class,
         }
         
+        # Phase 3: Include auto-calculation metadata
+        if entry.is_auto_calculated:
+            details['auto_calculated'] = True
+            details['calculation_note'] = f'Value auto-calculated from DealConfig {entry.tier.lower()}_rate'
+        
         return LedgerAuditLog.objects.create(
             ledger_entry=entry,
             action='CREATED',
             performed_by=actor,
+            details=details,
+            ip_address=ip_address or 'unknown'
+        )
+    
+    @staticmethod
+    def log_value_override(
+        entry: LedgerEntry,
+        actor: User,
+        old_value: Any,
+        new_value: Any,
+        reason: str,
+        ip_address: Optional[str] = None
+    ) -> LedgerAuditLog:
+        """
+        Log when an admin manually overrides an auto-calculated value.
+        
+        Args:
+            entry: The LedgerEntry instance being modified
+            actor: The admin user performing the override
+            old_value: The original auto-calculated value
+            new_value: The new manually entered value
+            reason: Explanation for the override
+            ip_address: IP address of the request (optional)
+            
+        Returns:
+            The created LedgerAuditLog instance
+        """
+        details = {
+            'tx_id': entry.tx_id,
+            'override_type': 'value_manual_override',
+            'old_calculated_value': str(old_value),
+            'new_manual_value': str(new_value),
+            'override_reason': reason,
+            'tier': entry.tier,
+        }
+        
+        return LedgerAuditLog.objects.create(
+            ledger_entry=entry,
+            action='UPDATED',
+            performed_by=actor,
+            old_value=str(old_value),
+            new_value=str(new_value),
             details=details,
             ip_address=ip_address or 'unknown'
         )

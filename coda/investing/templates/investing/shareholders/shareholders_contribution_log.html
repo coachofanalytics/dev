@@ -314,6 +314,21 @@
     box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
 }
 
+/* Read-only fields styling (Phase 2) */
+.sh-form-input[readonly],
+.sh-form-input.bg-light {
+    background: #f1f5f9 !important;
+    color: #64748b;
+    cursor: not-allowed;
+    border-color: #cbd5e1;
+}
+
+.sh-form-input[readonly]:focus,
+.sh-form-input.bg-light:focus {
+    box-shadow: none;
+    border-color: #cbd5e1;
+}
+
 .sh-form-grid-2 {
     display: grid;
     grid-template-columns: 1fr 1fr;
@@ -640,18 +655,27 @@
                                     </div>
                                     <div class="sh-form-group">
                                         <label class="sh-form-label" id="lbl-value-usd">Value (USD)</label>
-                                        <input type="number" name="value_usd" class="sh-form-input" placeholder="0.00" step="0.01" required>
+                                        <input type="number" name="value_usd" id="input-value-usd" class="sh-form-input" placeholder="0.00" step="0.01" required>
+                                        <small id="value-usd-hint" style="display:none;margin-top:0.25rem;color:#2563eb;">
+                                            🤖 Auto-calculated based on DealConfig rate. You can override if needed.
+                                        </small>
                                     </div>
                                 </div>
 
                                 <div class="sh-form-grid-2">
                                     <div class="sh-form-group">
                                         <label class="sh-form-label">Currency</label>
-                                        <input type="text" name="currency" class="sh-form-input" placeholder="USD" value="USD">
+                                        {{ form.currency }}
+                                        <small style="display:block;margin-top:0.25rem;color:#64748b;">
+                                            🔒 Set from DealConfig (read-only)
+                                        </small>
                                     </div>
                                     <div class="sh-form-group">
                                         <label class="sh-form-label">Exchange Rate</label>
-                                        <input type="number" name="exchange_rate" class="sh-form-input" placeholder="1.0000" value="1.0000" step="0.0001">
+                                        {{ form.exchange_rate }}
+                                        <small style="display:block;margin-top:0.25rem;color:#64748b;">
+                                            🔒 Set from DealConfig (read-only)
+                                        </small>
                                     </div>
                                 </div>
                             </div>
@@ -788,12 +812,29 @@
         const lblUnits = document.getElementById('lbl-units-value');
         const inputUnits = document.getElementById('input-units-value');
         const inputUnitsLabel = document.getElementById('input-units-label');
+        const inputValueUsd = document.getElementById('input-value-usd');
+        const valueUsdHint = document.getElementById('value-usd-hint');
 
         if (lblAsset) lblAsset.textContent = cfg.assetLabel;
         if (inputAsset) inputAsset.placeholder = cfg.assetPlaceholder;
         if (lblUnits) lblUnits.textContent = cfg.unitsLabel;
         if (inputUnits) inputUnits.placeholder = cfg.unitsPlaceholder;
         if (inputUnitsLabel) inputUnitsLabel.placeholder = cfg.unitsLabelPlaceholder;
+        
+        // Handle auto-calculation hint for TIME and WORK tiers
+        if (tier === 'TIME' || tier === 'WORK') {
+            if (valueUsdHint) valueUsdHint.style.display = 'block';
+            if (inputValueUsd) {
+                inputValueUsd.required = false;  // Make optional for auto-calc
+                inputValueUsd.placeholder = 'Auto-calculated (or enter manually to override)';
+            }
+        } else {
+            if (valueUsdHint) valueUsdHint.style.display = 'none';
+            if (inputValueUsd) {
+                inputValueUsd.required = true;
+                inputValueUsd.placeholder = '0.00';
+            }
+        }
 
         // Show / hide extra panels
         allExtraPanels.forEach(function(id) {

@@ -633,6 +633,7 @@ def contribution_log(request):
                         proof_document=form.cleaned_data.get('proof_document'),
                         ip_address=get_client_ip(request),
                         tier_metadata=form.cleaned_data.get('tier_metadata') or {},
+                        is_auto_calculated=form.cleaned_data.get('_auto_calculated', False),  # Phase 3
                     )
                     
                     messages.success(

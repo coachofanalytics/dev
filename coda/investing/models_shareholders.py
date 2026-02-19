@@ -505,8 +505,33 @@ class LedgerEntry(TimeStampedModel):
             "Tier-specific structured data. "
             "IN_KIND: {valuation_method}. "
             "TIME: {role_multiplier}. "
-            "WORK: {deliverable_title, impact_tier}."
+            "WORK: {deliverable_title, impact_tier}. "
+            "Auto-calculation: {is_auto_calculated, calculated_value, applied_rate}."
         )
+    )
+    
+    # Auto-calculation tracking fields (Phase 3)
+    is_auto_calculated = models.BooleanField(
+        default=False,
+        help_text="Whether this value was automatically calculated from DealConfig rates"
+    )
+    override_reason = models.TextField(
+        blank=True,
+        null=True,
+        help_text="Reason for manual override of calculated value (admin only)"
+    )
+    override_by = models.ForeignKey(
+        User,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='ledger_value_overrides',
+        help_text="User who manually overrode the calculated value"
+    )
+    override_at = models.DateTimeField(
+        null=True,
+        blank=True,
+        help_text="When the value was manually overridden"
     )
     
     class Meta:
