@@ -669,10 +669,12 @@ def contribution_log(request):
         # Get DealConfig rates for JavaScript dynamic calculation
         time_rate = Decimal('50.00')  # Default
         work_rate = Decimal('100.00')  # Default
+        fx_peg_rate = Decimal('127.0000')  # Phase 5: Default KES/USD rate
         try:
             config = deal.config
             time_rate = config.time_rate
             work_rate = config.work_rate
+            fx_peg_rate = config.fx_peg_rate  # Phase 5: For currency conversion
         except:
             pass
         
@@ -685,6 +687,7 @@ def contribution_log(request):
             'all_members': all_members,
             'time_rate': time_rate,  # For JavaScript
             'work_rate': work_rate,  # For JavaScript
+            'fx_peg_rate': fx_peg_rate,  # Phase 5: For currency conversion
         }
         
         return render(request, 'investing/shareholders/shareholders_contribution_log.html', context)

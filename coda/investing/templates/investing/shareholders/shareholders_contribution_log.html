@@ -341,6 +341,12 @@
     gap: 1rem;
 }
 
+.sh-form-grid-4 {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr 1fr;
+    gap: 1rem;
+}
+
 /* Upload Area */
 .sh-upload-area {
     padding: 1.5rem;
@@ -452,7 +458,7 @@
 
 @media (max-width: 768px) {
     .sh-tier-selector { grid-template-columns: repeat(2, 1fr); }
-    .sh-form-grid-2, .sh-form-grid-3 { grid-template-columns: 1fr; }
+    .sh-form-grid-2, .sh-form-grid-3, .sh-form-grid-4 { grid-template-columns: 1fr; }
 }
 </style>
 {% endblock %}
@@ -644,7 +650,37 @@
                                     </div>
                                 </div>
 
-                                <div class="sh-form-grid-3">
+                                <!-- Phase 5: CASH tier - Amount, Currency, Value (USD), Exchange Rate in one row -->
+                                <div id="cash-contribution-row" class="sh-form-grid-4" style="display:none;">
+                                    <div class="sh-form-group">
+                                        <label class="sh-form-label">Amount <span style="color:#ef4444;">*</span></label>
+                                        <input type="number" name="internal_units_value" id="input-units-value-cash" class="sh-form-input" placeholder="e.g., 12700" step="0.01" required>
+                                    </div>
+                                    <div class="sh-form-group">
+                                        <label class="sh-form-label">Currency <span style="color:#ef4444;">*</span></label>
+                                        {{ form.currency }}
+                                        <small style="display:block;margin-top:0.25rem;color:#2563eb;font-size:0.75rem;">
+                                            💱 Auto-converts KES → USD
+                                        </small>
+                                    </div>
+                                    <div class="sh-form-group">
+                                        <label class="sh-form-label">Value (USD)</label>
+                                        <input type="number" name="value_usd" id="input-value-usd-cash" class="sh-form-input" placeholder="0.00" step="0.01" required>
+                                        <small id="value-usd-hint-cash" style="display:none;margin-top:0.25rem;color:#2563eb;font-size:0.75rem;">
+                                            🤖 Auto-calculated
+                                        </small>
+                                    </div>
+                                    <div class="sh-form-group">
+                                        <label class="sh-form-label">Exchange Rate</label>
+                                        {{ form.exchange_rate }}
+                                        <small style="display:block;margin-top:0.25rem;color:#64748b;font-size:0.75rem;">
+                                            🔒 From DealConfig
+                                        </small>
+                                    </div>
+                                </div>
+
+                                <!-- Non-CASH tiers - Amount, Unit Label, Value (USD) -->
+                                <div id="non-cash-contribution-row" class="sh-form-grid-3">
                                     <div class="sh-form-group">
                                         <label class="sh-form-label" id="lbl-units-value">Amount</label>
                                         <input type="number" name="internal_units_value" id="input-units-value" class="sh-form-input" placeholder="e.g., 15000" step="0.01" required>
@@ -658,23 +694,6 @@
                                         <input type="number" name="value_usd" id="input-value-usd" class="sh-form-input" placeholder="0.00" step="0.01" required>
                                         <small id="value-usd-hint" style="display:none;margin-top:0.25rem;color:#2563eb;">
                                             🤖 Auto-calculated in real-time based on DealConfig rate (read-only)
-                                        </small>
-                                    </div>
-                                </div>
-
-                                <div class="sh-form-grid-2">
-                                    <div class="sh-form-group">
-                                        <label class="sh-form-label">Currency</label>
-                                        {{ form.currency }}
-                                        <small style="display:block;margin-top:0.25rem;color:#64748b;">
-                                            🔒 Set from DealConfig (read-only)
-                                        </small>
-                                    </div>
-                                    <div class="sh-form-group">
-                                        <label class="sh-form-label">Exchange Rate</label>
-                                        {{ form.exchange_rate }}
-                                        <small style="display:block;margin-top:0.25rem;color:#64748b;">
-                                            🔒 Set from DealConfig (read-only)
                                         </small>
                                     </div>
                                 </div>
@@ -865,6 +884,20 @@
                 inputValueUsd.style.cursor = 'text';
             }
         }
+        
+        // Phase 5: Show/hide appropriate contribution row (CASH vs non-CASH)
+        const cashRow = document.getElementById('cash-contribution-row');
+        const nonCashRow = document.getElementById('non-cash-contribution-row');
+        
+        if (tier === 'CASH') {
+            // Show CASH row (Amount, Currency, Value USD, Exchange Rate)
+            if (cashRow) cashRow.style.display = 'grid';
+            if (nonCashRow) nonCashRow.style.display = 'none';
+        } else {
+            // Show non-CASH row (Amount, Unit Label, Value USD)
+            if (cashRow) cashRow.style.display = 'none';
+            if (nonCashRow) nonCashRow.style.display = 'grid';
+        }
 
         // Show / hide extra panels
         allExtraPanels.forEach(function(id) {
@@ -901,10 +934,11 @@
     });
     
     // ========================================================================
-    // Phase 2: Dynamic Value (USD) Calculation for TIME and WORK Tiers
+    // Phase 2/5: Dynamic Value (USD) Calculation for TIME, WORK, and CASH (KES) Tiers
     // ========================================================================
     const TIME_RATE = parseFloat('{{ time_rate }}') || 50.00;
     const WORK_RATE = parseFloat('{{ work_rate }}') || 100.00;
+    const FX_RATE = parseFloat('{{ fx_peg_rate }}') || 127.00;  // Phase 5: KES per USD
     
     // Impact tier multipliers for WORK
     const IMPACT_MULTIPLIERS = {
@@ -919,18 +953,52 @@
         if (!tierRadio) return;
         
         const tier = tierRadio.value;
-        const inputUnitsValue = document.getElementById('input-units-value');
-        const inputValueUsd = document.getElementById('input-value-usd');
+        
+        // Phase 5: Use different input IDs for CASH vs non-CASH tiers
+        let inputUnitsValue, inputValueUsd, valueUsdHintElement;
+        
+        if (tier === 'CASH') {
+            inputUnitsValue = document.getElementById('input-units-value-cash');
+            inputValueUsd = document.getElementById('input-value-usd-cash');
+            valueUsdHintElement = document.getElementById('value-usd-hint-cash');
+        } else {
+            inputUnitsValue = document.getElementById('input-units-value');
+            inputValueUsd = document.getElementById('input-value-usd');
+            valueUsdHintElement = document.getElementById('value-usd-hint');
+        }
         
         if (!inputUnitsValue || !inputValueUsd) return;
         
         const units = parseFloat(inputUnitsValue.value) || 0;
         
-        // Only calculate for TIME and WORK tiers
-        if (tier === 'TIME' && units > 0) {
+        // Phase 5: CASH tier with currency conversion
+        if (tier === 'CASH') {
+            const currencySelect = document.getElementById('id_currency');
+            if (currencySelect && currencySelect.value === 'KES' && units > 0) {
+                // Convert KES to USD: amount_kes / fx_rate = amount_usd
+                const calculatedValue = units / FX_RATE;
+                inputValueUsd.value = calculatedValue.toFixed(2);
+                // Make value_usd read-only for KES and show hint
+                inputValueUsd.readOnly = true;
+                inputValueUsd.classList.add('bg-light');
+                inputValueUsd.style.cursor = 'not-allowed';
+                if (valueUsdHintElement) valueUsdHintElement.style.display = 'block';
+            } else if (currencySelect && currencySelect.value === 'USD') {
+                // For USD, value_usd = units (direct entry)
+                inputValueUsd.value = units > 0 ? units.toFixed(2) : '';
+                // Make value_usd editable for USD
+                inputValueUsd.readOnly = false;
+                inputValueUsd.classList.remove('bg-light');
+                inputValueUsd.style.cursor = 'text';
+                if (valueUsdHintElement) valueUsdHintElement.style.display = 'none';
+            }
+        }
+        // Phase 2: TIME tier calculation
+        else if (tier === 'TIME' && units > 0) {
             const calculatedValue = units * TIME_RATE;
             inputValueUsd.value = calculatedValue.toFixed(2);
         } 
+        // Phase 2: WORK tier calculation
         else if (tier === 'WORK' && units > 0) {
             // Get impact tier for WORK
             const impactTierSelect = document.querySelector('select[name="impact_tier"]');
@@ -940,17 +1008,31 @@
             const calculatedValue = units * WORK_RATE * multiplier;
             inputValueUsd.value = calculatedValue.toFixed(2);
         }
-        else if (tier !== 'TIME' && tier !== 'WORK') {
-            // Clear for other tiers
+        else if (tier !== 'TIME' && tier !== 'WORK' && tier !== 'CASH') {
+            // Clear for other tiers (IN_KIND)
             inputValueUsd.value = '';
         }
     }
     
-    // Listen for changes on internal_units_value (hours/points)
+    // Listen for changes on internal_units_value (hours/points/amount)
+    // Non-CASH tiers
     const inputUnitsValue = document.getElementById('input-units-value');
     if (inputUnitsValue) {
         inputUnitsValue.addEventListener('input', calculateValueUsd);
         inputUnitsValue.addEventListener('change', calculateValueUsd);
+    }
+    
+    // Phase 5: CASH tier amount input
+    const inputUnitsValueCash = document.getElementById('input-units-value-cash');
+    if (inputUnitsValueCash) {
+        inputUnitsValueCash.addEventListener('input', calculateValueUsd);
+        inputUnitsValueCash.addEventListener('change', calculateValueUsd);
+    }
+    
+    // Phase 5: Listen for currency changes (CASH tier)
+    const currencySelect = document.getElementById('id_currency');
+    if (currencySelect) {
+        currencySelect.addEventListener('change', calculateValueUsd);
     }
     
     // Listen for impact tier changes (WORK tier only)

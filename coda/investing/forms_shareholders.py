@@ -304,11 +304,13 @@ class ContributionLogForm(forms.ModelForm):
                 'step': '0.01',
                 'required': True
             }),
-            'currency': forms.TextInput(attrs={
-                'class': 'form-control',
-                'value': 'USD',
-                'placeholder': 'Currency code'
-            }),
+            'currency': forms.Select(
+                choices=[('USD', 'USD'), ('KES', 'KES')],
+                attrs={
+                    'class': 'form-control',
+                    'id': 'input-currency'
+                }
+            ),
             'exchange_rate': forms.NumberInput(attrs={
                 'class': 'form-control',
                 'value': '1.0000',
@@ -339,15 +341,15 @@ class ContributionLogForm(forms.ModelForm):
                 self.fields['currency'].initial = config.base_currency
                 self.fields['exchange_rate'].initial = config.fx_peg_rate
                 
-                # Make currency and exchange_rate read-only
-                self.fields['currency'].widget.attrs['readonly'] = True
-                self.fields['currency'].widget.attrs['class'] = 'form-control bg-light'
+                # Phase 5: Currency editable for CASH tier (JS will handle)
+                # exchange_rate remains read-only
                 self.fields['exchange_rate'].widget.attrs['readonly'] = True
                 self.fields['exchange_rate'].widget.attrs['class'] = 'form-control bg-light'
                 
                 # Store rates for JavaScript dynamic calculation
                 self.time_rate = config.time_rate
                 self.work_rate = config.work_rate
+                self.fx_peg_rate = config.fx_peg_rate  # Phase 5: For currency conversion
                 
             except Exception as e:
                 # If no DealConfig, use defaults
@@ -355,6 +357,7 @@ class ContributionLogForm(forms.ModelForm):
                 self.fields['exchange_rate'].initial = Decimal('1.0000')
                 self.time_rate = Decimal('50.00')  # Default fallback
                 self.work_rate = Decimal('100.00')  # Default fallback
+                self.fx_peg_rate = Decimal('127.0000')  # Phase 5: Default KES/USD rate
         
         # Make value_usd not required for TIME and WORK tiers (will be auto-calculated)
         # User can still override if needed
@@ -505,13 +508,44 @@ class ContributionLogForm(forms.ModelForm):
         cleaned_data['tier_metadata'] = tier_metadata
         
         # ------------------------------------------------------------------
-        # Phase 2: ALWAYS auto-calculate value_usd for TIME and WORK tiers (read-only enforcement)
+        # Phase 5: Handle currency conversion for CASH tier
+        # Phase 2: Auto-calculate value_usd for TIME and WORK tiers (read-only enforcement)
         # ------------------------------------------------------------------
         value_usd = cleaned_data.get('value_usd')
         internal_units_value = cleaned_data.get('internal_units_value')
+        currency = cleaned_data.get('currency')
         
-        # ALWAYS calculate for TIME and WORK (ignore any submitted value for security)
-        if tier in ['TIME', 'WORK'] and internal_units_value:
+        # Phase 5: CASH tier with KES currency - auto-calculate USD value
+        if tier == 'CASH' and currency == 'KES' and internal_units_value:
+            # Convert KES to USD using exchange rate
+            if self.deal:
+                try:
+                    config = self.deal.config
+                    fx_rate = config.fx_peg_rate  # KES per 1 USD
+                    # Convert: amount_kes / fx_rate = amount_usd
+                    calculated_usd = internal_units_value / fx_rate
+                    cleaned_data['value_usd'] = calculated_usd.quantize(Decimal('0.01'))
+                    cleaned_data['exchange_rate'] = fx_rate
+                    cleaned_data['_auto_calculated'] = True
+                except Exception as e:
+                    self.add_error(
+                        'value_usd',
+                        f'Unable to convert KES to USD. Please check DealConfig exchange rate.'
+                    )
+            else:
+                self.add_error('currency', 'No DealConfig found for currency conversion.')
+        
+        # Phase 5: CASH tier with USD currency - use direct value
+        elif tier == 'CASH' and currency == 'USD':
+            if self.deal:
+                try:
+                    config = self.deal.config
+                    cleaned_data['exchange_rate'] = Decimal('1.0000')  # No conversion needed
+                except Exception:
+                    cleaned_data['exchange_rate'] = Decimal('1.0000')
+        
+        # Phase 2: ALWAYS auto-calculate value_usd for TIME and WORK tiers (read-only enforcement)
+        elif tier in ['TIME', 'WORK'] and internal_units_value:
             calculated_value = self._calculate_value_for_tier(tier, internal_units_value, tier_metadata)
             
             if calculated_value is not None:
@@ -533,12 +567,13 @@ class ContributionLogForm(forms.ModelForm):
             )
         
         # ------------------------------------------------------------------
-        # Phase 2: Enforce currency and exchange_rate from DealConfig (read-only enforcement)
+        # Phase 5: Enforce currency and exchange_rate from DealConfig 
+        # (read-only enforcement for non-CASH tiers only)
         # ------------------------------------------------------------------
-        if self.deal:
+        if self.deal and tier not in ['CASH']:  # Phase 5: Allow CASH to use user-selected currency
             try:
                 config = self.deal.config
-                # Always override with DealConfig values (security: prevent tampering)
+                # Override with DealConfig values for non-CASH tiers (security: prevent tampering)
                 cleaned_data['currency'] = config.base_currency
                 cleaned_data['exchange_rate'] = config.fx_peg_rate
             except Exception:
