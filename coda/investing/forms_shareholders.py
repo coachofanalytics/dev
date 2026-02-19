@@ -216,9 +216,9 @@ class ContributionLogForm(forms.ModelForm):
     """
 
     proof_document = forms.FileField(
-        required=False,
-        help_text="Upload receipt, invoice, or supporting document",
-        widget=forms.FileInput(attrs={'accept': '.pdf,.jpg,.jpeg,.png'})
+        required=True,  # Phase 3: Made mandatory
+        help_text="Upload receipt, invoice, or supporting document (Required)",
+        widget=forms.FileInput(attrs={'accept': '.pdf,.jpg,.jpeg,.png', 'required': True})
     )
 
     # ----- In-Kind tier field -----
@@ -381,6 +381,21 @@ class ContributionLogForm(forms.ModelForm):
         if units is not None and units <= 0:
             raise ValidationError("Internal units must be greater than zero.")
         return units
+    
+    def clean_proof_document(self):
+        """Validate proof document upload (Phase 3: Required)."""
+        proof = self.cleaned_data.get('proof_document')
+        
+        if not proof:
+            raise ValidationError(
+                "Proof of contribution is required. Please upload a receipt, invoice, "
+                "or supporting document (PDF, JPG, PNG)."
+            )
+        
+        # Validate file type and size
+        _validate_upload(proof, ALLOWED_DOC_TYPES, MAX_DOC_SIZE, "Proof document")
+        
+        return proof
     
     def _get_dealconfig_rate(self, tier):
         """Get the valuation rate from DealConfig for a given tier."""

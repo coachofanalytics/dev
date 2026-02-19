@@ -729,13 +729,37 @@
                     <!-- Supporting Documents -->
                     <div class="sh-card">
                         <div class="sh-card-header">
-                            <h3 class="sh-card-title">Supporting Documents</h3>
+                            <h3 class="sh-card-title">Supporting Documents <span style="color: #ef4444;">*</span></h3>
+                            <p style="font-size: 0.875rem; color: #64748b; margin: 0.5rem 0 0 0;">Required for all contributions</p>
                         </div>
                         <div class="sh-card-body">
                             <div class="sh-form-group">
-                                <label class="sh-form-label">Upload Proof / Receipt (Optional)</label>
-                                <input type="file" name="proof_document" class="sh-form-input" accept=".pdf,.jpg,.jpeg,.png" style="padding: 0.5rem; width: 100%;">
-                                <small class="sh-form-hint" style="display: block; margin-top: 0.5rem; color: #64748b;">PDF, JPG, PNG up to 10MB</small>
+                                <label class="sh-form-label">Upload Proof / Receipt <span style="color: #ef4444;">*</span></label>
+                                <input type="file" name="proof_document" id="proof-document-input" class="sh-form-input" accept=".pdf,.jpg,.jpeg,.png" required style="padding: 0.5rem; width: 100%;">
+                                <small class="sh-form-hint" style="display: block; margin-top: 0.5rem; color: #64748b;">
+                                    PDF, JPG, PNG up to 5MB. Please upload appropriate proof for your contribution type.
+                                </small>
+                                
+                                <!-- Tier-specific proof descriptions -->
+                                <div id="proof-description-cash" class="proof-description" style="display: none; margin-top: 1rem; padding: 0.75rem; background: #f0f9ff; border-left: 3px solid #3b82f6; border-radius: 4px;">
+                                    <strong style="color: #1e40af; font-size: 0.875rem;">📄 Cash Contribution:</strong>
+                                    <p style="margin: 0.25rem 0 0 0; color: #475569; font-size: 0.875rem;">Upload a receipt, bank statement, cheque copy, or payment confirmation as proof of payment.</p>
+                                </div>
+                                
+                                <div id="proof-description-inkind" class="proof-description" style="display: none; margin-top: 1rem; padding: 0.75rem; background: #eff6ff; border-left: 3px solid #2563eb; border-radius: 4px;">
+                                    <strong style="color: #1e40af; font-size: 0.875rem;">📦 In-Kind Contribution:</strong>
+                                    <p style="margin: 0.25rem 0 0 0; color: #475569; font-size: 0.875rem;">Upload an invoice, receipt, photo of goods, or valuation document for the goods/services provided.</p>
+                                </div>
+                                
+                                <div id="proof-description-time" class="proof-description" style="display: none; margin-top: 1rem; padding: 0.75rem; background: #eef2ff; border-left: 3px solid #4f46e5; border-radius: 4px;">
+                                    <strong style="color: #4338ca; font-size: 0.875rem;">⏰ Time Contribution:</strong>
+                                    <p style="margin: 0.25rem 0 0 0; color: #475569; font-size: 0.875rem;">Upload a time log, meeting minutes, calendar screenshot, or other documentation showing time spent.</p>
+                                </div>
+                                
+                                <div id="proof-description-work" class="proof-description" style="display: none; margin-top: 1rem; padding: 0.75rem; background: #fefce8; border-left: 3px solid #eab308; border-radius: 4px;">
+                                    <strong style="color: #a16207; font-size: 0.875rem;">💼 Work Contribution:</strong>
+                                    <p style="margin: 0.25rem 0 0 0; color: #475569; font-size: 0.875rem;">Upload the work deliverable, project report, code repository link screenshot, or other evidence of completed work.</p>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -851,6 +875,21 @@
             var el = document.getElementById(id);
             if (el) el.style.display = 'block';
         });
+        
+        // Phase 3: Show/hide tier-specific proof descriptions
+        document.querySelectorAll('.proof-description').forEach(function(el) {
+            el.style.display = 'none';
+        });
+        
+        if (tier === 'CASH') {
+            document.getElementById('proof-description-cash').style.display = 'block';
+        } else if (tier === 'IN_KIND') {
+            document.getElementById('proof-description-inkind').style.display = 'block';
+        } else if (tier === 'TIME') {
+            document.getElementById('proof-description-time').style.display = 'block';
+        } else if (tier === 'WORK') {
+            document.getElementById('proof-description-work').style.display = 'block';
+        }
     }
 
     // Listen for tier radio changes

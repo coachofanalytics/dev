@@ -810,6 +810,60 @@ def ledger_receipt(request, tx_id):
 
 @login_required
 @require_admin
+@require_GET
+def ledger_proof(request, tx_id):
+    """
+    Get proof file information for a ledger entry (Phase 3: Preview functionality).
+    
+    Returns JSON with proof URL and file type for preview modal.
+    """
+    try:
+        deal = get_active_deal()
+        if not deal:
+            return JsonResponse({'error': 'No active deal found'}, status=400)
+        
+        # Get the entry
+        try:
+            entry = LedgerEntry.objects.get(tx_id=tx_id, deal=deal)
+        except LedgerEntry.DoesNotExist:
+            return JsonResponse({'error': f'Entry {tx_id} not found'}, status=404)
+        
+        # Check if entry has proof
+        if not entry.has_proof:
+            return JsonResponse({'error': 'No proof available for this entry'}, status=404)
+        
+        # Get the first evidence file (primary proof)
+        evidence = entry.evidence.first()
+        
+        if not evidence or not evidence.file:
+            return JsonResponse({'error': 'Proof file not found'}, status=404)
+        
+        # Get file URL and type
+        proof_data = {
+            'proof_url': evidence.file.url,
+            'file_type': evidence.file.name.split('.')[-1].lower(),
+            'uploaded_at': evidence.uploaded_at.strftime('%Y-%m-%d %H:%M:%S'),
+            'uploaded_by': evidence.uploaded_by.get_full_name() if evidence.uploaded_by else 'Unknown',
+        }
+        
+        # Determine MIME type
+        file_ext = proof_data['file_type']
+        if file_ext == 'pdf':
+            proof_data['file_type'] = 'application/pdf'
+        elif file_ext in ['jpg', 'jpeg']:
+            proof_data['file_type'] = 'image/jpeg'
+        elif file_ext == 'png':
+            proof_data['file_type'] = 'image/png'
+        
+        return JsonResponse(proof_data)
+        
+    except Exception as e:
+        logger.error(f"Error fetching proof for {tx_id}: {str(e)}")
+        return JsonResponse({'error': str(e)}, status=500)
+
+
+@login_required
+@require_admin
 @require_POST
 def ledger_approve(request, tx_id):
     """

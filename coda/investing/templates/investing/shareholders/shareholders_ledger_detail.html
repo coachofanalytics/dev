@@ -453,7 +453,16 @@ Displays comprehensive details for a single ledger entry.
                     </div>
                     <div class="sh-detail-row">
                         <label>Has Proof</label>
-                        <span>{% if entry.has_proof %}Yes{% else %}No{% endif %}</span>
+                        <span>
+                            {% if entry.has_proof %}
+                                Yes
+                                <button onclick="previewProof('{{ entry.id }}')" class="sh-btn-inline" style="margin-left: 0.75rem; padding: 0.25rem 0.75rem; background: #2563eb; color: white; border: none; border-radius: 6px; font-size: 0.75rem; cursor: pointer;">
+                                    🔍 Preview Proof
+                                </button>
+                            {% else %}
+                                No
+                            {% endif %}
+                        </span>
                     </div>
                 </div>
             </div>
@@ -570,6 +579,97 @@ async function flagDispute(txId) {
     } catch (error) {
         console.error('Error flagging dispute:', error);
         alert('Error: ' + error.message);
+    }
+}
+
+// Phase 3: Preview Proof Functionality
+async function previewProof(txId) {
+    try {
+        // Fetch proof file information
+        const response = await fetch(`/investing/shareholders/ledgers/${txId}/proof/`, {
+            method: 'GET',
+            headers: {
+                'X-CSRFToken': getCsrfToken(),
+            }
+        });
+        
+        if (!response.ok) {
+            throw new Error('Failed to load proof file');
+        }
+        
+        const result = await response.json();
+        
+        if (!result.proof_url) {
+            alert('No proof file found for this contribution.');
+            return;
+        }
+        
+        // Create modal for preview
+        const modal = document.createElement('div');
+        modal.id = 'proof-preview-modal';
+        modal.style.cssText = 'position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 9999; display: flex; align-items: center; justify-content: center; padding: 2rem;';
+        
+        const modalContent = document.createElement('div');
+        modalContent.style.cssText = 'background: white; border-radius: 12px; max-width: 90%; max-height: 90%; overflow: auto; position: relative; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5);';
+        
+        // Check file type
+        const fileType = result.file_type || '';
+        const isPDF = fileType.includes('pdf');
+        const isImage = fileType.includes('image');
+        
+        if (isPDF) {
+            modalContent.innerHTML = `
+                <div style="padding: 1.5rem; border-bottom: 1px solid #e2e8f0;">
+                    <h3 style="margin: 0; font-size: 1.25rem; color: #1e293b;">Proof Document</h3>
+                    <button onclick="closeProofModal()" style="position: absolute; top: 1rem; right: 1rem; background: #ef4444; color: white; border: none; border-radius: 6px; padding: 0.5rem 1rem; cursor: pointer; font-size: 0.875rem;">✕ Close</button>
+                </div>
+                <iframe src="${result.proof_url}" style="width: 800px; height: 600px; border: none;"></iframe>
+            `;
+        } else if (isImage) {
+            modalContent.innerHTML = `
+                <div style="padding: 1.5rem; border-bottom: 1px solid #e2e8f0;">
+                    <h3 style="margin: 0; font-size: 1.25rem; color: #1e293b;">Proof Image</h3>
+                    <button onclick="closeProofModal()" style="position: absolute; top: 1rem; right: 1rem; background: #ef4444; color: white; border: none; border-radius: 6px; padding: 0.5rem 1rem; cursor: pointer; font-size: 0.875rem;">✕ Close</button>
+                </div>
+                <div style="padding: 1.5rem; text-align: center;">
+                    <img src="${result.proof_url}" style="max-width: 100%; max-height: 70vh; border-radius: 8px;" />
+                </div>
+            `;
+        } else {
+            modalContent.innerHTML = `
+                <div style="padding: 1.5rem; border-bottom: 1px solid #e2e8f0;">
+                    <h3 style="margin: 0; font-size: 1.25rem; color: #1e293b;">Proof Document</h3>
+                    <button onclick="closeProofModal()" style="position: absolute; top: 1rem; right: 1rem; background: #ef4444; color: white; border: none; border-radius: 6px; padding: 0.5rem 1rem; cursor: pointer; font-size: 0.875rem;">✕ Close</button>
+                </div>
+                <div style="padding: 2rem; text-align: center;">
+                    <p style="margin-bottom: 1rem;">Preview not available for this file type.</p>
+                    <a href="${result.proof_url}" download target="_blank" style="padding: 0.75rem 1.5rem; background: #2563eb; color: white; border-radius: 8px; text-decoration: none; display: inline-block;">
+                        📥 Download File
+                    </a>
+                </div>
+            `;
+        }
+        
+        modal.appendChild(modalContent);
+        document.body.appendChild(modal);
+        
+        // Close on background click
+        modal.addEventListener('click', function(e) {
+            if (e.target === modal) {
+                closeProofModal();
+            }
+        });
+        
+    } catch (error) {
+        console.error('Error previewing proof:', error);
+        alert('Error loading proof: ' + error.message);
+    }
+}
+
+function closeProofModal() {
+    const modal = document.getElementById('proof-preview-modal');
+    if (modal) {
+        modal.remove();
     }
 }
 </script>

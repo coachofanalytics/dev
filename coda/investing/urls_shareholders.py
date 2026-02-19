@@ -34,6 +34,7 @@ urlpatterns = [
     path('ledgers/export/', views.ledgers_export_csv, name='ledgers_export_csv'),
     path('ledgers/<str:tx_id>/', views.ledger_detail, name='ledger_detail'),
     path('ledgers/<str:tx_id>/receipt/', views.ledger_receipt, name='ledger_receipt'),
+    path('ledgers/<str:tx_id>/proof/', views.ledger_proof, name='ledger_proof'),  # Phase 3: Proof preview
     path('ledgers/<str:tx_id>/approve/', views.ledger_approve, name='ledger_approve'),
     path('ledgers/<str:tx_id>/dispute/', views.ledger_dispute, name='ledger_dispute'),
     
