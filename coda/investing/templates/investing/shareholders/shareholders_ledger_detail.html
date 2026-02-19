@@ -585,24 +585,8 @@ async function flagDispute(txId) {
 // Phase 3: Preview Proof Functionality
 async function previewProof(txId) {
     try {
-        // Fetch proof file information
-        const response = await fetch(`/investing/shareholders/ledgers/${txId}/proof/`, {
-            method: 'GET',
-            headers: {
-                'X-CSRFToken': getCsrfToken(),
-            }
-        });
-        
-        if (!response.ok) {
-            throw new Error('Failed to load proof file');
-        }
-        
-        const result = await response.json();
-        
-        if (!result.proof_url) {
-            alert('No proof file found for this contribution.');
-            return;
-        }
+        // Build proof URL (backend serves file with inline headers)
+        const proofUrl = `/investing/shareholders/ledgers/${txId}/proof/`;
         
         // Create modal for preview
         const modal = document.createElement('div');
@@ -612,43 +596,23 @@ async function previewProof(txId) {
         const modalContent = document.createElement('div');
         modalContent.style.cssText = 'background: white; border-radius: 12px; max-width: 90%; max-height: 90%; overflow: auto; position: relative; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5);';
         
-        // Check file type
-        const fileType = result.file_type || '';
-        const isPDF = fileType.includes('pdf');
-        const isImage = fileType.includes('image');
-        
-        if (isPDF) {
-            modalContent.innerHTML = `
-                <div style="padding: 1.5rem; border-bottom: 1px solid #e2e8f0;">
-                    <h3 style="margin: 0; font-size: 1.25rem; color: #1e293b;">Proof Document</h3>
-                    <button onclick="closeProofModal()" style="position: absolute; top: 1rem; right: 1rem; background: #ef4444; color: white; border: none; border-radius: 6px; padding: 0.5rem 1rem; cursor: pointer; font-size: 0.875rem;">✕ Close</button>
-                </div>
-                <iframe src="${result.proof_url}" style="width: 800px; height: 600px; border: none;"></iframe>
-            `;
-        } else if (isImage) {
-            modalContent.innerHTML = `
-                <div style="padding: 1.5rem; border-bottom: 1px solid #e2e8f0;">
-                    <h3 style="margin: 0; font-size: 1.25rem; color: #1e293b;">Proof Image</h3>
-                    <button onclick="closeProofModal()" style="position: absolute; top: 1rem; right: 1rem; background: #ef4444; color: white; border: none; border-radius: 6px; padding: 0.5rem 1rem; cursor: pointer; font-size: 0.875rem;">✕ Close</button>
-                </div>
-                <div style="padding: 1.5rem; text-align: center;">
-                    <img src="${result.proof_url}" style="max-width: 100%; max-height: 70vh; border-radius: 8px;" />
-                </div>
-            `;
-        } else {
-            modalContent.innerHTML = `
-                <div style="padding: 1.5rem; border-bottom: 1px solid #e2e8f0;">
-                    <h3 style="margin: 0; font-size: 1.25rem; color: #1e293b;">Proof Document</h3>
-                    <button onclick="closeProofModal()" style="position: absolute; top: 1rem; right: 1rem; background: #ef4444; color: white; border: none; border-radius: 6px; padding: 0.5rem 1rem; cursor: pointer; font-size: 0.875rem;">✕ Close</button>
-                </div>
-                <div style="padding: 2rem; text-align: center;">
-                    <p style="margin-bottom: 1rem;">Preview not available for this file type.</p>
-                    <a href="${result.proof_url}" download target="_blank" style="padding: 0.75rem 1.5rem; background: #2563eb; color: white; border-radius: 8px; text-decoration: none; display: inline-block;">
-                        📥 Download File
-                    </a>
-                </div>
-            `;
-        }
+        // Use object/embed tag for universal preview (works for PDF and images)
+        modalContent.innerHTML = `
+            <div style="padding: 1.5rem; border-bottom: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center;">
+                <h3 style="margin: 0; font-size: 1.25rem; color: #1e293b;">Proof Document Preview</h3>
+                <button onclick="closeProofModal()" style="background: #ef4444; color: white; border: none; border-radius: 6px; padding: 0.5rem 1rem; cursor: pointer; font-size: 0.875rem;">✕ Close</button>
+            </div>
+            <div style="padding: 1rem; background: #f8fafc;">
+                <object data="${proofUrl}" type="application/pdf" style="width: 800px; height: 600px; border: 1px solid #e2e8f0; border-radius: 8px;">
+                    <iframe src="${proofUrl}" style="width: 800px; height: 600px; border: none;">
+                        <p style="padding: 2rem; text-align: center;">
+                            Your browser doesn't support inline preview. 
+                            <a href="${proofUrl}" target="_blank" style="color: #2563eb; text-decoration: underline;">Open in new tab</a>
+                        </p>
+                    </iframe>
+                </object>
+            </div>
+        `;
         
         modal.appendChild(modalContent);
         document.body.appendChild(modal);

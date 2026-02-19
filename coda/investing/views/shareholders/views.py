@@ -813,10 +813,15 @@ def ledger_receipt(request, tx_id):
 @require_GET
 def ledger_proof(request, tx_id):
     """
-    Get proof file information for a ledger entry (Phase 3: Preview functionality).
+    Serve proof file for inline viewing (Phase 3: Preview functionality).
     
-    Returns JSON with proof URL and file type for preview modal.
+    Returns the actual file with Content-Disposition: inline headers
+    to force browser to display rather than download.
     """
+    from django.http import FileResponse
+    import mimetypes
+    import os
+    
     try:
         deal = get_active_deal()
         if not deal:
@@ -838,27 +843,37 @@ def ledger_proof(request, tx_id):
         if not evidence or not evidence.file:
             return JsonResponse({'error': 'Proof file not found'}, status=404)
         
-        # Get file URL and type
-        proof_data = {
-            'proof_url': evidence.file.url,
-            'file_type': evidence.file.name.split('.')[-1].lower(),
-            'uploaded_at': evidence.uploaded_at.strftime('%Y-%m-%d %H:%M:%S'),
-            'uploaded_by': evidence.uploaded_by.get_full_name() if evidence.uploaded_by else 'Unknown',
-        }
+        # Get file path and open file
+        file_path = evidence.file.path
+        file_name = os.path.basename(file_path)
         
         # Determine MIME type
-        file_ext = proof_data['file_type']
-        if file_ext == 'pdf':
-            proof_data['file_type'] = 'application/pdf'
-        elif file_ext in ['jpg', 'jpeg']:
-            proof_data['file_type'] = 'image/jpeg'
-        elif file_ext == 'png':
-            proof_data['file_type'] = 'image/png'
+        mime_type, _ = mimetypes.guess_type(file_path)
+        if not mime_type:
+            # Fallback MIME types
+            ext = file_name.split('.')[-1].lower()
+            mime_type_map = {
+                'pdf': 'application/pdf',
+                'jpg': 'image/jpeg',
+                'jpeg': 'image/jpeg',
+                'png': 'image/png',
+            }
+            mime_type = mime_type_map.get(ext, 'application/octet-stream')
         
-        return JsonResponse(proof_data)
+        # Open and serve file with inline disposition
+        file_handle = open(file_path, 'rb')
+        response = FileResponse(file_handle, content_type=mime_type)
+        
+        # CRITICAL: Set Content-Disposition to 'inline' to preview, not download
+        response['Content-Disposition'] = f'inline; filename="{file_name}"'
+        
+        # Additional headers for better preview support
+        response['X-Content-Type-Options'] = 'nosniff'
+        
+        return response
         
     except Exception as e:
-        logger.error(f"Error fetching proof for {tx_id}: {str(e)}")
+        logger.error(f"Error serving proof for {tx_id}: {str(e)}")
         return JsonResponse({'error': str(e)}, status=500)
 
 
