@@ -974,19 +974,45 @@
         // Phase 5: CASH tier with currency conversion
         if (tier === 'CASH') {
             const currencySelect = document.getElementById('id_currency');
-            if (currencySelect && currencySelect.value === 'KES' && units > 0) {
-                // Convert KES to USD: amount_kes / fx_rate = amount_usd
-                const calculatedValue = units / FX_RATE;
-                inputValueUsd.value = calculatedValue.toFixed(2);
-                // Make value_usd read-only for KES and show hint
+            
+            if (!currencySelect) return; // Currency dropdown must exist
+            
+            const selectedCurrency = currencySelect.value;
+            
+            // KES selected - Auto-calculate and make read-only
+            if (selectedCurrency === 'KES') {
+                if (units > 0) {
+                    // Convert KES to USD: amount_kes / fx_rate = amount_usd
+                    const calculatedValue = units / FX_RATE;
+                    inputValueUsd.value = calculatedValue.toFixed(2);
+                } else {
+                    // Clear if no amount entered
+                    inputValueUsd.value = '';
+                }
+                // Make value_usd read-only for KES
                 inputValueUsd.readOnly = true;
                 inputValueUsd.classList.add('bg-light');
                 inputValueUsd.style.cursor = 'not-allowed';
                 if (valueUsdHintElement) valueUsdHintElement.style.display = 'block';
-            } else if (currencySelect && currencySelect.value === 'USD') {
-                // For USD, value_usd = units (direct entry)
-                inputValueUsd.value = units > 0 ? units.toFixed(2) : '';
+            } 
+            // USD selected - Copy value and make editable
+            else if (selectedCurrency === 'USD') {
+                if (units > 0) {
+                    // For USD, value_usd = units (direct copy)
+                    inputValueUsd.value = units.toFixed(2);
+                } else {
+                    // Clear if no amount entered
+                    inputValueUsd.value = '';
+                }
                 // Make value_usd editable for USD
+                inputValueUsd.readOnly = false;
+                inputValueUsd.classList.remove('bg-light');
+                inputValueUsd.style.cursor = 'text';
+                if (valueUsdHintElement) valueUsdHintElement.style.display = 'none';
+            }
+            // No currency selected yet - clear and make editable
+            else {
+                inputValueUsd.value = '';
                 inputValueUsd.readOnly = false;
                 inputValueUsd.classList.remove('bg-light');
                 inputValueUsd.style.cursor = 'text';
@@ -1043,7 +1069,13 @@
 
     // Initialize on page load (CASH is checked by default)
     var checked = document.querySelector('input[name="tier"]:checked');
-    if (checked) switchTier(checked.value);
+    if (checked) {
+        switchTier(checked.value);
+        // Phase 5: Calculate Value (USD) on page load if amount/currency present
+        setTimeout(function() {
+            calculateValueUsd();
+        }, 100); // Small delay to ensure DOM is ready
+    }
 })();
 </script>
 {% endblock %}

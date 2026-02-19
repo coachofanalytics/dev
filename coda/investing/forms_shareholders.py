@@ -308,7 +308,7 @@ class ContributionLogForm(forms.ModelForm):
                 choices=[('USD', 'USD'), ('KES', 'KES')],
                 attrs={
                     'class': 'form-control',
-                    'id': 'input-currency'
+                    'id': 'id_currency'  # Match Django's default ID pattern
                 }
             ),
             'exchange_rate': forms.NumberInput(attrs={
