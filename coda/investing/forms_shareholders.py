@@ -345,10 +345,16 @@ class ContributionLogForm(forms.ModelForm):
                 self.fields['exchange_rate'].widget.attrs['readonly'] = True
                 self.fields['exchange_rate'].widget.attrs['class'] = 'form-control bg-light'
                 
+                # Store rates for JavaScript dynamic calculation
+                self.time_rate = config.time_rate
+                self.work_rate = config.work_rate
+                
             except Exception as e:
                 # If no DealConfig, use defaults
                 self.fields['currency'].initial = 'USD'
                 self.fields['exchange_rate'].initial = Decimal('1.0000')
+                self.time_rate = Decimal('50.00')  # Default fallback
+                self.work_rate = Decimal('100.00')  # Default fallback
         
         # Make value_usd not required for TIME and WORK tiers (will be auto-calculated)
         # User can still override if needed
@@ -484,24 +490,24 @@ class ContributionLogForm(forms.ModelForm):
         cleaned_data['tier_metadata'] = tier_metadata
         
         # ------------------------------------------------------------------
-        # Auto-calculate value_usd for TIME and WORK tiers if not manually provided
+        # Phase 2: ALWAYS auto-calculate value_usd for TIME and WORK tiers (read-only enforcement)
         # ------------------------------------------------------------------
         value_usd = cleaned_data.get('value_usd')
         internal_units_value = cleaned_data.get('internal_units_value')
         
-        # Only auto-calculate if value_usd is not provided and we have internal_units
-        if tier in ['TIME', 'WORK'] and not value_usd and internal_units_value:
+        # ALWAYS calculate for TIME and WORK (ignore any submitted value for security)
+        if tier in ['TIME', 'WORK'] and internal_units_value:
             calculated_value = self._calculate_value_for_tier(tier, internal_units_value, tier_metadata)
             
             if calculated_value is not None:
+                # Always override with calculated value (read-only enforcement)
                 cleaned_data['value_usd'] = calculated_value
-                # Store flag to indicate this was auto-calculated (for audit purposes)
                 cleaned_data['_auto_calculated'] = True
             else:
-                # If we can't auto-calculate, require manual entry
+                # If we can't auto-calculate, show error
                 self.add_error(
                     'value_usd',
-                    f'Unable to auto-calculate value. Please enter value manually or ensure DealConfig has a {tier.lower()}_rate configured.'
+                    f'Unable to auto-calculate value. Please ensure DealConfig has a {tier.lower()}_rate configured.'
                 )
         
         # Ensure value_usd is always provided for CASH and IN_KIND tiers

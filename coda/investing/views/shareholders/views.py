@@ -666,6 +666,16 @@ def contribution_log(request):
         # Get all active members for template (if needed outside form)
         all_members = Member.objects.filter(deal=deal, is_archived=False).order_by('legal_name')
         
+        # Get DealConfig rates for JavaScript dynamic calculation
+        time_rate = Decimal('50.00')  # Default
+        work_rate = Decimal('100.00')  # Default
+        try:
+            config = deal.config
+            time_rate = config.time_rate
+            work_rate = config.work_rate
+        except:
+            pass
+        
         context = {
             'title': 'Log New Contribution',
             'page_title': 'Log New Contribution - Shareholders Management',
@@ -673,6 +683,8 @@ def contribution_log(request):
             'form': form,
             'selected_member': selected_member,
             'all_members': all_members,
+            'time_rate': time_rate,  # For JavaScript
+            'work_rate': work_rate,  # For JavaScript
         }
         
         return render(request, 'investing/shareholders/shareholders_contribution_log.html', context)
