@@ -250,7 +250,7 @@ def join_directory_form(request):
 
 			DirectoryProfile.objects.update_or_create(
 				community_member=member,
-				default={'full_name': name, 'profession': profession, 'region_city': region, 'category': category, 'expertise_summary': expertise, 'is_approved': True},
+				defaults={'full_name': name, 'profession': profession, 'region_city': region, 'category': category, 'expertise_summary': expertise, 'is_approved': True},
 			)
 			messages.success(request, f'Profile updated for {name}!')
 		return redirect('communities:member_directory')
