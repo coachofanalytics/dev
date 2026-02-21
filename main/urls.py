@@ -5,7 +5,7 @@ from . import views
 
 app_name = 'main'
 urlpatterns = [
-    # path('', views.layout, name='layout'),
+    path('', views.layout, name='layout'),
    
     #=======================SERVICES=====================================
     # path('newservice/', views.ServiceCreateView.as_view(template_name='main/form.html'), name='newservice'),
@@ -18,9 +18,10 @@ path("location_update/<int:pk>/", views.location_update, name="location_update")
 path("location_detail/<int:pk>/", views.location_detail, name="location_detail"),
 path("location_delete/<int:pk>/", views.location_delete, name="location_delete"),
 path('pricing/', views.pricing_list, name='pricing_list'),
-path('testimonials/', views.testimonials_list, name='main:testimonials_list'),
+path('testimonials/', views.testimonials_list, name='testimonials_list'),
 path('testimonial_create/', views.testimonial_create, name='testimonial_create'),
-
+path("testimonial_update/<int:pk>/", views.testimonial_update, name="testimonial_update"),
+path('planlist/', views.plan_list_view, name='plan_list'),
 
 
 

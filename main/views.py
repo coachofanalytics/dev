@@ -4,11 +4,19 @@ from .models import Assets,Readme,Location
 from .utils import *
 from .forms import LocationForm
 from django.shortcuts import render, get_object_or_404, redirect
+from main.models import Testimonials
+Testimonials.objects.all()
+Testimonials.objects.count()
 
 from coda_project import settings
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.views.generic import (
         CreateView,)
+
+from django.shortcuts import render
+
+def layout(request):
+    return render(request, "layout.html")  # or any template you have
 
 from .forms import *
 from django.apps import apps
@@ -17,6 +25,9 @@ from django.shortcuts import render
 from .models import Testimonials
 from django.shortcuts import render, redirect
 from .forms import TestimonialForm
+from django.urls import reverse_lazy
+from django.views.generic import UpdateView
+from .models import Testimonials
 
 
 from accounts.choices import CategoryChoices
@@ -325,10 +336,11 @@ def pricing_list(request):
 
 
 
-
 def testimonials_list(request):
-    testimonials = Testimonials.objects.all().order_by("-date_posted")
-    return render(request, "main/testmonial_list.html",)
+    testimonials = Testimonials.objects.all()
+    return render(request, 'main/testimonials_list.html', {
+        'testimonials': testimonials
+    })
 
 
 
@@ -345,3 +357,51 @@ def testimonial_create(request):
         "form": form
     })
 
+
+
+
+from django.shortcuts import render, get_object_or_404, redirect
+from .models import Testimonials
+def testimonial_update(request, pk):
+    testimonial = get_object_or_404(Testimonials, pk=pk)
+
+    if request.method == "POST":
+        title = request.POST.get('title')
+        content = request.POST.get('content')
+        writer = request.POST.get('writer')
+
+        if not title:
+            return render(request, 'main/testmonial_updat.html', {
+                'testimonial': testimonial,
+                'error': 'Title is required'
+            })
+
+        testimonial.title = title
+        testimonial.content = content
+        testimonial.writer = writer
+        testimonial.save()
+
+        return redirect('main:testimonials_list')
+
+    return render(request, 'main/testmonial_updat.html', {'testimonial': testimonial})
+
+
+# main/views/plan_views.py
+
+from django.shortcuts import render
+from main.models import Plan
+
+
+def plan_list_view(request):
+    plans = Plan.objects.all().order_by("-created_at")    
+    search = request.GET.get("q")
+    if search:
+        plans = plans.filter(task__icontains=search)    
+    active = request.GET.get("active")
+    if active:
+        plans = plans.filter(is_active=True)
+    context = {
+        "plans": plans
+    }
+
+    return render(request, "main/plan_list.html", context)
