@@ -10,7 +10,7 @@ from django.views.generic import (
     UpdateView,
 )
 #<<<<<<< 25.10_DC48_UAT_UO
-from .models import Assets,Description, News, Page, Service, SubService,Team, SafetyAlertSubscription, EmergencyHotline, StaffContact
+from .models import Assets,Description, News, Page, Service, SubService,Team, SafetyAlertSubscription, EmergencyHotline, StaffContact, InsurancePlan, AIRecommendationRule, ExpertInquiry
 #=======
 from django.db.models import Q
 #<<<<<<< HEAD
@@ -34,6 +34,8 @@ from django.utils.html import strip_tags
 from django.urls import reverse_lazy
 from django.views.generic.edit import CreateView, UpdateView, DeleteView
 from django.views.generic.detail import DetailView
+import csv
+
 # Details Donation View
 class DonationDetailView(DetailView):
     model = Donation_organization
@@ -994,3 +996,130 @@ def test_user_endpoint(request):
     # Changed from 'delete.html' to 'governance_confirm_delete.html'
     return render(request, 'main/governance/governance_confirm_delete.html', context)
 
+
+
+def insurance_support(request):
+    """Main insurance support page view"""
+    # Get all active insurance plans ordered by display_order
+    insurance_plans = InsurancePlan.objects.filter(is_active=True).order_by('display_order', '-score')
+    
+    context = {
+        'insurance_plans': insurance_plans,
+        'page_title': 'Insurance Support',
+    }
+    return render(request, 'main/healthcare/insurance_support.html', context)
+
+
+@require_POST
+def ai_recommendation_api(request):
+    """API endpoint for AI recommendations"""
+    try:
+        # Parse JSON data from request
+        data = json.loads(request.body)
+        age = data.get('age')
+        residence = data.get('residence')
+        priority = data.get('priority')
+        
+        # Try to find a matching rule
+        rule = AIRecommendationRule.objects.filter(
+            age_bracket=age,
+            residence=residence,
+            priority=priority,
+            is_active=True
+        ).select_related('recommended_plan').first()
+        
+        if rule:
+            plan = rule.recommended_plan
+            response_data = {
+                'success': True,
+                'plan_name': f"{plan.provider_name} {plan.plan_name}",
+                'recommendation_text': rule.recommendation_text,
+                'plan_id': plan.id
+            }
+        else:
+            # Fallback: get the highest rated plan
+            default_plan = InsurancePlan.objects.filter(is_active=True).order_by('-score').first()
+            if default_plan:
+                response_data = {
+                    'success': True,
+                    'plan_name': f"{default_plan.provider_name} {default_plan.plan_name}",
+                    'recommendation_text': "Based on your inputs, we recommend this top-rated plan.",
+                    'plan_id': default_plan.id
+                }
+            else:
+                response_data = {
+                    'success': False,
+                    'error': 'No insurance plans available'
+                }
+        
+        return JsonResponse(response_data)
+        
+    except json.JSONDecodeError:
+        return JsonResponse({'success': False, 'error': 'Invalid JSON'}, status=400)
+    except Exception as e:
+        return JsonResponse({'success': False, 'error': str(e)}, status=500)
+
+
+@require_POST
+def submit_expert_inquiry(request):
+    """Handle expert consultation form submissions"""
+    try:
+        data = json.loads(request.body)
+        
+        # Create new inquiry
+        inquiry = ExpertInquiry.objects.create(
+            full_name=data.get('full_name'),
+            email=data.get('email'),
+            phone=data.get('phone', ''),
+            question=data.get('question'),
+            interested_plan_id=data.get('plan_id') if data.get('plan_id') else None
+        )
+        
+        # TODO: Send email notification to admin
+        # send_inquiry_notification(inquiry)
+        
+        return JsonResponse({
+            'success': True,
+            'message': 'Your request has been submitted successfully. An expert will contact you within 24 hours.'
+        })
+        
+    except json.JSONDecodeError:
+        return JsonResponse({'success': False, 'error': 'Invalid JSON'}, status=400)
+    except Exception as e:
+        return JsonResponse({'success': False, 'error': str(e)}, status=500)
+
+
+def download_comparison_csv(request):
+    """Generate and download CSV of insurance plans"""
+    # Create HttpResponse with CSV header
+    response = HttpResponse(content_type='text/csv')
+    response['Content-Disposition'] = 'attachment; filename="insurance_comparison.csv"'
+    
+    # Get all active plans
+    plans = InsurancePlan.objects.filter(is_active=True).order_by('display_order', '-score')
+    
+    # Create CSV writer
+    writer = csv.writer(response)
+    
+    # Write headers
+    writer.writerow([
+        'Provider',
+        'Plan Name',
+        'Global Network',
+        'Max Benefit',
+        'Evacuation Coverage',
+        'Rating (out of 10)'
+    ])
+    
+    # Write data rows
+    for plan in plans:
+        writer.writerow([
+            plan.provider_name,
+            plan.plan_name,
+            plan.network,
+            plan.max_benefit,
+            plan.evacuation,
+            f"{plan.score}/10"
+        ])
+    
+    return response

@@ -10,6 +10,10 @@ urlpatterns = [
     path('history',views.History, name ='history'),
     path('services/', views.service_list, name='service_list'),
     path('data/healthcare-info/', views.healthcare_info, name='healthcare_info'),
+    path('healthcare/insurance-support', views.insurance_support, name='insurance_support'),
+    path('healthcare/insurance-support/api/recommend/', views.ai_recommendation_api, name='ai_recommendation_api'),
+    path('healthcare/insurance-support/api/inquiry/', views.submit_expert_inquiry, name='submit_expert_inquiry'),
+    path('healthcare/insurance-support/download-csv/', views.download_comparison_csv, name='download_comparison_csv'),
 
     path('consular-assistance/', views.consular_assistance, name='consular_assistance'),
 

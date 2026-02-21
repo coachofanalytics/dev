@@ -383,3 +383,85 @@ class Governance(models.Model):
     def save(self, *args, **kwargs):
         # You can add more custom logic here if needed
         super().save(*args, **kwargs)
+
+
+# Add these at the bottom of your main/models.py
+
+class InsurancePlan(models.Model):
+    """Insurance plans for the comparison table"""
+    provider_name = models.CharField(max_length=100)  # e.g., "Cigna"
+    plan_name = models.CharField(max_length=100)      # e.g., "Global Gold"
+    network = models.CharField(max_length=100)        # e.g., "Worldwide (inc. USA)"
+    max_benefit = models.CharField(max_length=50)     # e.g., "$2,000,000"
+    evacuation = models.CharField(max_length=50)      # e.g., "Included" or "Optional Add-on"
+    score = models.DecimalField(max_digits=3, decimal_places=1)  # e.g., 9.8
+    is_active = models.BooleanField(default=True)
+    display_order = models.IntegerField(default=0)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    class Meta:
+        ordering = ['display_order', '-score']
+        verbose_name = "Insurance Plan"
+        verbose_name_plural = "Insurance Plans"
+    
+    def __str__(self):
+        return f"{self.provider_name} {self.plan_name}"
+
+
+class AIRecommendationRule(models.Model):
+    """Rules for AI recommendations based on user inputs"""
+    AGE_CHOICES = [
+        ('young', '18 - 30 Years'),
+        ('mid', '31 - 55 Years'),
+        ('senior', '56+ Years'),
+    ]
+    
+    RESIDENCE_CHOICES = [
+        ('usa', 'USA / Canada'),
+        ('europe', 'Europe / UK'),
+        ('other', 'Rest of World'),
+    ]
+    
+    PRIORITY_CHOICES = [
+        ('budget', 'Cost Savings'),
+        ('comprehensive', 'Full Coverage'),
+        ('emergency', 'Emergency Only'),
+    ]
+    
+    age_bracket = models.CharField(max_length=20, choices=AGE_CHOICES)
+    residence = models.CharField(max_length=20, choices=RESIDENCE_CHOICES)
+    priority = models.CharField(max_length=20, choices=PRIORITY_CHOICES)
+    recommended_plan = models.ForeignKey(InsurancePlan, on_delete=models.CASCADE)
+    recommendation_text = models.TextField()
+    is_active = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    
+    class Meta:
+        unique_together = ['age_bracket', 'residence', 'priority']
+        verbose_name = "AI Recommendation Rule"
+        verbose_name_plural = "AI Recommendation Rules"
+    
+    def __str__(self):
+        return f"{self.get_age_bracket_display()} - {self.get_residence_display()} - {self.get_priority_display()}"
+
+
+class ExpertInquiry(models.Model):
+    """Store expert consultation requests from the modal form"""
+    full_name = models.CharField(max_length=200)
+    email = models.EmailField()
+    phone = models.CharField(max_length=20, blank=True, null=True)
+    question = models.TextField()
+    interested_plan = models.ForeignKey(InsurancePlan, on_delete=models.SET_NULL, null=True, blank=True)
+    is_contacted = models.BooleanField(default=False)
+    notes = models.TextField(blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    class Meta:
+        ordering = ['-created_at']
+        verbose_name = "Expert Inquiry"
+        verbose_name_plural = "Expert Inquiries"
+    
+    def __str__(self):
+        return f"Inquiry from {self.full_name} - {self.created_at.strftime('%Y-%m-%d')}"
