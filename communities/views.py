@@ -9,11 +9,13 @@ from django.contrib import messages
 from django.core.paginator import Paginator
 from django.contrib.auth.decorators import login_required
 from django.utils import timezone
+from django.db import models
+from django.db.models import Q
 
 from main.forms import MessageForm
 from .utils import send_email
 from .forms import JoinForm, PostForm, CommentForm, EventForm, ContactForm
-from .models import Post, ForumCategory, CommentP, EventCalendar  # Import Post, ForumCategory, ForumPost, Comment, and EventCalendar models
+from .models import Post, ForumCategory, CommentP, EventCalendar  # Import community models
 
 # Create your views here.
 def home(request):
@@ -213,3 +215,6 @@ def contact_view(request):
         form = ContactForm()
 
     return render(request, 'contact_form.html', {'form': form})
+
+# Legal Immigration Guidance Views
+# Legal & immigration views moved to main.views

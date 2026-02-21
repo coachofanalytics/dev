@@ -1,0 +1,201 @@
+{% extends 'main/base_templates/base.html' %}
+{% load static %}
+
+{% block title %}Consular Assistance Services{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <!-- Header -->
+    <div class="row mb-5">
+        <div class="col-lg-10 mx-auto">
+            <h1 class="display-4 mb-3">Consular Assistance Services</h1>
+            <p class="lead text-muted">Find official government agencies, legal aid organizations, and consultation services to support your immigration journey.</p>
+        </div>
+    </div>
+
+    <!-- Search and Filter Section -->
+    <div class="row mb-4">
+        <div class="col-lg-10 mx-auto">
+            <form method="get" class="row g-3">
+                <!-- Search -->
+                <div class="col-md-8">
+                    <input 
+                        type="text" 
+                        name="q" 
+                        class="form-control form-control-lg" 
+                        placeholder="Search services by name, type, or services offered..."
+                        value="{{ search_query }}"
+                    >
+                </div>
+                
+                <!-- Filter by Type -->
+                <div class="col-md-3">
+                    <select name="type" class="form-select form-select-lg">
+                        <option value="">All Service Types</option>
+                        <option value="government" {% if service_type == 'government' %}selected{% endif %}>Government Agency</option>
+                        <option value="legal_aid" {% if service_type == 'legal_aid' %}selected{% endif %}>Legal Aid Organization</option>
+                        <option value="nonprofit" {% if service_type == 'nonprofit' %}selected{% endif %}>Non-Profit Organization</option>
+                        <option value="consultation" {% if service_type == 'consultation' %}selected{% endif %}>Consultation Service</option>
+                    </select>
+                </div>
+                
+                <!-- Search Button -->
+                <div class="col-md-1">
+                    <button type="submit" class="btn btn-primary w-100 h-100">
+                        <i class="fas fa-search"></i>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Services List -->
+    <div class="row">
+        <div class="col-lg-10 mx-auto">
+            {% if services %}
+                <div class="row g-4">
+                    {% for service in services %}
+                        <div class="col-md-6">
+                            <div class="card h-100 shadow-sm hover-card">
+                                <div class="card-header {% if service.service_type == 'government' %}bg-primary{% elif service.service_type == 'legal_aid' %}bg-success{% elif service.service_type == 'nonprofit' %}bg-info{% else %}bg-warning{% endif %} text-white">
+                                    <h5 class="mb-0">
+                                        {% if service.service_type == 'government' %}
+                                            <i class="fas fa-building me-2"></i>
+                                        {% elif service.service_type == 'legal_aid' %}
+                                            <i class="fas fa-balance-scale me-2"></i>
+                                        {% elif service.service_type == 'nonprofit' %}
+                                            <i class="fas fa-hands-helping me-2"></i>
+                                        {% else %}
+                                            <i class="fas fa-headset me-2"></i>
+                                        {% endif %}
+                                        {{ service.name }}
+                                    </h5>
+                                </div>
+                                <div class="card-body">
+                                    <p class="card-text text-muted mb-3">{{ service.description|truncatewords:30 }}</p>
+                                    
+                                    <div class="mb-3">
+                                        <span class="badge bg-light text-dark">{{ service.get_service_type_display }}</span>
+                                        <span class="badge bg-secondary">{{ service.country_coverage }}</span>
+                                    </div>
+
+                                    <!-- Contact Info -->
+                                    {% if service.website or service.phone or service.email %}
+                                        <div class="small mb-3">
+                                            {% if service.website %}
+                                                <p class="mb-1">
+                                                    <i class="fas fa-globe me-2 text-primary"></i>
+                                                    <a href="{{ service.website }}" target="_blank">Visit Website</a>
+                                                </p>
+                                            {% endif %}
+                                            {% if service.phone %}
+                                                <p class="mb-1">
+                                                    <i class="fas fa-phone me-2 text-success"></i>
+                                                    <a href="tel:{{ service.phone }}">{{ service.phone }}</a>
+                                                </p>
+                                            {% endif %}
+                                            {% if service.email %}
+                                                <p class="mb-1">
+                                                    <i class="fas fa-envelope me-2 text-info"></i>
+                                                    <a href="mailto:{{ service.email }}">{{ service.email }}</a>
+                                                </p>
+                                            {% endif %}
+                                        </div>
+                                    {% endif %}
+
+                                    <!-- Services Offered -->
+                                    {% if service.services_offered %}
+                                        <div class="small text-muted mb-3">
+                                            <strong>Services:</strong> {{ service.services_offered }}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                                <div class="card-footer bg-light">
+                                    <a href="{% url 'consular_service_detail' service.id %}" class="btn btn-sm btn-primary">
+                                        View Details <i class="fas fa-arrow-right ms-1"></i>
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+
+                <!-- Pagination -->
+                {% if services.has_other_pages %}
+                    <nav class="mt-5" aria-label="Page navigation">
+                        <ul class="pagination justify-content-center">
+                            {% if services.has_previous %}
+                                <li class="page-item">
+                                    <a class="page-link" href="?page=1{% if search_query %}&q={{ search_query }}{% endif %}{% if service_type %}&type={{ service_type }}{% endif %}">First</a>
+                                </li>
+                                <li class="page-item">
+                                    <a class="page-link" href="?page={{ services.previous_page_number }}{% if search_query %}&q={{ search_query }}{% endif %}{% if service_type %}&type={{ service_type }}{% endif %}">Previous</a>
+                                </li>
+                            {% endif %}
+
+                            {% for num in services.paginator.page_range %}
+                                {% if services.number == num %}
+                                    <li class="page-item active"><span class="page-link">{{ num }}</span></li>
+                                {% else %}
+                                    <li class="page-item">
+                                        <a class="page-link" href="?page={{ num }}{% if search_query %}&q={{ search_query }}{% endif %}{% if service_type %}&type={{ service_type }}{% endif %}">{{ num }}</a>
+                                    </li>
+                                {% endif %}
+                            {% endfor %}
+
+                            {% if services.has_next %}
+                                <li class="page-item">
+                                    <a class="page-link" href="?page={{ services.next_page_number }}{% if search_query %}&q={{ search_query }}{% endif %}{% if service_type %}&type={{ service_type }}{% endif %}">Next</a>
+                                </li>
+                                <li class="page-item">
+                                    <a class="page-link" href="?page={{ services.paginator.num_pages }}{% if search_query %}&q={{ search_query }}{% endif %}{% if service_type %}&type={{ service_type }}{% endif %}">Last</a>
+                                </li>
+                            {% endif %}
+                        </ul>
+                    </nav>
+                {% endif %}
+            {% else %}
+                <div class="alert alert-info text-center py-5">
+                    <h4><i class="fas fa-search me-2"></i>No Services Found</h4>
+                    <p class="mb-0">Try adjusting your search criteria or filter options.</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Quick Links to Legal Resources -->
+    <div class="row mt-5 pt-5 border-top">
+        <div class="col-lg-10 mx-auto">
+            <h3 class="mb-4">Related Resources</h3>
+            <div class="row g-3">
+                <div class="col-md-4">
+                    <a href="{% url 'main:legal_immigration' %}" class="btn btn-outline-primary btn-lg w-100">
+                        <i class="fas fa-book me-2"></i>Immigration Guidance
+                    </a>
+                </div>
+                <div class="col-md-4">
+                    <a href="{% url 'main:legal_resources' %}" class="btn btn-outline-primary btn-lg w-100">
+                        <i class="fas fa-file-alt me-2"></i>Legal Resources
+                    </a>
+                </div>
+                <div class="col-md-4">
+                    <a href="{% url 'communities:contact' %}" class="btn btn-outline-primary btn-lg w-100">
+                        <i class="fas fa-envelope me-2"></i>Contact Us
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .hover-card {
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+    .hover-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 20px rgba(0,0,0,0.15) !important;
+    }
+</style>
+
+{% endblock %}

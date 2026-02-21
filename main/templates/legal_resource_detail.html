@@ -1,0 +1,227 @@
+{% extends 'main/base_templates/base.html' %}
+{% load static %}
+
+{% block title %}{{ resource.title }}{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <!-- Breadcrumb Navigation -->
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{% url 'communities:home' %}">Home</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'main:legal_resources' %}">Legal Resources</a></li>
+            <li class="breadcrumb-item active">{{ resource.title }}</li>
+        </ol>
+    </nav>
+
+    <div class="row">
+        <div class="col-lg-8 mx-auto">
+            <!-- Resource Header -->
+            <article class="article-content">
+                <header class="mb-5">
+                    <div class="badge bg-primary mb-3">{{ resource.get_category_display }}</div>
+                    {% if resource.is_critical %}
+                        <div class="alert alert-danger mb-3" role="alert">
+                            <i class="fas fa-exclamation-triangle me-2"></i>
+                            <strong>This is critical information.</strong> Please read carefully and seek professional legal advice if applicable.
+                        </div>
+                    {% endif %}
+                    
+                    <h1 class="display-5 mb-3">{{ resource.title }}</h1>
+                    <div class="text-muted">
+                        <p class="mb-1">
+                            <i class="fas fa-calendar me-2"></i>
+                            Last updated: {{ resource.updated_at|date:"F d, Y" }}
+                        </p>
+                        {% if resource.keywords %}
+                            <p class="mb-0">
+                                <i class="fas fa-tags me-2"></i>
+                                {% for keyword in resource.keywords|split:"," %}
+                                    <span class="badge bg-secondary">{{ keyword|strip }}</span>
+                                {% endfor %}
+                            </p>
+                        {% endif %}
+                    </div>
+                </header>
+
+                <!-- Main Content -->
+                <div class="card shadow-sm mb-5">
+                    <div class="card-body p-4">
+                        <div class="article-text">
+                            {{ resource.content|linebreaks|safe }}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Related Service -->
+                {% if related_service %}
+                    <div class="card shadow-sm mb-5 border-primary">
+                        <div class="card-header bg-primary text-white">
+                            <h5 class="mb-0"><i class="fas fa-link me-2"></i>Related Service</h5>
+                        </div>
+                        <div class="card-body">
+                            <h6>{{ related_service.name }}</h6>
+                            <p class="text-muted mb-3">{{ related_service.description|truncatewords:30 }}</p>
+                            
+                            <!-- Quick Contact Info -->
+                            <div class="row mb-3">
+                                {% if related_service.phone %}
+                                    <div class="col-md-6">
+                                        <strong>Phone:</strong><br>
+                                        <a href="tel:{{ related_service.phone }}">{{ related_service.phone }}</a>
+                                    </div>
+                                {% endif %}
+                                {% if related_service.website %}
+                                    <div class="col-md-6">
+                                        <strong>Website:</strong><br>
+                                        <a href="{{ related_service.website }}" target="_blank">Visit Website <i class="fas fa-external-link-alt"></i></a>
+                                    </div>
+                                {% endif %}
+                            </div>
+                            
+                                <a href="{% url 'main:consular_service_detail' related_service.id %}" class="btn btn-primary btn-sm">
+                                View Service Details <i class="fas fa-arrow-right ms-1"></i>
+                            </a>
+                        </div>
+                    </div>
+                {% endif %}
+
+                <!-- External Links -->
+                {% if resource.external_url %}
+                    <div class="card shadow-sm mb-5 border-success">
+                        <div class="card-header bg-success text-white">
+                            <h5 class="mb-0"><i class="fas fa-external-link-alt me-2"></i>External Resource</h5>
+                        </div>
+                        <div class="card-body">
+                            <p class="mb-3">This article references additional official resources:</p>
+                            <a href="{{ resource.external_url }}" target="_blank" rel="noopener noreferrer" class="btn btn-success">
+                                <i class="fas fa-external-link-alt me-2"></i>Visit Official Source
+                                <i class="fas fa-arrow-right ms-1"></i>
+                            </a>
+                        </div>
+                    </div>
+                {% endif %}
+
+                <!-- Similar Resources -->
+                {% if similar_resources %}
+                    <div class="card shadow-sm">
+                        <div class="card-header bg-light">
+                            <h5 class="mb-0"><i class="fas fa-related me-2"></i>Similar Resources</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="list-group list-group-flush">
+                                {% for similar in similar_resources %}
+                                    <a href="{% url 'legal_resource_detail' similar.id %}" class="list-group-item list-group-item-action">
+                                        <div class="d-flex w-100 justify-content-between align-items-start">
+                                            <div class="flex-grow-1">
+                                                <h6 class="mb-1">{{ similar.title }}</h6>
+                                                <small class="text-muted">{{ similar.content|truncatewords:20 }}</small>
+                                            </div>
+                                            <i class="fas fa-arrow-right text-muted ms-2"></i>
+                                        </div>
+                                    </a>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+                {% endif %}
+
+                <!-- Action Buttons -->
+                <div class="mt-5 pt-4 border-top">
+                    <div class="row g-3">
+                        <div class="col-md-4">
+                            <a href="{% url 'main:legal_resources' %}" class="btn btn-outline-secondary w-100">
+                                <i class="fas fa-arrow-left me-2"></i>Back to Resources
+                            </a>
+                        </div>
+                        <div class="col-md-4">
+                            <a href="{% url 'main:legal_immigration' %}" class="btn btn-outline-primary w-100">
+                                <i class="fas fa-book me-2"></i>Complete Guide
+                            </a>
+                        </div>
+                        <div class="col-md-4">
+                            <a href="{% url 'communities:contact' %}" class="btn btn-primary w-100">
+                                <i class="fas fa-envelope me-2"></i>Contact Support
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Disclaimer -->
+                <div class="alert alert-warning mt-5" role="alert">
+                    <h6 class="alert-heading"><i class="fas fa-info-circle me-2"></i>Legal Disclaimer</h6>
+                    <p class="mb-0">
+                        This information is provided for educational purposes only and should not be considered legal advice. 
+                        Immigration laws are complex and frequently change. Always consult with a qualified immigration attorney 
+                        for your specific situation. This community is not responsible for any consequences arising from the use of this information.
+                    </p>
+                </div>
+            </article>
+        </div>
+
+        <!-- Sidebar -->
+        <div class="col-lg-4 d-none d-lg-block">
+            <!-- Quick Help Card -->
+            <div class="card shadow-sm sticky-top" style="top: 20px;">
+                <div class="card-header bg-primary text-white">
+                    <h6 class="mb-0"><i class="fas fa-headset me-2"></i>Need Help?</h6>
+                </div>
+                <div class="card-body">
+                    <p class="small text-muted mb-3">
+                        Need professional assistance with your immigration case?
+                    </p>
+                    <div class="d-grid gap-2">
+                        <a href="{% url 'main:consular_services' %}" class="btn btn-sm btn-primary">
+                            <i class="fas fa-building me-1"></i>Find Services
+                        </a>
+                        <a href="{% url 'communities:contact' %}" class="btn btn-sm btn-outline-primary">
+                            <i class="fas fa-envelope me-1"></i>Contact Us
+                        </a>
+                    </div>
+                </div>
+
+            <!-- Category Navigation Card -->
+            <div class="card shadow-sm mt-4">
+                <div class="card-header bg-light">
+                    <h6 class="mb-0"><i class="fas fa-list me-2"></i>Categories</h6>
+                </div>
+                <div class="list-group list-group-flush">
+                    <a href="{% url 'main:legal_resources' %}?category=visa" class="list-group-item list-group-item-action">Visa Information</a>
+                    <a href="{% url 'main:legal_resources' %}?category=green_card" class="list-group-item list-group-item-action">Green Card</a>
+                    <a href="{% url 'main:legal_resources' %}?category=citizenship" class="list-group-item list-group-item-action">Citizenship</a>
+                    <a href="{% url 'main:legal_resources' %}?category=employment" class="list-group-item list-group-item-action">Employment</a>
+                    <a href="{% url 'main:legal_resources' %}?category=asylum" class="list-group-item list-group-item-action">Asylum & Refugee</a>
+                    <a href="{% url 'main:legal_resources' %}?category=rights" class="list-group-item list-group-item-action">Legal Rights</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .article-text {
+        font-size: 1.1rem;
+        line-height: 1.8;
+    }
+    .article-text h2 {
+        font-weight: 600;
+        margin-top: 2rem;
+        margin-bottom: 1rem;
+        border-bottom: 2px solid #e9ecef;
+        padding-bottom: 0.5rem;
+    }
+    .article-text h3 {
+        font-weight: 600;
+        margin-top: 1.5rem;
+        margin-bottom: 0.75rem;
+    }
+    .article-text ul, .article-text ol {
+        margin-left: 1.5rem;
+        margin-bottom: 1rem;
+    }
+    .article-text li {
+        margin-bottom: 0.5rem;
+    }
+</style>
+
+{% endblock %}

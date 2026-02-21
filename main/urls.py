@@ -18,6 +18,12 @@ urlpatterns = [
     path('crisis_page/', views.crisis_page, name='crisis_page'),
     path('subscribe_alerts/', views.subscribe_alerts, name='subscribe_alerts'),
     path('activate_helpline/', views.activate_helpline, name='activate_helpline'),
+    # Legal & Immigration Guidance moved from communities
+    path('legal-immigration/', views.legal_immigration_guidance, name='legal_immigration'),
+    path('consular-services/', views.consular_services_list, name='consular_services'),
+    path('consular-services/<int:service_id>/', views.consular_service_detail, name='consular_service_detail'),
+    path('legal-resources/', views.legal_resources, name='legal_resources'),
+    path('legal-resources/<int:resource_id>/', views.legal_resource_detail, name='legal_resource_detail'),
     
 #=======
     path('donors/', views.donor_list, name='donor_list'),

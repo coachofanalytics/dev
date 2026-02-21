@@ -67,3 +67,11 @@
             height: 100%;
             object-fit: cover;
         }
+        .myhd {
+            width: 60px;
+            height: 4px;
+            background-color: #1e40af; /* Blue accent */
+            margin-bottom: 1rem;
+          font-family: 'Inter', sans-serif;
+          font-style: italic;
+        }

@@ -11,3 +11,5 @@ admin.site.register(Post)
 admin.site.register(CommentP)
 admin.site.register(EventCalendar)
 admin.site.register(ContactMessage)
+
+# Legal Immigration & Consular Services admin moved to main.admin

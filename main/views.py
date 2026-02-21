@@ -12,6 +12,8 @@ from django.views.generic import (
 from .models import Assets,Description, News, Page, Service, SubService,Team, SafetyAlertSubscription, EmergencyHotlines, StaffContact, EmergencyHelpActivations
 #=======
 from django.db.models import Q
+from django.core.paginator import Paginator
+from .models import ConsularService, LegalImmigrationResource
 #<<<<<<< HEAD
 #<<<<<<< HEAD
 from .models import Assets,Description, News, Page, Service,Scholarship, SubService,Team,Donation_organisation, ContactMessage
@@ -221,6 +223,95 @@ class ImageUpdateView(LoginRequiredMixin,UpdateView):
 def crisis_page(request):
     hotlines = EmergencyHotlines.objects.filter(is_active=True).order_by("sort_order", "id")
     return render(request, "main/crisis.html", {"hotlines": hotlines})
+
+
+# --- Legal & Immigration Guidance views (moved from communities) ---
+def legal_immigration_guidance(request):
+    """
+    Display comprehensive legal and immigration guidance with consular services.
+    """
+    featured_services = ConsularService.objects.filter(is_featured=True)
+    critical_resources = LegalImmigrationResource.objects.filter(is_critical=True)
+    government_services = ConsularService.objects.filter(service_type='government')
+    legal_aid_services = ConsularService.objects.filter(service_type='legal_aid')
+
+    context = {
+        'featured_services': featured_services,
+        'critical_resources': critical_resources,
+        'government_services': government_services,
+        'legal_aid_services': legal_aid_services,
+    }
+    return render(request, 'legal_immigration.html', context)
+
+
+def consular_services_list(request):
+    services = ConsularService.objects.all()
+    service_type = request.GET.get('type')
+    if service_type:
+        services = services.filter(service_type=service_type)
+    search_query = request.GET.get('q')
+    if search_query:
+        services = services.filter(
+            Q(name__icontains=search_query) |
+            Q(description__icontains=search_query) |
+            Q(services_offered__icontains=search_query)
+        )
+    paginator = Paginator(services, 10)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+    context = {
+        'services': page_obj,
+        'service_type': service_type,
+        'search_query': search_query,
+    }
+    return render(request, 'consular_services_list.html', context)
+
+
+def consular_service_detail(request, service_id):
+    service = get_object_or_404(ConsularService, id=service_id)
+    related_resources = service.resources.all()
+    context = {
+        'service': service,
+        'related_resources': related_resources,
+    }
+    return render(request, 'consular_service_detail.html', context)
+
+
+def legal_resources(request):
+    resources = LegalImmigrationResource.objects.all()
+    category = request.GET.get('category')
+    if category:
+        resources = resources.filter(category=category)
+    search_query = request.GET.get('q')
+    if search_query:
+        resources = resources.filter(
+            Q(title__icontains=search_query) |
+            Q(content__icontains=search_query) |
+            Q(keywords__icontains=search_query)
+        )
+    paginator = Paginator(resources, 15)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+    context = {
+        'resources': page_obj,
+        'category': category,
+        'search_query': search_query,
+    }
+    return render(request, 'legal_resources.html', context)
+
+
+def legal_resource_detail(request, resource_id):
+    resource = get_object_or_404(LegalImmigrationResource, id=resource_id)
+    related_service = resource.related_service
+    similar_resources = LegalImmigrationResource.objects.filter(
+        category=resource.category
+    ).exclude(id=resource_id)[:5]
+    context = {
+        'resource': resource,
+        'related_service': related_service,
+        'similar_resources': similar_resources,
+    }
+    return render(request, 'legal_resource_detail.html', context)
 
 
 

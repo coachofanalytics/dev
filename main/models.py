@@ -318,3 +318,63 @@ class TrainingCourse(models.Model):
 #>>>>>>> 25.10_DC48_UAT_ND
 #=======
 #>>>>>>> 25.10_DC48_UAT_ND
+
+
+# Consular Services and Legal Immigration Resources (moved from communities)
+class ConsularService(models.Model):
+    SERVICE_TYPES = [
+        ('government', 'Government Agency'),
+        ('legal_aid', 'Legal Aid Organization'),
+        ('nonprofit', 'Non-Profit Organization'),
+        ('consultation', 'Consultation Service'),
+    ]
+    
+    name = models.CharField(max_length=255)
+    service_type = models.CharField(max_length=20, choices=SERVICE_TYPES)
+    description = models.TextField()
+    website = models.URLField(blank=True, null=True)
+    phone = models.CharField(max_length=20, blank=True, null=True)
+    email = models.EmailField(blank=True, null=True)
+    address = models.TextField(blank=True, null=True)
+    country_coverage = models.CharField(max_length=255, help_text="e.g., USA, Mexico, Global")
+    services_offered = models.TextField(help_text="Comma-separated list of services")
+    is_featured = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name_plural = "Consular Services"
+        ordering = ['-is_featured', '-updated_at']
+
+    def __str__(self):
+        return f"{self.name} ({self.service_type})"
+
+
+class LegalImmigrationResource(models.Model):
+    RESOURCE_CATEGORIES = [
+        ('visa', 'Visa Information'),
+        ('green_card', 'Green Card & Permanent Residency'),
+        ('citizenship', 'Citizenship & Naturalization'),
+        ('employment', 'Employment Authorization'),
+        ('asylum', 'Asylum & Refugee'),
+        ('deportation', 'Deportation Defense'),
+        ('family', 'Family Sponsorship'),
+        ('rights', 'Legal Rights'),
+    ]
+    
+    title = models.CharField(max_length=255)
+    category = models.CharField(max_length=20, choices=RESOURCE_CATEGORIES)
+    content = models.TextField()
+    external_url = models.URLField(blank=True, null=True)
+    related_service = models.ForeignKey(ConsularService, on_delete=models.SET_NULL, null=True, blank=True, related_name='resources')
+    keywords = models.CharField(max_length=255, blank=True, help_text="Comma-separated keywords for search")
+    is_critical = models.BooleanField(default=False, help_text="Mark as critical information")
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name_plural = "Legal Immigration Resources"
+        ordering = ['-is_critical', '-updated_at']
+
+    def __str__(self):
+        return f"{self.title} ({self.category})"

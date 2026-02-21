@@ -27,3 +27,40 @@ admin.site.register(Donation_organization)
 admin.site.register(Scholarship)
 #>>>>>>> 25.10_DC48_UAT_ND
 
+# Legal Immigration & Consular Services Admin (moved from communities)
+@admin.register(ConsularService)
+class ConsularServiceAdmin(admin.ModelAdmin):
+    list_display = ['name', 'service_type', 'country_coverage', 'is_featured', 'updated_at']
+    list_filter = ['service_type', 'is_featured', 'country_coverage']
+    search_fields = ['name', 'description', 'services_offered']
+    fieldsets = (
+        ('Basic Information', {
+            'fields': ('name', 'service_type', 'description')
+        }),
+        ('Contact Details', {
+            'fields': ('website', 'phone', 'email', 'address')
+        }),
+        ('Service Details', {
+            'fields': ('country_coverage', 'services_offered')
+        }),
+        ('Settings', {
+            'fields': ('is_featured',)
+        }),
+    )
+
+@admin.register(LegalImmigrationResource)
+class LegalImmigrationResourceAdmin(admin.ModelAdmin):
+    list_display = ['title', 'category', 'is_critical', 'updated_at']
+    list_filter = ['category', 'is_critical']
+    search_fields = ['title', 'content', 'keywords']
+    fieldsets = (
+        ('Content', {
+            'fields': ('title', 'category', 'content')
+        }),
+        ('Additional Information', {
+            'fields': ('external_url', 'related_service', 'keywords')
+        }),
+        ('Settings', {
+            'fields': ('is_critical',)
+        }),
+    )

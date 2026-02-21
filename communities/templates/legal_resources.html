@@ -1,0 +1,197 @@
+{% extends 'main/base_templates/base.html' %}
+{% load static %}
+
+{% block title %}Legal Resources & Immigration Information{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <!-- Header -->
+    <div class="row mb-5">
+        <div class="col-lg-10 mx-auto">
+            <h1 class="display-4 mb-3">Legal Resources & Immigration Information</h1>
+            <p class="lead text-muted">Comprehensive collection of legal information and immigration resources organized by category.</p>
+        </div>
+    </div>
+
+    <!-- Search and Filter Section -->
+    <div class="row mb-4">
+        <div class="col-lg-10 mx-auto">
+            <form method="get" class="row g-3">
+                <!-- Search -->
+                <div class="col-md-8">
+                    <input 
+                        type="text" 
+                        name="q" 
+                        class="form-control form-control-lg" 
+                        placeholder="Search resources by title, keywords..."
+                        value="{{ search_query }}"
+                    >
+                </div>
+                
+                <!-- Filter by Category -->
+                <div class="col-md-3">
+                    <select name="category" class="form-select form-select-lg">
+                        <option value="">All Categories</option>
+                        <option value="visa" {% if category == 'visa' %}selected{% endif %}>Visa Information</option>
+                        <option value="green_card" {% if category == 'green_card' %}selected{% endif %}>Green Card & Permanent Residency</option>
+                        <option value="citizenship" {% if category == 'citizenship' %}selected{% endif %}>Citizenship & Naturalization</option>
+                        <option value="employment" {% if category == 'employment' %}selected{% endif %}>Employment Authorization</option>
+                        <option value="asylum" {% if category == 'asylum' %}selected{% endif %}>Asylum & Refugee</option>
+                        <option value="deportation" {% if category == 'deportation' %}selected{% endif %}>Deportation Defense</option>
+                        <option value="family" {% if category == 'family' %}selected{% endif %}>Family Sponsorship</option>
+                        <option value="rights" {% if category == 'rights' %}selected{% endif %}>Legal Rights</option>
+                    </select>
+                </div>
+                
+                <!-- Search Button -->
+                <div class="col-md-1">
+                    <button type="submit" class="btn btn-primary w-100 h-100">
+                        <i class="fas fa-search"></i>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Resources List -->
+    <div class="row">
+        <div class="col-lg-10 mx-auto">
+            {% if resources %}
+                <!-- Resources by Category View -->
+                <div class="row g-4">
+                    {% for resource in resources %}
+                        <div class="col-md-6">
+                            <div class="card h-100 shadow-sm hover-card">
+                                <div class="card-header bg-light">
+                                    <div class="d-flex justify-content-between align-items-start">
+                                        <h5 class="mb-0 flex-grow-1">{{ resource.title }}</h5>
+                                        {% if resource.is_critical %}
+                                            <span class="badge bg-danger ms-2">
+                                                <i class="fas fa-exclamation-circle me-1"></i>Critical
+                                            </span>
+                                        {% endif %}
+                                    </div>
+                                    <small class="text-muted">
+                                        <span class="badge bg-secondary">{{ resource.get_category_display }}</span>
+                                    </small>
+                                </div>
+                                <div class="card-body">
+                                    <p class="card-text text-muted">{{ resource.content|truncatewords:40|safe }}</p>
+                                    
+                                    <!-- Keywords -->
+                                    {% if resource.keywords %}
+                                        <div class="mb-3">
+                                            {% for keyword in resource.keywords|split:"," %}
+                                                <span class="badge bg-light text-dark">{{ keyword|strip }}</span>
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+
+                                    <!-- Related Service -->
+                                    {% if resource.related_service %}
+                                        <div class="alert alert-info py-2 mb-3">
+                                            <small>
+                                                <i class="fas fa-link me-1"></i>
+                                                Related: <strong>{{ resource.related_service.name }}</strong>
+                                            </small>
+                                        </div>
+                                    {% endif %}
+
+                                    <!-- External Link -->
+                                    {% if resource.external_url %}
+                                        <p class="mb-0">
+                                            <i class="fas fa-external-link-alt text-muted me-1"></i>
+                                            <a href="{{ resource.external_url }}" target="_blank" class="text-muted">External Resource</a>
+                                        </p>
+                                    {% endif %}
+                                </div>
+                                <div class="card-footer bg-light">
+                                    <a href="{% url 'legal_resource_detail' resource.id %}" class="btn btn-sm btn-primary">
+                                        Read Full Article <i class="fas fa-arrow-right ms-1"></i>
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+
+                <!-- Pagination -->
+                {% if resources.has_other_pages %}
+                    <nav class="mt-5" aria-label="Page navigation">
+                        <ul class="pagination justify-content-center">
+                            {% if resources.has_previous %}
+                                <li class="page-item">
+                                    <a class="page-link" href="?page=1{% if search_query %}&q={{ search_query }}{% endif %}{% if category %}&category={{ category }}{% endif %}">First</a>
+                                </li>
+                                <li class="page-item">
+                                    <a class="page-link" href="?page={{ resources.previous_page_number }}{% if search_query %}&q={{ search_query }}{% endif %}{% if category %}&category={{ category }}{% endif %}">Previous</a>
+                                </li>
+                            {% endif %}
+
+                            {% for num in resources.paginator.page_range %}
+                                {% if resources.number == num %}
+                                    <li class="page-item active"><span class="page-link">{{ num }}</span></li>
+                                {% else %}
+                                    <li class="page-item">
+                                        <a class="page-link" href="?page={{ num }}{% if search_query %}&q={{ search_query }}{% endif %}{% if category %}&category={{ category }}{% endif %}">{{ num }}</a>
+                                    </li>
+                                {% endif %}
+                            {% endfor %}
+
+                            {% if resources.has_next %}
+                                <li class="page-item">
+                                    <a class="page-link" href="?page={{ resources.next_page_number }}{% if search_query %}&q={{ search_query }}{% endif %}{% if category %}&category={{ category }}{% endif %}">Next</a>
+                                </li>
+                                <li class="page-item">
+                                    <a class="page-link" href="?page={{ resources.paginator.num_pages }}{% if search_query %}&q={{ search_query }}{% endif %}{% if category %}&category={{ category }}{% endif %}">Last</a>
+                                </li>
+                            {% endif %}
+                        </ul>
+                    </nav>
+                {% endif %}
+            {% else %}
+                <div class="alert alert-info text-center py-5">
+                    <h4><i class="fas fa-search me-2"></i>No Resources Found</h4>
+                    <p class="mb-3">Try adjusting your search criteria or filter options.</p>
+                    <a href="{% url 'legal_resources' %}" class="btn btn-primary">Clear Filters</a>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Quick Links Section -->
+    <div class="row mt-5 pt-5 border-top">
+        <div class="col-lg-10 mx-auto">
+            <h3 class="mb-4">Related Services & Information</h3>
+            <div class="row g-3">
+                <div class="col-md-4">
+                    <a href="{% url 'legal_immigration' %}" class="btn btn-outline-primary btn-lg w-100">
+                        <i class="fas fa-book me-2"></i>Complete Guide
+                    </a>
+                </div>
+                <div class="col-md-4">
+                    <a href="{% url 'consular_services' %}" class="btn btn-outline-primary btn-lg w-100">
+                        <i class="fas fa-building me-2"></i>Consular Services
+                    </a>
+                </div>
+                <div class="col-md-4">
+                    <a href="{% url 'contact' %}" class="btn btn-outline-primary btn-lg w-100">
+                        <i class="fas fa-envelope me-2"></i>Get Help
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .hover-card {
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+    .hover-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 20px rgba(0,0,0,0.15) !important;
+    }
+</style>
+
+{% endblock %}
