@@ -1,31 +1,32 @@
 from django.shortcuts import redirect, render
 from django.urls import reverse
+from django.contrib import messages
+from django.contrib.auth.decorators import login_required
+from django.contrib.auth.forms import UserCreationForm
+import json
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.views.generic import (
     CreateView,
     UpdateView,
 )
-from flask import request
 #<<<<<<< 25.10_DC48_UAT_UO
-from .models import Assets, ConsularAssistancePage,Description, News, Page, Service, SubService,Team, SafetyAlertSubscription, EmergencyHot, StaffContact, EmergencyHelpActivations, Testimonial
+from .models import Assets,Description, News, Page, Service, SubService,Team, SafetyAlertSubscription, EmergencyHotline, StaffContact
 #=======
 from django.db.models import Q
 #<<<<<<< HEAD
-#<<<<<<< HEAD
-from .models import Scholarship, Donation_organisation, ContactMessage
+from .models import Scholarship, Donation_organisation, ContactMessage, Testimonial
 #>>>>>>> 25.10_DC48_UAT_ND
-#=======
-from .models import (
-    Donation_organization, MedicalResourceInquiry
-)
-#>>>>>>> origin/25.11_DC48K_UAT_FN
+from .forms import ContactForm, DonorForm, MessageForm,ScholarshipSearchForm
+##=======
+from .models import Donation_organization, MedicalResourceInquiry, Governance
 from django.views.decorators.csrf import csrf_exempt
-from .forms import ContactForm, DonorForm, MessageForm, ScholarshipSearchForm, TestimonialForm
+from main.forms import ContactForm, GovernanceForm
+#>>>>>>> origin/25.10_DC48K_UAT_FN
 from django.contrib.auth import get_user_model
 #<<<<<<< 25.10_DC48_UAT_UO
 from django.views.decorators.http import require_POST
 from django.views.decorators.csrf import csrf_protect
-from django.http import JsonResponse
+from django.http import JsonResponse, HttpResponse
 from django.core.mail import send_mail
 from django.utils.html import strip_tags
 #=======
@@ -214,7 +215,7 @@ class ImageUpdateView(LoginRequiredMixin,UpdateView):
         return reverse('main:images') 
     
 def crisis_page(request):
-    hotlines = EmergencyHot.objects.filter(is_active=True).order_by("sort_order", "id")
+    hotlines = EmergencyHotline.objects.filter(is_active=True).order_by("sort_order", "id")
     return render(request, "main/crisis.html", {"hotlines": hotlines})
 
 
@@ -278,6 +279,59 @@ from .models import ContactUs
 def service_list(request):
     services = Service.objects.all()  # Fetch all services and related subservices
     return render(request, 'main/services.html', {'services': services})
+
+def consular_assistance(request):
+    """
+    Render the Consular Assistance landing page.
+    """
+    # Get or create a Page for consular assistance if you want to use the page/description pattern
+    page_instance, _ = Page.objects.get_or_create(page_name='Consular Assistance')
+    description = Description.objects.filter(page=page_instance)
+    
+    # Get active emergency hotlines for the emergency section
+    hotlines = EmergencyHotline.objects.filter(is_active=True).order_by("sort_order", "id")
+    
+    context = {
+        'description': description,
+        'hotlines': hotlines,
+        'title': 'Consular Assistance',
+    }
+    
+    return render(request, 'main/consular_assistance.html', context)
+
+
+def consular_information_updates(request):
+    """
+    Render the Consular Assistance → Information and Updates page.
+    Follows the project's page/description pattern if available.
+    """
+    # Ensure a Page exists for this content (keeps behavior consistent with other pages)
+    page_instance, _ = Page.objects.get_or_create(page_name='Consular - Information and Updates')
+    description = Description.objects.filter(page=page_instance)
+
+    context = {
+        'description': description,
+        'title': 'Information and Updates',
+    }
+
+    return render(request, 'main/consular/information_updates.html', context)
+
+
+def consular_information_updates(request):
+    """
+    Render the Consular Assistance → Information and Updates page.
+    Follows the project's page/description pattern if available.
+    """
+    # Ensure a Page exists for this content (keeps behavior consistent with other pages)
+    page_instance, _ = Page.objects.get_or_create(page_name='Consular - Information and Updates')
+    description = Description.objects.filter(page=page_instance)
+
+    context = {
+        'description': description,
+        'title': 'Information and Updates',
+    }
+
+    return render(request, 'main/consular/information_updates.html', context)
 
 
 def healthcare_info(request):
@@ -392,14 +446,14 @@ def activate_helpline(request):
         ip = request.META.get('REMOTE_ADDR')
 
     # Log activation
-    EmergencyHelpActivations.objects.create(
-        event_type="callback_requested",
-        name=name,
-        phone=phone,
-        location=location,
-        notes=notes,
-        ip_address=ip,
-    )
+    # EmergencyHelpActivation.objects.create(
+    #     event_type="callback_requested",
+    #     name=name,
+    #     phone=phone,
+    #     location=location,
+    #     notes=notes,
+    #     ip_address=ip,
+    # )
 
     # Notify active staff via email
     recipients = list(
@@ -523,12 +577,7 @@ def add_message(request):
 def education_landing(request):
 
     initial_view = request.GET.get('view','landing')
-    # Flag to indicate a successful mentorship request submission
-    mentorship_success = request.GET.get('mentorship') == 'success'
-    context = {
-        'initial_view': initial_view,
-        'mentorship_success': mentorship_success,
-    }
+    context = {'initial_view': initial_view}
     return render(request, 'main/education/education.html', context)
 
 
@@ -613,124 +662,335 @@ class DonationDeleteView(DeleteView):
     success_url = reverse_lazy('main:donation')
 
 
-# Scholarship search view — renders the scholarship search template and handles basic filters
+#>>>>>>> origin/25.10_DC48K_UAT_FN
+
+# Scholarship views
+
 def scholarship_search(request):
     scholarships = Scholarship.objects.all()
     form = ScholarshipSearchForm(request.GET or None)
     if form.is_valid():
         data = form.cleaned_data
-        # keyword search
-        kw = data.get('search_keyword')
-        if kw:
+        # apply filter
+        if data['search_keyword']:
             scholarships = scholarships.filter(
-                Q(title__icontains=kw) | Q(provider__icontains=kw)
+                Q(title__icontains=data['search_keyword']) |
+                Q(provider__icontains=data['search_keyword']) 
             )
-        # level filter
-        level = data.get('filter_level')
-        if level:
-            scholarships = scholarships.filter(level=level)
-        # field filter
-        field = data.get('filter_field')
-        if field:
-            scholarships = scholarships.filter(field=field)
-        # location filter
-        location = data.get('filter_location')
-        if location:
-            scholarships = scholarships.filter(location=location)
-        # status
-        if data.get('filter_status'):
-            scholarships = scholarships.filter(status__icontains='Closing')
+        if data['filter_level'] and data['filter_level'] != 'All':
+            scholarships = scholarships.filter(level=data['filter_level'])
+
+        if data['filter_field'] and data['filter_field'] != 'All':
+            scholarships = scholarships.filter(field=data['filter_field'])
+
+        if data['filter_location'] and data['filter_location'] != 'All':
+            scholarships = scholarships.filter(location=data['filter_location'])
+
+        if data['filter_status']:
+            scholarships = scholarships.filter(status='Closing soon')
     context = {
         'scholarships': scholarships,
         'form': form,
         'result_count': scholarships.count(),
     }
-#<<<<<<< HEAD
     return render(request, 'scholarship_app/scholarship_search.html',context)
 #>>>>>>> 25.10_DC48_UAT_ND
-#=======
-    return render(request, 'scholarship_app/scholarship_search.html', context)
-#>>>>>>> origin/25.11_DC48K_UAT_FN
 
-
-# def testimonial_list(request):
-#     testimonial = Testimonial.objects.all()
-#     return render(request, "main/snippets_templates/table/testimonial_list.html", {'testimonial': testimonial})
-
-# LIST
 def testimonial_list(request):
-    testimonials = Testimonial.objects.all()
-    return render(request, "main/testimonial/testimonial_list.html", {
-        'testimonials': testimonials
+    testimonial = Testimonial.objects.all() 
+    return render(request, "main/snippets_templates/table/testimonial_list.html",{"testimonial":testimonial})
+# views.py - ADD THESE VIEWS (place them together)
+
+# ============================================
+# SIMPLE GOVERNANCE CRUD VIEWS
+# ============================================
+
+# views.py - CORRECTED TEMPLATE NAMES
+
+# List all governance records
+def governance_list(request):
+    from .models import Governance
+    records = Governance.objects.all().select_related('members')
+    
+    context = {
+        'records': records,
+        'title': 'Governance Records'
+    }
+    # Changed from 'list.html' to 'governance_list.html'
+    return render(request, 'main/governance/governance_list.html', context)
+
+# Create new governance record
+# REPLACE your entire governance_create function with this:
+
+def governance_create(request):
+    """Create governance record - handles both existing and new users"""
+    from .forms import GovernanceForm
+    from django.contrib.auth.models import User
+    from django.contrib import messages
+    
+    print("=== CREATE VIEW STARTED ===")
+    
+    if request.method == 'POST':
+        print("POST data:", request.POST)
+        
+        form = GovernanceForm(request.POST)
+        
+        if form.is_valid():
+            print("Form is valid!")
+            
+            # Get cleaned data
+            cleaned_data = form.cleaned_data
+            members = cleaned_data.get('members')
+            new_username = cleaned_data.get('new_username', '').strip()
+            new_password = cleaned_data.get('new_password', '').strip()
+            new_email = cleaned_data.get('new_email', '').strip()
+            
+            # If creating a new user
+            if new_username and new_password:
+                print(f"Creating new user: {new_username}")
+                try:
+                    # Create the user
+                    new_user = User.objects.create_user(
+                        username=new_username,
+                        password=new_password,
+                        email=new_email if new_email else ''
+                    )
+                    print(f"User created: {new_user.id}")
+                    
+                    # Update the form instance to use new user
+                    form.instance.members = new_user
+                    messages.success(request, f'User "{new_username}" created successfully!')
+                    
+                except Exception as e:
+                    print(f"Error creating user: {e}")
+                    messages.error(request, f'Error creating user: {str(e)}')
+                    return render(request, 'main/governance/governance_form.html', {
+                        'form': form,
+                        'title': 'Create Governance Record'
+                    })
+            
+            # Save the governance record
+            governance = form.save()
+            print(f"Governance saved: {governance.id}")
+            messages.success(request, f'Governance record "{governance.governance_category}" created!')
+            
+            return redirect('main:governance_detail', pk=governance.pk)
+        else:
+            print("Form errors:", form.errors)
+            # Show form errors
+            for field, errors in form.errors.items():
+                for error in errors:
+                    messages.error(request, f'{field}: {error}')
+    
+    else:
+        # GET request - show empty form
+        form = GovernanceForm()
+    
+    return render(request, 'main/governance/governance_form.html', {
+        'form': form,
+        'title': 'Create Governance Record'
     })
 
+# View single governance record
+def governance_detail(request, pk):
+    from .models import Governance
+    from django.shortcuts import get_object_or_404
+    
+    record = get_object_or_404(Governance, pk=pk)
+    
+    context = {
+        'record': record,
+        'title': f'Details - {record.governance_category}'
+    }
+    # Changed from 'detail.html' to 'governance_detail.html'
+    return render(request, 'main/governance/governance_detail.html', context)
 
-
-
-def testimonial_detail(request, pk):
-    testimonial = get_object_or_404(Testimonial, pk=pk)
-    testimonials = Testimonial.objects.all()
-
-    return render(request, "main/testimonial/testimonial_detail.html", {
-        'testimonial': testimonial,
-        'testimonials': testimonials,
-    })
-
-
-
-
-def testimonial_create(request):
-    testimonials = Testimonial.objects.all()
-
-    if request.method == "POST":
-        form = TestimonialForm(request.POST, request.FILES)
+# Update governance record
+def governance_update(request, pk):
+    from .models import Governance
+    from .forms import GovernanceForm
+    from django.shortcuts import get_object_or_404
+    
+    record = get_object_or_404(Governance, pk=pk)
+    
+    if request.method == 'POST':
+        form = GovernanceForm(request.POST, instance=record)
         if form.is_valid():
             form.save()
-            return redirect('main:testimonial_list')
+            return redirect('main:governance_detail', pk=record.pk)
     else:
-        form = TestimonialForm()
-
-    return render(request, "main/testimonial/testimonial_form.html", {
+        form = GovernanceForm(instance=record)
+    
+    context = {
         'form': form,
-        'title': 'Add Testimonial',
-        'testimonials': testimonials,
+        'title': f'Update {record.governance_category}',
+        'record': record
+    }
+    # Changed from 'form.html' to 'governance_form.html'
+    return render(request, 'main/governance/governance_form.html', context)
+
+# Delete governance record
+# views.py - UPDATED DELETE VIEW WITH ERROR HANDLING
+def governance_delete(request, pk):
+    """Delete a governance record"""
+    from django.shortcuts import get_object_or_404, redirect
+    from django.contrib import messages
+    from .models import Governance
+    
+    record = get_object_or_404(Governance, pk=pk)
+    
+    if request.method == 'POST':
+        record.delete()
+        messages.success(request, f'Record "{record.governance_category}" deleted successfully!')
+        return redirect('main:governance_list')
+    
+    # Use the correct template name
+    return render(request, 'main/governance/governance_confirm_delete.html', {
+        'record': record,
+        'title': f'Delete {record.governance_category}'
     })
 
-def testimonial_update(request, pk):
-    testimonial = get_object_or_404(Testimonial, pk=pk)
-    testimonials = Testimonial.objects.all()
+    # Add this function to your views.py
 
-    if request.method == "POST":
-        form = TestimonialForm(request.POST, request.FILES, instance=testimonial)
-        if form.is_valid():
-            form.save()
-            return redirect('main:testimonial_list')
-    else:
-        form = TestimonialForm(instance=testimonial)
+@csrf_exempt
+def quick_add_user(request):
+    """
+    Quick user creation endpoint
+    Returns JSON response
+    """
+    print("DEBUG: quick_add_user called")
+    
+    # Only accept POST requests
+    if request.method != 'POST':
+        return JsonResponse({
+            'success': False,
+            'error': 'Only POST requests are allowed'
+        })
+    
+    try:
+        # Parse JSON data if sent as JSON, otherwise use form data
+        if request.content_type == 'application/json':
+            data = json.loads(request.body)
+            username = data.get('username', '').strip()
+            password = data.get('password', '').strip()
+            email = data.get('email', '').strip()
+        else:
+            # Form data
+            username = request.POST.get('username', '').strip()
+            password = request.POST.get('password', '').strip()
+            email = request.POST.get('email', '').strip()
+        
+        print(f"DEBUG: Received - username='{username}', password length={len(password)}, email='{email}'")
+        
+        # Validate
+        if not username:
+            return JsonResponse({
+                'success': False,
+                'error': 'Username is required'
+            })
+        
+        if not password:
+            return JsonResponse({
+                'success': False,
+                'error': 'Password is required'
+            })
+        
+        # Check if user exists
+        if User.objects.filter(username=username).exists():
+            return JsonResponse({
+                'success': False,
+                'error': f'Username "{username}" already exists'
+            })
+        
+        # Create user
+        user = User.objects.create_user(
+            username=username,
+            password=password,
+            email=email if email else ''
+        )
+        
+        print(f"DEBUG: User created successfully - ID: {user.id}, Username: {user.username}")
+        
+        # Return success
+        return JsonResponse({
+            'success': True,
+            'user_id': user.id,
+            'username': user.username,
+            'email': user.email if user.email else ''
+        })
+        
+    except json.JSONDecodeError:
+        return JsonResponse({
+            'success': False,
+            'error': 'Invalid JSON data'
+        })
+    except Exception as e:
+        print(f"DEBUG: Exception: {str(e)}")
+        return JsonResponse({
+            'success': False,
+            'error': f'Server error: {str(e)}'
+        })
+           
 
-    return render(request, "main/testimonial/testimonial_form.html", {
-        'form': form,
-        'title': 'Edit Testimonial',
-        'testimonials': testimonials,
-    })
+    # Add to views.py
+def test_user_endpoint(request):
+    """Test page for quick_add_user endpoint"""
+    html = '''
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <title>Test User Endpoint</title>
+        <script>
+        async function testEndpoint() {
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            const email = document.getElementById('email').value;
+            
+            const formData = new FormData();
+            formData.append('username', username);
+            formData.append('password', password);
+            formData.append('email', email);
+            
+            try {
+                const response = await fetch('/quick-add-user/', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                const result = await response.text();
+                document.getElementById('result').innerHTML = 
+                    '<h3>Raw Response:</h3><pre>' + result + '</pre>';
+                
+                try {
+                    const jsonResult = JSON.parse(result);
+                    document.getElementById('result').innerHTML += 
+                        '<h3>Parsed JSON:</h3><pre>' + JSON.stringify(jsonResult, null, 2) + '</pre>';
+                } catch(e) {
+                    document.getElementById('result').innerHTML += 
+                        '<h3>Not valid JSON</h3>';
+                }
+            } catch(error) {
+                document.getElementById('result').innerHTML = 'Error: ' + error;
+            }
+        }
+        </script>
+    </head>
+    <body>
+        <h1>Test Quick Add User Endpoint</h1>
+        <div>
+            <input type="text" id="username" placeholder="Username" value="testuser"><br>
+            <input type="password" id="password" placeholder="Password" value="testpass123"><br>
+            <input type="email" id="email" placeholder="Email" value="test@example.com"><br>
+            <button onclick="testEndpoint()">Test Endpoint</button>
+        </div>
+        <div id="result"></div>
+    </body>
+    </html>
+    '''
+    from django.http import HttpResponse
+    return HttpResponse(html)
 
 
+    # Changed from 'delete.html' to 'governance_confirm_delete.html'
+    return render(request, 'main/governance/governance_confirm_delete.html', context)
 
-def testimonial_delete(request, pk):
-    testimonial = get_object_or_404(Testimonial, pk=pk)
-    testimonials = Testimonial.objects.all()
-
-    if request.method == "POST":
-        testimonial.delete()
-        return redirect('main:testimonial_list')
-
-    return render(request, "main/testimonial/testimonial_confirm_delete.html", {
-        'testimonial': testimonial,
-        'testimonials': testimonials,
-    })
-
-
-def consular_assistance(request):
-    page = ConsularAssistancePage.objects.first()
-    context = { 'page': page, }
-    return render(request, "main/consular_assistance.html", context)

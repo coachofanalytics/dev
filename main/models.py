@@ -2,6 +2,8 @@ from django.contrib.auth.models import User
 from django.db import models
 from django.conf import settings
 from django.contrib.auth import get_user_model
+from django.utils import timezone
+from django.urls import reverse
 
 User = get_user_model()
 
@@ -15,7 +17,9 @@ class Page(models.Model):
 
 
 class Description(models.Model):
-    page = models.ForeignKey(Page, related_name='descriptions', on_delete=models.CASCADE)
+    page = models.ForeignKey(
+        Page, related_name="descriptions", on_delete=models.CASCADE
+    )
     name = models.CharField(max_length=100, null=False, blank=False)
     content = models.TextField(null=False, blank=False)
 
@@ -25,9 +29,9 @@ class Description(models.Model):
 
 class Content(models.Model):
     SECTION_CHOICES = [
-        ('Our Story', 'Our Story'),
-        ('Newsletter', 'Newsletter'),
-        ('Blog', 'Blog'),
+        ("Our Story", "Our Story"),
+        ("Newsletter", "Newsletter"),
+        ("Blog", "Blog"),
     ]
 
     section = models.CharField(max_length=50, choices=SECTION_CHOICES)
@@ -41,7 +45,9 @@ class Content(models.Model):
 
 class Assets(models.Model):
     name = models.CharField(max_length=200)
-    category = models.CharField(default='background', max_length=200, null=True, blank=True)
+    category = models.CharField(
+        default="background", max_length=200, null=True, blank=True
+    )
     description = models.TextField(null=True, blank=True)
     image_url = models.CharField(max_length=1000, null=True, blank=True)
 
@@ -76,7 +82,9 @@ class Service(models.Model):
 
 
 class SubService(models.Model):
-    service = models.ForeignKey(Service, related_name='subservices', on_delete=models.CASCADE)
+    service = models.ForeignKey(
+        Service, related_name="subservices", on_delete=models.CASCADE
+    )
     title = models.CharField(max_length=200)
     description = models.TextField()
 
@@ -90,7 +98,7 @@ class News(models.Model):
     link = models.URLField(null=True, blank=True)
     published_date = models.DateField()
     is_event = models.BooleanField(default=False)
-    image = models.ImageField(upload_to='news_images/', blank=True, null=True)
+    image = models.ImageField(upload_to="news_images/", blank=True, null=True)
 
     def __str__(self):
         return self.title
@@ -98,23 +106,25 @@ class News(models.Model):
 
 class Team(models.Model):
     ROLE_CHOICES = [
-        ('Governor', 'Governor'),
-        ('Deputy Governor', 'Deputy Governor'),
-        ('Regional Coordinator', 'Regional Coordinator'),
-        ('Team Member', 'Team Member'),
+        ("Governor", "Governor"),
+        ("Deputy Governor", "Deputy Governor"),
+        ("Regional Coordinator", "Regional Coordinator"),
+        ("Team Member", "Team Member"),
     ]
 
     LEADERSHIP_CHOICES = [
-        ('Local', 'Local'),
-        ('Global', 'Global'),
+        ("Local", "Local"),
+        ("Global", "Global"),
     ]
 
     name = models.CharField(max_length=255)
-    leadership = models.CharField(max_length=50, choices=LEADERSHIP_CHOICES, default='Local')
+    leadership = models.CharField(
+        max_length=50, choices=LEADERSHIP_CHOICES, default="Local"
+    )
     facebook_link = models.URLField(blank=True, null=True)
     role = models.CharField(max_length=50, choices=ROLE_CHOICES)
     region = models.CharField(max_length=255, blank=True, null=True)
-    image = models.ImageField(upload_to='people/')
+    image = models.ImageField(upload_to="people/")
     bio = models.TextField()
 
     def __str__(self):
@@ -124,7 +134,7 @@ class Team(models.Model):
 class Gallery_image(models.Model):
     title = models.CharField(max_length=100)
     description = models.TextField(blank=True, null=True)
-    image = models.ImageField(upload_to='gallery/')
+    image = models.ImageField(upload_to="gallery/")
     uploaded_at = models.DateTimeField(auto_now_add=True)
     event_date = models.DateField()
 
@@ -177,13 +187,16 @@ class Donation_organization(models.Model):
         return f"{self.donor_name} - {self.amount}"
 
 
-#<<<<<<< 25.10_DC48_UAT_UO
+# <<<<<<< 25.10_DC48_UAT_UO
 
-#<<<<<<< 25.10_DC48_UAT_UO
+
+# <<<<<<< 25.10_DC48_UAT_UO
 # Stores email subscriptions for Safety Alerts
 class SafetyAlertSubscription(models.Model):
     email = models.EmailField(unique=True)
-    user = models.ForeignKey(settings.AUTH_USER_MODEL, null=True, blank=True, on_delete=models.SET_NULL)
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL, null=True, blank=True, on_delete=models.SET_NULL
+    )
     is_active = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
@@ -192,9 +205,13 @@ class SafetyAlertSubscription(models.Model):
 
 
 # Emergency help line configuration
-class EmergencyHot(models.Model):
-    name = models.CharField(max_length=100, help_text="Display label, e.g., Global Hotline")
-    number = models.CharField(max_length=32, help_text="E.164 like +15551234567 or local format")
+class EmergencyHotline(models.Model):
+    name = models.CharField(
+        max_length=100, help_text="Display label, e.g., Global Hotline"
+    )
+    number = models.CharField(
+        max_length=32, help_text="E.164 like +15551234567 or local format"
+    )
     is_active = models.BooleanField(default=True)
     sort_order = models.PositiveIntegerField(default=0)
 
@@ -216,26 +233,29 @@ class StaffContact(models.Model):
         return self.name
 
 
-class EmergencyHelpActivations(models.Model):
-    EVENT_CHOICES = (
-        ("call_link_clicked", "Call Link Clicked"),
-        ("callback_requested", "Callback Requested"),
-    )
-    event_type = models.CharField(max_length=32, choices=EVENT_CHOICES)
-    name = models.CharField(max_length=100, blank=True, null=True)
-    phone = models.CharField(max_length=32, blank=True, null=True)
-    location = models.CharField(max_length=255, blank=True, null=True)
-    notes = models.TextField(blank=True, null=True)
-    ip_address = models.GenericIPAddressField(blank=True, null=True)
-    created_at = models.DateTimeField(auto_now_add=True)
+# class EmergencyHelpActivation(models.Model):
+#     EVENT_CHOICES = (
+#         ("call_link_clicked", "Call Link Clicked"),
+#         ("callback_requested", "Callback Requested"),
+#     )
+#     event_type = models.CharField(max_length=32, choices=EVENT_CHOICES)
+#     name = models.CharField(max_length=100, blank=True, null=True)
+#     phone = models.CharField(max_length=32, blank=True, null=True)
+#     location = models.CharField(max_length=255, blank=True, null=True)
+#     notes = models.TextField(blank=True, null=True)
+#     ip_address = models.GenericIPAddressField(blank=True, null=True)
+#     created_at = models.DateTimeField(auto_now_add=True)
 
-    def __str__(self):
-        return f"{self.event_type} @ {self.created_at:%Y-%m-%d %H:%M:%S}"
-#=======
+#     def __str__(self):
+#         return f"{self.event_type} @ {self.created_at:%Y-%m-%d %H:%M:%S}"
+
+
+# =======
+
 
 # Medical Resource Inquiry model at top-level
-#=======
-#>>>>>>> 25.10_DC48_UAT_ND
+# =======
+# >>>>>>> 25.10_DC48_UAT_ND
 class MedicalResourceInquiry(models.Model):
     name = models.CharField(max_length=100)
     email = models.EmailField()
@@ -249,46 +269,53 @@ class MedicalResourceInquiry(models.Model):
 # Scholarship model with filters
 class Scholarship(models.Model):
     LEVEL_CHOICES = [
-        ('Undergraduate', 'Undergraduate'),
-        ('Masters', 'Masters'),
-        ('PhD', 'PhD'),
-        ('Vocational', 'Vocational'),
+        ("Undergraduate", "Undergraduate"),
+        ("Masters", "Masters"),
+        ("PhD", "PhD"),
+        ("Vocational", "Vocational"),
     ]
 
     FIELD_CHOICES = [
-        ('STEM', 'STEM'),
-        ('Humanities', 'Humanities'),
-        ('Business', 'Business'),
-        ('Arts', 'Arts'),
+        ("STEM", "STEM"),
+        ("Humanities", "Humanities"),
+        ("Business", "Business"),
+        ("Arts", "Arts"),
     ]
 
     LOCATION_CHOICES = [
-        ('Kenya', 'Kenya'),
-        ('Global', 'Global'),
-        ('UK', 'UK'),
-        ('USA', 'USA'),
+        ("Kenya", "Kenya"),
+        ("Global", "Global"),
+        ("UK", "UK"),
+        ("USA", "USA"),
     ]
 
     STATUS_CHOICES = [
-        ('Open', 'Open'),
-        ('Closing Soon', 'Closing Soon'),
-        ('Closed', 'Closed'),
+        ("Open", "Open"),
+        ("Closing Soon", "Closing Soon"),
+        ("Closed", "Closed"),
     ]
 
     title = models.CharField(max_length=255)
     provider = models.CharField(max_length=255, blank=True, null=True)
-    level = models.CharField(max_length=100, choices=LEVEL_CHOICES, blank=True, null=True)
-    field = models.CharField(max_length=100, choices=FIELD_CHOICES, blank=True, null=True)
-    location = models.CharField(max_length=200, choices=LOCATION_CHOICES, blank=True, null=True)
+    level = models.CharField(
+        max_length=100, choices=LEVEL_CHOICES, blank=True, null=True
+    )
+    field = models.CharField(
+        max_length=100, choices=FIELD_CHOICES, blank=True, null=True
+    )
+    location = models.CharField(
+        max_length=200, choices=LOCATION_CHOICES, blank=True, null=True
+    )
     deadline = models.DateField(blank=True, null=True)
     amount = models.CharField(max_length=100, blank=True, null=True)
-    status = models.CharField(max_length=50, choices=STATUS_CHOICES, blank=True, null=True)
-    
+    status = models.CharField(
+        max_length=50, choices=STATUS_CHOICES, blank=True, null=True
+    )
 
     class Meta:
         verbose_name = "Scholarship"
         verbose_name_plural = "Scholarships"
-        ordering = ['deadline']
+        ordering = ["deadline"]
 
     def __str__(self):
         return self.title
@@ -309,11 +336,14 @@ class TrainingCourse(models.Model):
 
     def __str__(self):
         return self.title
-#<<<<<<< 25.10_DC48_UAT_UO
-    
-#>>>>>>> 25.10_DC48_UAT_ND
-#=======
-#>>>>>>> 25.10_DC48_UAT_ND
+
+
+# <<<<<<< 25.10_DC48_UAT_UO
+
+# >>>>>>> 25.10_DC48_UAT_ND
+# =======
+# >>>>>>> 25.10_DC48_UAT_ND
+
 
 class Testimonial(models.Model):
     name = models.CharField(max_length=100, null=False, blank=False)
@@ -325,34 +355,31 @@ class Testimonial(models.Model):
 
     def __str__(self):
         return f"Testimonial from {self.name}"
+    
+class Governance(models.Model):
+    """
+    Governance Model for CRUD operations
+    """
+    governance_category = models.CharField(max_length=255, null=False, blank=False)
+    description = models.TextField(null=False, blank=False)
+    members = models.ForeignKey(
+        settings.AUTH_USER_MODEL, 
+        on_delete=models.CASCADE,
+        null=False, 
+        blank=False,
+        related_name='governance_memberships'
+    )
+    created_at = models.DateTimeField(default=timezone.now)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    def __str__(self):
+        return f"{self.governance_category} - {self.members.username}"
+    
+    class Meta:
+        verbose_name = "Governance"
+        verbose_name_plural = "Governance Records"
+        ordering = ['-created_at']
 
     def save(self, *args, **kwargs):
         # You can add more custom logic here if needed
         super().save(*args, **kwargs)
-
-
-class Governance(models.Model):
-    governance_category = models.CharField(max_length=255, null=False, blank=False)
-    description = models.TextField(null=False, blank=False)
-    members = models.ForeignKey(User, on_delete=models.CASCADE, null=False, blank=False)
-    created_at = models.DateTimeField(null=False, blank=False)
-    updated_at = models.DateTimeField(null=False, blank=False)
-
-    def __str__(self):
-        return self.governance_category
-
-
-class ConsularAssistancePage(models.Model):
-    title = models.CharField(max_length=255)
-    slug = models.SlugField(max_length=255, unique=True)
-    content = models.TextField(blank=True, null=True)
-    updated_at = models.DateTimeField(auto_now=True)
-
-    class Meta:
-        verbose_name = "Consular Assistance Page"
-        verbose_name_plural = "Consular Assistance Pages"
-
-    def __str__(self):
-        return self.title
-    
-

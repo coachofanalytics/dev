@@ -6,7 +6,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Donations</title>
+    <title>Testimonial</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -42,49 +42,40 @@
 </head>
 <body>
     <h1>Testimonial List</h1>
-        <a href="{% url 'testimonial_create' %}" class="add-btn">+ Add Testimonial</a>
-
+        <a href="#" class="add-btn">+ Add Testimonial</a>
 
     {% if testimonial %}
         <table>
             <thead>
                 <tr>
                     <th>Name</th>
-                    <th>Postion</th>
-                    <th>Organisation</th>
-                    <th>testimonial</th>
+                    <th>Position </th>
+                    <th>Organization</th>
+                    <th>Testimonial</th>
                     <th>Image</th>
                     <th>Date</th>
-                    <th>Actions</th>
                 </tr>
             </thead>
             <tbody>
-                {% for t in testimonial %}
+                {% for testimonial in testimonial %}
                 <tr>
-                    <td>{{ t.name }}</td>
-                    <td>{{ t.position }}</td>
-                    <td>{{ t.organization }}</td>
-                    <td>{{ t.testimonial }}</td>
+                    <td>{{ testimonial.name }}</td>
+                    <td>{{ testimonial.position }}</td>
+                    <td>{{ testimonial.organization }}</td>
+                    <td>{{ testimonial.testimonial }}</td>
+                    <td>{{ testimonial.image}}</td>
+                    <td>{{ testimonial.date}}</td>
                     <td>
-                        {% if t.image %}
-                            <img src="{{ t.image.url }}" width="60">
-                        {% else %}
-                            No Image
-                        {% endif %}
+                        <a href="#" class="action-btn detail-btn">Details</a>
+                        <a href="#" class="action-btn edit-btn">Edit</a>
+                        <a href="#" class="action-btn delete-btn">Delete</a>
                     </td>
-                    <td>{{ t.date|date:"M d, Y " }}</td>
-                    <td>
-                        <a href="{% url 'testimonial_detail' t.id %}" class="action-btn detail-btn">Details</a>
-                        <a href="{% url 'testimonial_update' t.id %}" class="action-btn edit-btn">Edit</a>
-                        <a href="{% url 'testimonial_delete' t.id %}" class="action-btn delete-btn">Delete</a>
-                    </td>
-
                 </tr>
                 {% endfor %}
             </tbody>
         </table>
     {% else %}
-        <p class="empty">No Testimonial have been made yet.</p>
+        <p class="empty">No donations have been made yet.</p>
     {% endif %}
         <style>
             .add-btn {

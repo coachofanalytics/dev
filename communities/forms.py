@@ -1,17 +1,111 @@
-
+from asyncio import Event
 from django import forms
 from django.utils import timezone
-from .models import CommentP, CommunityMember, ContactMessage, Post, EventCalendar, DirectoryMember
-from django import forms
+from .models import CommentP, CommunityMember, ContactMessage, Post, EventCalendar,CommunityMember,DirectoryProfile
+
+
 
 class JoinForm(forms.ModelForm):
+    agree_to_directory = forms.BooleanField(
+        required=True,
+        label="I agree to be listed in the public member directory"
+    )
+    
+    email_updates = forms.BooleanField(
+        required=False,
+        initial=True,
+        label="I want to receive community updates and opportunities via email"
+    )
+    
+    agree_terms = forms.BooleanField(
+        required=True,
+        label="I agree to the Terms of Service and Privacy Policy"
+    )
+    
     class Meta:
         model = CommunityMember
-        fields = ['name', 'email']
+        fields = ['name', 'email', 'phone', 'profession', 'region', 
+                 'specialization', 'bio', 'website']
         widgets = {
-            'name': forms.TextInput(attrs={'class': 'w-full p-3 rounded border', 'placeholder': 'Your Name'}),
-            'email': forms.EmailInput(attrs={'class': 'w-full p-3 rounded border', 'placeholder': 'Your Email'}),
+            'bio': forms.Textarea(attrs={
+                'rows': 4,
+                'placeholder': 'Tell us about your professional background, expertise, and what you\'re looking for in the community...'
+            }),
+            'phone': forms.TextInput(attrs={
+                'placeholder': '+1 (555) 123-4567'
+            }),
+            'profession': forms.TextInput(attrs={
+                'placeholder': 'e.g., Software Engineer, Lawyer, Doctor'
+            }),
+            'specialization': forms.TextInput(attrs={
+                'placeholder': 'e.g., Web Development, Immigration Law, Finance'
+            }),
+            'website': forms.URLInput(attrs={
+                'placeholder': 'https://linkedin.com/in/yourprofile or https://yourwebsite.com'
+            }),
         }
+        labels = {
+            'name': 'Full Name',
+            'email': 'Email Address',
+            'phone': 'Phone Number',
+            'profession': 'Profession',
+            'region': 'Region',
+            'specialization': 'Specialization',
+            'bio': 'Professional Bio',
+            'website': 'Website or LinkedIn',
+        }
+    
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # Add required attribute to fields
+        self.fields['name'].required = True
+        self.fields['email'].required = True
+        self.fields['profession'].required = True
+        self.fields['region'].required = True
+    
+    def clean_email(self):
+        email = self.cleaned_data.get('email')
+        if CommunityMember.objects.filter(email=email).exists():
+            raise forms.ValidationError("This email is already registered in our community.")
+        return email
+    
+    def clean_phone(self):
+        phone = self.cleaned_data.get('phone')
+        if phone:
+            # Remove all non-digit characters for validation
+            digits = ''.join(filter(str.isdigit, phone))
+            if len(digits) < 10:
+                raise forms.ValidationError("Please enter a valid phone number with area code.")
+        return phone
+
+
+class DirectoryProfileForm(forms.ModelForm):
+    class Meta:
+        model = DirectoryProfile
+        fields = ['full_name', 'profession', 'region_city', 'category', 
+                 'membership_type', 'expertise_summary', 'profile_photo']
+        widgets = {
+            'expertise_summary': forms.Textarea(attrs={
+                'rows': 4,
+                'placeholder': 'Briefly describe your skills and what you offer to the community...'
+            }),
+            'full_name': forms.TextInput(attrs={
+                'placeholder': 'e.g., Jane Doe'
+            }),
+            'profession': forms.TextInput(attrs={
+                'placeholder': 'e.g., Civil Engineer'
+            }),
+            'region_city': forms.TextInput(attrs={
+                'placeholder': 'e.g., Seattle, WA'
+            }),
+        }
+        labels = {
+            'full_name': 'Full Name',
+            'region_city': 'Region / City',
+            'expertise_summary': 'Expertise Summary',
+            'profile_photo': 'Profile Photo',
+        }
+    
 class PostForm(forms.ModelForm):
     class Meta:
         model = Post
@@ -28,89 +122,26 @@ class EventForm(forms.ModelForm):
     # Optionally, you can add custom validations if needed
     def clean_start_date(self):
         start_date = self.cleaned_data.get('start_date')
-        if start_date and start_date <= timezone.now():
+        # If the field is empty, let the form's required validation handle it.
+        if not start_date:
+            return start_date
+
+        if start_date <= timezone.now():
             raise forms.ValidationError("Start date must be in the future.")
         return start_date
 
     def clean_end_date(self):
         end_date = self.cleaned_data.get('end_date')
         start_date = self.cleaned_data.get('start_date')
-        if end_date and end_date <= start_date:
+        # If either date is missing, skip this cross-field validation here.
+        # The form-level validation or required field checks will handle missing values.
+        if not end_date or not start_date:
+            return end_date
+
+        if end_date <= start_date:
             raise forms.ValidationError("End date must be after the start date.")
         return end_date
 class ContactForm(forms.ModelForm):
     class Meta:
         model = ContactMessage
         fields = ['name', 'email', 'message']
-
-
-
-# ============================================
-# forms.py - Add these forms to your existing forms.py
-# ============================================
-
-
-
-class DirectoryMemberForm(forms.ModelForm):
-    class Meta:
-        model = DirectoryMember
-        fields = ['full_name', 'profession', 'region', 'category', 
-                  'membership_type', 'expertise', 'profile_photo']
-        widgets = {
-            'full_name': forms.TextInput(attrs={
-                'class': 'form-input',
-                'placeholder': 'e.g., Jane Doe'
-            }),
-            'profession': forms.TextInput(attrs={
-                'class': 'form-input',
-                'placeholder': 'e.g., Civil Engineer'
-            }),
-            'region': forms.TextInput(attrs={
-                'class': 'form-input',
-                'placeholder': 'e.g., Seattle, WA'
-            }),
-            'category': forms.Select(attrs={
-                'class': 'form-select'
-            }),
-            'membership_type': forms.RadioSelect(attrs={
-                'class': 'radio-input'
-            }),
-            'expertise': forms.Textarea(attrs={
-                'class': 'form-textarea',
-                'placeholder': 'Briefly describe your skills and what you offer to the community...',
-                'rows': 4
-            }),
-            'profile_photo': forms.FileInput(attrs={
-                'class': 'file-input',
-                'accept': 'image/*'
-            })
-        }
-
-
-class EventUpdateForm(forms.ModelForm):
-    class Meta:
-        model = EventCalendar
-        fields = ['name', 'start_date', 'end_date', 'location', 'description']
-        widgets = {
-            'name': forms.TextInput(attrs={
-                'class': 'w-full px-4 py-3 rounded-lg border-2 border-gray-300 focus:border-brand-green',
-                'placeholder': 'Event Name'
-            }),
-            'start_date': forms.DateTimeInput(attrs={
-                'class': 'w-full px-4 py-3 rounded-lg border-2 border-gray-300 focus:border-brand-green',
-                'type': 'datetime-local'
-            }),
-            'end_date': forms.DateTimeInput(attrs={
-                'class': 'w-full px-4 py-3 rounded-lg border-2 border-gray-300 focus:border-brand-green',
-                'type': 'datetime-local'
-            }),
-            'location': forms.TextInput(attrs={
-                'class': 'w-full px-4 py-3 rounded-lg border-2 border-gray-300 focus:border-brand-green',
-                'placeholder': 'Location'
-            }),
-            'description': forms.Textarea(attrs={
-                'class': 'w-full px-4 py-3 rounded-lg border-2 border-gray-300 focus:border-brand-green',
-                'placeholder': 'Description',
-                'rows': 4
-            })
-        }

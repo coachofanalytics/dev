@@ -4,9 +4,9 @@
 
     <main class="mx-auto pb-16">
 
-        <!-- HERO SECTION - Full width background image with dark overlay + centered text -->
-        <header class="relative text-white shadow-xl overflow-hidden mb-12 mt-3"
-                style="min-height: 370px; background: url('{% static 'consular/img/img1.png' %}') center center / cover no-repeat;">
+        <!-- HERO SECTION -->
+        <header class="relative text-white shadow-xl overflow-hidden mb-12 mt-3 bg-blue-800"
+                style="min-height: 370px;">
             <!-- Dark overlay -->
             <div class="absolute inset-0" style="background: rgba(0,0,0,0.55);"></div>
             <!-- Centered content -->
@@ -25,9 +25,9 @@
 
         <!-- Breadcrumb -->
         <nav class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 mb-6 text-sm text-gray-500">
-            <a href="#" class="text-brand-blue hover:underline">Home</a>
+            <a href="{% url 'main:layout' %}" class="text-brand-blue hover:underline">Home</a>
             <span class="mx-2">/</span>
-            <a href="#" class="text-brand-blue hover:underline">Our Services</a>
+            <a href="{% url 'main:service_list' %}" class="text-brand-blue hover:underline">Our Services</a>
             <span class="mx-2">/</span>
             <span class="text-brand-green font-semibold">Consular Assistance</span>
         </nav>
@@ -44,12 +44,11 @@
         <section class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
 
             <!-- 1. Information and Updates (Image Left) -->
-            <div id="information-updates" class="service-block grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
+            <div id="information-updates" class="service-block grid grid-cols-1 lg:grid-cols-2 gap-8 items-start mb-16">
                 <div class="lg:order-1">
-                    <img id="image-information"
-                         data-src="{% static 'consular/img/img2.png' %}"
-                         alt="Information and Updates"
-                         class="w-full rounded-xl shadow-lg object-cover loading-placeholder">
+                    <div class="w-full h-64 bg-gray-200 rounded-xl shadow-lg flex items-center justify-center text-gray-500 text-xl">
+                        <span>📄 Information & Updates</span>
+                    </div>
                 </div>
                 <div class="lg:order-2">
                     <h3 class="text-3xl font-extrabold text-brand-blue mb-4">1. Information and Updates</h3>
@@ -63,7 +62,7 @@
                         <li>Emergency Contact Directory: Vetted consular numbers worldwide</li>
                     </ul>
                     <div class="mt-6">
-                        <a href="#" class="inline-block bg-brand-green text-white font-bold py-3 px-6 rounded-md uppercase text-sm tracking-wider hover:bg-[#086a4f] transition duration-300">
+                        <a href="{% url 'main:consular_information_updates' %}" class="inline-block bg-brand-green text-white font-bold py-3 px-6 rounded-md uppercase text-sm tracking-wider hover:bg-[#086a4f] transition duration-300">
                             View Official Forms
                         </a>
                     </div>
@@ -71,7 +70,7 @@
             </div>
 
             <!-- 2. Legal and Immigration Guidance (Image Right) -->
-            <div id="legal-immigration" class="service-block grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
+            <div id="legal-immigration" class="service-block grid grid-cols-1 lg:grid-cols-2 gap-8 items-start mb-16">
                 <div class="lg:order-1">
                     <h3 class="text-3xl font-extrabold text-brand-blue mb-4">2. Legal and Immigration Guidance</h3>
                     <p class="text-gray-700 mb-6">
@@ -90,10 +89,9 @@
                     </div>
                 </div>
                 <div class="lg:order-2">
-                    <img id="image-legal"
-                         data-src="{% static 'consular/img/img3.png' %}"
-                         alt="Legal and Immigration Guidance"
-                         class="w-full rounded-xl shadow-lg object-cover loading-placeholder">
+                    <div class="w-full h-64 bg-gray-200 rounded-xl shadow-lg flex items-center justify-center text-gray-500 text-xl">
+                        <span>⚖️ Legal & Immigration</span>
+                    </div>
                 </div>
             </div>
 
@@ -103,8 +101,8 @@
                 <p class="text-xl text-gray-200 mb-6">
                     In case of immediate crisis (arrest, serious accident, or natural disaster), do not wait. Contact our dedicated emergency line immediately.
                 </p>
-                <a href="tel:9999999999" class="inline-block bg-brand-red text-white font-bold py-3 px-8 rounded-full uppercase tracking-wider text-lg hover:bg-red-800 transition duration-300 shadow-lg">
-                    Call Emergency: 999-999-9999
+                <a href="tel:+1234567890" class="inline-block bg-brand-red text-white font-bold py-3 px-8 rounded-full uppercase tracking-wider text-lg hover:bg-red-800 transition duration-300 shadow-lg">
+                    Call Emergency: +1 (234) 567-890
                 </a>
             </div>
 

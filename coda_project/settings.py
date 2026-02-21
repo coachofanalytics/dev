@@ -16,11 +16,10 @@ from pathlib import Path
 BASE_DIR = Path(__file__).resolve().parent.parent
 # print(BASE_DIR)
 
-SECRET_KEY = "!cxl7yhjsl00964n=#e-=xblp4u!hbajo2k8u#$v9&s6__5=xf"
-# SECRET_KEY = os.environ.get('SECRET_KEY')
+SECRET_KEY = os.environ.get("SECRET_KEY") or "!cxl7yhjsl00964n=#e-=xblp4u!hbajo2k8u#$v9&s6__5=xf"
 
-DEBUG = True
-# DEBUG = os.environ.get("DEBUG_VALUE") == "True"
+# Default to False unless explicitly enabled via environment variable.
+DEBUG = os.environ.get("DEBUG", "False") == "True"
 
 SECURE_SSL_REDIRECT = False
 
@@ -63,14 +62,15 @@ INSTALLED_APPS = [
     "allauth.socialaccount.providers.facebook",
     "django_crontab",
     'memberjoin',
-    'communities'
+    'communities',
 
 ]
 
 DEFAULT_AUTO_FIELD = "django.db.models.AutoField"
 
-STATICFILES_DIR =[
-    BASE_DIR, "main/static"
+# Static files configuration
+STATICFILES_DIRS = [
+    os.path.join(BASE_DIR, 'main/static'),
 ]
 
 CRONJOBS = [
@@ -215,7 +215,9 @@ AUTH_PASSWORD_VALIDATORS = [
 ]
 
 PASSWORD_HASHERS = [
-    "django.contrib.auth.hashers.MD5PasswordHasher",
+    # Use secure, production-appropriate password hashers. MD5 is insecure and should not be used.
+    "django.contrib.auth.hashers.PBKDF2PasswordHasher",
+    "django.contrib.auth.hashers.PBKDF2SHA1PasswordHasher",
 ]
 
 # Internationalization
@@ -239,11 +241,12 @@ MEDIA_ROOT = os.path.join(BASE_DIR, "media")
 
 STATIC_ROOT = os.path.join(BASE_DIR,  "staticfiles")
 STATIC_URL = "/static/"
-STATICFILES_DIRS = [
-    os.path.join(BASE_DIR, 'static'),  # If you have a project-level static directory
-    # Add other directories if necessary
-]
-STATICFILES_STORAGE = 'django.contrib.staticfiles.storage.ManifestStaticFilesStorage'
+
+
+if DEBUG:
+    STATICFILES_STORAGE = 'django.contrib.staticfiles.storage.StaticFilesStorage'
+else:
+    STATICFILES_STORAGE = 'django.contrib.staticfiles.storage.ManifestStaticFilesStorage'
 
 CRISPY_TEMPLATE_PACK = "bootstrap4"
 

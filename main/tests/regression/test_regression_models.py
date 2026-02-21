@@ -1,42 +1,53 @@
 from django.test import TestCase
-from django.utils import timezone
-from main.models import Scholarship, TrainingCourse
+from django.core.files.uploadedfile import SimpleUploadedFile
+from django.core.exceptions import ValidationError
+from datetime import date
+from main.models import Testimonial
 
 
-class EducationModelsRegressionTest(TestCase):
-	def test_scholarship_full_lifecycle(self):
-		# create
-		s = Scholarship.objects.create(title='Reg Scholarship', provider='Reg Provider', amount='1000')
-		self.assertIsNotNone(s.pk)
-		self.assertEqual(str(s), 'Reg Scholarship')
+class TestimonialRegressionTests(TestCase):
 
-		# update
-		s.status = 'Closed'
-		s.save()
-		s.refresh_from_db()
-		self.assertEqual(s.status, 'Closed')
+    def setUp(self):
+        self.image = SimpleUploadedFile(
+            "test.jpg",
+            b"dummy_image",
+            content_type="image/jpeg"
+        )
 
-		# query/filter
-		qs = Scholarship.objects.filter(provider__icontains='Reg')
-		self.assertTrue(qs.exists())
+        self.testimonial = Testimonial.objects.create(
+            name="Alice Smith",
+            position="Manager",
+            organization="Global Tech",
+            testimonial="Excellent service!",
+            image=self.image,
+        )
 
-		# delete
-		pk = s.pk
-		s.delete()
-		self.assertFalse(Scholarship.objects.filter(pk=pk).exists())
+    def test_model_fields_integrity(self):
+        self.assertEqual(self.testimonial.name, "Alice Smith")
+        self.assertEqual(self.testimonial.position, "Manager")
+        self.assertEqual(self.testimonial.organization, "Global Tech")
+        self.assertEqual(self.testimonial.testimonial, "Excellent service!")
+        self.assertTrue(self.testimonial.image.name.startswith("Testimonial/"))
 
-	def test_trainingcourse_full_lifecycle(self):
-		t = TrainingCourse.objects.create(title='Reg Course', category='Test', start_date=timezone.now().date())
-		self.assertIsNotNone(t.pk)
-		self.assertEqual(str(t), 'Reg Course')
+    def test_auto_date_regression(self):
+        self.assertEqual(self.testimonial.date, date.today())
 
-		# update
-		t.enrollment = 'Closed'
-		t.save()
-		t.refresh_from_db()
-		self.assertEqual(t.enrollment, 'Closed')
+    def test_str_method_regression(self):
+        self.assertEqual(str(self.testimonial), "Testimonial from Alice Smith")
 
-		# bulk operations: create additional entries and ensure queries work
-		TrainingCourse.objects.create(title='Reg Course 2')
-		TrainingCourse.objects.create(title='Reg Course 3')
-		self.assertGreaterEqual(TrainingCourse.objects.count(), 3)
+    def test_save_method_regression(self):
+        old_date = self.testimonial.date
+        self.testimonial.save()
+        self.assertEqual(self.testimonial.date, old_date)
+
+    def test_required_fields_regression(self):
+        test = Testimonial(
+            name="",
+            position="CEO",
+            organization="CompanyX",
+            testimonial="",
+            image=None
+        )
+
+        with self.assertRaises(ValidationError):
+            test.full_clean()

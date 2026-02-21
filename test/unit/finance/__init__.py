@@ -1,1 +1,2 @@
-"""finance tests package"""
+__all__ = []
+"""Finance unit tests package."""
