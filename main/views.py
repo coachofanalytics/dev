@@ -423,3 +423,21 @@ def create_plan(request):
         form = PlanForm()
 
     return render(request, "main/plan_create.html", {"form": form})
+
+
+
+
+
+
+def plan_update(request, pk):
+    plan = get_object_or_404(Plan, pk=pk)
+
+    if request.method == "POST":
+        form = PlanForm(request.POST, request.FILES, instance=plan)
+        if form.is_valid():
+            form.save()
+            return redirect('main:plan_list')  # ✅ FIXED
+    else:
+        form = PlanForm(instance=plan)
+
+    return render(request, "main/plan_update.html", {"form": form})

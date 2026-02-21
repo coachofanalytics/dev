@@ -24,6 +24,7 @@ path('testimonial_create/', views.testimonial_create, name='testimonial_create')
 path("testimonial_update/<int:pk>/", views.testimonial_update, name="testimonial_update"),
 path('planlist/', views.plan_list_view, name='plan_list'),
 path('plancreate/', views.create_plan, name='plan_create'),
+path("planupdate/<int:pk>/", views. plan_update, name="plan_update"),
 
 
 

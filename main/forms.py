@@ -1,6 +1,8 @@
 from django import forms
 from django.db.models import Q
 from accounts.models import CustomerUser
+from django import forms
+from main.models import Plan
 # from .models import Expenses
 from .models import *
 # from django.db import transactionfrom django import forms
@@ -25,3 +27,14 @@ class TestimonialForm(forms.ModelForm):
     class Meta:
         model = Testimonials
         fields = ['title', 'content', 'writer']
+
+
+        # main/forms.py
+
+
+
+
+class PlanForm(forms.ModelForm):
+    class Meta:
+        model = Plan
+        fields = "__all__"
