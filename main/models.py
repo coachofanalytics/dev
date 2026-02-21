@@ -149,11 +149,10 @@ class Pricing(models.Model):
 
         # models.py
 
-from django.db import models
-from django.utils.text import slugify
+
 
 class Testimonials(models.Model):
-    title = models.CharField(max_length=255)
+    title = models.CharField(null=False, max_length=255)
     slug = models.SlugField(unique=True, blank=True)
     content = models.TextField()
     date_posted = models.DateTimeField(auto_now_add=True)
@@ -178,3 +177,35 @@ class Testimonials(models.Model):
 
     def __str__(self):
         return self.title
+
+        # main/models.py
+
+from django.db import models
+
+
+class Plan(models.Model):
+    task = models.CharField(max_length=255, null=True, blank=True)
+    duration = models.IntegerField(null=True, blank=True)
+
+    created_at = models.DateTimeField(auto_now_add=True, null=True, blank=True)
+    updated_at = models.DateTimeField(auto_now=True, null=True, blank=True)
+
+    what = models.TextField(null=True, blank=True)
+    why = models.TextField(null=True, blank=True)
+    comments = models.TextField(null=True, blank=True)
+
+    doc = models.FileField(upload_to="plans/docs/", null=True, blank=True)
+
+    pptlink = models.CharField(max_length=500, null=True, blank=True)
+    videolink = models.CharField(max_length=500, null=True, blank=True)
+
+    is_active = models.BooleanField(default=True)
+    is_answered = models.BooleanField(default=False)
+    is_featured = models.BooleanField(default=False)
+
+    def __str__(self):
+        return self.task if self.task else f"Plan {self.id}"
+
+    class Meta:
+        db_table = "main_plan"
+        ordering = ["-created_at"]
