@@ -7,6 +7,8 @@ from django.shortcuts import render, get_object_or_404, redirect
 from main.models import Testimonials
 Testimonials.objects.all()
 Testimonials.objects.count()
+from django.shortcuts import render, redirect
+from main.forms import PlanForm
 
 from coda_project import settings
 from django.contrib.auth.mixins import LoginRequiredMixin
@@ -405,3 +407,19 @@ def plan_list_view(request):
     }
 
     return render(request, "main/plan_list.html", context)
+
+    # main/views/plan_views.py
+
+
+
+
+def create_plan(request):
+    if request.method == "POST":
+        form = PlanForm(request.POST, request.FILES)
+        if form.is_valid():
+            form.save()
+            return redirect("main:plan_list")  # redirect to list page
+    else:
+        form = PlanForm()
+
+    return render(request, "main/plan_create.html", {"form": form})

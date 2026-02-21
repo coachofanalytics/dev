@@ -19,9 +19,11 @@ path("location_detail/<int:pk>/", views.location_detail, name="location_detail")
 path("location_delete/<int:pk>/", views.location_delete, name="location_delete"),
 path('pricing/', views.pricing_list, name='pricing_list'),
 path('testimonials/', views.testimonials_list, name='testimonials_list'),
+
 path('testimonial_create/', views.testimonial_create, name='testimonial_create'),
 path("testimonial_update/<int:pk>/", views.testimonial_update, name="testimonial_update"),
 path('planlist/', views.plan_list_view, name='plan_list'),
+path('plancreate/', views.create_plan, name='plan_create'),
 
 
 
