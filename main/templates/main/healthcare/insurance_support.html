@@ -268,56 +268,74 @@
     }
 
     // --- 2. AI ANALYZER LOGIC ---
-    function runAnalysis() {
-        const btn = document.querySelector('#ai-form button');
-        const originalText = btn.innerHTML;
-        const resultDiv = document.getElementById('ai-result');
+     // --- 2. AI ANALYZER LOGIC (AUTOMATED) ---
+function runAnalysis() {
+    const btn = document.querySelector('#ai-form button');
+    const originalText = btn.innerHTML;
+    const resultDiv = document.getElementById('ai-result');
+    
+    // Show loading state
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Analyzing...';
+    btn.disabled = true;
+    btn.classList.add('opacity-75');
+
+    // Get form values
+    const age = document.getElementById('ai-age').value;
+    const residence = document.getElementById('ai-residence').value;
+    const priority = document.getElementById('ai-priority').value;
+
+    console.log("Sending AI request:", { age, residence, priority });
+
+    // Make API call to your backend
+    fetch('/healthcare/insurance-support/api/recommend/', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': csrftoken
+        },
+        body: JSON.stringify({
+            age: age,
+            residence: residence,
+            priority: priority
+        })
+    })
+    .then(response => {
+        if (!response.ok) {
+            throw new Error(`HTTP error ${response.status}`);
+        }
+        return response.json();
+    })
+    .then(data => {
+        console.log("AI Response:", data);
         
-        // Show loading state
-        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Analyzing...';
-        btn.disabled = true;
-        btn.classList.add('opacity-75');
-
-        // Get form values
-        const age = document.getElementById('ai-age').value;
-        const residence = document.getElementById('ai-residence').value;
-        const priority = document.getElementById('ai-priority').value;
-
-        // Make API call to your backend
-        fetch('/healthcare/insurance-support/api/recommend/', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRFToken': csrftoken
-            },
-            body: JSON.stringify({
-                age: age,
-                residence: residence,
-                priority: priority
-            })
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                document.getElementById('recommendation-name').innerText = data.plan_name;
-                document.getElementById('recommendation-text').innerText = data.recommendation_text;
-                currentRecommendedPlanId = data.plan_id;
-                resultDiv.classList.remove('hidden');
-            } else {
-                alert('Error: ' + (data.error || 'Could not get recommendation'));
-            }
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            alert('An error occurred. Please try again.');
-        })
-        .finally(() => {
-            // Reset button
-            btn.innerHTML = originalText;
-            btn.disabled = false;
-            btn.classList.remove('opacity-75');
-        });
-    }
+        if (data.success) {
+            // Update UI with recommendation from database
+            document.getElementById('recommendation-name').innerText = data.plan_name;
+            document.getElementById('recommendation-text').innerText = data.recommendation_text;
+            
+            // Store plan ID for quote button
+            currentRecommendedPlanId = data.plan_id;
+            
+            // Show the result
+            resultDiv.classList.remove('hidden');
+            
+            // Optional: Add animation
+            resultDiv.classList.add('animate-fade-in');
+        } else {
+            alert('Error: ' + (data.error || 'Could not get recommendation'));
+        }
+    })
+    .catch(error => {
+        console.error('AI Recommendation Error:', error);
+        alert('Unable to get recommendation. Please try again.');
+    })
+    .finally(() => {
+        // Reset button
+        btn.innerHTML = originalText;
+        btn.disabled = false;
+        btn.classList.remove('opacity-75');
+    });
+}    
 
     // --- 3. MODAL LOGIC ---
     function toggleModal() {
