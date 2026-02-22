@@ -63,8 +63,7 @@ INSTALLED_APPS = [
     "allauth.socialaccount.providers.facebook",
     "django_crontab",
     'memberjoin',
-    'communities'
-
+    'communities',
 ]
 
 DEFAULT_AUTO_FIELD = "django.db.models.AutoField"

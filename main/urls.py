@@ -69,4 +69,6 @@ urlpatterns = [
     path('governance/update/<int:pk>/', views.governance_update, name='governance_update'),
     path('governance/delete/<int:pk>/', views.governance_delete, name='governance_delete'),
 
+   
+
 ]    

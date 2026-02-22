@@ -262,7 +262,7 @@ class DefaultPaymentUpdateView(UpdateView):
             return super().form_valid(form)
         else:
             # return redirect("management:tasks")
-            return render(request,"management/contracts/supportcontract_form.html")
+            return render(self.request, "management/contracts/supportcontract_form.html")
 
     def test_func(self):
         task = self.get_object()
@@ -289,7 +289,7 @@ class PaymentInformationUpdateView(UpdateView):
             return super().form_valid(form)
         else:
             # return redirect("management:tasks")
-            return render(request,"main/snippets_templates/generalform.html")
+            return render(self.request, "main/snippets_templates/generalform.html")
 
     def test_func(self):
         task = self.get_object()
@@ -461,6 +461,10 @@ def budget_projection(request,subtitle='summary',duration=2024):
     # Create a list of unique categories
     available_categories = budget_summary.values_list('category__name', flat=True).distinct()
 
+    budget_months = list(range(1, 13))  # Months 1-12
+    budget_years = [2024]  # Add relevant years
+    rate = 1.0  # Exchange rate or conversion factor
+
     context = {
         # "departments": departments,
         "categories": available_categories,
@@ -500,3 +504,10 @@ def Payment_Review(request):
 
     
     return render(request,"finance/payments/Payment_Review.html",context)
+
+
+def homepage(request):
+    context ={
+        
+    }
+    return render(request,"finance/homepage/homepage.html",context)

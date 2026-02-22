@@ -12,6 +12,7 @@ from .views import (
 app_name = 'finance'
 urlpatterns = [
     #=============================FINANCES=====================================
+    path('', views.homepage, name='homepage'),
     
     path('transact/', views.transact, name='finance-transact'),
     path('transaction/', TransactionListView.as_view(), name='transaction-list'),
