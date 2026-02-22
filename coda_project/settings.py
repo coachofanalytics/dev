@@ -63,6 +63,7 @@ INSTALLED_APPS = [
     "django_crontab",
     'memberjoin',
     'communities',
+    'debug_toolbar',
 
 ]
 
@@ -90,6 +91,7 @@ MIDDLEWARE = [
     "whitenoise.middleware.WhiteNoiseMiddleware",
     'allauth.account.middleware.AccountMiddleware',
     # 'Middleware.MiddlewareFile.MailMiddleware'
+    'debug_toolbar.middleware.DebugToolbarMiddleware',
 
 ]
 
@@ -253,7 +255,7 @@ CRISPY_TEMPLATE_PACK = "bootstrap4"
 LOGIN_REDIRECT_URL = "main:layout"
 LOGIN_URL = "accounts:account-login"
 
-# EMAIL_BACKEND = "django.core.mail.backends.filebased.EmailBackend"
+
 # EMAIL_FILE_PATH = BASE_DIR + "/emails"
 
 # Gmail Email Backend Account
@@ -370,12 +372,16 @@ LOGIN_REDIRECT_URL = "main:layout"
 LOGIN_URL = "accounts:account-login"
 
 # Email Configuration
-EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-EMAIL_HOST = 'smtp.gmail.com'  # or your email host
+EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
-EMAIL_HOST_USER = 'your-email@gmail.com'
-EMAIL_HOST_PASSWORD = 'your-app-password'
+EMAIL_HOST_USER = 'your-email@gmail.com'  # Your full Gmail address
+EMAIL_HOST_PASSWORD = 'your-16-character-app-password'  # The app password you generated (remove spaces)
 DEFAULT_FROM_EMAIL = 'your-email@gmail.com'
-ADMIN_EMAIL = 'admin@diasporacounty48.com'  # Where to send admin notifications
-SITE_URL = 'http://127.0.0.1:8000'  # Change in production
+ADMIN_EMAIL = 'your-email@gmail.com'  # Send admin notifications to yourself for testing
+
+# Site URL for email links
+SITE_URL = 'http://127.0.0.1:8000'
+
+

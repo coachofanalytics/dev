@@ -4,6 +4,10 @@ from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.utils import timezone
 from django.urls import reverse
+from django.core.mail import send_mail, EmailMultiAlternatives
+from django.template.loader import render_to_string
+from django.utils.html import strip_tags
+
 
 User = get_user_model()
 
@@ -628,3 +632,76 @@ class ExpertInquiry(models.Model):
             'urgent': urgent,
             'overdue': overdue,
         }
+    
+    def send_notifications(self):
+        """Send email notifications to admin and auto-reply to user"""
+        from django.db import transaction
+        transaction.on_commit(lambda: self._send_emails())
+    
+    def _send_emails(self):
+        """Internal method to send emails"""
+        try:
+            # Send email to admin
+            self._send_admin_notification()
+            
+            # Send auto-reply to user
+            self._send_user_autoreply()
+            
+            # Add note about email notification
+            self.add_note("📧 Email notifications sent to admin and user")
+            print(f"📧 Emails sent for inquiry #{self.id}")
+            
+        except Exception as e:
+            error_msg = f"❌ Failed to send emails: {str(e)}"
+            print(error_msg)
+            self.add_note(error_msg)
+    
+    def _send_admin_notification(self):
+        """Send notification email to admin"""
+        subject = f"New Insurance Inquiry: {self.full_name}"
+        
+        # HTML email
+        html_content = render_to_string('main/emails/admin_notification.html', {
+            'inquiry': self,
+            'site_url': settings.SITE_URL
+        })
+        
+        # Text email
+        text_content = render_to_string('main/emails/admin_notification.txt', {
+            'inquiry': self,
+            'site_url': settings.SITE_URL
+        })
+        
+        # Send email
+        msg = EmailMultiAlternatives(
+            subject=subject,
+            body=text_content,
+            from_email=settings.DEFAULT_FROM_EMAIL,
+            to=[settings.ADMIN_EMAIL]
+        )
+        msg.attach_alternative(html_content, "text/html")
+        msg.send()
+    
+    def _send_user_autoreply(self):
+        """Send auto-reply email to the user"""
+        subject = "Thank you for contacting Diaspora County 48 Insurance Support"
+        
+        # HTML email
+        html_content = render_to_string('main/emails/user_autoreply.html', {
+            'inquiry': self
+        })
+        
+        # Text email
+        text_content = render_to_string('main/emails/user_autoreply.txt', {
+            'inquiry': self
+        })
+        
+        # Send email
+        msg = EmailMultiAlternatives(
+            subject=subject,
+            body=text_content,
+            from_email=settings.DEFAULT_FROM_EMAIL,
+            to=[self.email]
+        )
+        msg.attach_alternative(html_content, "text/html")
+        msg.send()

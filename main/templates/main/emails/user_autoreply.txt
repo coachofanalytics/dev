@@ -1,0 +1,30 @@
+Dear {{ inquiry.full_name }},
+
+Thank you for contacting the Diaspora County 48 Insurance Support team!
+
+We have received your inquiry and one of our experts will get back to you within 24 hours.
+
+📋 YOUR INQUIRY SUMMARY:
+------------------------
+Date: {{ inquiry.created_at|date:"F j, Y - g:i A" }}
+{% if inquiry.interested_plan %}Plan of Interest: {{ inquiry.interested_plan.provider_name }} {{ inquiry.interested_plan.plan_name }}
+{% endif %}
+
+Your question:
+"{{ inquiry.question }}"
+
+{% if inquiry.get_priority == "URGENT" %}🚨 URGENT: If you need immediate assistance, please call our 24/7 emergency hotline: +1 (234) 567-890
+{% endif %}
+⏰ WHAT HAPPENS NEXT:
+1. An insurance expert will review your inquiry within 24 hours
+2. You'll receive a personalized response via email
+3. If needed, we may schedule a phone consultation
+
+If you have any additional information to add, simply reply to this email.
+
+Best regards,
+The Insurance Support Team
+Diaspora County 48
+
+---
+This is an automated response. Please do not reply to this email.
