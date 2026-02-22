@@ -998,15 +998,29 @@ def test_user_endpoint(request):
 
 
 
+
 def insurance_support(request):
     """Main insurance support page view"""
-    # Get all active insurance plans ordered by display_order
-    insurance_plans = InsurancePlan.objects.filter(is_active=True).order_by('display_order', '-score')
+    # Get all active insurance plans ordered by display_order and score
+    insurance_plans = InsurancePlan.objects.filter(
+        is_active=True
+    ).order_by('display_order', '-score')
+    
+    # Get featured plans (top 3 by score)
+    featured_plans = insurance_plans[:3]
+    
+    # Get stats for the template
+    total_plans = insurance_plans.count()
+    highest_score = insurance_plans.first().score if total_plans > 0 else 0
     
     context = {
         'insurance_plans': insurance_plans,
+        'featured_plans': featured_plans,
+        'total_plans': total_plans,
+        'highest_score': highest_score,
         'page_title': 'Insurance Support',
     }
+    
     return render(request, 'main/healthcare/insurance_support.html', context)
 
 
