@@ -75,9 +75,9 @@
                         <div class="font-bold text-brand-blue text-sm">Top Pick</div>
                     </div>
                     <div>
-                        <h3 class="text-lg font-bold text-gray-900 mb-2">Based on your inputs, we recommend: <span id="recommendation-name" class="text-brand-green">Cigna Global Gold</span></h3>
-                        <p id="recommendation-text" class="text-gray-600 text-sm mb-4">This plan offers the best balance for residents in the USA requiring comprehensive coverage. It includes robust repatriation benefits suited for your age bracket.</p>
-                        <button onclick="toggleModal()" class="text-xs font-bold text-brand-blue hover:underline">Get a quote for this plan &rarr;</button>
+                        <h3 class="text-lg font-bold text-gray-900 mb-2">Based on your inputs, we recommend: <span id="recommendation-name" class="text-brand-green"></span></h3>
+                        <p id="recommendation-text" class="text-gray-600 text-sm mb-4"></p>
+                        <button onclick="toggleModalWithPlan()" class="text-xs font-bold text-brand-blue hover:underline">Get a quote for this plan &rarr;</button>
                     </div>
                 </div>
             </div>
@@ -141,7 +141,7 @@
             <div class="p-8 border-b bg-gray-50 flex justify-between items-center flex-wrap gap-4">
                 <div>
                     <h2 class="text-2xl font-black text-brand-blue">Plan Comparison Tool</h2>
-                    <p class="text-gray-500">Top rated plans for Diaspora members in 2024</p>
+                    <p class="text-gray-500">Top rated plans for Diaspora members in {% now "Y" %}</p>
                 </div>
                 <!-- ACTIVE DOWNLOAD BUTTON -->
                 <button onclick="downloadCSV()" class="bg-brand-blue text-white px-6 py-3 rounded-xl font-bold text-sm uppercase tracking-widest hover:bg-blue-900 transition flex items-center gap-2">
@@ -160,27 +160,27 @@
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-gray-100">
+                        {% for plan in insurance_plans %}
                         <tr class="hover:bg-blue-50/30 transition">
-                            <td class="px-8 py-6 font-bold text-brand-blue">Cigna Global Gold</td>
-                            <td class="px-8 py-6 text-gray-600">Worldwide (inc. USA)</td>
-                            <td class="px-8 py-6 text-gray-600">$2,000,000</td>
-                            <td class="px-8 py-6"><span class="bg-green-100 text-green-700 px-3 py-1 rounded-full text-xs font-bold uppercase">Included</span></td>
-                            <td class="px-8 py-6 text-brand-green font-black">9.8/10</td>
+                            <td class="px-8 py-6 font-bold text-brand-blue">{{ plan.provider_name }} {{ plan.plan_name }}</td>
+                            <td class="px-8 py-6 text-gray-600">{{ plan.network }}</td>
+                            <td class="px-8 py-6 text-gray-600">{{ plan.max_benefit }}</td>
+                            <td class="px-8 py-6">
+                                {% if "Included" in plan.evacuation %}
+                                <span class="bg-green-100 text-green-700 px-3 py-1 rounded-full text-xs font-bold uppercase">{{ plan.evacuation }}</span>
+                                {% else %}
+                                <span class="bg-blue-100 text-blue-700 px-3 py-1 rounded-full text-xs font-bold uppercase">{{ plan.evacuation }}</span>
+                                {% endif %}
+                            </td>
+                            <td class="px-8 py-6 text-brand-green font-black">{{ plan.score }}/10</td>
                         </tr>
-                        <tr class="hover:bg-blue-50/30 transition">
-                            <td class="px-8 py-6 font-bold text-brand-blue">Allianz Care Premier</td>
-                            <td class="px-8 py-6 text-gray-600">Worldwide (excl. USA)</td>
-                            <td class="px-8 py-6 text-gray-600">$1,500,000</td>
-                            <td class="px-8 py-6"><span class="bg-green-100 text-green-700 px-3 py-1 rounded-full text-xs font-bold uppercase">Included</span></td>
-                            <td class="px-8 py-6 text-brand-green font-black">9.5/10</td>
+                        {% empty %}
+                        <tr>
+                            <td colspan="5" class="px-8 py-6 text-center text-gray-500">
+                                No insurance plans available at the moment.
+                            </td>
                         </tr>
-                        <tr class="hover:bg-blue-50/30 transition">
-                            <td class="px-8 py-6 font-bold text-brand-blue">Aetna Pioneer</td>
-                            <td class="px-8 py-6 text-gray-600">Global Plus</td>
-                            <td class="px-8 py-6 text-gray-600">$1,000,000</td>
-                            <td class="px-8 py-6"><span class="bg-blue-100 text-blue-700 px-3 py-1 rounded-full text-xs font-bold uppercase">Optional Add-on</span></td>
-                            <td class="px-8 py-6 text-brand-green font-black">8.9/10</td>
-                        </tr>
+                        {% endfor %}
                     </tbody>
                 </table>
             </div>
@@ -218,18 +218,23 @@
                         <h3 class="text-lg leading-6 font-bold text-gray-900" id="modal-title">Speak to an Insurance Expert</h3>
                         <div class="mt-2">
                             <p class="text-sm text-gray-500 mb-4">Fill out the form below and a specialist will contact you within 24 hours.</p>
-                            <form id="contactForm" onsubmit="handleFormSubmit(event)" class="space-y-4">
+                            <form id="contactForm" onsubmit="handleFormSubmit(event)" class="space-y-4" method="POST">
+                                <input type="hidden" name="plan_id" id="selected-plan-id">
                                 <div>
                                     <label class="block text-xs font-bold text-gray-700 uppercase mb-1">Full Name</label>
-                                    <input type="text" required class="w-full border-gray-300 rounded-lg shadow-sm focus:border-brand-green focus:ring focus:ring-brand-green focus:ring-opacity-50 p-2 border">
+                                    <input type="text" name="full_name" required class="w-full border-gray-300 rounded-lg shadow-sm focus:border-brand-green focus:ring focus:ring-brand-green focus:ring-opacity-50 p-2 border">
                                 </div>
                                 <div>
                                     <label class="block text-xs font-bold text-gray-700 uppercase mb-1">Email Address</label>
-                                    <input type="email" required class="w-full border-gray-300 rounded-lg shadow-sm focus:border-brand-green focus:ring focus:ring-brand-green focus:ring-opacity-50 p-2 border">
+                                    <input type="email" name="email" required class="w-full border-gray-300 rounded-lg shadow-sm focus:border-brand-green focus:ring focus:ring-brand-green focus:ring-opacity-50 p-2 border">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-bold text-gray-700 uppercase mb-1">Phone (Optional)</label>
+                                    <input type="tel" name="phone" class="w-full border-gray-300 rounded-lg shadow-sm focus:border-brand-green focus:ring focus:ring-brand-green focus:ring-opacity-50 p-2 border">
                                 </div>
                                 <div>
                                     <label class="block text-xs font-bold text-gray-700 uppercase mb-1">Question / Concern</label>
-                                    <textarea rows="3" class="w-full border-gray-300 rounded-lg shadow-sm focus:border-brand-green focus:ring focus:ring-brand-green focus:ring-opacity-50 p-2 border"></textarea>
+                                    <textarea name="question" rows="3" required class="w-full border-gray-300 rounded-lg shadow-sm focus:border-brand-green focus:ring focus:ring-brand-green focus:ring-opacity-50 p-2 border"></textarea>
                                 </div>
                                 <div class="mt-4 flex justify-end gap-3">
                                     <button type="button" onclick="toggleModal()" class="inline-flex justify-center px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none">
@@ -248,104 +253,189 @@
     </div>
 </div>
 
+{% csrf_token %}
+
 <script>
+    // Get CSRF token
+    const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+
+    // Store the current recommended plan ID
+    let currentRecommendedPlanId = null;
+
     // --- 1. DOWNLOAD CSV FUNCTIONALITY ---
     function downloadCSV() {
-        const table = document.getElementById("comparison-table");
-        let csv = [];
-        
-        // Get Headers
-        const rows = table.querySelectorAll("tr");
-        
-        for (let i = 0; i < rows.length; i++) {
-            let row = [], cols = rows[i].querySelectorAll("td, th");
-            
-            for (let j = 0; j < cols.length; j++) {
-                // Clean text content: remove newlines, extra spaces
-                let data = cols[j].innerText.replace(/(\r\n|\n|\r)/gm, " ").replace(/\s+/g, " ").trim();
-                row.push('"' + data + '"'); // Escape double quotes if needed, but simple quoting works here
-            }
-            csv.push(row.join(","));
-        }
-
-        // Create CSV File
-        let csvFile = new Blob([csv.join("\n")], {type: "text/csv"});
-        let downloadLink = document.createElement("a");
-        downloadLink.download = "insurance_comparison_2024.csv";
-        downloadLink.href = window.URL.createObjectURL(csvFile);
-        downloadLink.style.display = "none";
-        document.body.appendChild(downloadLink);
-        downloadLink.click();
-        document.body.removeChild(downloadLink);
+        window.location.href = '/healthcare/insurance-support/download-csv/';
     }
 
     // --- 2. AI ANALYZER LOGIC ---
     function runAnalysis() {
         const btn = document.querySelector('#ai-form button');
         const originalText = btn.innerHTML;
+        const resultDiv = document.getElementById('ai-result');
         
         // Show loading state
         btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Analyzing...';
         btn.disabled = true;
         btn.classList.add('opacity-75');
 
-        // Simulate AI processing time
-        setTimeout(() => {
-            const age = document.getElementById('ai-age').value;
-            const residence = document.getElementById('ai-residence').value;
-            const priority = document.getElementById('ai-priority').value;
-            
-            let recName = "Cigna Global Gold";
-            let recDesc = "Based on your inputs, this plan offers the best balance.";
+        // Get form values
+        const age = document.getElementById('ai-age').value;
+        const residence = document.getElementById('ai-residence').value;
+        const priority = document.getElementById('ai-priority').value;
 
-            // Simple Logic Tree
-            if (priority === 'budget') {
-                recName = "Aetna Pioneer";
-                recDesc = "This is the most cost-effective option while still maintaining essential global coverage.";
-            } else if (residence === 'usa' || priority === 'comprehensive') {
-                recName = "Cigna Global Gold";
-                recDesc = "Living in the USA or wanting full coverage requires high benefit limits. Cigna is the industry leader here.";
-            } else if (age === 'senior') {
-                recName = "Allianz Care Premier";
-                recDesc = "Allianz offers excellent geriatric support and chronic care management suitable for your demographic.";
+        // Make API call to your backend
+        fetch('/healthcare/insurance-support/api/recommend/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': csrftoken
+            },
+            body: JSON.stringify({
+                age: age,
+                residence: residence,
+                priority: priority
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                document.getElementById('recommendation-name').innerText = data.plan_name;
+                document.getElementById('recommendation-text').innerText = data.recommendation_text;
+                currentRecommendedPlanId = data.plan_id;
+                resultDiv.classList.remove('hidden');
+            } else {
+                alert('Error: ' + (data.error || 'Could not get recommendation'));
             }
-
-            // Update UI
-            document.getElementById('recommendation-name').innerText = recName;
-            document.getElementById('recommendation-text').innerText = recDesc;
-            
-            document.getElementById('ai-result').classList.remove('hidden');
-            
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('An error occurred. Please try again.');
+        })
+        .finally(() => {
             // Reset button
             btn.innerHTML = originalText;
             btn.disabled = false;
             btn.classList.remove('opacity-75');
-        }, 1500);
+        });
     }
 
     // --- 3. MODAL LOGIC ---
     function toggleModal() {
-        const body = document.querySelector('body');
         const modal = document.getElementById('expertModal');
         modal.classList.toggle('hidden');
-        body.classList.toggle('modal-active');
+        // Clear any previously selected plan
+        document.getElementById('selected-plan-id').value = '';
+    }
+
+    function toggleModalWithPlan() {
+        const modal = document.getElementById('expertModal');
+        if (currentRecommendedPlanId) {
+            document.getElementById('selected-plan-id').value = currentRecommendedPlanId;
+        }
+        modal.classList.toggle('hidden');
     }
 
     function handleFormSubmit(e) {
-        e.preventDefault();
-        // Simulate form submission
-        const btn = e.target.querySelector('button[type="submit"]');
-        const originalText = btn.innerText;
+    e.preventDefault();  // This should prevent the default form submission
+    console.log("Form submission intercepted");
+    
+    const form = e.target;
+    const btn = form.querySelector('button[type="submit"]');
+    const originalText = btn.innerText;
+    
+    btn.innerText = "Sending...";
+    btn.disabled = true;
+    
+    // Collect form data
+    const formData = {
+        full_name: form.querySelector('input[name="full_name"]').value,
+        email: form.querySelector('input[name="email"]').value,
+        phone: form.querySelector('input[name="phone"]')?.value || '',
+        question: form.querySelector('textarea[name="question"]').value,
+        plan_id: form.querySelector('input[name="plan_id"]')?.value || null
+    };
+
+    console.log("Form data:", formData);
+    console.log("Sending POST request to:", '/healthcare/insurance-support/api/inquiry/');
+
+    // Submit to API - explicitly set method to POST
+    fetch('/healthcare/insurance-support/api/inquiry/', {
+        method: 'POST',  // Make sure this is POST
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': csrftoken,
+            'X-Requested-With': 'XMLHttpRequest'  // Add this header
+        },
+        body: JSON.stringify(formData)
+    })
+    .then(response => {
+        console.log("Response status:", response.status);
+        console.log("Response headers:", response.headers);
         
-        btn.innerText = "Sending...";
-        
-        setTimeout(() => {
-            alert("Request sent successfully! An expert will contact you shortly.");
-            toggleModal();
-            btn.innerText = originalText;
-            e.target.reset();
-        }, 1000);
+        if (!response.ok) {
+            // Try to get error message from response
+            return response.text().then(text => {
+                console.log("Error response text:", text);
+                throw new Error(`HTTP error ${response.status}: ${text.substring(0, 100)}`);
+            });
+        }
+        return response.json();
+    })
+    .then(data => {
+        console.log("Success response:", data);
+        alert(data.message || "Request sent successfully!");
+        toggleModal();
+        form.reset();
+    })
+    .catch(error => {
+        console.error("Fetch error:", error);
+        alert("Network error: " + error.message);
+    })
+    .finally(() => {
+        btn.innerText = originalText;
+        btn.disabled = false;
+    });
+}    
+    // Close modal when clicking outside
+    window.onclick = function(event) {
+        const modal = document.getElementById('expertModal');
+        if (event.target == modal) {
+            modal.classList.add('hidden');
+        }
     }
 </script>
 
-{% endblock content%}
+<style>
+    .animate-fade-in {
+        animation: fadeIn 0.5s ease-in-out;
+    }
+    
+    @keyframes fadeIn {
+        from {
+            opacity: 0;
+            transform: translateY(-10px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+    
+    .ai-pulse {
+        animation: pulse 2s infinite;
+    }
+    
+    @keyframes pulse {
+        0% {
+            box-shadow: 0 0 0 0 rgba(74, 144, 44, 0.4);
+        }
+        70% {
+            box-shadow: 0 0 0 10px rgba(74, 144, 44, 0);
+        }
+        100% {
+            box-shadow: 0 0 0 0 rgba(74, 144, 44, 0);
+        }
+    }
+</style>
+
+{% endblock %}

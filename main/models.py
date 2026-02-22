@@ -446,6 +446,8 @@ class AIRecommendationRule(models.Model):
         return f"{self.get_age_bracket_display()} - {self.get_residence_display()} - {self.get_priority_display()}"
 
 
+# In main/models.py - Update your ExpertInquiry class
+
 class ExpertInquiry(models.Model):
     """Store expert consultation requests from the modal form"""
     full_name = models.CharField(max_length=200)
@@ -465,3 +467,164 @@ class ExpertInquiry(models.Model):
     
     def __str__(self):
         return f"Inquiry from {self.full_name} - {self.created_at.strftime('%Y-%m-%d')}"
+    
+    # ============= AUTOMATION METHODS =============
+    
+    def save(self, *args, **kwargs):
+        """Override save to add automation logic"""
+        is_new = self.pk is None  # Check if this is a new inquiry
+        
+        # Auto-add priority note based on question content
+        if is_new:
+            self.auto_set_priority_note()
+        
+        # Call the original save
+        super().save(*args, **kwargs)
+        
+        # Trigger notifications for new inquiries
+        if is_new:
+            print(f"🔔 New inquiry #{self.id} from {self.full_name}")
+            # We'll add email notifications in the next step
+    
+    def auto_set_priority_note(self):
+        """Automatically add priority note based on question content"""
+        urgent_keywords = [
+            'emergency', 'urgent', 'asap', 'immediately', 'critical', 
+            'hospital', 'accident', 'death', 'heart attack', 'stroke',
+            'panic', 'desperate', 'cannot wait', 'as soon as possible'
+        ]
+        high_keywords = [
+            'claim', 'denied', 'problem', 'issue', 'help', 'cancel', 
+            'refund', 'complaint', 'confused', 'understand', 'explain',
+            'coverage', 'benefit', 'expensive', 'cost'
+        ]
+        
+        question_lower = self.question.lower()
+        
+        # Check for urgent keywords
+        for keyword in urgent_keywords:
+            if keyword in question_lower:
+                priority_note = "🔴 URGENT - Needs immediate attention (within 4 hours)"
+                break
+        else:
+            # Check for high priority keywords
+            for keyword in high_keywords:
+                if keyword in question_lower:
+                    priority_note = "🟠 HIGH PRIORITY - Address within 24 hours"
+                    break
+            else:
+                priority_note = "🟢 NORMAL PRIORITY - Handle within 48 hours"
+        
+        # Add timestamp to the note
+        from django.utils import timezone
+        timestamp = timezone.now().strftime('%Y-%m-%d %H:%M')
+        
+        # Add to notes
+        if self.notes:
+            self.notes = f"[{timestamp}] {priority_note}\n{self.notes}"
+        else:
+            self.notes = f"[{timestamp}] {priority_note}"
+    
+    # ============= UTILITY METHODS =============
+    
+    def mark_as_contacted(self, notes=None):
+        """Mark this inquiry as contacted"""
+        from django.utils import timezone
+        
+        self.is_contacted = True
+        timestamp = timezone.now().strftime('%Y-%m-%d %H:%M')
+        
+        contact_note = f"[{timestamp}] ✅ Marked as contacted"
+        if notes:
+            contact_note += f" - Notes: {notes}"
+        
+        if self.notes:
+            self.notes += f"\n{contact_note}"
+        else:
+            self.notes = contact_note
+        
+        self.save(update_fields=['is_contacted', 'notes', 'updated_at'])
+        print(f"✅ Inquiry #{self.id} marked as contacted")
+    
+    def add_note(self, note):
+        """Add a note to this inquiry"""
+        from django.utils import timezone
+        
+        timestamp = timezone.now().strftime('%Y-%m-%d %H:%M')
+        note_entry = f"[{timestamp}] 📝 {note}"
+        
+        if self.notes:
+            self.notes += f"\n{note_entry}"
+        else:
+            self.notes = note_entry
+        
+        self.save(update_fields=['notes', 'updated_at'])
+        print(f"📝 Note added to inquiry #{self.id}")
+    
+    def get_priority(self):
+        """Extract priority from notes"""
+        if self.notes:
+            if "🔴 URGENT" in self.notes:
+                return "URGENT"
+            elif "🟠 HIGH" in self.notes:
+                return "HIGH"
+        return "NORMAL"
+    
+    def days_since_created(self):
+        """Get number of days since creation"""
+        from django.utils import timezone
+        delta = timezone.now() - self.created_at
+        return delta.days
+    
+    def hours_since_created(self):
+        """Get hours since creation (for urgent tracking)"""
+        from django.utils import timezone
+        delta = timezone.now() - self.created_at
+        return delta.total_seconds() / 3600
+    
+    def is_overdue(self):
+        """Check if inquiry is overdue (>2 days and not contacted)"""
+        return not self.is_contacted and self.days_since_created() >= 2
+    
+    def is_urgent_overdue(self):
+        """Check if urgent inquiry is overdue (>4 hours and not contacted)"""
+        return (not self.is_contacted and 
+                self.get_priority() == "URGENT" and 
+                self.hours_since_created() >= 4)
+    
+    # ============= CLASS METHODS =============
+    
+    @classmethod
+    def get_uncontacted_inquiries(cls):
+        """Get all inquiries that haven't been contacted"""
+        return cls.objects.filter(is_contacted=False).order_by('-created_at')
+    
+    @classmethod
+    def get_urgent_inquiries(cls):
+        """Get all urgent inquiries"""
+        urgent_list = []
+        for inquiry in cls.objects.filter(is_contacted=False):
+            if inquiry.get_priority() == "URGENT":
+                urgent_list.append(inquiry)
+        return urgent_list
+    
+    @classmethod
+    def get_overdue_inquiries(cls):
+        """Get all overdue inquiries"""
+        return [i for i in cls.objects.filter(is_contacted=False) if i.is_overdue()]
+    
+    @classmethod
+    def get_stats(cls):
+        """Get statistics about inquiries"""
+        total = cls.objects.count()
+        uncontacted = cls.objects.filter(is_contacted=False).count()
+        urgent = len(cls.get_urgent_inquiries())
+        overdue = len(cls.get_overdue_inquiries())
+        
+        return {
+            'total': total,
+            'uncontacted': uncontacted,
+            'contacted': total - uncontacted,
+            'urgent': urgent,
+            'overdue': overdue,
+        }
