@@ -32,4 +32,7 @@ admin.site.register(Governance)
 from .models import ConsularAssistancePage
 admin.site.register(ConsularAssistancePage)
 
+admin.site.register(AppointmentRequest)
+admin.site.register(Doctor)
+
 
