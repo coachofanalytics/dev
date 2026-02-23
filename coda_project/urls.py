@@ -74,6 +74,8 @@ urlpatterns = [
     path('testimonials/<int:pk>/', main_views.testimonial_detail, name='testimonial_detail'),
     path('testimonials/<int:pk>/edit/', main_views.testimonial_update, name='testimonial_update'),
     path('testimonials/<int:pk>/delete/', main_views.testimonial_delete, name='testimonial_delete'),
+    # Keep some legacy, un-namespaced routes for templates that expect them
+    path('find-doctors/', main_views.find_doctors, name='find_doctors'),
 
     path("", include("main.urls", namespace="main")),
     path('member/', include('memberjoin.urls')),

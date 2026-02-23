@@ -51,6 +51,10 @@ urlpatterns = [
     path('500/', views.hendler500, name='500-error'),
 
     path('data/medical-resource-form/', views.medical_resource_form, name='medical_resource_form'),
+    path('', views.home, name='home'),
+    path('find-doctors/', views.find_doctors, name='find_doctors'),
+    path('api/doctor/<int:pk>/', views.doctor_profile_api, name='doctor_profile_api'),
+    path('api/doctor/<int:pk>/book/', views.book_appointment, name='book_appointment'),
     # Scholarship search (root-level /scholarship)
     path('scholarship', views.scholarship_search, name='scholarship_search'),
 
