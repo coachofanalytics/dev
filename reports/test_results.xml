@@ -1,0 +1,143 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="22" failures="0" skipped="1" tests="23" time="9.045" timestamp="2026-01-19T12:53:50.570161+02:00" hostname="DESKTOP-3E89KML"><testcase classname="" name="accounts.tests.regression.test_regression_models" time="0.000"><skipped message="collection skipped">('C:\\Users\\Serge\\Desktop\\DC48k_Train\\dev\\accounts\\tests\\regression\\test_regression_models.py', 4, 'unittest.case.SkipTest: Disabled: non-crisis regression tests')</skipped></testcase><testcase classname="" name="accounts.tests.unit.test_forms" time="0.000"><error message="collection failure">accounts\tests\unit\test_forms.py:2: in &lt;module&gt;
+    from accounts.forms import UserForm
+accounts\forms.py:2: in &lt;module&gt;
+    from .models import *
+accounts\models.py:11: in &lt;module&gt;
+    class CustomerUser(AbstractUser):
+..\ss_venv\Lib\site-packages\django\db\models\base.py:113: in __new__
+    raise RuntimeError(
+E   RuntimeError: Model class accounts.models.CustomerUser doesn't declare an explicit app_label and isn't in an application in INSTALLED_APPS.</error></testcase><testcase classname="" name="accounts.tests.unit.test_models" time="0.000"><error message="collection failure">accounts\tests\unit\test_models.py:2: in &lt;module&gt;
+    from accounts.models import User, Department, Credential, CredentialCategory, TaskGroups, Tracker
+accounts\models.py:11: in &lt;module&gt;
+    class CustomerUser(AbstractUser):
+..\ss_venv\Lib\site-packages\django\db\models\base.py:113: in __new__
+    raise RuntimeError(
+E   RuntimeError: Model class accounts.models.CustomerUser doesn't declare an explicit app_label and isn't in an application in INSTALLED_APPS.</error></testcase><testcase classname="" name="accounts.tests.unit.test_views" time="0.000"><error message="collection failure">accounts\tests\unit\test_views.py:5: in &lt;module&gt;
+    from accounts.views import *
+accounts\views.py:3: in &lt;module&gt;
+    from .models import CustomerUser, Membership
+accounts\models.py:11: in &lt;module&gt;
+    class CustomerUser(AbstractUser):
+..\ss_venv\Lib\site-packages\django\db\models\base.py:113: in __new__
+    raise RuntimeError(
+E   RuntimeError: Model class accounts.models.CustomerUser doesn't declare an explicit app_label and isn't in an application in INSTALLED_APPS.</error></testcase><testcase classname="" name="main.tests.integration.test_integration_forms" time="0.000"><error message="collection failure">main\tests\integration\test_integration_forms.py:14: in &lt;module&gt;
+    from main.models import Testimonial
+main\models.py:12: in &lt;module&gt;
+    class Page(models.Model):
+..\ss_venv\Lib\site-packages\django\db\models\base.py:113: in __new__
+    raise RuntimeError(
+E   RuntimeError: Model class main.models.Page doesn't declare an explicit app_label and isn't in an application in INSTALLED_APPS.</error></testcase><testcase classname="" name="main.tests.integration.test_integration_models" time="0.000"><error message="collection failure">main\tests\integration\test_integration_models.py:4: in &lt;module&gt;
+    from main.models import Scholarship, TrainingCourse
+main\models.py:12: in &lt;module&gt;
+    class Page(models.Model):
+..\ss_venv\Lib\site-packages\django\db\models\base.py:113: in __new__
+    raise RuntimeError(
+E   RuntimeError: Model class main.models.Page doesn't declare an explicit app_label and isn't in an application in INSTALLED_APPS.</error></testcase><testcase classname="" name="main.tests.integration.test_integration_performance" time="0.000"><error message="collection failure">main\tests\integration\test_integration_performance.py:11: in &lt;module&gt;
+    from main.models import Testimonial
+main\models.py:12: in &lt;module&gt;
+    class Page(models.Model):
+..\ss_venv\Lib\site-packages\django\db\models\base.py:113: in __new__
+    raise RuntimeError(
+E   RuntimeError: Model class main.models.Page doesn't declare an explicit app_label and isn't in an application in INSTALLED_APPS.</error></testcase><testcase classname="" name="main.tests.integration.test_integration_templates" time="0.000"><error message="collection failure">main\tests\integration\test_integration_templates.py:18: in &lt;module&gt;
+    from main.models import Testimonial
+main\models.py:12: in &lt;module&gt;
+    class Page(models.Model):
+..\ss_venv\Lib\site-packages\django\db\models\base.py:113: in __new__
+    raise RuntimeError(
+E   RuntimeError: Model class main.models.Page doesn't declare an explicit app_label and isn't in an application in INSTALLED_APPS.</error></testcase><testcase classname="" name="main.tests.integration.test_integration_urls" time="0.000"><error message="collection failure">main\tests\integration\test_integration_urls.py:8: in &lt;module&gt;
+    from main import views
+main\views.py:13: in &lt;module&gt;
+    from .models import Assets,Description, News, Page, Service, SubService,Team, SafetyAlertSubscription, EmergencyHotline, StaffContact
+main\models.py:12: in &lt;module&gt;
+    class Page(models.Model):
+..\ss_venv\Lib\site-packages\django\db\models\base.py:113: in __new__
+    raise RuntimeError(
+E   RuntimeError: Model class main.models.Page doesn't declare an explicit app_label and isn't in an application in INSTALLED_APPS.</error></testcase><testcase classname="" name="main.tests.integration.test_integration_views" time="0.000"><error message="collection failure">main\tests\integration\test_integration_views.py:9: in &lt;module&gt;
+    from main.models import Testimonial
+main\models.py:12: in &lt;module&gt;
+    class Page(models.Model):
+..\ss_venv\Lib\site-packages\django\db\models\base.py:113: in __new__
+    raise RuntimeError(
+E   RuntimeError: Model class main.models.Page doesn't declare an explicit app_label and isn't in an application in INSTALLED_APPS.</error></testcase><testcase classname="" name="main.tests.performance.test_performance_models" time="0.000"><error message="collection failure">main\tests\performance\test_performance_models.py:5: in &lt;module&gt;
+    from main.models import Scholarship, TrainingCourse, Testimonial
+main\models.py:12: in &lt;module&gt;
+    class Page(models.Model):
+..\ss_venv\Lib\site-packages\django\db\models\base.py:113: in __new__
+    raise RuntimeError(
+E   RuntimeError: Model class main.models.Page doesn't declare an explicit app_label and isn't in an application in INSTALLED_APPS.</error></testcase><testcase classname="" name="main.tests.regression.test_regression_forms" time="0.000"><error message="collection failure">main\tests\regression\test_regression_forms.py:7: in &lt;module&gt;
+    from main.models import Testimonial
+main\models.py:12: in &lt;module&gt;
+    class Page(models.Model):
+..\ss_venv\Lib\site-packages\django\db\models\base.py:113: in __new__
+    raise RuntimeError(
+E   RuntimeError: Model class main.models.Page doesn't declare an explicit app_label and isn't in an application in INSTALLED_APPS.</error></testcase><testcase classname="" name="main.tests.regression.test_regression_models" time="0.000"><error message="collection failure">main\tests\regression\test_regression_models.py:5: in &lt;module&gt;
+    from main.models import Testimonial
+main\models.py:12: in &lt;module&gt;
+    class Page(models.Model):
+..\ss_venv\Lib\site-packages\django\db\models\base.py:113: in __new__
+    raise RuntimeError(
+E   RuntimeError: Model class main.models.Page doesn't declare an explicit app_label and isn't in an application in INSTALLED_APPS.</error></testcase><testcase classname="" name="main.tests.regression.test_regression_performance" time="0.000"><error message="collection failure">main\tests\regression\test_regression_performance.py:8: in &lt;module&gt;
+    from main.models import Testimonial
+main\models.py:12: in &lt;module&gt;
+    class Page(models.Model):
+..\ss_venv\Lib\site-packages\django\db\models\base.py:113: in __new__
+    raise RuntimeError(
+E   RuntimeError: Model class main.models.Page doesn't declare an explicit app_label and isn't in an application in INSTALLED_APPS.</error></testcase><testcase classname="" name="main.tests.regression.test_regression_templates" time="0.000"><error message="collection failure">main\tests\regression\test_regression_templates.py:6: in &lt;module&gt;
+    from main.models import Testimonial
+main\models.py:12: in &lt;module&gt;
+    class Page(models.Model):
+..\ss_venv\Lib\site-packages\django\db\models\base.py:113: in __new__
+    raise RuntimeError(
+E   RuntimeError: Model class main.models.Page doesn't declare an explicit app_label and isn't in an application in INSTALLED_APPS.</error></testcase><testcase classname="" name="main.tests.regression.test_regression_urls" time="0.000"><error message="collection failure">main\tests\regression\test_regression_urls.py:6: in &lt;module&gt;
+    from main import views
+main\views.py:13: in &lt;module&gt;
+    from .models import Assets,Description, News, Page, Service, SubService,Team, SafetyAlertSubscription, EmergencyHotline, StaffContact
+main\models.py:12: in &lt;module&gt;
+    class Page(models.Model):
+..\ss_venv\Lib\site-packages\django\db\models\base.py:113: in __new__
+    raise RuntimeError(
+E   RuntimeError: Model class main.models.Page doesn't declare an explicit app_label and isn't in an application in INSTALLED_APPS.</error></testcase><testcase classname="" name="main.tests.regression.test_regression_views" time="0.000"><error message="collection failure">main\tests\regression\test_regression_views.py:6: in &lt;module&gt;
+    from main.models import Testimonial
+main\models.py:12: in &lt;module&gt;
+    class Page(models.Model):
+..\ss_venv\Lib\site-packages\django\db\models\base.py:113: in __new__
+    raise RuntimeError(
+E   RuntimeError: Model class main.models.Page doesn't declare an explicit app_label and isn't in an application in INSTALLED_APPS.</error></testcase><testcase classname="" name="main.tests.unit.test_forms" time="0.000"><error message="collection failure">main\tests\unit\test_forms.py:2: in &lt;module&gt;
+    from main.models import Scholarship
+main\models.py:12: in &lt;module&gt;
+    class Page(models.Model):
+..\ss_venv\Lib\site-packages\django\db\models\base.py:113: in __new__
+    raise RuntimeError(
+E   RuntimeError: Model class main.models.Page doesn't declare an explicit app_label and isn't in an application in INSTALLED_APPS.</error></testcase><testcase classname="" name="main.tests.unit.test_models" time="0.000"><error message="collection failure">main\tests\unit\test_models.py:3: in &lt;module&gt;
+    from main.models import Scholarship, TrainingCourse, Testimonial
+main\models.py:12: in &lt;module&gt;
+    class Page(models.Model):
+..\ss_venv\Lib\site-packages\django\db\models\base.py:113: in __new__
+    raise RuntimeError(
+E   RuntimeError: Model class main.models.Page doesn't declare an explicit app_label and isn't in an application in INSTALLED_APPS.</error></testcase><testcase classname="" name="main.tests.unit.test_performance" time="0.000"><error message="collection failure">main\tests\unit\test_performance.py:3: in &lt;module&gt;
+    from main.models import TrainingCourse
+main\models.py:12: in &lt;module&gt;
+    class Page(models.Model):
+..\ss_venv\Lib\site-packages\django\db\models\base.py:113: in __new__
+    raise RuntimeError(
+E   RuntimeError: Model class main.models.Page doesn't declare an explicit app_label and isn't in an application in INSTALLED_APPS.</error></testcase><testcase classname="" name="main.tests.unit.test_templatest" time="0.000"><error message="collection failure">main\tests\unit\test_templatest.py:3: in &lt;module&gt;
+    from main.models import Testimonial
+main\models.py:12: in &lt;module&gt;
+    class Page(models.Model):
+..\ss_venv\Lib\site-packages\django\db\models\base.py:113: in __new__
+    raise RuntimeError(
+E   RuntimeError: Model class main.models.Page doesn't declare an explicit app_label and isn't in an application in INSTALLED_APPS.</error></testcase><testcase classname="" name="main.tests.unit.test_urls" time="0.000"><error message="collection failure">main\tests\unit\test_urls.py:3: in &lt;module&gt;
+    from main import views
+main\views.py:13: in &lt;module&gt;
+    from .models import Assets,Description, News, Page, Service, SubService,Team, SafetyAlertSubscription, EmergencyHotline, StaffContact
+main\models.py:12: in &lt;module&gt;
+    class Page(models.Model):
+..\ss_venv\Lib\site-packages\django\db\models\base.py:113: in __new__
+    raise RuntimeError(
+E   RuntimeError: Model class main.models.Page doesn't declare an explicit app_label and isn't in an application in INSTALLED_APPS.</error></testcase><testcase classname="" name="main.tests.unit.test_views" time="0.000"><error message="collection failure">main\tests\unit\test_views.py:3: in &lt;module&gt;
+    from main.models import Testimonial
+main\models.py:12: in &lt;module&gt;
+    class Page(models.Model):
+..\ss_venv\Lib\site-packages\django\db\models\base.py:113: in __new__
+    raise RuntimeError(
+E   RuntimeError: Model class main.models.Page doesn't declare an explicit app_label and isn't in an application in INSTALLED_APPS.</error></testcase></testsuite></testsuites>

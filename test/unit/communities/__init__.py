@@ -1,1 +1,1 @@
-"""communities tests package"""
+__all__ = []

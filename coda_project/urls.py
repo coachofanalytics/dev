@@ -24,8 +24,7 @@ from django.contrib.auth import views as auth_views
 
 from accounts import views as account_views
 from coda_project import settings
-from main import views as main_views
-
+import os
 
 # ===========ERROR HANDLING SECTION================
 handler400 = "main.views.hendler400"
@@ -66,6 +65,7 @@ urlpatterns = [
         ),
         name="password_reset_confirm",
     ),
+<<<<<<< HEAD
     # Provide un-namespaced testimonial routes so older templates that
     # reference e.g. 'testimonial_list' (without the 'main:' prefix)
     # continue to work.
@@ -77,6 +77,9 @@ urlpatterns = [
     # Keep some legacy, un-namespaced routes for templates that expect them
     path('find-doctors/', main_views.find_doctors, name='find_doctors'),
 
+=======
+  
+>>>>>>> 6186ade50b69cb15f44862538d06e58f6b706591
     path("", include("main.urls", namespace="main")),
     path('member/', include('memberjoin.urls')),
     path("accounts/", include("accounts.urls")),
@@ -94,3 +97,6 @@ if settings.DEBUG:
     urlpatterns += static(
         settings.MEDIA_URL, document_root=settings.MEDIA_ROOT
     ) + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
+
+if os.path.exists(settings.STATIC_ROOT):
+        urlpatterns += static('/staticfiles/', document_root=settings.STATIC_ROOT)

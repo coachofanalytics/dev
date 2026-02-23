@@ -1,2 +1,1 @@
-"""main tests package"""
-"""tests for main app"""
+__all__ = []
