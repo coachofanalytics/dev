@@ -25,6 +25,7 @@ from django.contrib.auth import views as auth_views
 from accounts import views as account_views
 from coda_project import settings
 import os
+from main import views as main_views
 
 # ===========ERROR HANDLING SECTION================
 handler400 = "main.views.hendler400"
@@ -65,21 +66,15 @@ urlpatterns = [
         ),
         name="password_reset_confirm",
     ),
-<<<<<<< HEAD
-    # Provide un-namespaced testimonial routes so older templates that
-    # reference e.g. 'testimonial_list' (without the 'main:' prefix)
-    # continue to work.
+
+    # Provide a minimal set of un-namespaced testimonial/find-doctors routes
+    # that match the available views in `main.views`.
     path('testimonials/', main_views.testimonial_list, name='testimonial_list'),
-    path('testimonials/add/', main_views.testimonial_create, name='testimonial_create'),
-    path('testimonials/<int:pk>/', main_views.testimonial_detail, name='testimonial_detail'),
-    path('testimonials/<int:pk>/edit/', main_views.testimonial_update, name='testimonial_update'),
     path('testimonials/<int:pk>/delete/', main_views.testimonial_delete, name='testimonial_delete'),
-    # Keep some legacy, un-namespaced routes for templates that expect them
+    # Legacy un-namespaced search route
     path('find-doctors/', main_views.find_doctors, name='find_doctors'),
 
-=======
-  
->>>>>>> 6186ade50b69cb15f44862538d06e58f6b706591
+
     path("", include("main.urls", namespace="main")),
     path('member/', include('memberjoin.urls')),
     path("accounts/", include("accounts.urls")),

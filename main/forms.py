@@ -1,10 +1,9 @@
 from django import forms
-<<<<<<< HEAD
 from .models import Testimonial, Feedback, Donation_organisation, Donation_organization, ContactMessage, Scholarship
 from django.utils import timezone
 from .models import AppointmentRequest
 # Feedback / Contact Form
-=======
+
 from django.contrib.auth.models import User
 from .models import (
     Feedback, Donation_organisation, Donation_organization, 
@@ -98,7 +97,7 @@ class GovernanceForm(forms.ModelForm):
         
         return cleaned_data
 
->>>>>>> 6186ade50b69cb15f44862538d06e58f6b706591
+
 class ContactForm(forms.ModelForm):
     class Meta:
         model = Feedback

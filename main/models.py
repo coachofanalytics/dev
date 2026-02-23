@@ -383,7 +383,7 @@ class Governance(models.Model):
     def save(self, *args, **kwargs):
         # You can add more custom logic here if needed
         super().save(*args, **kwargs)
-<<<<<<< HEAD
+
 
 
 class Governance(models.Model):
@@ -505,5 +505,4 @@ class AppointmentRequest(models.Model):
     class Meta:
         ordering = ['-created_at']
 
-=======
->>>>>>> 6186ade50b69cb15f44862538d06e58f6b706591
+

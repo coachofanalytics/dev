@@ -29,7 +29,7 @@ admin.site.register(Testimonial)
 admin.site.register(Governance)
 #>>>>>>> 25.10_DC48_UAT_ND
 
-<<<<<<< HEAD
+
 # admin.site.register(Testimonial)
 from .models import ConsularAssistancePage
 admin.site.register(ConsularAssistancePage)
@@ -38,5 +38,3 @@ admin.site.register(AppointmentRequest)
 admin.site.register(Doctor)
 
 
-=======
->>>>>>> 6186ade50b69cb15f44862538d06e58f6b706591

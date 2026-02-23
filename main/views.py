@@ -995,7 +995,7 @@ def test_user_endpoint(request):
     # Changed from 'delete.html' to 'governance_confirm_delete.html'
     return render(request, 'main/governance/governance_confirm_delete.html', context)
 
-<<<<<<< HEAD
+
 def testimonial_delete(request, pk):
     testimonial = get_object_or_404(Testimonial, pk=pk)
     testimonials = Testimonial.objects.all()
@@ -1200,5 +1200,4 @@ def home(request):
     """Simple home redirect."""
     from django.shortcuts import redirect
     return redirect('find_doctors')
-=======
->>>>>>> 6186ade50b69cb15f44862538d06e58f6b706591
+
