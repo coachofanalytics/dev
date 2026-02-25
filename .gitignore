@@ -24,7 +24,7 @@ venv/
 env/
 ENV/
 my_env/
-
+DC48K Dashboard.html
 /gapi/creds/credentials.json
 # /gapi/stored_mails/*
 

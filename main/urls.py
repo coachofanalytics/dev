@@ -18,6 +18,7 @@ urlpatterns = [
     path('services/documents/', views.document_services, name='document_services'),
     path('services/documents/request/', views.document_request_submit, name='document_request_submit'),
     path('crisis_page/', views.crisis_page, name='crisis_page'),
+    path('citizen-portal/', views.citizen_portal, name='citizen_portal'),
     path('our_service/', views.our_service, name='our_service'),
     path('financial_planning/', views.financial_planning, name='financial_planning'),
     path('subscribe_alerts/', views.subscribe_alerts, name='subscribe_alerts'),

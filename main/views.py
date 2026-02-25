@@ -254,6 +254,15 @@ def crisis_page(request):
     return render(request, "main/crisis.html", {"hotlines": hotlines})
 
 
+# @login_required  # TODO: re-enable after allauth SocialApp is configured
+def citizen_portal(request):
+    """
+    Secure self-service citizen portal.
+    All sub-page navigation is handled client-side via hash-based routing.
+    """
+    return render(request, "main/citizen_portal.html", {"title": "Citizen Portal"})
+
+
 def our_service(request):
     services = Service.objects.prefetch_related('subservices').order_by('ordering')
     return render(request, "main/our_service.html", {"services": services})
