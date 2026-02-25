@@ -89,7 +89,7 @@ MIDDLEWARE = [
     "whitenoise.middleware.WhiteNoiseMiddleware",
     'allauth.account.middleware.AccountMiddleware',
     # 'Middleware.MiddlewareFile.MailMiddleware'
-
+    
 ]
 
 CSRF_COOKIE_SECURE = False
