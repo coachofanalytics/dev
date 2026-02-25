@@ -278,7 +278,7 @@
                 updated by the community.
             </p>
 
-            <a href="/" class="btn-hero">
+            <a href="#submission-form-section" class="btn-hero">
                 Submit New Opportunity
             </a>
         </div>
@@ -294,7 +294,7 @@
 <section class="breadcrumbs">
     <div class="container">
         <nav>
-            <a href="#">Home</a> /
+            <a href="{% url 'finance:homepage' %}">Home</a> /
             <a href="#">Services</a> /
             <span>Investment Directory</span>
         </nav>
@@ -357,7 +357,7 @@
 </section>
 
 <!-- SUBMISSION FORM -->
-<section class="submission-section">
+<section id="submission-form-section" class="submission-section">
     <div class="form-container submission-container">
 
         <div class="submission-card">
