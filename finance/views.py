@@ -10,6 +10,7 @@ from django.urls import reverse
 from django.views.generic import CreateView, ListView, UpdateView, DetailView
 from django.utils.decorators import method_decorator
 from .models import Payment_Information
+from .forms import OpportunityForm
 from accounts.forms import UserForm
 from accounts.models import CustomerUser, Membership
 from .forms import BudgetForm, DepartmentFilterForm, InflowForm
@@ -23,10 +24,10 @@ from .utils import (
 from main.utils import path_values, countdown_in_month
 from django.shortcuts import render, get_object_or_404
 from django.contrib.auth.decorators import login_required
+from django.contrib.admin.views.decorators import staff_member_required
 from django.contrib.auth import get_user_model
 from django.views.generic import CreateView
-from .models import Payment_Information
-
+from .models import Payment_Information,Opportunity, NewsLetterSubscriber
 # Initialize Logger
 logger = logging.getLogger(__name__)
 
@@ -507,7 +508,65 @@ def Payment_Review(request):
 
 
 def homepage(request):
-    context ={
+    return render(request,"finance/homepage/homepage.html")
+
+def finance_directory(request):
+
+    opportunities = Opportunity.approved.all()
+    count = opportunities.count()
+
+    if request.method == 'POST':
+        form = OpportunityForm(request.POST)
+
+        if form.is_valid():
+            opportunity = form.save(commit=False)
+            opportunity.status = 'PENDING'
+            opportunity.save()
+
+            messages.success(request, "Your submission is under review.")
+            return redirect('finance:directory')
+    else:
+        form = OpportunityForm()
+
+    return render(request, "finance/investment/directory.html", {
+        'opportunities': opportunities,
+        'count': count,
+        'form': form
+    })
+    
+def subscribe_newsletter(request):
+    if request.method == 'POST':
+        email=request.POST.get('email')
+        if not email:
+            return JsonResponse({'success':False, 'message':'Email is required'})
         
-    }
-    return render(request,"finance/homepage/homepage.html",context)
+        subscriber, created = NewsLetterSubscriber.objects.get_or_create(email=email)
+        if created:
+            message = 'Thank you for subscribing'
+        else:
+            message= 'You are already subscribed'
+            
+        return JsonResponse({'success':True,'message':message})
+    
+    
+@staff_member_required
+def moderation_queue(request):
+    pending_items = Opportunity.objects.filter(status='PENDING')
+    return render(request,'finance/investment/moderation.html',{
+        'pending_items': pending_items
+    })
+    
+@staff_member_required
+def approve_opportunity(request,pk):
+    opportunity = get_object_or_404(Opportunity, pk=pk)
+    opportunity.status = 'APPROVED'
+    opportunity.save()
+    return redirect('finance:moderation_queue')
+
+@staff_member_required
+def reject_opportunity(request,pk):
+    opportunity = get_object_or_404(Opportunity, pk=pk)
+    opportunity.status = 'REJECTED'
+    opportunity.save()
+    return redirect('finance:moderation_queue')
+
