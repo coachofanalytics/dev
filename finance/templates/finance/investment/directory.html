@@ -186,20 +186,40 @@
     cursor: pointer;
 }
 
-/* SUBMISSION FORM */
-.submission-card {
-    background: #f3f4f6;
-    padding: 40px;
-    border-radius: 16px;
-    box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+/* SUBMISSION SECTION */
+.submission-section {
+    padding: 70px 0;
+    border-top: 1px solid #e5e7eb;
 }
 
+.submission-container {
+    display: flex;
+    justify-content: center;
+}
+
+/* CARD WIDTH CONTROL */
+.submission-card {
+    background: white;
+    padding: 30px;
+    border-radius: 16px;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+
+    width: 100%;
+    max-width: 1000px;
+}
+
+/* FORM ROW (TWO COLUMNS) */
 .form-row {
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 20px;
 }
-
+.form-container {
+    display: flex;
+    justify-content: center;
+    padding: 40px 20px;
+}
+/* FORM GROUP */
 .form-group {
     margin-bottom: 20px;
 }
@@ -210,16 +230,24 @@
     margin-bottom: 8px;
 }
 
+/* INPUTS */
 .form-group input,
 .form-group textarea,
 .form-group select {
-    width: 80%;
+    width: 100%;
     padding: 12px;
     border-radius: 8px;
     border: 1px solid #d1d5db;
     font-size: 15px;
 }
 
+/* TEXTAREA HEIGHT */
+.form-group textarea {
+    resize: none;
+    height: 100px;
+}
+
+/* SUBMIT BUTTON */
 .btn-submit {
     background: #0a926d;
     color: white;
@@ -228,10 +256,15 @@
     border-radius: 8px;
     font-weight: 700;
     cursor: pointer;
+    width: 100%;
 }
 
 .btn-submit:hover {
     opacity: 0.9;
+}
+#newsletter-message {
+    color: green;
+    font-size: 14px;
 }
 
 </style>
@@ -325,7 +358,7 @@
 
 <!-- SUBMISSION FORM -->
 <section class="submission-section">
-    <div class="container">
+    <div class="form-container submission-container">
 
         <div class="submission-card">
             <form method="POST">
@@ -333,23 +366,23 @@
 
                 <div class="form-row">
                     <div class="form-group">
-                        <label>Opportunity Name</label>
+                        <label for="id_title">Opportunity Name</label>
                         {{ form.title }}
                     </div>
 
                     <div class="form-group">
-                        <label>Type (e.g., Real Estate, Sacco, Bond)</label>
+                        <label for="id_type">Type (e.g., Real Estate, Sacco, Bond)</label>
                         {{ form.type }}
                     </div>
                 </div>
 
                 <div class="form-group">
-                    <label>Contact/Link (Website, Phone, Email)</label>
+                    <label for="id_contact">Contact/Link (Website, Phone, Email)</label>
                     {{ form.contact }}
                 </div>
 
                 <div class="form-group">
-                    <label>Brief Description</label>
+                    <label for="id_description">Brief Description</label>
                     {{ form.description }}
                 </div>
 
@@ -366,8 +399,9 @@
 document.getElementById("newsletter-form").addEventListener("submit", function(e) {
     e.preventDefault();
 
-    const email = document.querySelector("input[name='email']").value;
-    const csrfToken = document.querySelector("[name=csrfmiddlewaretoken]").value;
+    const form = e.target;
+    const emailInput = form.querySelector("input[name='email']");
+    const csrfToken = form.querySelector("[name=csrfmiddlewaretoken]").value;
 
     fetch("{% url 'finance:subscribe_newsletter' %}", {
         method: "POST",
@@ -376,14 +410,23 @@ document.getElementById("newsletter-form").addEventListener("submit", function(e
             "X-CSRFToken": csrfToken
         },
         body: new URLSearchParams({
-            email: email
+            email: emailInput.value
         })
     })
     .then(response => response.json())
     .then(data => {
-        document.getElementById("newsletter-message").innerText = data.message;
+        const messageEl = document.getElementById("newsletter-message");
+
+        messageEl.innerText = data.message;
+        messageEl.style.display = "block";
+
+        if (data.success) {
+            emailInput.value = ""; // clear form on success
+        }
     })
-    .catch(error => console.error("Error:", error));
+    .catch(error => {
+        console.error("Error:", error);
+    });
 });
 </script>
 
