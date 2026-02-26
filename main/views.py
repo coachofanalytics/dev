@@ -677,14 +677,12 @@ def governance_create(request):
     else:
         form = GovernanceForm()
     return render(request, 'main/governance_create.html', {'form': form})
-
-###################    
+ 
 
 def governance_list(request):
     governances = Governance.objects.all()
     return render(request, 'main/governance_list.html', {'governances': governances})
 
-###################
 def governance_update(request,pk):
     governance = get_object_or_404(Governance, pk=pk)
     if request.method == 'POST':
@@ -696,7 +694,7 @@ def governance_update(request,pk):
         form = GovernanceForm(instance=governance)
     return render(request, 'main/governance_update.html', {'form': form, 'governance': governance})
 
-#####################
+
 def governance_delete(request,pk):
     governance = get_object_or_404(Governance, pk=pk)
     if request.method == 'POST':
