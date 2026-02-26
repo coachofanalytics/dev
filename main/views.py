@@ -1035,7 +1035,7 @@ def ai_recommendation_api(request):
         residence = data.get('residence')
         priority = data.get('priority')
         
-        print(f"🤖 AI Request - Age: {age}, Residence: {residence}, Priority: {priority}")
+        print(f" AI Request - Age: {age}, Residence: {residence}, Priority: {priority}")
         
         # Try to find a matching rule in the database
         rule = AIRecommendationRule.objects.filter(
@@ -1057,11 +1057,11 @@ def ai_recommendation_api(request):
                 'network': plan.network,
                 'evacuation': plan.evacuation
             }
-            print(f"✅ Found rule: {rule}")
+            print(f" Found rule: {rule}")
             
         else:
             # No exact match - find the best alternative
-            print("⚠️ No exact match found, finding best alternative...")
+            print(" No exact match found, finding best alternative...")
             
             # Try to find a plan with matching priority
             alternative_plan = InsurancePlan.objects.filter(
@@ -1081,7 +1081,7 @@ def ai_recommendation_api(request):
                     'network': alternative_plan.network,
                     'evacuation': alternative_plan.evacuation
                 }
-                print(f"✅ Using alternative plan: {alternative_plan}")
+                print(f" Using alternative plan: {alternative_plan}")
             else:
                 response_data = {
                     'success': False,
@@ -1093,7 +1093,7 @@ def ai_recommendation_api(request):
     except json.JSONDecodeError:
         return JsonResponse({'success': False, 'error': 'Invalid JSON'}, status=400)
     except Exception as e:
-        print(f"❌ Error in ai_recommendation_api: {str(e)}")
+        print(f" Error in ai_recommendation_api: {str(e)}")
         import traceback
         traceback.print_exc()
         return JsonResponse({'success': False, 'error': str(e)}, status=500)
