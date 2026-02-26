@@ -832,7 +832,7 @@ def governance_update(request, pk):
     return render(request, 'main/governance/governance_form.html', context)
 
 # Delete governance record
-# views.py - UPDATED DELETE VIEW WITH ERROR HANDLING
+
 def governance_delete(request, pk):
     """Delete a governance record"""
     from django.shortcuts import get_object_or_404, redirect
@@ -852,7 +852,7 @@ def governance_delete(request, pk):
         'title': f'Delete {record.governance_category}'
     })
 
-    # Add this function to your views.py
+
 
 @csrf_exempt
 def quick_add_user(request):
