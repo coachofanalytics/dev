@@ -482,3 +482,16 @@ def clientavailability_create(request):
         form = ClientAvailabilityForm()
     return render(request, "main/clientvailability_create.html", {"form": form})
 
+
+def clientavailability_update(request, pk):
+    availability = get_object_or_404(ClientAvailability, pk=pk)
+    if request.method == "POST":
+        form = ClientAvailabilityForm(request.POST, instance=availability)
+        if form.is_valid():
+            form.save()
+            return redirect("main:clientavailability_list")
+    else:
+        form = ClientAvailabilityForm(instance=availability)
+    return render(request, "main/clientavailability_update.html", {"form": form})
+
+
