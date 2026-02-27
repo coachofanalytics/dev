@@ -28,6 +28,7 @@ path("planupdate/<int:pk>/", views. plan_update, name="plan_update"),
 
 path("plandelete/<int:pk>/", views.plan_delete, name="plan_delete"),
 path('clientavailability/', views.clientavailability_list, name='clientavailability_list'),
+path('clientavailability_create/', views.clientavailability_create, name='clientavailability_create'),
 
 
 

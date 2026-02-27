@@ -8,7 +8,7 @@ from django.shortcuts import render, get_object_or_404, redirect
 # Testimonials.objects.all()
 # Testimonials.objects.count()
 from django.shortcuts import render, redirect
-from main.forms import PlanForm
+from main.forms import PlanForm,ClientAvailabilityForm
 from datetime import datetime
 
 from coda_project import settings
@@ -470,3 +470,15 @@ def clientavailability_list(request):
         "active_days": active_days,
     }
     return render(request, "main/clientavailability_list.html", context)
+
+
+def clientavailability_create(request):
+    if request.method == "POST":
+        form = ClientAvailabilityForm(request.POST)
+        if form.is_valid():
+            form.save()
+            return redirect("main:clientavailability_list")
+    else:
+        form = ClientAvailabilityForm()
+    return render(request, "main/clientvailability_create.html", {"form": form})
+
