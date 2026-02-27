@@ -498,3 +498,12 @@ def clientavailability_update(request, pk):
 def clientavailability_detail(request, pk):
     availability = get_object_or_404(ClientAvailability, pk=pk)
     return render(request, "main/clientavailability_detail.html", {"availability": availability})
+  
+
+
+def clientavailability_delete(request, pk):
+    availability = get_object_or_404(ClientAvailability, pk=pk)
+    if request.method == "POST":
+        availability.delete()
+        return redirect("main:clientavailability_list")
+    return render(request, "main/clientavailability_delete.html", {"availability": availability})

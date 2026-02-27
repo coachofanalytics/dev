@@ -31,6 +31,8 @@ path('clientavailability/', views.clientavailability_list, name='clientavailabil
 path('clientavailability_create/', views.clientavailability_create, name='clientavailability_create'),
 path("clientavailability_update/<int:pk>/", views. clientavailability_update, name="clientavailability_update"),
 path("clientavailability_detail/<int:pk>/", views. clientavailability_detail, name="clientavailability_detail"),
+path("clientavailability_delete/<int:pk>/", views. clientavailability_delete, name="clientavailability_delete"),
+
 
 
 
