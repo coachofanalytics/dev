@@ -1,14 +1,15 @@
 from django.http import JsonResponse
 from django.shortcuts import redirect, render
-from .models import Assets,Readme,Location
+from .models import Assets,Readme,Location,ClientAvailability
 from .utils import *
 from .forms import LocationForm
 from django.shortcuts import render, get_object_or_404, redirect
-from main.models import Testimonials
-Testimonials.objects.all()
-Testimonials.objects.count()
+# from main.models import Testimonials
+# Testimonials.objects.all()
+# Testimonials.objects.count()
 from django.shortcuts import render, redirect
 from main.forms import PlanForm
+from datetime import datetime
 
 from coda_project import settings
 from django.contrib.auth.mixins import LoginRequiredMixin
@@ -24,12 +25,12 @@ from .forms import *
 from django.apps import apps
 from django.contrib.auth import get_user_model
 from django.shortcuts import render
-from .models import Testimonials
+# from .models import Testimonials
 from django.shortcuts import render, redirect
-from .forms import TestimonialForm
+# from .forms import TestimonialForm
 from django.urls import reverse_lazy
 from django.views.generic import UpdateView
-from .models import Testimonials
+# from .models import Testimonials
 
 
 from accounts.choices import CategoryChoices
@@ -338,54 +339,54 @@ def pricing_list(request):
 
 
 
-def testimonials_list(request):
-    testimonials = Testimonials.objects.all()
-    return render(request, 'main/testimonials_list.html', {
-        'testimonials': testimonials
-    })
+# def testimonials_list(request):
+#     testimonials = Testimonials.objects.all()
+#     return render(request, 'main/testimonials_list.html', {
+#         'testimonials': testimonials
+#     })
 
 
 
-def testimonial_create(request):
-    if request.method == "POST":
-        form = TestimonialForm(request.POST)
-        if form.is_valid():
-            form.save()
-            return redirect("main:testimonials_list")
-    else:
-        form = TestimonialForm()
+# def testimonial_create(request):
+#     if request.method == "POST":
+#         form = TestimonialForm(request.POST)
+#         if form.is_valid():
+#             form.save()
+#             return redirect("main:testimonials_list")
+#     else:
+#         form = TestimonialForm()
 
-    return render(request, "main/testmonial_create.html", {
-        "form": form
-    })
-
-
+#     return render(request, "main/testmonial_create.html", {
+#         "form": form
+#     })
 
 
-from django.shortcuts import render, get_object_or_404, redirect
-from .models import Testimonials
-def testimonial_update(request, pk):
-    testimonial = get_object_or_404(Testimonials, pk=pk)
 
-    if request.method == "POST":
-        title = request.POST.get('title')
-        content = request.POST.get('content')
-        writer = request.POST.get('writer')
 
-        if not title:
-            return render(request, 'main/testmonial_updat.html', {
-                'testimonial': testimonial,
-                'error': 'Title is required'
-            })
+# from django.shortcuts import render, get_object_or_404, redirect
+# from .models import Testimonials
+# def testimonial_update(request, pk):
+#     testimonial = get_object_or_404(Testimonials, pk=pk)
 
-        testimonial.title = title
-        testimonial.content = content
-        testimonial.writer = writer
-        testimonial.save()
+#     if request.method == "POST":
+#         title = request.POST.get('title')
+#         content = request.POST.get('content')
+#         writer = request.POST.get('writer')
 
-        return redirect('main:testimonials_list')
+#         if not title:
+#             return render(request, 'main/testmonial_updat.html', {
+#                 'testimonial': testimonial,
+#                 'error': 'Title is required'
+#             })
 
-    return render(request, 'main/testmonial_updat.html', {'testimonial': testimonial})
+#         testimonial.title = title
+#         testimonial.content = content
+#         testimonial.writer = writer
+#         testimonial.save()
+
+#         return redirect('main:testimonials_list')
+
+#     return render(request, 'main/testmonial_updat.html', {'testimonial': testimonial})
 
 
 # main/views/plan_views.py
@@ -409,8 +410,6 @@ def plan_list_view(request):
     return render(request, "main/plan_list.html", context)
 
     # main/views/plan_views.py
-
-
 
 
 def create_plan(request):
@@ -441,3 +440,33 @@ def plan_update(request, pk):
         form = PlanForm(instance=plan)
 
     return render(request, "main/plan_update.html", {"form": form})
+
+    from django.shortcuts import redirect, get_object_or_404
+
+
+
+
+def plan_delete(request, pk):
+    plan = get_object_or_404(Plan, pk=pk)
+
+    if request.method == "POST":
+        plan.delete()
+        return redirect("main:plan_list")
+
+    return render(request, "main/plan_delete.html", {"plan": plan})
+
+
+
+def clientavailability_list(request):
+    availabilities = ClientAvailability.objects.all()
+
+    today = datetime.today().strftime("%A")
+    today_slots = ClientAvailability.objects.filter(day=today).count()
+    active_days = ClientAvailability.objects.values("day").distinct().count()
+
+    context = {
+        "availabilities": availabilities,
+        "today_slots": today_slots,
+        "active_days": active_days,
+    }
+    return render(request, "main/clientavailability_list.html", context)
