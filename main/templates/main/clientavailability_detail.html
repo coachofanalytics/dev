@@ -1,0 +1,67 @@
+{% extends 'admin_templates/base_template.html' %}
+{% load crispy_forms_tags %}
+
+{% block title %}
+    {% if object %}Edit Client Availability{% else %}Add Client Availability{% endif %} | CODA
+{% endblock title %}
+
+{% block content %}
+
+<div class="container mt-4">
+    <div class="card shadow-sm border-primary">
+        <div class="card-header bg-primary text-white">
+            <h4 class="fw-bold mb-0">
+                {% if object %}Details Client Availability{% else %}Create Client Availability{% endif %}
+            </h4>
+        </div>
+
+        <div class="card-body">
+            <form method="post">
+                {% csrf_token %}
+
+                <div class="mb-3">
+                    <label class="form-label">Client</label>
+                    {{ form.client }}
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Day</label>
+                    {{ form.day }}
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Start Time</label>
+                    {{ form.start_time }}
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">End Time</label>
+                    {{ form.end_time }}
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Time Standard</label>
+                    {{ form.time_standards }}
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Topic</label>
+                    {{ form.topic }}
+                </div>
+
+                <div class="mt-4">
+                    <button type="submit" class="btn btn-primary">
+                        {% if object %}Details{% else %}Create{% endif %}
+                    </button>
+
+                    <a href="{% url 'main:clientavailability_list' %}"
+                       class="btn btn-secondary ms-2">
+                        Cancel
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

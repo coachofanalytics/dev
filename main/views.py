@@ -495,3 +495,6 @@ def clientavailability_update(request, pk):
     return render(request, "main/clientavailability_update.html", {"form": form})
 
 
+def clientavailability_detail(request, pk):
+    availability = get_object_or_404(ClientAvailability, pk=pk)
+    return render(request, "main/clientavailability_detail.html", {"availability": availability})

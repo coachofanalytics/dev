@@ -30,7 +30,7 @@ path("plandelete/<int:pk>/", views.plan_delete, name="plan_delete"),
 path('clientavailability/', views.clientavailability_list, name='clientavailability_list'),
 path('clientavailability_create/', views.clientavailability_create, name='clientavailability_create'),
 path("clientavailability_update/<int:pk>/", views. clientavailability_update, name="clientavailability_update"),
-
+path("clientavailability_detail/<int:pk>/", views. clientavailability_detail, name="clientavailability_detail"),
 
 
 
