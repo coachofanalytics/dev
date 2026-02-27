@@ -151,39 +151,40 @@ class Pricing(models.Model):
 
 
 
-class Testimonials(models.Model):
-    title = models.CharField(null=False, max_length=255)
-    slug = models.SlugField(unique=True, blank=True)
-    content = models.TextField()
-    date_posted = models.DateTimeField(auto_now_add=True)
-    writer = models.IntegerField()
+# class Testimonials(models.Model):
+#     title = models.CharField(null=False, max_length=255)
+#     slug = models.SlugField(unique=True, blank=True)
+#     content = models.TextField()
+#     date_posted = models.DateTimeField(auto_now_add=True)
+#     writer = models.IntegerField()
 
-    def save(self, *args, **kwargs):
-        if not self.slug:
-            base_slug = slugify(self.title)
-            slug = base_slug
-            counter = 1
+#     def save(self, *args, **kwargs):
+#         if not self.slug:
+#             base_slug = slugify(self.title)
+#             slug = base_slug
+#             counter = 1
 
-            while Testimonials.objects.filter(slug=slug).exists():
-                slug = f"{base_slug}-{counter}"
-                counter += 1
+#             while Testimonials.objects.filter(slug=slug).exists():
+#                 slug = f"{base_slug}-{counter}"
+#                 counter += 1
 
-            self.slug = slug
+#             self.slug = slug
 
-        super().save(*args, **kwargs)
+#         super().save(*args, **kwargs)
 
-    class Meta:
-        ordering = ['-date_posted']
+#     class Meta:
+#         ordering = ['-date_posted']
 
-    def __str__(self):
-        return self.title
+#     def __str__(self):
+#         return self.title
 
         # main/models.py
 
-from django.db import models
+
 
 
 class Plan(models.Model):
+    ...
     task = models.CharField(max_length=255, null=True, blank=True)
     duration = models.IntegerField(null=True, blank=True)
 
@@ -206,6 +207,18 @@ class Plan(models.Model):
     def __str__(self):
         return self.task if self.task else f"Plan {self.id}"
 
-    class Meta:
-        db_table = "main_plan"
-        ordering = ["-created_at"]
+    
+
+
+
+      
+class ClientAvailability(models.Model):
+    client = models.IntegerField(null=False, blank=False)
+    day = models.CharField(max_length=20, null=False, blank=False)
+    start_time = models.TimeField(null=False, blank=False)
+    end_time = models.TimeField(null=False, blank=False)
+    time_standards = models.CharField(max_length=20, null=False, blank=False)
+    topic = models.CharField(max_length=255, null=False, blank=False)
+
+    def __str__(self):
+        return f"Client {self.client} - {self.day} ({self.start_time} to {self.end_time})"
