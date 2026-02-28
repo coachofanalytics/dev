@@ -63,7 +63,7 @@ INSTALLED_APPS = [
     "django_crontab",
     'memberjoin',
     'communities',
-    'debug_toolbar',
+    #'debug_toolbar',
 
 ]
 
@@ -100,7 +100,7 @@ MIDDLEWARE = [
     "whitenoise.middleware.WhiteNoiseMiddleware",
     'allauth.account.middleware.AccountMiddleware',
     # 'Middleware.MiddlewareFile.MailMiddleware'
-    'debug_toolbar.middleware.DebugToolbarMiddleware',
+    #'debug_toolbar.middleware.DebugToolbarMiddleware',
 
 ]
 
