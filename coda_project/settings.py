@@ -63,8 +63,18 @@ INSTALLED_APPS = [
     "django_crontab",
     'memberjoin',
     'communities',
+    #'debug_toolbar',
 
 ]
+
+if DEBUG:
+    try:
+        import debug_toolbar
+        INSTALLED_APPS += ['debug_toolbar']
+        MIDDLEWARE += ['debug_toolbar.middleware.DebugToolbarMiddleware']
+    except ImportError:
+        pass # If it's not installed, just don't use it
+
 
 DEFAULT_AUTO_FIELD = "django.db.models.AutoField"
 
@@ -90,6 +100,7 @@ MIDDLEWARE = [
     "whitenoise.middleware.WhiteNoiseMiddleware",
     'allauth.account.middleware.AccountMiddleware',
     # 'Middleware.MiddlewareFile.MailMiddleware'
+    #'debug_toolbar.middleware.DebugToolbarMiddleware',
 
 ]
 
@@ -253,7 +264,7 @@ CRISPY_TEMPLATE_PACK = "bootstrap4"
 LOGIN_REDIRECT_URL = "main:layout"
 LOGIN_URL = "accounts:account-login"
 
-# EMAIL_BACKEND = "django.core.mail.backends.filebased.EmailBackend"
+
 # EMAIL_FILE_PATH = BASE_DIR + "/emails"
 
 # Gmail Email Backend Account
@@ -368,3 +379,18 @@ SOCIALACCOUNT_QUERY_EMAIL = True
 
 LOGIN_REDIRECT_URL = "main:layout"
 LOGIN_URL = "accounts:account-login"
+
+# Email Configuration
+EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+EMAIL_HOST_USER = 'your-email@gmail.com'  # Your full Gmail address
+EMAIL_HOST_PASSWORD = 'your-16-character-app-password'  # The app password you generated (remove spaces)
+DEFAULT_FROM_EMAIL = 'your-email@gmail.com'
+ADMIN_EMAIL = 'your-email@gmail.com'  # Send admin notifications to yourself for testing
+
+# Site URL for email links
+SITE_URL = 'http://127.0.0.1:8000'
+
+

@@ -4,6 +4,10 @@ from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.utils import timezone
 from django.urls import reverse
+from django.core.mail import send_mail, EmailMultiAlternatives
+from django.template.loader import render_to_string
+from django.utils.html import strip_tags
+
 
 User = get_user_model()
 
@@ -506,3 +510,319 @@ class AppointmentRequest(models.Model):
         ordering = ['-created_at']
 
 
+# Add these at the bottom of your main/models.py
+
+class InsurancePlan(models.Model):
+    """Insurance plans for the comparison table"""
+    provider_name = models.CharField(max_length=100)  # e.g., "Cigna"
+    plan_name = models.CharField(max_length=100)      # e.g., "Global Gold"
+    network = models.CharField(max_length=100)        # e.g., "Worldwide (inc. USA)"
+    max_benefit = models.CharField(max_length=50)     # e.g., "$2,000,000"
+    evacuation = models.CharField(max_length=50)      # e.g., "Included" or "Optional Add-on"
+    score = models.DecimalField(max_digits=3, decimal_places=1)  # e.g., 9.8
+    is_active = models.BooleanField(default=True)
+    display_order = models.IntegerField(default=0)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    class Meta:
+        ordering = ['display_order', '-score']
+        verbose_name = "Insurance Plan"
+        verbose_name_plural = "Insurance Plans"
+    
+    def __str__(self):
+        return f"{self.provider_name} {self.plan_name}"
+
+
+class AIRecommendationRule(models.Model):
+    """Rules for AI recommendations based on user inputs"""
+    AGE_CHOICES = [
+        ('young', '18 - 30 Years'),
+        ('mid', '31 - 55 Years'),
+        ('senior', '56+ Years'),
+    ]
+    
+    RESIDENCE_CHOICES = [
+        ('usa', 'USA / Canada'),
+        ('europe', 'Europe / UK'),
+        ('other', 'Rest of World'),
+    ]
+    
+    PRIORITY_CHOICES = [
+        ('budget', 'Cost Savings'),
+        ('comprehensive', 'Full Coverage'),
+        ('emergency', 'Emergency Only'),
+    ]
+    
+    age_bracket = models.CharField(max_length=20, choices=AGE_CHOICES)
+    residence = models.CharField(max_length=20, choices=RESIDENCE_CHOICES)
+    priority = models.CharField(max_length=20, choices=PRIORITY_CHOICES)
+    recommended_plan = models.ForeignKey(InsurancePlan, on_delete=models.CASCADE)
+    recommendation_text = models.TextField()
+    is_active = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    
+    class Meta:
+        unique_together = ['age_bracket', 'residence', 'priority']
+        verbose_name = "AI Recommendation Rule"
+        verbose_name_plural = "AI Recommendation Rules"
+    
+    def __str__(self):
+        return f"{self.get_age_bracket_display()} - {self.get_residence_display()} - {self.get_priority_display()}"
+
+
+# In main/models.py - Update your ExpertInquiry class
+
+class ExpertInquiry(models.Model):
+    """Store expert consultation requests from the modal form"""
+    full_name = models.CharField(max_length=200)
+    email = models.EmailField()
+    phone = models.CharField(max_length=20, blank=True, null=True)
+    question = models.TextField()
+    interested_plan = models.ForeignKey(InsurancePlan, on_delete=models.SET_NULL, null=True, blank=True)
+    is_contacted = models.BooleanField(default=False)
+    notes = models.TextField(blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    class Meta:
+        ordering = ['-created_at']
+        verbose_name = "Expert Inquiry"
+        verbose_name_plural = "Expert Inquiries"
+    
+    def __str__(self):
+        return f"Inquiry from {self.full_name} - {self.created_at.strftime('%Y-%m-%d')}"
+    
+    # ============= AUTOMATION METHODS =============
+    
+    def save(self, *args, **kwargs):
+        """Override save to add automation logic"""
+        is_new = self.pk is None  # Check if this is a new inquiry
+        
+        # Auto-add priority note based on question content
+        if is_new:
+            self.auto_set_priority_note()
+        
+        # Call the original save
+        super().save(*args, **kwargs)
+        
+        # Trigger notifications for new inquiries
+        if is_new:
+            print(f"🔔 New inquiry #{self.id} from {self.full_name}")
+            # We'll add email notifications in the next step
+    
+    def auto_set_priority_note(self):
+        """Automatically add priority note based on question content"""
+        urgent_keywords = [
+            'emergency', 'urgent', 'asap', 'immediately', 'critical', 
+            'hospital', 'accident', 'death', 'heart attack', 'stroke',
+            'panic', 'desperate', 'cannot wait', 'as soon as possible'
+        ]
+        high_keywords = [
+            'claim', 'denied', 'problem', 'issue', 'help', 'cancel', 
+            'refund', 'complaint', 'confused', 'understand', 'explain',
+            'coverage', 'benefit', 'expensive', 'cost'
+        ]
+        
+        question_lower = self.question.lower()
+        
+        # Check for urgent keywords
+        for keyword in urgent_keywords:
+            if keyword in question_lower:
+                priority_note = "🔴 URGENT - Needs immediate attention (within 4 hours)"
+                break
+        else:
+            # Check for high priority keywords
+            for keyword in high_keywords:
+                if keyword in question_lower:
+                    priority_note = "🟠 HIGH PRIORITY - Address within 24 hours"
+                    break
+            else:
+                priority_note = "🟢 NORMAL PRIORITY - Handle within 48 hours"
+        
+        # Add timestamp to the note
+        from django.utils import timezone
+        timestamp = timezone.now().strftime('%Y-%m-%d %H:%M')
+        
+        # Add to notes
+        if self.notes:
+            self.notes = f"[{timestamp}] {priority_note}\n{self.notes}"
+        else:
+            self.notes = f"[{timestamp}] {priority_note}"
+    
+    # ============= UTILITY METHODS =============
+    
+    def mark_as_contacted(self, notes=None):
+        """Mark this inquiry as contacted"""
+        from django.utils import timezone
+        
+        self.is_contacted = True
+        timestamp = timezone.now().strftime('%Y-%m-%d %H:%M')
+        
+        contact_note = f"[{timestamp}] ✅ Marked as contacted"
+        if notes:
+            contact_note += f" - Notes: {notes}"
+        
+        if self.notes:
+            self.notes += f"\n{contact_note}"
+        else:
+            self.notes = contact_note
+        
+        self.save(update_fields=['is_contacted', 'notes', 'updated_at'])
+        print(f"✅ Inquiry #{self.id} marked as contacted")
+    
+    def add_note(self, note):
+        """Add a note to this inquiry"""
+        from django.utils import timezone
+        
+        timestamp = timezone.now().strftime('%Y-%m-%d %H:%M')
+        note_entry = f"[{timestamp}] 📝 {note}"
+        
+        if self.notes:
+            self.notes += f"\n{note_entry}"
+        else:
+            self.notes = note_entry
+        
+        self.save(update_fields=['notes', 'updated_at'])
+        print(f"📝 Note added to inquiry #{self.id}")
+    
+    def get_priority(self):
+        """Extract priority from notes"""
+        if self.notes:
+            if "🔴 URGENT" in self.notes:
+                return "URGENT"
+            elif "🟠 HIGH" in self.notes:
+                return "HIGH"
+        return "NORMAL"
+    
+    def days_since_created(self):
+        """Get number of days since creation"""
+        from django.utils import timezone
+        delta = timezone.now() - self.created_at
+        return delta.days
+    
+    def hours_since_created(self):
+        """Get hours since creation (for urgent tracking)"""
+        from django.utils import timezone
+        delta = timezone.now() - self.created_at
+        return delta.total_seconds() / 3600
+    
+    def is_overdue(self):
+        """Check if inquiry is overdue (>2 days and not contacted)"""
+        return not self.is_contacted and self.days_since_created() >= 2
+    
+    def is_urgent_overdue(self):
+        """Check if urgent inquiry is overdue (>4 hours and not contacted)"""
+        return (not self.is_contacted and 
+                self.get_priority() == "URGENT" and 
+                self.hours_since_created() >= 4)
+    
+    # ============= CLASS METHODS =============
+    
+    @classmethod
+    def get_uncontacted_inquiries(cls):
+        """Get all inquiries that haven't been contacted"""
+        return cls.objects.filter(is_contacted=False).order_by('-created_at')
+    
+    @classmethod
+    def get_urgent_inquiries(cls):
+        """Get all urgent inquiries"""
+        urgent_list = []
+        for inquiry in cls.objects.filter(is_contacted=False):
+            if inquiry.get_priority() == "URGENT":
+                urgent_list.append(inquiry)
+        return urgent_list
+    
+    @classmethod
+    def get_overdue_inquiries(cls):
+        """Get all overdue inquiries"""
+        return [i for i in cls.objects.filter(is_contacted=False) if i.is_overdue()]
+    
+    @classmethod
+    def get_stats(cls):
+        """Get statistics about inquiries"""
+        total = cls.objects.count()
+        uncontacted = cls.objects.filter(is_contacted=False).count()
+        urgent = len(cls.get_urgent_inquiries())
+        overdue = len(cls.get_overdue_inquiries())
+        
+        return {
+            'total': total,
+            'uncontacted': uncontacted,
+            'contacted': total - uncontacted,
+            'urgent': urgent,
+            'overdue': overdue,
+        }
+    
+    def send_notifications(self):
+        """Send email notifications to admin and auto-reply to user"""
+        from django.db import transaction
+        transaction.on_commit(lambda: self._send_emails())
+    
+    def _send_emails(self):
+        """Internal method to send emails"""
+        try:
+            # Send email to admin
+            self._send_admin_notification()
+            
+            # Send auto-reply to user
+            self._send_user_autoreply()
+            
+            # Add note about email notification
+            self.add_note("📧 Email notifications sent to admin and user")
+            print(f"📧 Emails sent for inquiry #{self.id}")
+            
+        except Exception as e:
+            error_msg = f"❌ Failed to send emails: {str(e)}"
+            print(error_msg)
+            self.add_note(error_msg)
+    
+    def _send_admin_notification(self):
+        """Send notification email to admin"""
+        subject = f"New Insurance Inquiry: {self.full_name}"
+        
+        # HTML email
+        html_content = render_to_string('main/emails/admin_notification.html', {
+            'inquiry': self,
+            'site_url': settings.SITE_URL
+        })
+        
+        # Text email
+        text_content = render_to_string('main/emails/admin_notification.txt', {
+            'inquiry': self,
+            'site_url': settings.SITE_URL
+        })
+        
+        # Send email
+        msg = EmailMultiAlternatives(
+            subject=subject,
+            body=text_content,
+            from_email=settings.DEFAULT_FROM_EMAIL,
+            to=[settings.ADMIN_EMAIL]
+        )
+        msg.attach_alternative(html_content, "text/html")
+        msg.send()
+    
+    def _send_user_autoreply(self):
+        """Send auto-reply email to the user"""
+        subject = "Thank you for contacting Diaspora County 48 Insurance Support"
+        
+        # HTML email
+        html_content = render_to_string('main/emails/user_autoreply.html', {
+            'inquiry': self
+        })
+        
+        # Text email
+        text_content = render_to_string('main/emails/user_autoreply.txt', {
+            'inquiry': self
+        })
+        
+        # Send email
+        msg = EmailMultiAlternatives(
+            subject=subject,
+            body=text_content,
+            from_email=settings.DEFAULT_FROM_EMAIL,
+            to=[self.email]
+        )
+        msg.attach_alternative(html_content, "text/html")
+        msg.send()

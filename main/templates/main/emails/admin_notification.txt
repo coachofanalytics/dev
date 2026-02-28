@@ -1,0 +1,21 @@
+NEW INSURANCE INQUIRY
+========================================
+
+A new insurance inquiry has been submitted.
+
+INQUIRY DETAILS:
+----------------
+Name: {{ inquiry.full_name }}
+Email: {{ inquiry.email }}
+Phone: {{ inquiry.phone|default:"Not provided" }}
+Date: {{ inquiry.created_at|date:"F j, Y - g:i A" }}
+{% if inquiry.interested_plan %}
+Plan: {{ inquiry.interested_plan.provider_name }} {{ inquiry.interested_plan.plan_name }}
+{% endif %}
+Priority: {{ inquiry.get_priority }}
+
+QUESTION:
+---------
+{{ inquiry.question }}
+
+View in admin: {{ site_url }}/admin/main/expertinquiry/{{ inquiry.id }}/change/

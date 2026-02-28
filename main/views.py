@@ -11,7 +11,7 @@ from django.views.generic import (
     UpdateView,
 )
 #<<<<<<< 25.10_DC48_UAT_UO
-from .models import Assets,Description, News, Page, Service, SubService,Team, SafetyAlertSubscription, EmergencyHotline, StaffContact
+from .models import Assets,Description, News, Page, Service, SubService,Team, SafetyAlertSubscription, EmergencyHotline, StaffContact, InsurancePlan, AIRecommendationRule, ExpertInquiry
 #=======
 from django.db.models import Q
 #<<<<<<< HEAD
@@ -35,6 +35,8 @@ from django.utils.html import strip_tags
 from django.urls import reverse_lazy
 from django.views.generic.edit import CreateView, UpdateView, DeleteView
 from django.views.generic.detail import DetailView
+import csv
+
 # Details Donation View
 class DonationDetailView(DetailView):
     model = Donation_organization
@@ -831,7 +833,7 @@ def governance_update(request, pk):
     return render(request, 'main/governance/governance_form.html', context)
 
 # Delete governance record
-# views.py - UPDATED DELETE VIEW WITH ERROR HANDLING
+
 def governance_delete(request, pk):
     """Delete a governance record"""
     from django.shortcuts import get_object_or_404, redirect
@@ -851,7 +853,7 @@ def governance_delete(request, pk):
         'title': f'Delete {record.governance_category}'
     })
 
-    # Add this function to your views.py
+
 
 @csrf_exempt
 def quick_add_user(request):
@@ -1201,3 +1203,204 @@ def home(request):
     from django.shortcuts import redirect
     return redirect('find_doctors')
 
+
+
+def insurance_support(request):
+    """Main insurance support page view"""
+    # Get all active insurance plans ordered by display_order and score
+    insurance_plans = InsurancePlan.objects.filter(
+        is_active=True
+    ).order_by('display_order', '-score')
+    
+    # Get featured plans (top 3 by score)
+    featured_plans = insurance_plans[:3]
+    
+    # Get stats for the template
+    total_plans = insurance_plans.count()
+    highest_score = insurance_plans.first().score if total_plans > 0 else 0
+    
+    context = {
+        'insurance_plans': insurance_plans,
+        'featured_plans': featured_plans,
+        'total_plans': total_plans,
+        'highest_score': highest_score,
+        'page_title': 'Insurance Support',
+    }
+    
+    return render(request, 'main/healthcare/insurance_support.html', context)
+
+
+
+@require_POST
+def ai_recommendation_api(request):
+    """API endpoint for AI recommendations - FULLY AUTOMATED"""
+    try:
+        # Parse JSON data from request
+        data = json.loads(request.body)
+        age = data.get('age')
+        residence = data.get('residence')
+        priority = data.get('priority')
+        
+        print(f" AI Request - Age: {age}, Residence: {residence}, Priority: {priority}")
+        
+        # Try to find a matching rule in the database
+        rule = AIRecommendationRule.objects.filter(
+            age_bracket=age,
+            residence=residence,
+            priority=priority,
+            is_active=True
+        ).select_related('recommended_plan').first()
+        
+        if rule:
+            # Found a matching rule
+            plan = rule.recommended_plan
+            response_data = {
+                'success': True,
+                'plan_name': f"{plan.provider_name} {plan.plan_name}",
+                'recommendation_text': rule.recommendation_text,
+                'plan_id': plan.id,
+                'score': float(plan.score),
+                'network': plan.network,
+                'evacuation': plan.evacuation
+            }
+            print(f" Found rule: {rule}")
+            
+        else:
+            # No exact match - find the best alternative
+            print(" No exact match found, finding best alternative...")
+            
+            # Try to find a plan with matching priority
+            alternative_plan = InsurancePlan.objects.filter(
+                is_active=True
+            ).order_by('-score').first()
+            
+            if alternative_plan:
+                # Generate dynamic recommendation text
+                rec_text = generate_recommendation_text(age, residence, priority, alternative_plan)
+                
+                response_data = {
+                    'success': True,
+                    'plan_name': f"{alternative_plan.provider_name} {alternative_plan.plan_name}",
+                    'recommendation_text': rec_text,
+                    'plan_id': alternative_plan.id,
+                    'score': float(alternative_plan.score),
+                    'network': alternative_plan.network,
+                    'evacuation': alternative_plan.evacuation
+                }
+                print(f" Using alternative plan: {alternative_plan}")
+            else:
+                response_data = {
+                    'success': False,
+                    'error': 'No insurance plans available'
+                }
+        
+        return JsonResponse(response_data)
+        
+    except json.JSONDecodeError:
+        return JsonResponse({'success': False, 'error': 'Invalid JSON'}, status=400)
+    except Exception as e:
+        print(f" Error in ai_recommendation_api: {str(e)}")
+        import traceback
+        traceback.print_exc()
+        return JsonResponse({'success': False, 'error': str(e)}, status=500)
+
+def generate_recommendation_text(age, residence, priority, plan):
+    """Generate dynamic recommendation text based on inputs and plan"""
+    
+    age_text = {
+        'young': 'young professionals',
+        'mid': 'established professionals',
+        'senior': 'seniors'
+    }.get(age, 'individuals')
+    
+    residence_text = {
+        'usa': 'in the USA',
+        'europe': 'in Europe',
+        'other': 'internationally'
+    }.get(residence, '')
+    
+    priority_text = {
+        'budget': 'budget-conscious',
+        'comprehensive': 'comprehensive',
+        'emergency': 'emergency-focused'
+    }.get(priority, '')
+    
+    base_text = f"Based on your inputs, we recommend the {plan.provider_name} {plan.plan_name} plan for {age_text} {residence_text} seeking {priority_text} coverage. "
+    
+    if plan.score >= 9.5:
+        base_text += f"This top-rated plan offers {plan.network.lower()} coverage with {plan.evacuation.lower()} evacuation benefits. "
+    elif plan.score >= 9.0:
+        base_text += f"This excellent plan provides {plan.network.lower()} coverage and {plan.evacuation.lower()} evacuation. "
+    else:
+        base_text += f"This plan offers solid {plan.network.lower()} coverage with {plan.evacuation.lower()} evacuation options. "
+    
+    if 'Included' in plan.evacuation:
+        base_text += "Emergency evacuation is included for peace of mind."
+    else:
+        base_text += "Evacuation coverage is available as an optional add-on."
+    
+    return base_text
+
+@require_POST
+def submit_expert_inquiry(request):
+    """Handle expert consultation form submissions"""
+    try:
+        data = json.loads(request.body)
+        
+        # Create new inquiry
+        inquiry = ExpertInquiry.objects.create(
+            full_name=data.get('full_name'),
+            email=data.get('email'),
+            phone=data.get('phone', ''),
+            question=data.get('question'),
+            interested_plan_id=data.get('plan_id') if data.get('plan_id') else None
+        )
+        
+        # TODO: Send email notification to admin
+        # send_inquiry_notification(inquiry)
+        
+        return JsonResponse({
+            'success': True,
+            'message': 'Your request has been submitted successfully. An expert will contact you within 24 hours.'
+        })
+        
+    except json.JSONDecodeError:
+        return JsonResponse({'success': False, 'error': 'Invalid JSON'}, status=400)
+    except Exception as e:
+        return JsonResponse({'success': False, 'error': str(e)}, status=500)
+
+
+def download_comparison_csv(request):
+    """Generate and download CSV of insurance plans"""
+    # Create HttpResponse with CSV header
+    response = HttpResponse(content_type='text/csv')
+    response['Content-Disposition'] = 'attachment; filename="insurance_comparison.csv"'
+    
+    # Get all active plans
+    plans = InsurancePlan.objects.filter(is_active=True).order_by('display_order', '-score')
+    
+    # Create CSV writer
+    writer = csv.writer(response)
+    
+    # Write headers
+    writer.writerow([
+        'Provider',
+        'Plan Name',
+        'Global Network',
+        'Max Benefit',
+        'Evacuation Coverage',
+        'Rating (out of 10)'
+    ])
+    
+    # Write data rows
+    for plan in plans:
+        writer.writerow([
+            plan.provider_name,
+            plan.plan_name,
+            plan.network,
+            plan.max_benefit,
+            plan.evacuation,
+            f"{plan.score}/10"
+        ])
+    
+    return response

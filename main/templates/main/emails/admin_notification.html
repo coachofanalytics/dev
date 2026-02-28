@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+        .container { max-width: 600px; margin: 0 auto; background: #f9f9f9; }
+        .header { background: #4A902C; color: white; padding: 20px; text-align: center; }
+        .header h1 { margin: 0; font-size: 24px; }
+        .content { padding: 30px; background: white; }
+        .inquiry-detail { background: #f5f5f5; padding: 20px; margin: 20px 0; border-left: 4px solid #4A902C; }
+        .field { margin-bottom: 15px; }
+        .label { font-weight: bold; color: #555; }
+        .priority-urgent { color: #dc3545; font-weight: bold; }
+        .priority-high { color: #fd7e14; font-weight: bold; }
+        .priority-normal { color: #28a745; font-weight: bold; }
+        .footer { background: #333; color: white; padding: 15px; text-align: center; font-size: 12px; }
+        .button { 
+            background: #4A902C; 
+            color: white; 
+            padding: 10px 20px; 
+            text-decoration: none; 
+            border-radius: 5px;
+            display: inline-block;
+            margin-top: 15px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🆕 New Insurance Inquiry Received</h1>
+        </div>
+        
+        <div class="content">
+            <p>A new insurance inquiry has been submitted through the website.</p>
+            
+            <div class="inquiry-detail">
+                <div class="field">
+                    <span class="label">Name:</span> {{ inquiry.full_name }}
+                </div>
+                <div class="field">
+                    <span class="label">Email:</span> {{ inquiry.email }}
+                </div>
+                <div class="field">
+                    <span class="label">Phone:</span> {{ inquiry.phone|default:"Not provided" }}
+                </div>
+                <div class="field">
+                    <span class="label">Date:</span> {{ inquiry.created_at|date:"F j, Y - g:i A" }}
+                </div>
+                {% if inquiry.interested_plan %}
+                <div class="field">
+                    <span class="label">Interested Plan:</span> 
+                    {{ inquiry.interested_plan.provider_name }} {{ inquiry.interested_plan.plan_name }}
+                </div>
+                {% endif %}
+                <div class="field">
+                    <span class="label">Priority:</span> 
+                    <span class="priority-{{ inquiry.get_priority|lower }}">
+                        {{ inquiry.get_priority }}
+                    </span>
+                </div>
+                <div class="field">
+                    <span class="label">Question:</span>
+                    <p style="background: #fff; padding: 10px; border: 1px solid #ddd; margin-top: 5px;">
+                        {{ inquiry.question|linebreaks }}
+                    </p>
+                </div>
+            </div>
+            
+            <div style="text-align: center;">
+                <a href="{{ site_url }}/admin/main/expertinquiry/{{ inquiry.id }}/change/" class="button">
+                    View in Admin Panel
+                </a>
+            </div>
+        </div>
+        
+        <div class="footer">
+            <p>Diaspora County 48 - Insurance Support System</p>
+            <p>This is an automated notification. Please do not reply to this email.</p>
+        </div>
+    </div>
+</body>
+</html>
