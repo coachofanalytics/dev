@@ -30,6 +30,14 @@ admin.site.register(Governance)
 #>>>>>>> 25.10_DC48_UAT_ND
 
 
+# admin.site.register(Testimonial)
+from .models import ConsularAssistancePage
+admin.site.register(ConsularAssistancePage)
+
+admin.site.register(AppointmentRequest)
+admin.site.register(Doctor)
+
+
 
 @admin.register(ExpertInquiry)
 class ExpertInquiryAdmin(admin.ModelAdmin):

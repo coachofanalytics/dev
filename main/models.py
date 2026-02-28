@@ -389,6 +389,127 @@ class Governance(models.Model):
         super().save(*args, **kwargs)
 
 
+
+class Governance(models.Model):
+    governance_category = models.CharField(max_length=255, null=False, blank=False)
+    description = models.TextField(null=False, blank=False)
+    members = models.ForeignKey(User, on_delete=models.CASCADE, null=False, blank=False)
+    created_at = models.DateTimeField(null=False, blank=False)
+    updated_at = models.DateTimeField(null=False, blank=False)
+
+    def __str__(self):
+        return self.governance_category
+
+
+class ConsularAssistancePage(models.Model):
+    title = models.CharField(max_length=255)
+    slug = models.SlugField(max_length=255, unique=True)
+    content = models.TextField(blank=True, null=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = "Consular Assistance Page"
+        verbose_name_plural = "Consular Assistance Pages"
+
+    def __str__(self):
+        return self.title
+
+
+class Doctor(models.Model):
+    CATEGORY_CHOICES = [
+        ('general', 'General Practice'),
+        ('pediatrics', 'Pediatrics'),
+        ('mental_health', 'Mental Health'),
+        ('cardiology', 'Cardiology'),
+        ('dentistry', 'Dentistry'),
+        ('dermatology', 'Dermatology'),
+        ('gynecology', 'Gynecology'),
+        ('orthopedics', 'Orthopedics'),
+    ]
+
+    LANGUAGE_CHOICES = [
+        ('english', 'English'),
+        ('swahili', 'Swahili'),
+        ('amharic', 'Amharic'),
+        ('twi', 'Twi'),
+        ('yoruba', 'Yoruba'),
+        ('hausa', 'Hausa'),
+        ('french', 'French'),
+        ('arabic', 'Arabic'),
+        ('somali', 'Somali'),
+        ('tigrinya', 'Tigrinya'),
+    ]
+
+    name = models.CharField(max_length=200)
+    title = models.CharField(max_length=200)  # e.g. "Senior Pediatrician"
+    specialty = models.CharField(max_length=200)
+    categories = models.JSONField(default=list)  # list of category keys
+    location_city = models.CharField(max_length=200)
+    location_country = models.CharField(max_length=200)
+    clinic_name = models.CharField(max_length=200, blank=True)
+    languages = models.JSONField(default=list)  # list of language keys
+    telehealth = models.BooleanField(default=False)
+    available = models.BooleanField(default=True)
+    rating = models.DecimalField(max_digits=3, decimal_places=1, default=4.5)
+    review_count = models.PositiveIntegerField(default=0)
+    bio = models.TextField()
+    education = models.JSONField(default=list)  # list of strings
+    avatar_color = models.CharField(max_length=7, default='#4A90D9')  # CSS color for avatar bg
+    avatar_initials = models.CharField(max_length=3, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def get_language_display_list(self):
+        lang_map = dict(self.LANGUAGE_CHOICES)
+        return [lang_map.get(l, l.title()) for l in self.languages]
+
+    def get_category_display_list(self):
+        cat_map = dict(self.CATEGORY_CHOICES)
+        return [cat_map.get(c, c.title()) for c in self.categories]
+
+    @property
+    def full_location(self):
+        parts = [self.location_city, self.location_country]
+        return ', '.join(p for p in parts if p)
+
+    def __str__(self):
+        return f"{self.name} - {self.specialty}"
+
+    class Meta:
+        ordering = ['-rating', '-review_count']
+
+
+class AppointmentRequest(models.Model):
+    STATUS_CHOICES = [
+        ('new', 'New'),
+        ('contacted', 'Contacted'),
+        ('confirmed', 'Confirmed'),
+        ('declined', 'Declined'),
+    ]
+
+    TIME_CHOICES = [
+        ('morning', 'Morning (8am–12pm)'),
+        ('afternoon', 'Afternoon (12pm–5pm)'),
+        ('evening', 'Evening (5pm–8pm)'),
+    ]
+
+    doctor = models.ForeignKey(Doctor, on_delete=models.CASCADE, related_name='appointment_requests')
+    full_name = models.CharField(max_length=200)
+    email = models.EmailField()
+    preferred_date = models.DateField()
+    preferred_time = models.CharField(max_length=20, choices=TIME_CHOICES)
+    reason = models.TextField()
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='new')
+    honeypot = models.CharField(max_length=100, blank=True)  # spam protection
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"{self.full_name} → {self.doctor.name} on {self.preferred_date}"
+
+    class Meta:
+        ordering = ['-created_at']
+
+
 # Add these at the bottom of your main/models.py
 
 class InsurancePlan(models.Model):

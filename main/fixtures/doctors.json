@@ -1,0 +1,117 @@
+[
+  {
+    "model": "main.doctor",
+    "pk": 1,
+    "fields": {
+      "name": "Dr. Aisha Mwangi",
+      "title": "Senior Pediatrician",
+      "specialty": "Pediatrics",
+      "categories": ["pediatrics"],
+      "location_city": "Nairobi",
+      "location_country": "Kenya",
+      "clinic_name": "Nairobi Children's Clinic",
+      "languages": ["english", "swahili"],
+      "telehealth": true,
+      "available": true,
+      "rating": "4.8",
+      "review_count": 42,
+      "bio": "Experienced pediatrician focused on child health and vaccination programmes.",
+      "education": ["MBChB, University of Nairobi", "Pediatrics Fellowship"],
+      "avatar_color": "#7BC043",
+      "avatar_initials": "AM",
+      "created_at": "2026-02-23T09:11:00Z"
+    }
+  },
+  {
+    "model": "main.doctor",
+    "pk": 2,
+    "fields": {
+      "name": "Dr. John Ochieng",
+      "title": "Consultant Cardiologist",
+      "specialty": "Cardiology",
+      "categories": ["cardiology"],
+      "location_city": "Mombasa",
+      "location_country": "Kenya",
+      "clinic_name": "Coast Heart Centre",
+      "languages": ["english", "swahili"],
+      "telehealth": false,
+      "available": true,
+      "rating": "4.6",
+      "review_count": 18,
+      "bio": "Specialist in interventional cardiology and heart failure management.",
+      "education": ["MBChB, University of Nairobi", "Cardiology Fellowship"],
+      "avatar_color": "#FF6F61",
+      "avatar_initials": "JO",
+      "created_at": "2026-02-23T09:20:00Z"
+    }
+  },
+  {
+    "model": "main.doctor",
+    "pk": 3,
+    "fields": {
+      "name": "Dr. Maria Fernandez",
+      "title": "Dermatologist",
+      "specialty": "Dermatology",
+      "categories": ["dermatology"],
+      "location_city": "Nairobi",
+      "location_country": "Kenya",
+      "clinic_name": "SkinCare Nairobi",
+      "languages": ["english", "french"],
+      "telehealth": true,
+      "available": true,
+      "rating": "4.9",
+      "review_count": 65,
+      "bio": "Cosmetic and clinical dermatology with emphasis on acne and eczema.",
+      "education": ["MD, Universidad de Barcelona", "Dermatology Residency"],
+      "avatar_color": "#4A90D9",
+      "avatar_initials": "MF",
+      "created_at": "2026-02-23T09:25:00Z"
+    }
+  },
+  {
+    "model": "main.doctor",
+    "pk": 4,
+    "fields": {
+      "name": "Dr. Samuel Adu",
+      "title": "General Practitioner",
+      "specialty": "General Practice",
+      "categories": ["general"],
+      "location_city": "Accra",
+      "location_country": "Ghana",
+      "clinic_name": "Accra Family Clinic",
+      "languages": ["english", "twi"],
+      "telehealth": true,
+      "available": false,
+      "rating": "4.3",
+      "review_count": 27,
+      "bio": "Primary care physician serving families across the region.",
+      "education": ["MBChB, University of Ghana"],
+      "avatar_color": "#9B59B6",
+      "avatar_initials": "SA",
+      "created_at": "2026-02-23T09:30:00Z"
+    }
+  },
+  {
+    "model": "main.doctor",
+    "pk": 5,
+    "fields": {
+      "name": "Dr. Laila Osman",
+      "title": "Psychiatrist",
+      "specialty": "Mental Health",
+      "categories": ["mental_health"],
+      "location_city": "Kampala",
+      "location_country": "Uganda",
+      "clinic_name": "MindCare Clinic",
+      "languages": ["english", "swahili"],
+      "telehealth": false,
+      "available": true,
+      "rating": "4.7",
+      "review_count": 33,
+      "bio": "Adult and adolescent psychiatry with cognitive behavioural therapy.",
+      "education": ["MBChB, Makerere University", "Psychiatry Fellowship"],
+      "avatar_color": "#2ECC71",
+      "avatar_initials": "LO",
+      "created_at": "2026-02-23T09:35:00Z"
+    }
+  }
+]
