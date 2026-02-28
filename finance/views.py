@@ -1,29 +1,33 @@
 
 import logging
+from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.db.models import Sum
-from django.http import QueryDict, Http404
+from django.http import QueryDict, Http404, JsonResponse
 from django.shortcuts import redirect
 from django.urls import reverse
 from django.views.generic import CreateView, ListView, UpdateView, DetailView
 from django.utils.decorators import method_decorator
 from .models import Payment_Information
+from .forms import OpportunityForm
 from accounts.forms import UserForm
 from accounts.models import CustomerUser, Membership
 from .forms import BudgetForm, DepartmentFilterForm, InflowForm
 from .models import (
-    Budget, CodaBudget, Payment_History,
+    Budget, CodaBudget, Payment_Information, Payment_History,
     Default_Payment_Fees, Transaction
 )
 from .utils import (
-    get_exchange_rate
+    check_default_fee, get_exchange_rate, compute_amt, category_subcategory
 )
-from main.utils import path_values
+from main.utils import path_values, countdown_in_month
 from django.shortcuts import render, get_object_or_404
 from django.contrib.auth.decorators import login_required
+from django.contrib.admin.views.decorators import staff_member_required
 from django.contrib.auth import get_user_model
-
+from django.views.generic import CreateView
+from .models import Payment_Information,Opportunity, NewsLetterSubscriber
 # Initialize Logger
 logger = logging.getLogger(__name__)
 
@@ -173,6 +177,7 @@ def another_view(request, method):
 
 
 
+from django.shortcuts import render
 
 def payment(request, method):
     path_list, sub_title, pre_sub_title = path_values(request)
@@ -258,7 +263,7 @@ class DefaultPaymentUpdateView(UpdateView):
             return super().form_valid(form)
         else:
             # return redirect("management:tasks")
-            return render(request,"management/contracts/supportcontract_form.html")
+            return render(self.request, "management/contracts/supportcontract_form.html")
 
     def test_func(self):
         task = self.get_object()
@@ -285,7 +290,7 @@ class PaymentInformationUpdateView(UpdateView):
             return super().form_valid(form)
         else:
             # return redirect("management:tasks")
-            return render(request,"main/snippets_templates/generalform.html")
+            return render(self.request, "main/snippets_templates/generalform.html")
 
     def test_func(self):
         task = self.get_object()
@@ -457,6 +462,10 @@ def budget_projection(request,subtitle='summary',duration=2024):
     # Create a list of unique categories
     available_categories = budget_summary.values_list('category__name', flat=True).distinct()
 
+    budget_months = list(range(1, 13))  # Months 1-12
+    budget_years = [2024]  # Add relevant years
+    rate = 1.0  # Exchange rate or conversion factor
+
     context = {
         # "departments": departments,
         "categories": available_categories,
@@ -496,3 +505,68 @@ def Payment_Review(request):
 
     
     return render(request,"finance/payments/Payment_Review.html",context)
+
+
+def homepage(request):
+    return render(request,"finance/homepage/homepage.html")
+
+def finance_directory(request):
+
+    opportunities = Opportunity.approved.all()
+    count = opportunities.count()
+
+    if request.method == 'POST':
+        form = OpportunityForm(request.POST)
+
+        if form.is_valid():
+            opportunity = form.save(commit=False)
+            opportunity.status = 'PENDING'
+            opportunity.save()
+
+            messages.success(request, "Your submission is under review.")
+            return redirect('finance:directory')
+    else:
+        form = OpportunityForm()
+
+    return render(request, "finance/investment/directory.html", {
+        'opportunities': opportunities,
+        'count': count,
+        'form': form
+    })
+    
+def subscribe_newsletter(request):
+    if request.method == 'POST':
+        email=request.POST.get('email')
+        if not email:
+            return JsonResponse({'success':False, 'message':'Email is required'})
+        
+        subscriber, created = NewsLetterSubscriber.objects.get_or_create(email=email)
+        if created:
+            message = 'Thank you for subscribing'
+        else:
+            message= 'You are already subscribed'
+            
+        return JsonResponse({'success':True,'message':message})
+    
+    
+@staff_member_required
+def moderation_queue(request):
+    pending_items = Opportunity.objects.filter(status='PENDING')
+    return render(request,'finance/investment/moderation.html',{
+        'pending_items': pending_items
+    })
+    
+@staff_member_required
+def approve_opportunity(request,pk):
+    opportunity = get_object_or_404(Opportunity, pk=pk)
+    opportunity.status = 'APPROVED'
+    opportunity.save()
+    return redirect('finance:moderation_queue')
+
+@staff_member_required
+def reject_opportunity(request,pk):
+    opportunity = get_object_or_404(Opportunity, pk=pk)
+    opportunity.status = 'REJECTED'
+    opportunity.save()
+    return redirect('finance:moderation_queue')
+

@@ -1,6 +1,9 @@
 from django import forms
 from django.forms import Textarea
+from django.db.models import Q
+from pyexpat import model
 from accounts.models import Department
+from .models import Opportunity
 
 from .models import (
     Budget,
@@ -87,3 +90,13 @@ class DepartmentFilterForm(forms.Form):
         queryset=Department.objects.all(),
         label='Select a Deparment'
     ) 
+    
+class OpportunityForm(forms.ModelForm):
+    class Meta:
+        model = Opportunity
+        fields = [
+            'title',
+            'type',
+            'contact',
+            'description'
+        ]
