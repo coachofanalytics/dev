@@ -342,11 +342,6 @@ class TrainingCourse(models.Model):
         return self.title
 
 
-# <<<<<<< 25.10_DC48_UAT_UO
-
-# >>>>>>> 25.10_DC48_UAT_ND
-# =======
-# >>>>>>> 25.10_DC48_UAT_ND
 
 
 class Testimonial(models.Model):
@@ -390,15 +385,7 @@ class Governance(models.Model):
 
 
 
-class Governance(models.Model):
-    governance_category = models.CharField(max_length=255, null=False, blank=False)
-    description = models.TextField(null=False, blank=False)
-    members = models.ForeignKey(User, on_delete=models.CASCADE, null=False, blank=False)
-    created_at = models.DateTimeField(null=False, blank=False)
-    updated_at = models.DateTimeField(null=False, blank=False)
 
-    def __str__(self):
-        return self.governance_category
 
 
 class ConsularAssistancePage(models.Model):
