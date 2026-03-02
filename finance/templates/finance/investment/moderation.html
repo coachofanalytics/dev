@@ -1,0 +1,146 @@
+{% extends "main/base_templates/base.html" %}
+{% block title %}Moderation Queue{% endblock %}
+
+{% block content %}
+
+<style>
+.moderation-section {
+    padding: 60px 0;
+}
+
+.moderation-header {
+    margin-bottom: 30px;
+}
+
+.moderation-header h2 {
+    font-size: 32px;
+    font-weight: 800;
+    color: #2563eb;
+}
+
+.queue-count {
+    color: #6b7280;
+    margin-top: 8px;
+}
+
+.moderation-grid {
+    display: grid;
+    gap: 25px;
+}
+
+.moderation-card {
+    background: white;
+    padding: 25px;
+    border-radius: 12px;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.05);
+    border-left: 6px solid #f59e0b; /* Yellow for Pending */
+}
+
+.moderation-card h4 {
+    font-size: 20px;
+    margin-bottom: 10px;
+}
+
+.moderation-meta {
+    font-size: 14px;
+    color: #6b7280;
+    margin-bottom: 10px;
+}
+
+.moderation-actions {
+    margin-top: 15px;
+    display: flex;
+    gap: 10px;
+}
+
+.btn-approve {
+    background: #16a34a;
+    color: white;
+    padding: 8px 16px;
+    border: none;
+    border-radius: 6px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.btn-reject {
+    background: #dc2626;
+    color: white;
+    padding: 8px 16px;
+    border: none;
+    border-radius: 6px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.empty-state {
+    padding: 40px;
+    background: #f3f4f6;
+    border-radius: 12px;
+    text-align: center;
+    color: #6b7280;
+}
+</style>
+
+<section class="moderation-section">
+    <div class="container">
+
+        <div class="moderation-header">
+            <h2>Moderation Queue</h2>
+            <p class="queue-count">
+                Pending Opportunities ({{ pending_items|length }})
+            </p>
+        </div>
+
+        {% if pending_items %}
+
+            <div class="moderation-grid">
+
+                {% for opp in pending_items %}
+                    <div class="moderation-card">
+
+                        <h4>{{ opp.name }}</h4>
+
+                        <div class="moderation-meta">
+                            Type: {{ opp.type }} |
+                            contact: {{ opp.contact }} |
+                            Submitted: {{ opp.created_at|date:"M d, Y" }}
+                        </div>
+
+                        <p>{{ opp.description }}</p>
+
+                        <div class="moderation-actions">
+
+                            <form method="POST" action="{% url 'finance:approve_opportunity' opp.id %}">
+                                {% csrf_token %}
+                                <button type="submit" class="btn-approve">
+                                    Approve
+                                </button>
+                            </form>
+
+                            <form method="POST" action="{% url 'finance:reject_opportunity' opp.id %}">
+                                {% csrf_token %}
+                                <button type="submit" class="btn-reject">
+                                    Reject
+                                </button>
+                            </form>
+
+                        </div>
+
+                    </div>
+                {% endfor %}
+
+            </div>
+
+        {% else %}
+
+            <div class="empty-state">
+                <p>No pending opportunities. All caught up!</p>
+            </div>
+
+        {% endif %}
+
+    </div>
+</section>
+
+{% endblock %}

@@ -20,14 +20,20 @@ admin.site.register(EmergencyHotline)
 admin.site.register(StaffContact)
 #admin.site.register(EmergencyHelpActivation)
 
-#=======
 admin.site.register(Donation_organisation)
 admin.site.register(ContactMessage)
 admin.site.register(Donation_organization)
 admin.site.register(Scholarship)
 admin.site.register(Testimonial)
 admin.site.register(Governance)
-#>>>>>>> 25.10_DC48_UAT_ND
+
+
+# admin.site.register(Testimonial)
+from .models import ConsularAssistancePage
+admin.site.register(ConsularAssistancePage)
+
+admin.site.register(AppointmentRequest)
+admin.site.register(Doctor)
 
 
 
@@ -37,17 +43,40 @@ class ExpertInquiryAdmin(admin.ModelAdmin):
         'full_name', 
         'email', 
         'priority_colored', 
+        'sla_status_colored',
+        'assigned_to',
         'interested_plan', 
         'created_at', 
+        'response_time_display',
         'days_old',
         'status_colored',
         'is_contacted'  # Added is_contacted to list_display
     ]
-    list_filter = ['is_contacted', 'created_at', 'interested_plan']
+    list_filter = [
+        'is_contacted', 
+        'assigned_to', 
+        'escalated' ,
+        'created_at', 
+        'interested_plan'
+        ]
     search_fields = ['full_name', 'email', 'question', 'notes']
-    readonly_fields = ['created_at', 'updated_at', 'priority_display', 'days_old_display']
+    readonly_fields = [
+        'created_at', 
+        'updated_at', 
+        'priority_display', 
+        'days_old_display',
+        'sla_deadline_display',
+        'response_time_display',
+        'escalated_display'
+        ]
     list_editable = ['is_contacted']  # Now this is in list_display, so it's fine
-    actions = ['mark_as_contacted', 'add_urgent_note', 'send_reminder']
+    actions = [
+        'mark_as_contacted', 
+        'add_urgent_note', 
+        'send_reminder',
+        'assign_to_me',
+        'escalated_selected'
+        ]
     
     fieldsets = (
         ('Contact Information', {
@@ -55,6 +84,15 @@ class ExpertInquiryAdmin(admin.ModelAdmin):
         }),
         ('Inquiry Details', {
             'fields': ('question', 'interested_plan', 'notes')
+        }),
+        ('SLA & Assignment', {
+            'fields': (
+                'assigned_to',
+                'sla_deadline',
+                'first_response_time',
+                'escalated',
+                'escalated_to',
+            ),
         }),
         ('Status', {
             'fields': ('is_contacted', 'created_at', 'updated_at')
@@ -121,6 +159,64 @@ class ExpertInquiryAdmin(admin.ModelAdmin):
             pass
         self.message_user(request, f"Reminders sent for {queryset.count()} inquiries.")
     send_reminder.short_description = "Send reminder"
+
+     # NEW METHODS FOR SLA DISPLAY
+    
+    def sla_status_colored(self, obj):
+        """Display SLA status with colors"""
+        status = obj.get_sla_status()
+        if "🔴" in status:
+            return format_html(f'<span style="color: red; font-weight: bold;">{status}</span>')
+        elif "🟠" in status:
+            return format_html(f'<span style="color: orange; font-weight: bold;">{status}</span>')
+        elif "🟡" in status:
+            return format_html(f'<span style="color: #b8860b; font-weight: bold;">{status}</span>')
+        else:
+            return format_html(f'<span style="color: green; font-weight: bold;">{status}</span>')
+    sla_status_colored.short_description = 'SLA Status'
+    
+    def response_time_display(self, obj):
+        """Display response time"""
+        return obj.get_response_time()
+    response_time_display.short_description = 'Response Time'
+    
+    def sla_deadline_display(self, obj):
+        """Display SLA deadline"""
+        if obj.sla_deadline:
+            return obj.sla_deadline.strftime('%Y-%m-%d %H:%M')
+        return "Not set"
+    sla_deadline_display.short_description = 'SLA Deadline'
+    
+    def escalated_display(self, obj):
+        """Display escalation status"""
+        if obj.escalated:
+            return f"🚨 Escalated to {obj.escalated_to} at {obj.escalated_at.strftime('%H:%M %d/%m')}"
+        return "No"
+    escalated_display.short_description = 'Escalated'
+    
+    # NEW ACTIONS
+    
+    def assign_to_me(self, request, queryset):
+        """Assign selected inquiries to current user"""
+        for inquiry in queryset:
+            inquiry.assigned_to = request.user
+            inquiry.save()
+            inquiry.add_note(f"Assigned to {request.user.username}")
+        self.message_user(request, f"Assigned {queryset.count()} inquiries to you")
+    assign_to_me.short_description = "Assign to me"
+    
+    def escalate_selected(self, request, queryset):
+        """Manually escalate selected inquiries"""
+        from django.utils import timezone
+        for inquiry in queryset:
+            inquiry.escalated = True
+            inquiry.escalated_at = timezone.now()
+            inquiry.escalated_to = request.user
+            inquiry.save()
+            inquiry.add_note(f"🚨 Manually escalated by {request.user.username}")
+        self.message_user(request, f"Escalated {queryset.count()} inquiries")
+    escalate_selected.short_description = "Escalate selected"
+    
 
 
 @admin.register(InsurancePlan)

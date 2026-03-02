@@ -61,7 +61,7 @@
                     <li>Health Seminars and Prevention Workshops</li>
                     <li>Information on navigating local emergency medical systems</li>
                 </ul>
-                <a href="#" class="btn btn-outline-success">Search for Doctors</a>
+                <a href="{% url 'main:find_doctors' %}" class="btn btn-outline-success">Search for Doctors</a>
             </div>
         </div>
 
@@ -98,7 +98,7 @@
 </div>
 
 <!-- Healthcare chat widget root and assets -->
-<div id="healthcare-chat-root-placeholder"></div>
+<div id="healthcare-chat-root-pl aceholder"></div>
 <link rel="stylesheet" href="{% static 'main/css/chat.css' %}">
 <script src="{% static 'main/js/chat.js' %}" defer></script>
 

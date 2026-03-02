@@ -1,3 +1,4 @@
+from django.conf import settings
 from django.shortcuts import redirect, render
 from django.urls import reverse
 from django.contrib import messages
@@ -10,7 +11,7 @@ from django.views.generic import (
     UpdateView,
 )
 #<<<<<<< 25.10_DC48_UAT_UO
-from .models import Assets,Description, News, Page, Service, SubService,Team, SafetyAlertSubscription, EmergencyHotline, StaffContact, InsurancePlan, AIRecommendationRule, ExpertInquiry
+from .models import Assets,Description, News, Page, Service, SubService,Team, SafetyAlertSubscription, EmergencyHotline, StaffContact, InsurancePlan, AIRecommendationRule, ExpertInquiry, ConsularAssistancePage
 #=======
 from django.db.models import Q
 #<<<<<<< HEAD
@@ -996,6 +997,211 @@ def test_user_endpoint(request):
     # Changed from 'delete.html' to 'governance_confirm_delete.html'
     return render(request, 'main/governance/governance_confirm_delete.html', context)
 
+
+def testimonial_delete(request, pk):
+    testimonial = get_object_or_404(Testimonial, pk=pk)
+    testimonials = Testimonial.objects.all()
+
+    if request.method == "POST":
+        testimonial.delete()
+        return redirect('main:testimonial_list')
+
+    return render(request, "main/testimonial/testimonial_confirm_delete.html", {
+        'testimonial': testimonial,
+        'testimonials': testimonials,
+    })
+
+
+def consular_assistance(request):
+    page = ConsularAssistancePage.objects.first()
+    context = { 'page': page, }
+    return render(request, "main/consular_assistance.html", context)
+
+
+from .models import Doctor, AppointmentRequest
+from .forms import SearchForm, AppointmentRequestForm
+from django.core.paginator import Paginator
+DOCTORS_PER_PAGE = getattr(settings, 'DOCTORS_PER_PAGE', 6)
+
+
+def find_doctors(request):
+    """Main find doctors page."""
+    form = SearchForm(request.GET)
+    doctors = Doctor.objects.all()
+
+    specialty_q = request.GET.get('specialty', '').strip()
+    location_q = request.GET.get('location', '').strip()
+    categories = request.GET.getlist('categories')
+    languages = request.GET.getlist('languages')
+    sort_by = request.GET.get('sort', 'recommended')
+
+    # Filter by specialty
+    if specialty_q:
+        doctors = doctors.filter(specialty__icontains=specialty_q) | \
+                  doctors.filter(title__icontains=specialty_q) | \
+                  doctors.filter(name__icontains=specialty_q)
+
+    # Filter by location
+    if location_q:
+        doctors = doctors.filter(location_city__icontains=location_q) | \
+                  doctors.filter(location_country__icontains=location_q)
+
+    # Filter by categories (any match)
+    if categories:
+        filtered_ids = []
+        for doc in doctors:
+            if any(cat in doc.categories for cat in categories):
+                filtered_ids.append(doc.pk)
+        doctors = doctors.filter(pk__in=filtered_ids)
+
+    # Filter by languages (any match)
+    if languages:
+        filtered_ids = []
+        for doc in doctors:
+            if any(lang in doc.languages for lang in languages):
+                filtered_ids.append(doc.pk)
+        doctors = doctors.filter(pk__in=filtered_ids)
+
+    # Sorting
+    if sort_by == 'rating':
+        doctors = doctors.order_by('-rating', '-review_count')
+    elif sort_by == 'reviews':
+        doctors = doctors.order_by('-review_count', '-rating')
+    elif sort_by == 'name':
+        doctors = doctors.order_by('name')
+    else:  # recommended
+        doctors = doctors.order_by('-rating', '-review_count')
+
+    total_count = doctors.count()
+
+    # Pagination
+    paginator = Paginator(doctors, DOCTORS_PER_PAGE)
+    page_number = request.GET.get('page', 1)
+    page_obj = paginator.get_page(page_number)
+
+    context = {
+        'form': form,
+        'page_obj': page_obj,
+        'total_count': total_count,
+        'specialty_q': specialty_q,
+        'location_q': location_q,
+        'selected_categories': categories,
+        'selected_languages': languages,
+        'sort_by': sort_by,
+        'category_choices': Doctor.CATEGORY_CHOICES,
+        'language_choices': Doctor.LANGUAGE_CHOICES,
+        'sort_options': [
+            ('recommended', 'Recommended'),
+            ('rating', 'Highest Rated'),
+            ('reviews', 'Most Reviews'),
+            ('name', 'Name (A–Z)'),
+        ],
+        'page_range': paginator.get_elided_page_range(page_obj.number, on_each_side=2, on_ends=1),
+    }
+    return render(request, 'main/find_doctors.html', context)
+
+
+def doctor_profile_api(request, pk):
+    """AJAX endpoint: return doctor profile as JSON for the modal."""
+    doctor = get_object_or_404(Doctor, pk=pk)
+    data = {
+        'id': doctor.pk,
+        'name': doctor.name,
+        'title': doctor.title,
+        'specialty': doctor.specialty,
+        'location': doctor.full_location,
+        'clinic': doctor.clinic_name,
+        'languages': doctor.get_language_display_list(),
+        'telehealth': doctor.telehealth,
+        'available': doctor.available,
+        'rating': str(doctor.rating),
+        'review_count': doctor.review_count,
+        'bio': doctor.bio,
+        'education': doctor.education,
+        'avatar_color': doctor.avatar_color,
+        'avatar_initials': doctor.avatar_initials or doctor.name[:2].upper(),
+    }
+    return JsonResponse(data)
+
+
+@require_POST
+def book_appointment(request, pk):
+    """Handle appointment booking form submission."""
+    doctor = get_object_or_404(Doctor, pk=pk)
+
+    # Rate limiting via session
+    session_key = f'booking_attempts_{pk}'
+    attempts = request.session.get(session_key, 0)
+    if attempts >= 5:
+        return JsonResponse({'success': False, 'error': 'Too many requests. Please try again later.'}, status=429)
+
+    form = AppointmentRequestForm(request.POST)
+
+    if form.is_valid():
+        appointment = form.save(commit=False)
+        appointment.doctor = doctor
+        appointment.save()
+
+        # Track attempts
+        request.session[session_key] = attempts + 1
+
+        # Send email notification (prints to console in dev)
+        try:
+            send_mail(
+                subject=f'New Appointment Request – {doctor.name}',
+                message=f"""
+New appointment request received:
+
+Doctor: {doctor.name}
+Patient: {appointment.full_name}
+Email: {appointment.email}
+Date: {appointment.preferred_date}
+Time: {appointment.get_preferred_time_display()}
+Reason: {appointment.reason}
+
+Log in to the admin to respond.
+                """.strip(),
+                from_email=settings.DEFAULT_FROM_EMAIL,
+                recipient_list=[settings.DEFAULT_FROM_EMAIL],
+                fail_silently=True,
+            )
+            send_mail(
+                subject=f'Appointment Request Received – {doctor.name}',
+                message=f"""
+Dear {appointment.full_name},
+
+Thank you for submitting an appointment request with {doctor.name}.
+
+Your request details:
+  Date: {appointment.preferred_date}
+  Time: {appointment.get_preferred_time_display()}
+  Reason: {appointment.reason}
+
+The provider will review your request and contact you at {appointment.email} to confirm availability.
+
+– Diaspora County 48
+                """.strip(),
+                from_email=settings.DEFAULT_FROM_EMAIL,
+                recipient_list=[appointment.email],
+                fail_silently=True,
+            )
+        except Exception:
+            pass
+
+        return JsonResponse({
+            'success': True,
+            'message': f'Your appointment request with {doctor.name} has been submitted successfully! '
+                       f'The clinic will contact you at {appointment.email} to confirm your appointment.'
+        })
+    else:
+        errors = {field: list(errs) for field, errs in form.errors.items()}
+        return JsonResponse({'success': False, 'errors': errors}, status=400)
+
+
+def home(request):
+    """Simple home redirect."""
+    from django.shortcuts import redirect
+    return redirect('find_doctors')
 
 
 

@@ -1,12 +1,18 @@
 from django.db import models
-from datetime import datetime
+from django.core.validators import MaxValueValidator, MinValueValidator
+from datetime import datetime, date
 from decimal import *
-from django.shortcuts import redirect
+from enum import unique
+from django.shortcuts import redirect, render
 from django.db.models import Q
+from django.db.models import Sum
 from django.urls import reverse
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
+from django.db.models.signals import pre_save, post_save
+from django.conf import settings
 from django.contrib.auth import get_user_model
+
 
 from accounts.models import CustomerUser, Department
 # from finance.utils import get_exchange_rate
@@ -365,3 +371,44 @@ class CodaBudget(TimeStampedModel):
         if self.unit_price and self.qty:
             return round(Decimal(self.unit_price) * Decimal(self.qty), 2)
         return Decimal('0.00')    
+    
+    
+
+class Opportunity(models.Model):
+
+    class Status(models.TextChoices):
+        PENDING = "PENDING", "Pending"
+        APPROVED = "APPROVED", "Approved"
+        REJECTED = "REJECTED", "Rejected"
+
+    title = models.CharField(max_length=255)
+    description = models.TextField()
+    contact = models.CharField(max_length=255, null=True, blank=True)
+    type = models.CharField(max_length=255)
+    status = models.CharField(
+        max_length=10,
+        choices=Status.choices,
+        default=Status.PENDING,
+    )
+
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return self.title
+
+
+class NewsLetterSubscriber(models.Model):
+    email = models.EmailField(unique=True)
+    is_verified = models.BooleanField(default=False)
+    subscribed_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return self.email
+
+
+class ApprovedManager(models.Manager):
+    def get_queryset(self):
+        return super().get_queryset().filter(status='APPROVED')
+
+
+Opportunity.add_to_class('approved', ApprovedManager())

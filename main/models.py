@@ -7,6 +7,8 @@ from django.urls import reverse
 from django.core.mail import send_mail, EmailMultiAlternatives
 from django.template.loader import render_to_string
 from django.utils.html import strip_tags
+from django.db.models import Count
+from datetime import timedelta
 
 
 User = get_user_model()
@@ -342,11 +344,6 @@ class TrainingCourse(models.Model):
         return self.title
 
 
-# <<<<<<< 25.10_DC48_UAT_UO
-
-# >>>>>>> 25.10_DC48_UAT_ND
-# =======
-# >>>>>>> 25.10_DC48_UAT_ND
 
 
 class Testimonial(models.Model):
@@ -387,6 +384,119 @@ class Governance(models.Model):
     def save(self, *args, **kwargs):
         # You can add more custom logic here if needed
         super().save(*args, **kwargs)
+
+
+
+
+
+
+class ConsularAssistancePage(models.Model):
+    title = models.CharField(max_length=255)
+    slug = models.SlugField(max_length=255, unique=True)
+    content = models.TextField(blank=True, null=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = "Consular Assistance Page"
+        verbose_name_plural = "Consular Assistance Pages"
+
+    def __str__(self):
+        return self.title
+
+
+class Doctor(models.Model):
+    CATEGORY_CHOICES = [
+        ('general', 'General Practice'),
+        ('pediatrics', 'Pediatrics'),
+        ('mental_health', 'Mental Health'),
+        ('cardiology', 'Cardiology'),
+        ('dentistry', 'Dentistry'),
+        ('dermatology', 'Dermatology'),
+        ('gynecology', 'Gynecology'),
+        ('orthopedics', 'Orthopedics'),
+    ]
+
+    LANGUAGE_CHOICES = [
+        ('english', 'English'),
+        ('swahili', 'Swahili'),
+        ('amharic', 'Amharic'),
+        ('twi', 'Twi'),
+        ('yoruba', 'Yoruba'),
+        ('hausa', 'Hausa'),
+        ('french', 'French'),
+        ('arabic', 'Arabic'),
+        ('somali', 'Somali'),
+        ('tigrinya', 'Tigrinya'),
+    ]
+
+    name = models.CharField(max_length=200)
+    title = models.CharField(max_length=200)  # e.g. "Senior Pediatrician"
+    specialty = models.CharField(max_length=200)
+    categories = models.JSONField(default=list)  # list of category keys
+    location_city = models.CharField(max_length=200)
+    location_country = models.CharField(max_length=200)
+    clinic_name = models.CharField(max_length=200, blank=True)
+    languages = models.JSONField(default=list)  # list of language keys
+    telehealth = models.BooleanField(default=False)
+    available = models.BooleanField(default=True)
+    rating = models.DecimalField(max_digits=3, decimal_places=1, default=4.5)
+    review_count = models.PositiveIntegerField(default=0)
+    bio = models.TextField()
+    education = models.JSONField(default=list)  # list of strings
+    avatar_color = models.CharField(max_length=7, default='#4A90D9')  # CSS color for avatar bg
+    avatar_initials = models.CharField(max_length=3, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def get_language_display_list(self):
+        lang_map = dict(self.LANGUAGE_CHOICES)
+        return [lang_map.get(l, l.title()) for l in self.languages]
+
+    def get_category_display_list(self):
+        cat_map = dict(self.CATEGORY_CHOICES)
+        return [cat_map.get(c, c.title()) for c in self.categories]
+
+    @property
+    def full_location(self):
+        parts = [self.location_city, self.location_country]
+        return ', '.join(p for p in parts if p)
+
+    def __str__(self):
+        return f"{self.name} - {self.specialty}"
+
+    class Meta:
+        ordering = ['-rating', '-review_count']
+
+
+class AppointmentRequest(models.Model):
+    STATUS_CHOICES = [
+        ('new', 'New'),
+        ('contacted', 'Contacted'),
+        ('confirmed', 'Confirmed'),
+        ('declined', 'Declined'),
+    ]
+
+    TIME_CHOICES = [
+        ('morning', 'Morning (8am–12pm)'),
+        ('afternoon', 'Afternoon (12pm–5pm)'),
+        ('evening', 'Evening (5pm–8pm)'),
+    ]
+
+    doctor = models.ForeignKey(Doctor, on_delete=models.CASCADE, related_name='appointment_requests')
+    full_name = models.CharField(max_length=200)
+    email = models.EmailField()
+    preferred_date = models.DateField()
+    preferred_time = models.CharField(max_length=20, choices=TIME_CHOICES)
+    reason = models.TextField()
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='new')
+    honeypot = models.CharField(max_length=100, blank=True)  # spam protection
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"{self.full_name} → {self.doctor.name} on {self.preferred_date}"
+
+    class Meta:
+        ordering = ['-created_at']
 
 
 # Add these at the bottom of your main/models.py
@@ -463,6 +573,29 @@ class ExpertInquiry(models.Model):
     notes = models.TextField(blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+
+
+     # ============= NEW FIELDS FOR SLA TRACKING =============
+    first_response_time = models.DateTimeField(null=True, blank=True, help_text="When this inquiry was first responded to")
+    resolution_time = models.DateTimeField(null=True, blank=True, help_text="When this inquiry was resolved")
+    assigned_to = models.ForeignKey(
+        User,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='assigned_inquiries',
+        help_text="Agent assigned to this inquiry"
+    )
+    sla_deadline = models.DateTimeField(null=True, blank=True, help_text="SLA deadline based on priority")
+    escalated = models.BooleanField(default=False, help_text="Whether this inquiry has been escalated")
+    escalated_at = models.DateTimeField(null=True, blank=True)
+    escalated_to = models.ForeignKey(
+        User,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='escalated_inquiries'
+    )
     
     class Meta:
         ordering = ['-created_at']
@@ -503,7 +636,7 @@ class ExpertInquiry(models.Model):
             'coverage', 'benefit', 'expensive', 'cost'
         ]
         
-        question_lower = self.question.lower()
+        question_lower = self.question.lower() if self.question else ""
         
         # Check for urgent keywords
         for keyword in urgent_keywords:
@@ -705,3 +838,281 @@ class ExpertInquiry(models.Model):
         )
         msg.attach_alternative(html_content, "text/html")
         msg.send()
+    
+    # ============= NEW SLA METHODS =============
+    
+    def calculate_sla_deadline(self):
+        """Calculate SLA deadline based on priority"""
+        from django.utils import timezone
+
+        created = self.created_at or timezone.now()
+        
+        priority = self.get_priority()
+        if priority == "URGENT":
+            deadline = self.created_at + timedelta(hours=4)
+        elif priority == "HIGH":
+            deadline = self.created_at + timedelta(hours=24)
+        else:  # NORMAL
+            deadline = self.created_at + timedelta(hours=48)
+        
+        return deadline
+    
+    def update_sla_deadline(self):
+        """Update SLA deadline when priority changes"""
+        self.sla_deadline = self.calculate_sla_deadline()
+        self.save(update_fields=['sla_deadline'])
+    
+    def get_sla_status(self):
+        """Get current SLA status with emoji"""
+        if self.is_contacted:
+            return "✅ Resolved"
+        
+        if not self.sla_deadline:
+            self.sla_deadline = self.calculate_sla_deadline()
+            self.save(update_fields=['sla_deadline'])
+        
+        from django.utils import timezone
+        now = timezone.now()
+        
+        if now > self.sla_deadline:
+            hours_overdue = (now - self.sla_deadline).total_seconds() / 3600
+            return f"🔴 SLA Breached ({int(hours_overdue)}h overdue)"
+        
+        time_left = self.sla_deadline - now
+        hours_left = time_left.total_seconds() / 3600
+        
+        if hours_left < 1:
+            return f"🟠 Critical ({int(hours_left*60)}m left)"
+        elif hours_left < 4:
+            return f"🟡 At Risk ({int(hours_left)}h left)"
+        else:
+            return f"🟢 On Track ({int(hours_left)}h left)"
+    
+    def get_response_time(self):
+        """Calculate response time in hours"""
+        if self.first_response_time:
+            delta = self.first_response_time - self.created_at
+            hours = delta.total_seconds() / 3600
+            if hours < 1:
+                minutes = int(hours * 60)
+                return f"{minutes} minutes"
+            else:
+                return f"{round(hours, 1)} hours"
+        return "Not yet responded"
+    
+    def check_and_escalate(self):
+        """Auto-escalate if SLA is breached"""
+        from django.utils import timezone
+        
+        if self.is_contacted or self.escalated:
+            return
+        
+        if not self.sla_deadline:
+            self.sla_deadline = self.calculate_sla_deadline()
+        
+        if timezone.now() > self.sla_deadline:
+            self.escalated = True
+            self.escalated_at = timezone.now()
+            
+            # Find manager to escalate to
+            manager = User.objects.filter(is_staff=True, is_superuser=True).first()
+            if manager:
+                self.escalated_to = manager
+                
+                # Send escalation email
+                self.send_escalation_notification(manager)
+            
+            self.save(update_fields=['escalated', 'escalated_at', 'escalated_to'])
+            self.add_note("🚨 AUTO-ESCALATED: SLA breached")
+    
+    def send_escalation_notification(self, manager):
+        """Send notification when inquiry is escalated"""
+        from django.core.mail import send_mail
+        from django.conf import settings
+        
+        subject = f"🚨 ESCALATED: {self.get_priority()} Priority Inquiry"
+        message = f"""
+        An inquiry has been automatically escalated due to SLA breach.
+        
+        Customer: {self.full_name}
+        Priority: {self.get_priority()}
+        Created: {self.created_at.strftime('%Y-%m-%d %H:%M')}
+        SLA Deadline: {self.sla_deadline.strftime('%Y-%m-%d %H:%M')}
+        
+        Question: {self.question[:200]}...
+        
+        Please review and assign to an available agent.
+        Admin Link: {settings.SITE_URL}/admin/main/expertinquiry/{self.id}/
+        """
+        
+        send_mail(
+            subject=subject,
+            message=message,
+            from_email=settings.DEFAULT_FROM_EMAIL,
+            recipient_list=[manager.email],
+            fail_silently=True,
+        )
+    
+    # ============= ENHANCED EXISTING METHODS =============
+    
+    def save(self, *args, **kwargs):
+        """Override save to add automation logic"""
+        is_new = self.pk is None
+        
+        if is_new:
+            self.auto_set_priority_note()
+        
+        
+        super().save(*args, **kwargs)
+        
+        if is_new:
+            self.sla_deadline = self.calculate_sla_deadline()
+            self.save(update_fields=['sla_deadline'])
+            print(f"🔔 New inquiry #{self.id} from {self.full_name}")
+            # Auto-assign to available agent
+            self.auto_assign()
+    
+    def mark_as_contacted(self, notes=None):
+        """Enhanced: Now tracks first response time"""
+        from django.utils import timezone
+        
+        self.is_contacted = True
+        if not self.first_response_time:
+            self.first_response_time = timezone.now()
+        
+        timestamp = timezone.now().strftime('%Y-%m-%d %H:%M')
+        response_time = self.get_response_time()
+        
+        contact_note = f"[{timestamp}] ✅ Marked as contacted (Response time: {response_time})"
+        if notes:
+            contact_note += f" - Notes: {notes}"
+        
+        if self.notes:
+            self.notes += f"\n{contact_note}"
+        else:
+            self.notes = contact_note
+        
+        self.save(update_fields=['is_contacted', 'first_response_time', 'notes', 'updated_at'])
+        print(f"✅ Inquiry #{self.id} marked as contacted")
+    
+    def auto_assign(self):
+        """Auto-assign inquiry to agent with least workload"""
+        # Get all active staff members
+        agents = User.objects.filter(is_staff=True, is_active=True)
+        
+        if not agents.exists():
+            return
+        
+        # Count current assignments per agent
+        agent_load = []
+        for agent in agents:
+            load = ExpertInquiry.objects.filter(
+                assigned_to=agent,
+                is_contacted=False
+            ).count()
+            agent_load.append((agent, load))
+        
+        # Assign to agent with least load
+        agent_load.sort(key=lambda x: x[1])
+        assigned_agent = agent_load[0][0]
+        
+        self.assigned_to = assigned_agent
+        self.save(update_fields=['assigned_to'])
+        
+        # Notify agent
+        self.send_assignment_notification(assigned_agent)
+        
+        self.add_note(f"🤖 Auto-assigned to {assigned_agent.get_full_name() or assigned_agent.username}")
+    
+    def send_assignment_notification(self, agent):
+        """Send email notification to assigned agent"""
+        from django.core.mail import send_mail
+        from django.conf import settings
+        
+        subject = f"New {self.get_priority()} Priority Inquiry Assigned"
+        message = f"""
+        You have been assigned a new inquiry.
+        
+        Customer: {self.full_name}
+        Email: {self.email}
+        Phone: {self.phone or 'Not provided'}
+        Priority: {self.get_priority()}
+        SLA Deadline: {self.sla_deadline.strftime('%Y-%m-%d %H:%M')}
+        
+        Question: {self.question}
+        
+        View in admin: {settings.SITE_URL}/admin/main/expertinquiry/{self.id}/
+        """
+        
+        send_mail(
+            subject=subject,
+            message=message,
+            from_email=settings.DEFAULT_FROM_EMAIL,
+            recipient_list=[agent.email],
+            fail_silently=True,
+        )
+    
+    # ============= NEW CLASS METHODS =============
+    
+    @classmethod
+    def get_sla_compliance_stats(cls):
+        """Get SLA compliance statistics"""
+        total = cls.objects.count()
+        if total == 0:
+            return {
+                'total': 0,
+                'resolved': 0,
+                'in_sla': 0,
+                'compliance_rate': 0,
+                'escalated': 0,
+                'avg_response_time':None
+            }
+        
+        responded_in_sla = 0
+        total_responded = 0
+        for inquiry in cls.objects.filter(is_contacted=True):
+            total_responded += 1
+            if inquiry.first_response_time and inquiry.sla_deadline:
+                if inquiry.first_response_time <= inquiry.sla_deadline:
+                    responded_in_sla += 1
+        
+        return {
+            'total': total,
+            'resolved': cls.objects.filter(is_contacted=True).count(),
+            'in_sla': responded_in_sla,
+            'compliance_rate': round(responded_in_sla / total * 100, 1) if total > 0 else 0,
+            'escalated': cls.objects.filter(escalated=True).count(),
+            'avg_response_time': cls.get_avg_response_time()
+        }
+    
+    @classmethod
+    def get_avg_response_time(cls):
+        """Calculate average response time across all inquiries"""
+        responded = cls.objects.filter(first_response_time__isnull=False)
+        if not responded.exists():
+            return None
+        
+        total_seconds = 0
+        count = 0
+        for inquiry in responded:
+            if inquiry.first_response_time and inquiry.created_at:
+                delta = inquiry.first_response_time - inquiry.created_at
+                total_seconds += delta.total_seconds()
+                count += 1
+
+        if count == 0:
+            return None
+        
+        avg_hours = total_seconds / count / 3600
+        if avg_hours < 1:
+            return f"{int(avg_hours * 60)} minutes"
+        else:
+            return f"{round(avg_hours, 1)} hours"
+    
+    @classmethod
+    def check_all_sla(cls):
+        """Check SLA for all open inquiries (run via cron)"""
+        open_inquiries = cls.objects.filter(is_contacted=False)
+        for inquiry in open_inquiries:
+            inquiry.check_and_escalate()
+        print(f"✅ Checked SLA for {open_inquiries.count()} inquiries")

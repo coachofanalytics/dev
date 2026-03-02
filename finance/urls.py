@@ -1,5 +1,5 @@
 from django.urls import path
-from . import views
+from . import views 
 from .views import (
                     PaymentCreateView,#PaymentListView,
                     TransanctionDetailView,TransactionListView,
@@ -12,6 +12,12 @@ from .views import (
 app_name = 'finance'
 urlpatterns = [
     #=============================FINANCES=====================================
+    path('', views.homepage, name='homepage'),
+    path('directory/', views.finance_directory, name='directory'),
+    path('moderation/', views.moderation_queue, name='moderation_queue'),
+    path('approve/<int:pk>/', views.approve_opportunity, name ='approve_opportunity'),
+    path('reject_opportunity/<int:pk>/', views.reject_opportunity, name='reject_opportunity'),
+    path('subscribe/', views.subscribe_newsletter, name='subscribe_newsletter'),
     
     path('transact/', views.transact, name='finance-transact'),
     path('transaction/', TransactionListView.as_view(), name='transaction-list'),
