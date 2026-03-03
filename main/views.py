@@ -2,40 +2,39 @@ from django.shortcuts import redirect, render, get_object_or_404
 from datetime import datetime,date,timedelta
 from dateutil.relativedelta import relativedelta
 from django.contrib.auth.decorators import login_required
+from django.conf import settings
 from django.urls import reverse
-from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
+from django.contrib import messages
+from django.contrib.auth.decorators import login_required
+from django.contrib.auth.forms import UserCreationForm
+import json
+from django.contrib.auth.mixins import LoginRequiredMixin
 from django.views.generic import (
     CreateView,
     UpdateView,
 )
 #<<<<<<< 25.10_DC48_UAT_UO
-from .models import Assets,Description, News, Page, Service, SubService,Team, SafetyAlertSubscription, EmergencyHotlines, StaffContact, EmergencyHelpActivations
+from .models import Assets,Description, News, Page, Service, SubService,Team, SafetyAlertSubscription, EmergencyHotline, StaffContact, InsurancePlan, AIRecommendationRule, ExpertInquiry, ConsularAssistancePage
 #=======
 from django.db.models import Q
 #<<<<<<< HEAD
-#<<<<<<< HEAD
-from .models import Assets,Description, News, Page, Service,Scholarship, SubService,Team,Donation_organisation, ContactMessage
-#>>>>>>> 25.10_DC48_UAT_ND
-#=======
-from .models import (
-    Assets, Description, News, Page, Service, Scholarship, SubService, Team,
-    Donation_organisation, Donation_organization, ContactMessage, MedicalResourceInquiry
-)
+from .models import Scholarship, Donation_organisation, ContactMessage, Testimonial
 #>>>>>>> origin/25.11_DC48K_UAT_FN
 from accounts.models import CustomerUser
-from .utils import image_view,path_values
-from .forms import ContactForm, DonorForm, MessageForm,ScholarshipSearchForm
 ##=======
 from .models import Assets,Description, News, Page, Service, SubService,Team, Donation_organization, MedicalResourceInquiry,Governance
 from accounts.models import CustomerUser
 from .utils import image_view,path_values
+from .forms import ContactForm, DonorForm, MessageForm,ScholarshipSearchForm
+##=======
 from django.views.decorators.csrf import csrf_exempt
-from .forms import ContactForm, DonorForm, MessageForm, ScholarshipSearchForm
+from main.forms import ContactForm, GovernanceForm
+#>>>>>>> origin/25.10_DC48K_UAT_FN
 from django.contrib.auth import get_user_model
 #<<<<<<< 25.10_DC48_UAT_UO
 from django.views.decorators.http import require_POST
 from django.views.decorators.csrf import csrf_protect
-from django.http import JsonResponse
+from django.http import JsonResponse, HttpResponse
 from django.core.mail import send_mail
 from django.utils.html import strip_tags
 #=======
@@ -43,7 +42,8 @@ from django.utils.html import strip_tags
 from django.urls import reverse_lazy
 from django.views.generic.edit import CreateView, UpdateView, DeleteView
 from django.views.generic.detail import DetailView
-from django.http import HttpResponse
+import csv
+
 # Details Donation View
 class DonationDetailView(DetailView):
     model = Donation_organization
@@ -159,7 +159,7 @@ def layout(request):
    
     if request.method == "POST":
         form = ContactForm(request.POST, request.FILES)
-        message=f'Thank You, we will get back to you within 48 hours.'
+        message='Thank You, we will get back to you within 48 hours.'
         context={
             "message":message,
             # "link":SITEURL+'/management/companyagenda'
@@ -225,7 +225,7 @@ class ImageUpdateView(LoginRequiredMixin,UpdateView):
         return reverse('main:images') 
     
 def crisis_page(request):
-    hotlines = EmergencyHotlines.objects.filter(is_active=True).order_by("sort_order", "id")
+    hotlines = EmergencyHotline.objects.filter(is_active=True).order_by("sort_order", "id")
     return render(request, "main/crisis.html", {"hotlines": hotlines})
 
 
@@ -284,15 +284,64 @@ def subscribe_alerts(request):
 
     
 
-from django.shortcuts import render
-from .models import Service,ContactUs
-from django.db.models import Q
-from .models import Scholarship
-from .forms import ScholarshipSearchForm
+from .models import ContactUs
 
 def service_list(request):
     services = Service.objects.all()  # Fetch all services and related subservices
     return render(request, 'main/services.html', {'services': services})
+
+def consular_assistance(request):
+    """
+    Render the Consular Assistance landing page.
+    """
+    # Get or create a Page for consular assistance if you want to use the page/description pattern
+    page_instance, _ = Page.objects.get_or_create(page_name='Consular Assistance')
+    description = Description.objects.filter(page=page_instance)
+    
+    # Get active emergency hotlines for the emergency section
+    hotlines = EmergencyHotline.objects.filter(is_active=True).order_by("sort_order", "id")
+    
+    context = {
+        'description': description,
+        'hotlines': hotlines,
+        'title': 'Consular Assistance',
+    }
+    
+    return render(request, 'main/consular_assistance.html', context)
+
+
+def consular_information_updates(request):
+    """
+    Render the Consular Assistance → Information and Updates page.
+    Follows the project's page/description pattern if available.
+    """
+    # Ensure a Page exists for this content (keeps behavior consistent with other pages)
+    page_instance, _ = Page.objects.get_or_create(page_name='Consular - Information and Updates')
+    description = Description.objects.filter(page=page_instance)
+
+    context = {
+        'description': description,
+        'title': 'Information and Updates',
+    }
+
+    return render(request, 'main/consular/information_updates.html', context)
+
+
+def consular_information_updates(request):
+    """
+    Render the Consular Assistance → Information and Updates page.
+    Follows the project's page/description pattern if available.
+    """
+    # Ensure a Page exists for this content (keeps behavior consistent with other pages)
+    page_instance, _ = Page.objects.get_or_create(page_name='Consular - Information and Updates')
+    description = Description.objects.filter(page=page_instance)
+
+    context = {
+        'description': description,
+        'title': 'Information and Updates',
+    }
+
+    return render(request, 'main/consular/information_updates.html', context)
 
 
 def healthcare_info(request):
@@ -412,14 +461,14 @@ def activate_helpline(request):
         ip = request.META.get('REMOTE_ADDR')
 
     # Log activation
-    EmergencyHelpActivations.objects.create(
-        event_type="callback_requested",
-        name=name,
-        phone=phone,
-        location=location,
-        notes=notes,
-        ip_address=ip,
-    )
+    # EmergencyHelpActivation.objects.create(
+    #     event_type="callback_requested",
+    #     name=name,
+    #     phone=phone,
+    #     location=location,
+    #     notes=notes,
+    #     ip_address=ip,
+    # )
 
     # Notify active staff via email
     recipients = list(
@@ -461,7 +510,7 @@ def donor_details(request, pk):
 def add_donor(request):
     if request.method == "POST":
         form = DonorForm(request.POST, request.FILES)
-        message=f'Thank You for your donation, we will get back to you within 48 hours.'
+        message='Thank You for your donation, we will get back to you within 48 hours.'
         context={
             "message":message,
             # "link":SITEURL+'/management/companyagenda'
@@ -524,7 +573,7 @@ def delete_message(request, pk):
 def add_message(request):
     if request.method == "POST":
         form = MessageForm(request.POST, request.FILES)
-        message=f'Thank You, we will get back to you within 48 hours.'
+        message='Thank You, we will get back to you within 48 hours.'
         context={
             "message":message,
             # "link":SITEURL+'/management/companyagenda'
@@ -543,12 +592,7 @@ def add_message(request):
 def education_landing(request):
 
     initial_view = request.GET.get('view','landing')
-    # Flag to indicate a successful mentorship request submission
-    mentorship_success = request.GET.get('mentorship') == 'success'
-    context = {
-        'initial_view': initial_view,
-        'mentorship_success': mentorship_success,
-    }
+    context = {'initial_view': initial_view}
     return render(request, 'main/education/education.html', context)
 
 
@@ -635,6 +679,8 @@ class DonationDeleteView(DeleteView):
 
 #>>>>>>> origin/25.10_DC48K_UAT_FN
 
+# Scholarship views
+
 def scholarship_search(request):
     scholarships = Scholarship.objects.all()
     form = ScholarshipSearchForm(request.GET or None)
@@ -651,53 +697,733 @@ def scholarship_search(request):
 
     if form.is_valid():
         data = form.cleaned_data
-
-        if data.get('filter_level') and data['filter_level'] != 'All' and not level:
+        # apply filter
+        if data['search_keyword']:
+            scholarships = scholarships.filter(
+                Q(title__icontains=data['search_keyword']) |
+                Q(provider__icontains=data['search_keyword']) 
+            )
+        if data['filter_level'] and data['filter_level'] != 'All':
             scholarships = scholarships.filter(level=data['filter_level'])
 
-        if data.get('filter_field') and data['filter_field'] != 'All' and not field:
+        if data['filter_field'] and data['filter_field'] != 'All':
             scholarships = scholarships.filter(field=data['filter_field'])
 
+        if data['filter_location'] and data['filter_location'] != 'All':
+            scholarships = scholarships.filter(location=data['filter_location'])
+
+        if data['filter_status']:
+            scholarships = scholarships.filter(status='Closing soon')
     context = {
         'scholarships': scholarships,
         'form': form,
         'result_count': scholarships.count(),
     }
-    return render(request, 'scholarship_app/scholarship_search.html', context)
+    return render(request, 'scholarship_app/scholarship_search.html',context)
+#>>>>>>> 25.10_DC48_UAT_ND
 
-from .models import Governance
-from .forms import GovernanceForm
+def testimonial_list(request):
+    testimonial = Testimonial.objects.all() 
+    return render(request, "main/snippets_templates/table/testimonial_list.html",{"testimonial":testimonial})
+# views.py - ADD THESE VIEWS (place them together)
+
+# ============================================
+# SIMPLE GOVERNANCE CRUD VIEWS
+# ============================================
+
+# views.py - CORRECTED TEMPLATE NAMES
+
+# List all governance records
+def governance_list(request):
+    from .models import Governance
+    records = Governance.objects.all().select_related('members')
+    
+    context = {
+        'records': records,
+        'title': 'Governance Records'
+    }
+    # Changed from 'list.html' to 'governance_list.html'
+    return render(request, 'main/governance/governance_list.html', context)
+
+# Create new governance record
+# REPLACE your entire governance_create function with this:
 
 def governance_create(request):
+    """Create governance record - handles both existing and new users"""
+    from .forms import GovernanceForm
+    from django.contrib.auth.models import User
+    from django.contrib import messages
+    
+    print("=== CREATE VIEW STARTED ===")
+    
     if request.method == 'POST':
+        print("POST data:", request.POST)
+        
         form = GovernanceForm(request.POST)
+        
         if form.is_valid():
-            form.save()
-            return redirect('main:governance_list')
+            print("Form is valid!")
+            
+            # Get cleaned data
+            cleaned_data = form.cleaned_data
+            members = cleaned_data.get('members')
+            new_username = cleaned_data.get('new_username', '').strip()
+            new_password = cleaned_data.get('new_password', '').strip()
+            new_email = cleaned_data.get('new_email', '').strip()
+            
+            # If creating a new user
+            if new_username and new_password:
+                print(f"Creating new user: {new_username}")
+                try:
+                    # Create the user
+                    new_user = User.objects.create_user(
+                        username=new_username,
+                        password=new_password,
+                        email=new_email if new_email else ''
+                    )
+                    print(f"User created: {new_user.id}")
+                    
+                    # Update the form instance to use new user
+                    form.instance.members = new_user
+                    messages.success(request, f'User "{new_username}" created successfully!')
+                    
+                except Exception as e:
+                    print(f"Error creating user: {e}")
+                    messages.error(request, f'Error creating user: {str(e)}')
+                    return render(request, 'main/governance/governance_form.html', {
+                        'form': form,
+                        'title': 'Create Governance Record'
+                    })
+            
+            # Save the governance record
+            governance = form.save()
+            print(f"Governance saved: {governance.id}")
+            messages.success(request, f'Governance record "{governance.governance_category}" created!')
+            
+            return redirect('main:governance_detail', pk=governance.pk)
+        else:
+            print("Form errors:", form.errors)
+            # Show form errors
+            for field, errors in form.errors.items():
+                for error in errors:
+                    messages.error(request, f'{field}: {error}')
+    
     else:
+        # GET request - show empty form
         form = GovernanceForm()
-    return render(request, 'main/governance_create.html', {'form': form})
- 
+    
+    return render(request, 'main/governance/governance_form.html', {
+        'form': form,
+        'title': 'Create Governance Record'
+    })
 
-def governance_list(request):
-    governances = Governance.objects.all()
-    return render(request, 'main/governance_list.html', {'governances': governances})
+# View single governance record
+def governance_detail(request, pk):
+    from .models import Governance
+    from django.shortcuts import get_object_or_404
+    
+    record = get_object_or_404(Governance, pk=pk)
+    
+    context = {
+        'record': record,
+        'title': f'Details - {record.governance_category}'
+    }
+    # Changed from 'detail.html' to 'governance_detail.html'
+    return render(request, 'main/governance/governance_detail.html', context)
 
-def governance_update(request,pk):
-    governance = get_object_or_404(Governance, pk=pk)
+# Update governance record
+def governance_update(request, pk):
+    from .models import Governance
+    from .forms import GovernanceForm
+    from django.shortcuts import get_object_or_404
+    
+    record = get_object_or_404(Governance, pk=pk)
+    
     if request.method == 'POST':
-        form = GovernanceForm(request.POST, instance=governance)
+        form = GovernanceForm(request.POST, instance=record)
         if form.is_valid():
             form.save()
-            return redirect('main:governance_list')
+            return redirect('main:governance_detail', pk=record.pk)
     else:
-        form = GovernanceForm(instance=governance)
-    return render(request, 'main/governance_update.html', {'form': form, 'governance': governance})
+        form = GovernanceForm(instance=record)
+    
+    context = {
+        'form': form,
+        'title': f'Update {record.governance_category}',
+        'record': record
+    }
+    # Changed from 'form.html' to 'governance_form.html'
+    return render(request, 'main/governance/governance_form.html', context)
 
+# Delete governance record
 
-def governance_delete(request,pk):
-    governance = get_object_or_404(Governance, pk=pk)
+def governance_delete(request, pk):
+    """Delete a governance record"""
+    from django.shortcuts import get_object_or_404, redirect
+    from django.contrib import messages
+    from .models import Governance
+    
+    record = get_object_or_404(Governance, pk=pk)
+    
     if request.method == 'POST':
-        governance.delete()
+        record.delete()
+        messages.success(request, f'Record "{record.governance_category}" deleted successfully!')
         return redirect('main:governance_list')
-    return render(request, 'main/governance_delete.html', {'governance': governance})
+    
+    # Use the correct template name
+    return render(request, 'main/governance/governance_confirm_delete.html', {
+        'record': record,
+        'title': f'Delete {record.governance_category}'
+    })
+
+
+
+@csrf_exempt
+def quick_add_user(request):
+    """
+    Quick user creation endpoint
+    Returns JSON response
+    """
+    print("DEBUG: quick_add_user called")
+    
+    # Only accept POST requests
+    if request.method != 'POST':
+        return JsonResponse({
+            'success': False,
+            'error': 'Only POST requests are allowed'
+        })
+    
+    try:
+        # Parse JSON data if sent as JSON, otherwise use form data
+        if request.content_type == 'application/json':
+            data = json.loads(request.body)
+            username = data.get('username', '').strip()
+            password = data.get('password', '').strip()
+            email = data.get('email', '').strip()
+        else:
+            # Form data
+            username = request.POST.get('username', '').strip()
+            password = request.POST.get('password', '').strip()
+            email = request.POST.get('email', '').strip()
+        
+        print(f"DEBUG: Received - username='{username}', password length={len(password)}, email='{email}'")
+        
+        # Validate
+        if not username:
+            return JsonResponse({
+                'success': False,
+                'error': 'Username is required'
+            })
+        
+        if not password:
+            return JsonResponse({
+                'success': False,
+                'error': 'Password is required'
+            })
+        
+        # Check if user exists
+        if User.objects.filter(username=username).exists():
+            return JsonResponse({
+                'success': False,
+                'error': f'Username "{username}" already exists'
+            })
+        
+        # Create user
+        user = User.objects.create_user(
+            username=username,
+            password=password,
+            email=email if email else ''
+        )
+        
+        print(f"DEBUG: User created successfully - ID: {user.id}, Username: {user.username}")
+        
+        # Return success
+        return JsonResponse({
+            'success': True,
+            'user_id': user.id,
+            'username': user.username,
+            'email': user.email if user.email else ''
+        })
+        
+    except json.JSONDecodeError:
+        return JsonResponse({
+            'success': False,
+            'error': 'Invalid JSON data'
+        })
+    except Exception as e:
+        print(f"DEBUG: Exception: {str(e)}")
+        return JsonResponse({
+            'success': False,
+            'error': f'Server error: {str(e)}'
+        })
+           
+
+    # Add to views.py
+def test_user_endpoint(request):
+    """Test page for quick_add_user endpoint"""
+    html = '''
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <title>Test User Endpoint</title>
+        <script>
+        async function testEndpoint() {
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            const email = document.getElementById('email').value;
+            
+            const formData = new FormData();
+            formData.append('username', username);
+            formData.append('password', password);
+            formData.append('email', email);
+            
+            try {
+                const response = await fetch('/quick-add-user/', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                const result = await response.text();
+                document.getElementById('result').innerHTML = 
+                    '<h3>Raw Response:</h3><pre>' + result + '</pre>';
+                
+                try {
+                    const jsonResult = JSON.parse(result);
+                    document.getElementById('result').innerHTML += 
+                        '<h3>Parsed JSON:</h3><pre>' + JSON.stringify(jsonResult, null, 2) + '</pre>';
+                } catch(e) {
+                    document.getElementById('result').innerHTML += 
+                        '<h3>Not valid JSON</h3>';
+                }
+            } catch(error) {
+                document.getElementById('result').innerHTML = 'Error: ' + error;
+            }
+        }
+        </script>
+    </head>
+    <body>
+        <h1>Test Quick Add User Endpoint</h1>
+        <div>
+            <input type="text" id="username" placeholder="Username" value="testuser"><br>
+            <input type="password" id="password" placeholder="Password" value="testpass123"><br>
+            <input type="email" id="email" placeholder="Email" value="test@example.com"><br>
+            <button onclick="testEndpoint()">Test Endpoint</button>
+        </div>
+        <div id="result"></div>
+    </body>
+    </html>
+    '''
+    from django.http import HttpResponse
+    return HttpResponse(html)
+
+
+    # Changed from 'delete.html' to 'governance_confirm_delete.html'
+    return render(request, 'main/governance/governance_confirm_delete.html', context)
+
+
+def testimonial_delete(request, pk):
+    testimonial = get_object_or_404(Testimonial, pk=pk)
+    testimonials = Testimonial.objects.all()
+
+    if request.method == "POST":
+        testimonial.delete()
+        return redirect('main:testimonial_list')
+
+    return render(request, "main/testimonial/testimonial_confirm_delete.html", {
+        'testimonial': testimonial,
+        'testimonials': testimonials,
+    })
+
+
+def consular_assistance(request):
+    page = ConsularAssistancePage.objects.first()
+    context = { 'page': page, }
+    return render(request, "main/consular_assistance.html", context)
+
+
+from .models import Doctor, AppointmentRequest
+from .forms import SearchForm, AppointmentRequestForm
+from django.core.paginator import Paginator
+DOCTORS_PER_PAGE = getattr(settings, 'DOCTORS_PER_PAGE', 6)
+
+
+def find_doctors(request):
+    """Main find doctors page."""
+    form = SearchForm(request.GET)
+    doctors = Doctor.objects.all()
+
+    specialty_q = request.GET.get('specialty', '').strip()
+    location_q = request.GET.get('location', '').strip()
+    categories = request.GET.getlist('categories')
+    languages = request.GET.getlist('languages')
+    sort_by = request.GET.get('sort', 'recommended')
+
+    # Filter by specialty
+    if specialty_q:
+        doctors = doctors.filter(specialty__icontains=specialty_q) | \
+                  doctors.filter(title__icontains=specialty_q) | \
+                  doctors.filter(name__icontains=specialty_q)
+
+    # Filter by location
+    if location_q:
+        doctors = doctors.filter(location_city__icontains=location_q) | \
+                  doctors.filter(location_country__icontains=location_q)
+
+    # Filter by categories (any match)
+    if categories:
+        filtered_ids = []
+        for doc in doctors:
+            if any(cat in doc.categories for cat in categories):
+                filtered_ids.append(doc.pk)
+        doctors = doctors.filter(pk__in=filtered_ids)
+
+    # Filter by languages (any match)
+    if languages:
+        filtered_ids = []
+        for doc in doctors:
+            if any(lang in doc.languages for lang in languages):
+                filtered_ids.append(doc.pk)
+        doctors = doctors.filter(pk__in=filtered_ids)
+
+    # Sorting
+    if sort_by == 'rating':
+        doctors = doctors.order_by('-rating', '-review_count')
+    elif sort_by == 'reviews':
+        doctors = doctors.order_by('-review_count', '-rating')
+    elif sort_by == 'name':
+        doctors = doctors.order_by('name')
+    else:  # recommended
+        doctors = doctors.order_by('-rating', '-review_count')
+
+    total_count = doctors.count()
+
+    # Pagination
+    paginator = Paginator(doctors, DOCTORS_PER_PAGE)
+    page_number = request.GET.get('page', 1)
+    page_obj = paginator.get_page(page_number)
+
+    context = {
+        'form': form,
+        'page_obj': page_obj,
+        'total_count': total_count,
+        'specialty_q': specialty_q,
+        'location_q': location_q,
+        'selected_categories': categories,
+        'selected_languages': languages,
+        'sort_by': sort_by,
+        'category_choices': Doctor.CATEGORY_CHOICES,
+        'language_choices': Doctor.LANGUAGE_CHOICES,
+        'sort_options': [
+            ('recommended', 'Recommended'),
+            ('rating', 'Highest Rated'),
+            ('reviews', 'Most Reviews'),
+            ('name', 'Name (A–Z)'),
+        ],
+        'page_range': paginator.get_elided_page_range(page_obj.number, on_each_side=2, on_ends=1),
+    }
+    return render(request, 'main/find_doctors.html', context)
+
+
+def doctor_profile_api(request, pk):
+    """AJAX endpoint: return doctor profile as JSON for the modal."""
+    doctor = get_object_or_404(Doctor, pk=pk)
+    data = {
+        'id': doctor.pk,
+        'name': doctor.name,
+        'title': doctor.title,
+        'specialty': doctor.specialty,
+        'location': doctor.full_location,
+        'clinic': doctor.clinic_name,
+        'languages': doctor.get_language_display_list(),
+        'telehealth': doctor.telehealth,
+        'available': doctor.available,
+        'rating': str(doctor.rating),
+        'review_count': doctor.review_count,
+        'bio': doctor.bio,
+        'education': doctor.education,
+        'avatar_color': doctor.avatar_color,
+        'avatar_initials': doctor.avatar_initials or doctor.name[:2].upper(),
+    }
+    return JsonResponse(data)
+
+
+@require_POST
+def book_appointment(request, pk):
+    """Handle appointment booking form submission."""
+    doctor = get_object_or_404(Doctor, pk=pk)
+
+    # Rate limiting via session
+    session_key = f'booking_attempts_{pk}'
+    attempts = request.session.get(session_key, 0)
+    if attempts >= 5:
+        return JsonResponse({'success': False, 'error': 'Too many requests. Please try again later.'}, status=429)
+
+    form = AppointmentRequestForm(request.POST)
+
+    if form.is_valid():
+        appointment = form.save(commit=False)
+        appointment.doctor = doctor
+        appointment.save()
+
+        # Track attempts
+        request.session[session_key] = attempts + 1
+
+        # Send email notification (prints to console in dev)
+        try:
+            send_mail(
+                subject=f'New Appointment Request – {doctor.name}',
+                message=f"""
+New appointment request received:
+
+Doctor: {doctor.name}
+Patient: {appointment.full_name}
+Email: {appointment.email}
+Date: {appointment.preferred_date}
+Time: {appointment.get_preferred_time_display()}
+Reason: {appointment.reason}
+
+Log in to the admin to respond.
+                """.strip(),
+                from_email=settings.DEFAULT_FROM_EMAIL,
+                recipient_list=[settings.DEFAULT_FROM_EMAIL],
+                fail_silently=True,
+            )
+            send_mail(
+                subject=f'Appointment Request Received – {doctor.name}',
+                message=f"""
+Dear {appointment.full_name},
+
+Thank you for submitting an appointment request with {doctor.name}.
+
+Your request details:
+  Date: {appointment.preferred_date}
+  Time: {appointment.get_preferred_time_display()}
+  Reason: {appointment.reason}
+
+The provider will review your request and contact you at {appointment.email} to confirm availability.
+
+– Diaspora County 48
+                """.strip(),
+                from_email=settings.DEFAULT_FROM_EMAIL,
+                recipient_list=[appointment.email],
+                fail_silently=True,
+            )
+        except Exception:
+            pass
+
+        return JsonResponse({
+            'success': True,
+            'message': f'Your appointment request with {doctor.name} has been submitted successfully! '
+                       f'The clinic will contact you at {appointment.email} to confirm your appointment.'
+        })
+    else:
+        errors = {field: list(errs) for field, errs in form.errors.items()}
+        return JsonResponse({'success': False, 'errors': errors}, status=400)
+
+
+def home(request):
+    """Simple home redirect."""
+    from django.shortcuts import redirect
+    return redirect('find_doctors')
+
+
+
+def insurance_support(request):
+    """Main insurance support page view"""
+    # Get all active insurance plans ordered by display_order and score
+    insurance_plans = InsurancePlan.objects.filter(
+        is_active=True
+    ).order_by('display_order', '-score')
+    
+    # Get featured plans (top 3 by score)
+    featured_plans = insurance_plans[:3]
+    
+    # Get stats for the template
+    total_plans = insurance_plans.count()
+    highest_score = insurance_plans.first().score if total_plans > 0 else 0
+    
+    context = {
+        'insurance_plans': insurance_plans,
+        'featured_plans': featured_plans,
+        'total_plans': total_plans,
+        'highest_score': highest_score,
+        'page_title': 'Insurance Support',
+    }
+    
+    return render(request, 'main/healthcare/insurance_support.html', context)
+
+
+
+@require_POST
+def ai_recommendation_api(request):
+    """API endpoint for AI recommendations - FULLY AUTOMATED"""
+    try:
+        # Parse JSON data from request
+        data = json.loads(request.body)
+        age = data.get('age')
+        residence = data.get('residence')
+        priority = data.get('priority')
+        
+        print(f" AI Request - Age: {age}, Residence: {residence}, Priority: {priority}")
+        
+        # Try to find a matching rule in the database
+        rule = AIRecommendationRule.objects.filter(
+            age_bracket=age,
+            residence=residence,
+            priority=priority,
+            is_active=True
+        ).select_related('recommended_plan').first()
+        
+        if rule:
+            # Found a matching rule
+            plan = rule.recommended_plan
+            response_data = {
+                'success': True,
+                'plan_name': f"{plan.provider_name} {plan.plan_name}",
+                'recommendation_text': rule.recommendation_text,
+                'plan_id': plan.id,
+                'score': float(plan.score),
+                'network': plan.network,
+                'evacuation': plan.evacuation
+            }
+            print(f" Found rule: {rule}")
+            
+        else:
+            # No exact match - find the best alternative
+            print(" No exact match found, finding best alternative...")
+            
+            # Try to find a plan with matching priority
+            alternative_plan = InsurancePlan.objects.filter(
+                is_active=True
+            ).order_by('-score').first()
+            
+            if alternative_plan:
+                # Generate dynamic recommendation text
+                rec_text = generate_recommendation_text(age, residence, priority, alternative_plan)
+                
+                response_data = {
+                    'success': True,
+                    'plan_name': f"{alternative_plan.provider_name} {alternative_plan.plan_name}",
+                    'recommendation_text': rec_text,
+                    'plan_id': alternative_plan.id,
+                    'score': float(alternative_plan.score),
+                    'network': alternative_plan.network,
+                    'evacuation': alternative_plan.evacuation
+                }
+                print(f" Using alternative plan: {alternative_plan}")
+            else:
+                response_data = {
+                    'success': False,
+                    'error': 'No insurance plans available'
+                }
+        
+        return JsonResponse(response_data)
+        
+    except json.JSONDecodeError:
+        return JsonResponse({'success': False, 'error': 'Invalid JSON'}, status=400)
+    except Exception as e:
+        print(f" Error in ai_recommendation_api: {str(e)}")
+        import traceback
+        traceback.print_exc()
+        return JsonResponse({'success': False, 'error': str(e)}, status=500)
+
+def generate_recommendation_text(age, residence, priority, plan):
+    """Generate dynamic recommendation text based on inputs and plan"""
+    
+    age_text = {
+        'young': 'young professionals',
+        'mid': 'established professionals',
+        'senior': 'seniors'
+    }.get(age, 'individuals')
+    
+    residence_text = {
+        'usa': 'in the USA',
+        'europe': 'in Europe',
+        'other': 'internationally'
+    }.get(residence, '')
+    
+    priority_text = {
+        'budget': 'budget-conscious',
+        'comprehensive': 'comprehensive',
+        'emergency': 'emergency-focused'
+    }.get(priority, '')
+    
+    base_text = f"Based on your inputs, we recommend the {plan.provider_name} {plan.plan_name} plan for {age_text} {residence_text} seeking {priority_text} coverage. "
+    
+    if plan.score >= 9.5:
+        base_text += f"This top-rated plan offers {plan.network.lower()} coverage with {plan.evacuation.lower()} evacuation benefits. "
+    elif plan.score >= 9.0:
+        base_text += f"This excellent plan provides {plan.network.lower()} coverage and {plan.evacuation.lower()} evacuation. "
+    else:
+        base_text += f"This plan offers solid {plan.network.lower()} coverage with {plan.evacuation.lower()} evacuation options. "
+    
+    if 'Included' in plan.evacuation:
+        base_text += "Emergency evacuation is included for peace of mind."
+    else:
+        base_text += "Evacuation coverage is available as an optional add-on."
+    
+    return base_text
+
+@require_POST
+def submit_expert_inquiry(request):
+    """Handle expert consultation form submissions"""
+    try:
+        data = json.loads(request.body)
+        
+        # Create new inquiry
+        inquiry = ExpertInquiry.objects.create(
+            full_name=data.get('full_name'),
+            email=data.get('email'),
+            phone=data.get('phone', ''),
+            question=data.get('question'),
+            interested_plan_id=data.get('plan_id') if data.get('plan_id') else None
+        )
+        
+        # TODO: Send email notification to admin
+        # send_inquiry_notification(inquiry)
+        
+        return JsonResponse({
+            'success': True,
+            'message': 'Your request has been submitted successfully. An expert will contact you within 24 hours.'
+        })
+        
+    except json.JSONDecodeError:
+        return JsonResponse({'success': False, 'error': 'Invalid JSON'}, status=400)
+    except Exception as e:
+        return JsonResponse({'success': False, 'error': str(e)}, status=500)
+
+
+def download_comparison_csv(request):
+    """Generate and download CSV of insurance plans"""
+    # Create HttpResponse with CSV header
+    response = HttpResponse(content_type='text/csv')
+    response['Content-Disposition'] = 'attachment; filename="insurance_comparison.csv"'
+    
+    # Get all active plans
+    plans = InsurancePlan.objects.filter(is_active=True).order_by('display_order', '-score')
+    
+    # Create CSV writer
+    writer = csv.writer(response)
+    
+    # Write headers
+    writer.writerow([
+        'Provider',
+        'Plan Name',
+        'Global Network',
+        'Max Benefit',
+        'Evacuation Coverage',
+        'Rating (out of 10)'
+    ])
+    
+    # Write data rows
+    for plan in plans:
+        writer.writerow([
+            plan.provider_name,
+            plan.plan_name,
+            plan.network,
+            plan.max_benefit,
+            plan.evacuation,
+            f"{plan.score}/10"
+        ])
+    
+    return response

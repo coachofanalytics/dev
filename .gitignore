@@ -167,3 +167,9 @@ cython_debug/
 # Django media uploads
 media/
 
+# SECURITY: Authentication files
+token.json
+*.token
+*.secret
+.env
+credentials*.json

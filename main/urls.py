@@ -10,6 +10,14 @@ urlpatterns = [
     path('history',views.History, name ='history'),
     path('services/', views.service_list, name='service_list'),
     path('data/healthcare-info/', views.healthcare_info, name='healthcare_info'),
+    path('healthcare/insurance-support/', views.insurance_support, name='insurance_support'),
+    path('healthcare/insurance-support/api/recommend/', views.ai_recommendation_api, name='ai_recommendation_api'),
+    path('healthcare/insurance-support/api/inquiry/', views.submit_expert_inquiry, name='submit_expert_inquiry'),
+    path('healthcare/insurance-support/download-csv/', views.download_comparison_csv, name='download_comparison_csv'),
+
+    path('consular-assistance/', views.consular_assistance, name='consular_assistance'),
+
+    path('data/consular/information-updates/', views.consular_information_updates, name='consular_information_updates'),
     # path('gallery/', views.gallery_list, name='gallery_list'),
     path('news/', views.news_list, name='news_list'),
     path('news/<int:id>/', views.news_detail, name='news_detail'),
@@ -52,10 +60,21 @@ urlpatterns = [
     path('500/', views.hendler500, name='500-error'),
 
     path('data/medical-resource-form/', views.medical_resource_form, name='medical_resource_form'),
+
+    path('', views.home, name='home'),
+    path('find-doctors/', views.find_doctors, name='find_doctors'),
+    path('api/doctor/<int:pk>/', views.doctor_profile_api, name='doctor_profile_api'),
+    path('api/doctor/<int:pk>/book/', views.book_appointment, name='book_appointment'),
     # Scholarship search (root-level /scholarship)
     path('scholarship', views.scholarship_search, name='scholarship_search'),
 
+#<<<<<<< 25.11_DC48K_UAT_FN
     # Education and training views
+#=======
+    # Education pages removed — keep navbar buttons but links point to placeholders
+    # scholaship url
+    path('scholarship', views.scholarship_search, name='scholarship_search'),
+#>>>>>>> 25.10_DC48_UAT_ND
 
     path('education/', views.education_landing, name = 'education_landing'),
     path('education/scholarship/',views.education_landing, name = 'education_scholarship'),
@@ -63,12 +82,15 @@ urlpatterns = [
     path('education/courses/register/', views.course_register, name='course_register'),
     path('education/request-mentorship/', views.request_mentorship, name='request_mentorship'),
 
-#>>>>>>> 26.01_DC48K_Dev_md
+    path('Testimonial/', views.testimonial_list, name = 'testimonial_list'),
     path('governance/', views.governance_list, name='governance_list'),
     path('governance/create/', views.governance_create, name='governance_create'),
-    path('governance/update/<int:pk>/', views.governance_update, name='governance_update'),
-    path('governance/delete/<int:pk>/', views.governance_delete, name='governance_delete'),
+    path('governance/<int:pk>/', views.governance_detail, name='governance_detail'),
+    path('governance/<int:pk>/update/', views.governance_update, name='governance_update'),
+    path('governance/<int:pk>/delete/', views.governance_delete, name='governance_delete'),
 
-   
-
+    # Quick add user endpoint
+    path('quick-add-user/', views.quick_add_user, name='quick_add_user'),
+    # In your app's urls.py
+    path('test-user-endpoint/', views.test_user_endpoint, name='test_user_endpoint'),
 ]    

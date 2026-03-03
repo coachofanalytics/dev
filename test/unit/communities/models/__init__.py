@@ -1,0 +1,1 @@
+"""communities models tests package"""

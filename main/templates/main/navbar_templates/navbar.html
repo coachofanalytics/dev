@@ -121,9 +121,9 @@
                     <div class="dropdown-content">
                         <!-- Consular Assistance -->
                         <div class="sub-dropdown">
-                            <a href="#">Consular Assistance</a>
+                            <a href="{% url 'main:consular_assistance' %}">Consular Assistance</a>
                             <div class="sub-dropdown-content">
-                                <a href="#">Information and Updates</a>
+                                <a href="{% url 'main:consular_information_updates' %}">Information and Updates</a>
                                 <a href="#">Legal and Immigration Guidance</a>
                             </div>
                         </div>
@@ -139,7 +139,7 @@
                 
                         <!-- Community Support -->
                         <div class="sub-dropdown">
-                            <a href="{% url 'communities:home' %}">Community Support</a>
+                            <a href="{% url 'main:layout' %}">Community Support</a>
                             <div class="sub-dropdown-content">
                                 <a href="#">Forums and Networking</a>
                                 <a href="#">Community Events</a>

@@ -213,77 +213,49 @@
             {% endif %}
         </div>
         
-        <!-- Form -->
-        <form method="POST" action="{% url 'communities:join' %}" enctype="multipart/form-data">
+        <!-- Form - ONLY 2 FIELDS -->
+        <form method="POST" action="{% url 'join' %}">
             {% csrf_token %}
-
-            {% if form.errors %}
-                <div class="message-container">
-                    <div class="alert alert-danger" role="alert">
-                        <ul style="margin:0; padding-left:1.2rem;">
-                            {% for field in form %}
-                                {% for error in field.errors %}
-                                    <li><strong>{{ field.label }}:</strong> {{ error }}</li>
-                                {% endfor %}
-                            {% endfor %}
-                            {% for error in form.non_field_errors %}
-                                <li>{{ error }}</li>
-                            {% endfor %}
-                        </ul>
-                    </div>
-                </div>
-            {% endif %}
-
+            
             <!-- Field 1: Name -->
             <div class="form-group">
-                <label for="id_name" class="form-label">Full Name</label>
-                {{ form.name }}
+                <label for="name" class="form-label">Full Name</label>
+                <input type="text" 
+                       id="name" 
+                       name="name" 
+                       class="form-control" 
+                       placeholder="Enter your full name"
+                       value="{{ form.name.value|default:'' }}"
+                       required>
             </div>
-
+            
             <!-- Field 2: Email -->
             <div class="form-group">
-                <label for="id_email" class="form-label">Email Address</label>
-                {{ form.email }}
+                <label for="email" class="form-label">Email Address</label>
+                <input type="email" 
+                       id="email" 
+                       name="email" 
+                       class="form-control" 
+                       placeholder="Enter your email address"
+                       value="{{ form.email.value|default:'' }}"
+                       required>
             </div>
-
-            <!-- Field 3: Profession (required) -->
-            <div class="form-group">
-                <label for="id_profession" class="form-label">Profession</label>
-                {{ form.profession }}
-            </div>
-
-            <!-- Field 4: Region (required) -->
-            <div class="form-group">
-                <label for="id_region" class="form-label">Region</label>
-                {{ form.region }}
-            </div>
-
+            
             <!-- Directory Agreement Checkbox -->
             <div class="checkbox-group">
                 <div class="checkbox-wrapper">
-                    {{ form.agree_to_directory }}
-                    <label for="id_agree_to_directory" class="checkbox-label">
+                    <input type="checkbox" 
+                           id="agree_to_directory" 
+                           name="agree_to_directory" 
+                           value="true"
+                           {% if form.agree_to_directory.value %}checked{% endif %}
+                           required>
+                    <label for="agree_to_directory" class="checkbox-label">
                         I agree to be listed in the public member directory
                     </label>
                 </div>
             </div>
-
-            <!-- Email updates and Terms checkboxes -->
-            <div class="checkbox-group">
-                <div class="checkbox-wrapper">
-                    {{ form.email_updates }}
-                    <label for="id_email_updates" class="checkbox-label">
-                        I want to receive community updates and opportunities via email
-                    </label>
-                </div>
-                <div class="checkbox-wrapper" style="margin-top: 0.75rem;">
-                    {{ form.agree_terms }}
-                    <label for="id_agree_terms" class="checkbox-label">
-                        I agree to the <a href="#">Terms of Service</a> and <a href="#">Privacy Policy</a>
-                    </label>
-                </div>
-            </div>
-
+            
             <!-- Submit Button -->
             <button type="submit" class="submit-btn">
                 <i class="fas fa-user-plus"></i> Join Now
@@ -292,7 +264,7 @@
         
         <!-- Back Link -->
         <div class="back-link">
-            <a href="{% url 'communities:home' %}">
+            <a href="{% url 'home' %}">
                 <i class="fas fa-arrow-left"></i> Back to Home
             </a>
         </div>

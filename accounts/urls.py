@@ -3,17 +3,7 @@ from . import views
 from .views import (
     user_update_view,
     superuser_update_view,
-    register,
-    custom_login_view,
-    join,
-    login_view,
-    home,
-    verify_email,
-    email_verification_notice,
-    select_category,
-    users,
-    userlist,
-    thank
+    register
 )
 app_name = 'accounts'
 urlpatterns = [

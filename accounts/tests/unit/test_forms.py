@@ -1,5 +1,5 @@
 from django.test import TestCase
-from accounts.forms import UserForm,CredentialForm
+from accounts.forms import UserForm
 from accounts.models import User, Credential, CredentialCategory
 
 class TestForms(TestCase):

@@ -1,10 +1,8 @@
-import os
 import calendar
 import requests
 from datetime import datetime
 from decimal import Decimal
 from django.shortcuts import get_object_or_404, redirect
-from django.db.models import Sum
 
 
 # ===================== Category and Sub-Category =====================

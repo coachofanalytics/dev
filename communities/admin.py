@@ -1,19 +1,8 @@
 from django.contrib import admin
 
-# Register your models explicitly to avoid accidental double-imports
-from .models import (
-	CommunityMember,
-	ForumCategory,
-	Post,
-	CommentP,
-	EventCalendar,
-	ContactMessage,
-	UserProfile,
-	UserSettings,
-	UserPreferences,
-	DirectoryProfile,
-)
 
+# Register your models here.
+from .models import *
 
 admin.site.register(CommunityMember)
 admin.site.register(ForumCategory)
@@ -24,4 +13,3 @@ admin.site.register(ContactMessage)
 admin.site.register(UserProfile)
 admin.site.register(UserSettings)
 admin.site.register(UserPreferences)
-admin.site.register(DirectoryProfile)

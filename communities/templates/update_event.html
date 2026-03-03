@@ -1,0 +1,84 @@
+<!-- ============================================ -->
+<!-- templates/update_event.html -->
+<!-- ============================================ -->
+{% extends "main/base_templates/base.html" %}
+{% load static %}
+
+{% block content %}
+<main class="max-w-7xl mx-auto py-16 px-6">
+    
+    <header class="bg-brand-blue text-white shadow-xl mb-12 py-12">
+        <div class="text-center">
+            <h1 class="text-5xl font-extrabold mb-4">Update Event</h1>
+            <p class="text-xl font-medium text-gray-200">Modify the details of your event.</p>
+        </div>
+    </header>
+    
+    <section class="bg-white shadow-lg rounded-lg p-8 mb-16">
+        <form method="POST" action="{% url 'update_event' event.id %}">
+            {% csrf_token %}
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                
+                <!-- Event Name -->
+                <div>
+                    <label class="block font-semibold mb-2">Event Name</label>
+                    {{ form.name }}
+                    {% if form.name.errors %}
+                    <div class="text-red-600 text-sm mt-1">{{ form.name.errors.0 }}</div>
+                    {% endif %}
+                </div>
+                
+                <!-- Start Date -->
+                <div>
+                    <label class="block font-semibold mb-2">Start Date</label>
+                    {{ form.start_date }}
+                    {% if form.start_date.errors %}
+                    <div class="text-red-600 text-sm mt-1">{{ form.start_date.errors.0 }}</div>
+                    {% endif %}
+                </div>
+                
+                <!-- End Date -->
+                <div>
+                    <label class="block font-semibold mb-2">End Date</label>
+                    {{ form.end_date }}
+                    {% if form.end_date.errors %}
+                    <div class="text-red-600 text-sm mt-1">{{ form.end_date.errors.0 }}</div>
+                    {% endif %}
+                </div>
+                
+                <!-- Location -->
+                <div>
+                    <label class="block font-semibold mb-2">Location</label>
+                    {{ form.location }}
+                    {% if form.location.errors %}
+                    <div class="text-red-600 text-sm mt-1">{{ form.location.errors.0 }}</div>
+                    {% endif %}
+                </div>
+                
+                <!-- Description -->
+                <div class="col-span-2">
+                    <label class="block font-semibold mb-2">Description</label>
+                    {{ form.description }}
+                    {% if form.description.errors %}
+                    <div class="text-red-600 text-sm mt-1">{{ form.description.errors.0 }}</div>
+                    {% endif %}
+                </div>
+                
+                <!-- Submit Buttons -->
+                <div class="col-span-2 text-center flex gap-4 justify-center">
+                    <button type="submit" 
+                            class="bg-brand-green text-white py-3 px-6 rounded-lg hover:bg-[#086a4f] transition duration-300">
+                        Update Event
+                    </button>
+                    <a href="{% url 'event_detail' event.id %}" 
+                       class="bg-gray-500 text-white py-3 px-6 rounded-lg hover:bg-gray-600 transition duration-300">
+                        Cancel
+                    </a>
+                </div>
+            </div>
+        </form>
+    </section>
+    
+</main>
+{% endblock %}

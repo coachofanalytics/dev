@@ -16,11 +16,10 @@ from pathlib import Path
 BASE_DIR = Path(__file__).resolve().parent.parent
 # print(BASE_DIR)
 
-SECRET_KEY = os.environ.get('SECRET_KEY', 'django-insecure-!cxl7yhjsl00964n=#e-=xblp4u!hbajo2k8u#$v9&s6__5=xf')
-# SECRET_KEY = os.environ.get('SECRET_KEY')
+SECRET_KEY = os.environ.get("SECRET_KEY") or "!cxl7yhjsl00964n=#e-=xblp4u!hbajo2k8u#$v9&s6__5=xf"
 
-DEBUG = True
-# DEBUG = os.environ.get("DEBUG_VALUE") == "True"
+# Default to False unless explicitly enabled via environment variable.
+DEBUG = os.environ.get("DEBUG", "False") == "True"
 
 SECURE_SSL_REDIRECT = False
 
@@ -64,12 +63,24 @@ INSTALLED_APPS = [
     "django_crontab",
     'memberjoin',
     'communities',
+    #'debug_toolbar',
+
 ]
+
+if DEBUG:
+    try:
+        import debug_toolbar
+        INSTALLED_APPS += ['debug_toolbar']
+        MIDDLEWARE += ['debug_toolbar.middleware.DebugToolbarMiddleware']
+    except ImportError:
+        pass # If it's not installed, just don't use it
+
 
 DEFAULT_AUTO_FIELD = "django.db.models.AutoField"
 
-STATICFILES_DIR =[
-    BASE_DIR, "main/static"
+# Static files configuration
+STATICFILES_DIRS = [
+    os.path.join(BASE_DIR, 'main/static'),
 ]
 
 CRONJOBS = [
@@ -89,6 +100,7 @@ MIDDLEWARE = [
     "whitenoise.middleware.WhiteNoiseMiddleware",
     'allauth.account.middleware.AccountMiddleware',
     # 'Middleware.MiddlewareFile.MailMiddleware'
+    #'debug_toolbar.middleware.DebugToolbarMiddleware',
 
 ]
 
@@ -214,7 +226,9 @@ AUTH_PASSWORD_VALIDATORS = [
 ]
 
 PASSWORD_HASHERS = [
-    "django.contrib.auth.hashers.MD5PasswordHasher",
+    # Use secure, production-appropriate password hashers. MD5 is insecure and should not be used.
+    "django.contrib.auth.hashers.PBKDF2PasswordHasher",
+    "django.contrib.auth.hashers.PBKDF2SHA1PasswordHasher",
 ]
 
 # Internationalization
@@ -238,18 +252,19 @@ MEDIA_ROOT = os.path.join(BASE_DIR, "media")
 
 STATIC_ROOT = os.path.join(BASE_DIR,  "staticfiles")
 STATIC_URL = "/static/"
-STATICFILES_DIRS = [
-    os.path.join(BASE_DIR, 'static'),  # If you have a project-level static directory
-    # Add other directories if necessary
-]
-STATICFILES_STORAGE = 'django.contrib.staticfiles.storage.ManifestStaticFilesStorage'
+
+
+if DEBUG:
+    STATICFILES_STORAGE = 'django.contrib.staticfiles.storage.StaticFilesStorage'
+else:
+    STATICFILES_STORAGE = 'django.contrib.staticfiles.storage.ManifestStaticFilesStorage'
 
 CRISPY_TEMPLATE_PACK = "bootstrap4"
 
 LOGIN_REDIRECT_URL = "main:layout"
 LOGIN_URL = "accounts:account-login"
 
-# EMAIL_BACKEND = "django.core.mail.backends.filebased.EmailBackend"
+
 # EMAIL_FILE_PATH = BASE_DIR + "/emails"
 
 # Gmail Email Backend Account
@@ -365,5 +380,17 @@ SOCIALACCOUNT_QUERY_EMAIL = True
 LOGIN_REDIRECT_URL = "main:layout"
 LOGIN_URL = "accounts:account-login"
 
-# settings.py
-WHITENOISE_MANIFEST_STRICT = False
+# Email Configuration
+EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+EMAIL_HOST_USER = 'your-email@gmail.com'  # Your full Gmail address
+EMAIL_HOST_PASSWORD = 'your-16-character-app-password'  # The app password you generated (remove spaces)
+DEFAULT_FROM_EMAIL = 'your-email@gmail.com'
+ADMIN_EMAIL = 'your-email@gmail.com'  # Send admin notifications to yourself for testing
+
+# Site URL for email links
+SITE_URL = 'http://127.0.0.1:8000'
+
+

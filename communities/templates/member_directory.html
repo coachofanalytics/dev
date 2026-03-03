@@ -369,7 +369,7 @@
         
         <!-- Search Form -->
         <div class="search-form-container">
-            <form method="GET" action="{% url 'communities:member_directory' %}">
+            <form method="GET" action="{% url 'member_directory' %}">
                 <!-- First Row: Search + Join Directory -->
                 <div class="search-row">
                     <div class="search-main">
@@ -382,7 +382,7 @@
                     </div>
                     
                     <div>
-                        <a href="{% url 'communities:join_directory_form' %}" class="join-directory-btn">
+                        <a href="{% url 'join_directory_form' %}" class="join-directory-btn">
                             <i class="fas fa-plus-circle"></i> Join Directory
                         </a>
                     </div>
@@ -555,12 +555,12 @@
         <h4 class="empty-title">No members found</h4>
         <p class="empty-text">
             {% if search_query or region_filter or profession_filter %}
-                Try adjusting your search filters or <a href="{% url 'communities:member_directory' %}" class="text-primary">clear all filters</a>
+                Try adjusting your search filters or <a href="{% url 'member_directory' %}" class="text-primary">clear all filters</a>
             {% else %}
                 Be the first to join our professional directory!
             {% endif %}
         </p>
-        <a href="{% url 'communities:join_directory_form' %}" class="join-directory-btn" style="width: auto; display: inline-flex;">
+        <a href="{% url 'join_directory_form' %}" class="join-directory-btn" style="width: auto; display: inline-flex;">
             <i class="fas fa-user-plus"></i> Create Profile
         </a>
     </div>
@@ -611,7 +611,7 @@
         
         if (searchQuery || region || profession) {
             const clearBtn = document.createElement('a');
-            clearBtn.href = '{% url "communities:member_directory" %}';
+            clearBtn.href = '{% url "member_directory" %}';
             clearBtn.className = 'btn btn-outline-primary btn-sm';
             clearBtn.innerHTML = '<i class="fas fa-times"></i> Clear Filters';
             
