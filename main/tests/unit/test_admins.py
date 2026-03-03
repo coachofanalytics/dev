@@ -2,8 +2,10 @@ from django.test import TestCase
 from django.contrib.admin.sites import AdminSite
 from django.contrib.auth import get_user_model
 
-from main.models import Location
-from main.admin import LocationAdmin  # adjust if your admin class name differs
+from main.models import Location,Search
+from main.admin import LocationAdmin,SearchAdmin 
+
+ # adjust if your admin class name differs
 
 User = get_user_model()
 
@@ -77,3 +79,19 @@ class LocationAdminPermissionTest(TestCase):
             self.admin.has_change_permission(request),
             [True, False]
         )
+
+  
+
+
+class SearchAdminTest(TestCase):
+
+    def setUp(self):
+        self.site = AdminSite()
+        self.admin = SearchAdmin(Search, self.site)
+
+    def test_admin_list_display(self):
+        self.assertIn("topic", self.admin.list_display)
+        self.assertIn("uploaded", self.admin.list_display)
+
+    def test_admin_search_fields(self):
+        self.assertIn("topic", self.admin.search_fields)

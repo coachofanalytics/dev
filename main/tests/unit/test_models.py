@@ -6,7 +6,7 @@ from datetime import time
 from django.core.exceptions import ValidationError
 from django.test import TestCase
 
-from main.models import ClientAvailability
+from main.models import ClientAvailability,Search
 
 
 
@@ -75,3 +75,22 @@ class ClientAvailabilityModelTests(TestCase):
         )
         with self.assertRaises(ValidationError):
             obj.full_clean()
+
+
+class SearchModelTest(TestCase):
+
+    def test_create_search(self):
+        search = Search.objects.create(
+            topic="Math",
+            question="What is algebra?",
+            uploaded=False
+        )
+        self.assertEqual(search.topic, "Math")
+        self.assertFalse(search.uploaded)
+
+    def test_string_representation(self):
+        search = Search.objects.create(
+            topic="Science",
+            question="What is gravity?"
+        )
+        self.assertEqual(str(search), "Science")

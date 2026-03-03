@@ -222,3 +222,15 @@ class ClientAvailability(models.Model):
 
     def __str__(self):
         return f"Client {self.client} - {self.day} ({self.start_time} to {self.end_time})"
+    
+  
+
+class Search(models.Model):
+    topic = models.CharField(max_length=255, null=False)
+    question = models.TextField(null=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    uploaded = models.BooleanField(default=False)
+
+    def __str__(self):
+        return self.topic

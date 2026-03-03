@@ -54,3 +54,17 @@ class LocationAdminIntegrationTest(TestCase):
         response = self.client.get(url)
 
         self.assertEqual(response.status_code, 200)
+
+
+
+
+
+
+# class SearchAdminRegressionTest(TestCase):
+
+#     def test_uploaded_default_false(self):
+#         search = Search.objects.create(
+#             topic="Regression",
+#             question="Testing regression"
+#         )
+#         self.assertFalse(search.uploaded)

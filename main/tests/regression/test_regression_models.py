@@ -2,7 +2,8 @@ from django.test import TestCase
 from django.urls import reverse
 from django.contrib.auth import get_user_model
 
-from main.models import Location
+
+from main.models import Location,Search
 
 User = get_user_model()
 
@@ -111,3 +112,22 @@ class ClientAvailabilityRegressionTests(TestCase):
         # full_clean triggers max_length validation
         with self.assertRaises(Exception):
             obj.full_clean()
+
+
+
+class SearchRegressionTest(TestCase):
+
+    def test_uploaded_default_false(self):
+        search = Search.objects.create(
+            topic="History",
+            question="What is WW2?"
+        )
+        self.assertFalse(search.uploaded)
+
+    def test_timestamps_auto_set(self):
+        search = Search.objects.create(
+            topic="Tech",
+            question="What is AI?"
+        )
+        self.assertIsNotNone(search.created_at)
+        self.assertIsNotNone(search.updated_at)

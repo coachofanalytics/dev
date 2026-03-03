@@ -37,8 +37,9 @@
 import time as pytime
 from datetime import time
 from django.test import TestCase
+import time
 
-from main.models import ClientAvailability
+from main.models import ClientAvailability,Search
 
 
 class ClientAvailabilityPerformanceTests(TestCase):
@@ -94,3 +95,19 @@ class ClientAvailabilityPerformanceTests(TestCase):
 
         self.assertGreater(count, 0)
         self.assertLess(elapsed, 0.75)
+
+
+
+class SearchPerformanceTest(TestCase):
+
+    def test_bulk_insert_performance(self):
+        start_time = time.time()
+
+        for i in range(1000):
+            Search.objects.create(
+                topic=f"Topic {i}",
+                question="Sample question"
+            )
+
+        duration = time.time() - start_time
+        self.assertLess(duration, 5)
