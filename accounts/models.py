@@ -7,7 +7,9 @@ from django.utils.translation import gettext_lazy as _
 
 from django_countries.fields import CountryField
 from accounts.choices import CategoryChoices,SubCategoryChoices, GenderChoices
-
+from django.conf import settings
+from django.db import models
+from django.utils import timezone
 # Create your models here.
 class CustomerUser(AbstractUser):
     def get_category_display_name(self):
@@ -73,4 +75,138 @@ class UserGroups(models.Model):
     name = models.CharField(max_length=100)
 
     def __str__(self):
-        return self.name
+        re# app/models.py
+
+
+
+class PaymentHistory(models.Model):
+    class Provider(models.TextChoices):
+        STRIPE = "stripe", "Stripe"
+        PAYPAL = "paypal", "PayPal"
+        MPESA = "mpesa", "M-Pesa"
+        CASHAPP = "cashapp", "Cash App"
+        ZELLE = "zelle", "Zelle"
+        VENMO = "venmo", "Venmo"
+        BANK = "bank", "Bank Transfer"
+        CASH = "cash", "Cash"
+        OTHER = "other", "Other"
+
+    class Status(models.TextChoices):
+        INITIATED = "initiated", "Initiated"
+        PENDING = "pending", "Pending"
+        SUCCEEDED = "succeeded", "Succeeded"
+        FAILED = "failed", "Failed"
+        REFUNDED = "refunded", "Refunded"
+        CANCELED = "canceled", "Canceled"
+
+    class Currency(models.TextChoices):
+        USD = "USD", "USD"
+        KES = "KES", "KES"
+        RWF = "RWF", "RWF"
+        UGX = "UGX", "UGX"
+        EUR = "EUR", "EUR"
+        GBP = "GBP", "GBP"
+
+    # Core links
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.PROTECT,
+        related_name="payment_history",
+        null=True,
+        blank=True,
+        help_text="User who made/owns the payment record (optional for system/imported records).",
+    )
+
+    # What this payment was for (flexible)
+    purpose = models.CharField(
+        max_length=120,
+        blank=True,
+        default="",
+        help_text="Short label, e.g. Contribution, Membership, Invoice, Donation, Order.",
+    )
+    reference_code = models.CharField(
+        max_length=64,
+        blank=True,
+        default="",
+        help_text="Internal reference, e.g. INV-00021, CONTRIB-2026-003, ORDER-1133.",
+    )
+
+    # Money
+    amount = models.DecimalField(max_digits=12, decimal_places=2)
+    currency = models.CharField(max_length=3, choices=Currency.choices, default=Currency.USD)
+
+    # Payment method/provider
+    provider = models.CharField(max_length=20, choices=Provider.choices, default=Provider.OTHER)
+    payment_method = models.CharField(
+        max_length=60,
+        blank=True,
+        default="",
+        help_text="Card, Mobile Money, Bank, Wallet, etc. (optional descriptive field).",
+    )
+
+    # Gateway/processor identifiers
+    provider_payment_id = models.CharField(
+        max_length=120,
+        blank=True,
+        default="",
+        db_index=True,
+        help_text="External payment/intent/transaction id from provider (Stripe/PayPal/M-Pesa, etc.).",
+    )
+    provider_customer_id = models.CharField(
+        max_length=120,
+        blank=True,
+        default="",
+        help_text="Optional external customer id from provider.",
+    )
+
+    # Status and timestamps
+    status = models.CharField(max_length=20, choices=Status.choices, default=Status.INITIATED)
+    initiated_at = models.DateTimeField(default=timezone.now)
+    completed_at = models.DateTimeField(null=True, blank=True)
+
+    # Reconciliation and evidence
+    transaction_fee = models.DecimalField(max_digits=12, decimal_places=2, default=0)
+    net_amount = models.DecimalField(
+        max_digits=12,
+        decimal_places=2,
+        null=True,
+        blank=True,
+        help_text="Optional: amount after fees (if you want to store it).",
+    )
+    receipt_url = models.URLField(blank=True, default="")
+    notes = models.TextField(blank=True, default="")
+
+    # Raw provider response (for audit/debug)
+    provider_payload = models.JSONField(blank=True, null=True)
+
+    # Audit
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ["-created_at"]
+        indexes = [
+            models.Index(fields=["status", "created_at"]),
+            models.Index(fields=["provider", "provider_payment_id"]),
+            models.Index(fields=["currency", "created_at"]),
+        ]
+
+    def __str__(self) -> str:
+        return f"{self.reference_code or 'PAY'} | {self.amount} {self.currency} | {self.provider} | {self.status}"
+
+    def mark_succeeded(self, completed_time=None):
+        self.status = self.Status.SUCCEEDED
+        self.completed_at = completed_time or timezone.now()
+        if self.net_amount is None:
+            self.net_amount = self.amount - (self.transaction_fee or 0)
+        self.save(update_fields=["status", "completed_at", "net_amount", "updated_at"])
+
+    def mark_failed(self, note: str = ""):
+        self.status = self.Status.FAILED
+        if note:
+            self.notes = (self.notes + "\n" + note).strip() if self.notes else note
+    
+
+
+
+

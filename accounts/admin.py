@@ -2,7 +2,8 @@ from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
 from django.contrib.auth.forms import UserChangeForm, UserCreationForm
 from .models import CustomerUser
-
+from django.contrib import admin
+from .models import PaymentHistory
 
 # admin.site.register(CustomerUser)
 class CustomerAdmin(UserAdmin):
@@ -64,3 +65,68 @@ admin.site.register(CustomerUser, CustomerAdmin)
 # admin.site.register(CustomerUser)
 
 # Register your models here.
+
+
+
+# app/admin.py
+
+
+
+@admin.register(PaymentHistory)
+class PaymentHistoryAdmin(admin.ModelAdmin):
+    list_display = (
+        "reference_code",
+        "user",
+        "amount",
+        "currency",
+        "provider",
+        "status",
+        "created_at",
+    )
+
+    list_filter = (
+        "provider",
+        "status",
+        "currency",
+        "created_at",
+    )
+
+    search_fields = (
+        "reference_code",
+        "provider_payment_id",
+        "provider_customer_id",
+        "user__username",
+        "user__email",
+    )
+
+    readonly_fields = (
+        "created_at",
+        "updated_at",
+        "completed_at",
+    )
+
+    ordering = ("-created_at",)
+
+    fieldsets = (
+        ("User & Reference", {
+            "fields": ("user", "purpose", "reference_code")
+        }),
+        ("Payment Details", {
+            "fields": ("amount", "currency", "provider", "payment_method")
+        }),
+        ("Gateway Info", {
+            "fields": ("provider_payment_id", "provider_customer_id", "provider_payload")
+        }),
+        ("Status & Dates", {
+            "fields": ("status", "initiated_at", "completed_at")
+        }),
+        ("Financial Breakdown", {
+            "fields": ("transaction_fee", "net_amount")
+        }),
+        ("Additional", {
+            "fields": ("receipt_url", "notes")
+        }),
+        ("Audit", {
+            "fields": ("created_at", "updated_at")
+        }),
+    )
