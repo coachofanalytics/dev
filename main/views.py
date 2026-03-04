@@ -2,9 +2,9 @@ from django.http import JsonResponse
 from django.shortcuts import redirect, render
 from .models import Assets,Readme,Location,ClientAvailability,Search
 
-# from .forms import SearchForm
+
 from .utils import *
-from .forms import LocationForm
+from .forms import LocationForm,SearchForm
 from django.shortcuts import render, get_object_or_404, redirect
 # from main.models import Testimonials
 # Testimonials.objects.all()
@@ -517,3 +517,14 @@ def clientavailability_delete(request, pk):
 def search_list(request):
     searches = Search.objects.all().order_by('-created_at')
     return render(request, 'main/search_list.html', {'searches': searches})
+
+def search_create(request):
+    if request.method == 'POST':
+        form = SearchForm(request.POST)
+        if form.is_valid():
+            form.save()
+            return redirect('main:search_list')
+    else:
+        form = SearchForm()
+
+    return render(request, 'main/search_create.html', {'form': form})
