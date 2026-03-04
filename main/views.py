@@ -1,6 +1,8 @@
 from django.http import JsonResponse
 from django.shortcuts import redirect, render
-from .models import Assets,Readme,Location,ClientAvailability
+from .models import Assets,Readme,Location,ClientAvailability,Search
+
+# from .forms import SearchForm
 from .utils import *
 from .forms import LocationForm
 from django.shortcuts import render, get_object_or_404, redirect
@@ -507,3 +509,11 @@ def clientavailability_delete(request, pk):
         availability.delete()
         return redirect("main:clientavailability_list")
     return render(request, "main/clientavailability_delete.html", {"availability": availability})
+
+
+
+
+
+def search_list(request):
+    searches = Search.objects.all().order_by('-created_at')
+    return render(request, 'main/search_list.html', {'searches': searches})

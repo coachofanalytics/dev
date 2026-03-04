@@ -32,6 +32,7 @@ path('clientavailability_create/', views.clientavailability_create, name='client
 path("clientavailability_update/<int:pk>/", views. clientavailability_update, name="clientavailability_update"),
 path("clientavailability_detail/<int:pk>/", views. clientavailability_detail, name="clientavailability_detail"),
 path("clientavailability_delete/<int:pk>/", views. clientavailability_delete, name="clientavailability_delete"),
+path('searchlist/', views.search_list, name='search_list'),
 
 
 
