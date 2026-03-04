@@ -541,3 +541,14 @@ def search_update(request, pk):
         form = SearchForm(instance=search)
 
     return render(request, 'main/search_update.html', {'form': form})
+
+def search_delete(request, pk):
+    search = get_object_or_404(Search, pk=pk)
+
+    if request.method == 'POST':
+        search.delete()
+        return redirect('main:search_list')
+
+    return render(request, 'main/search_delete.html', {'search': search})
+
+    
