@@ -1,0 +1,67 @@
+{% extends 'admin_templates/base_template.html' %}
+{% load crispy_forms_tags %}
+
+{% block title %}
+    {% if object %}Edit Search{% else %}Add Search{% endif %} | CODA
+{% endblock title %}
+
+{% block content %}
+
+<div class="container mt-4">
+    <div class="card shadow-sm border-primary">
+        <div class="card-header bg-primary text-white">
+            <h4 class="fw-bold mb-0">
+                {% if object %}Update Search{% else %}Update Search{% endif %}
+            </h4>
+        </div>
+
+        <div class="card-body">
+            <form method="post">
+                {% csrf_token %}
+
+                <div class="mb-3">
+                    <label class="form-label">topic</label>
+                    {{ form.topic }}
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">question</label>
+                    {{ form.question }}
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">question</label>
+                    {{ form.question }}
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">created_at</label>
+                    {{ form.created_at }}
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">updated_at</label>
+                    {{ form.updated_at }}
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">uploaded</label>
+                    {{ form.uploaded }}
+                </div>
+
+                <div class="mt-4">
+                    <button type="submit" class="btn btn-primary">
+                        {% if object %}Update{% else %}Update{% endif %}
+                    </button>
+
+                    <a href="{% url 'main:search_list' %}"
+                       class="btn btn-secondary ms-2">
+                        Cancel
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

@@ -528,3 +528,16 @@ def search_create(request):
         form = SearchForm()
 
     return render(request, 'main/search_create.html', {'form': form})
+
+def search_update(request, pk):
+    search = get_object_or_404(Search, pk=pk)
+
+    if request.method == 'POST':
+        form = SearchForm(request.POST, instance=search)
+        if form.is_valid():
+            form.save()
+            return redirect('main:search_list')
+    else:
+        form = SearchForm(instance=search)
+
+    return render(request, 'main/search_update.html', {'form': form})

@@ -34,7 +34,7 @@ path("clientavailability_detail/<int:pk>/", views. clientavailability_detail, na
 path("clientavailability_delete/<int:pk>/", views. clientavailability_delete, name="clientavailability_delete"),
 path('searchlist/', views.search_list, name='search_list'),
 path('searchcreate/', views.search_create, name='search_create'),
-
+path('searchupdate/<int:pk>/', views.search_update, name='search_update'),
 
 
 
