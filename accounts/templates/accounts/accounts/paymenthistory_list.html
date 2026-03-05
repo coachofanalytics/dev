@@ -1,0 +1,72 @@
+{% extends "main/base_templates/accounts_base.html" %}
+ 
+{% block title %}Add New Employee Records{% endblock title %}
+<h2>Payment History</h2>
+
+<form method="get">
+    <input type="text" name="search" placeholder="Search..." value="{{ request.GET.search }}">
+    
+    <select name="status">
+        <option value="">All Status</option>
+        {% for key, value in payments.model.Status.choices %}
+            <option value="{{ key }}" {% if request.GET.status == key %}selected{% endif %}>
+                {{ value }}
+            </option>
+        {% endfor %}
+    </select>
+
+    <select name="provider">
+        <option value="">All Providers</option>
+        {% for key, value in payments.model.Provider.choices %}
+            <option value="{{ key }}" {% if request.GET.provider == key %}selected{% endif %}>
+                {{ value }}
+            </option>
+        {% endfor %}
+    </select>
+
+    <button type="submit">Filter</button>
+</form>
+
+<hr>
+
+<table border="1" cellpadding="8">
+    <tr>
+        <th>Reference</th>
+        <th>Amount</th>
+        <th>Currency</th>
+        <th>Provider</th>
+        <th>Status</th>
+        <th>Date</th>
+    </tr>
+
+    {% for payment in payments %}
+    <tr>
+        <td>{{ payment.reference_code }}</td>
+        <td>{{ payment.amount }}</td>
+        <td>{{ payment.currency }}</td>
+        <td>{{ payment.provider }}</td>
+        <td>{{ payment.status }}</td>
+        <td>{{ payment.created_at|date:"Y-m-d H:i" }}</td>
+    </tr>
+    {% empty %}
+    <tr>
+        <td colspan="6">No payments found.</td>
+    </tr>
+    {% endfor %}
+</table>
+
+<br>
+
+{% if is_paginated %}
+    {% if page_obj.has_previous %}
+        <a href="#">Previous</a>
+    {% endif %}
+
+    Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
+
+    {% if page_obj.has_next %}
+        <a href="#">Next</a>
+    {% endif %}
+{% endif %}
+
+{% endblock %}SS
