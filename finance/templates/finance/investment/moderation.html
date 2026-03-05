@@ -33,12 +33,33 @@
     padding: 25px;
     border-radius: 12px;
     box-shadow: 0 8px 20px rgba(0,0,0,0.05);
-    border-left: 6px solid #f59e0b; /* Yellow for Pending */
+    border-left: 6px solid #f59e0b; /* Default Yellow for Pending */
+    transition: transform 0.2s;
+}
+
+
+.moderation-card.suspicious-flag {
+    border-left: 8px solid #dc2626; /* Aggressive Red */
+    background-color: #fffafb;
+}
+
+.spam-warning {
+    background: #dc2626;
+    color: white;
+    padding: 4px 12px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: bold;
+    display: inline-block;
+    margin-bottom: 10px;
 }
 
 .moderation-card h4 {
     font-size: 20px;
     margin-bottom: 10px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
 }
 
 .moderation-meta {
@@ -97,14 +118,18 @@
             <div class="moderation-grid">
 
                 {% for opp in pending_items %}
-                    <div class="moderation-card">
+                    <div class="moderation-card {% if opp.is_suspicious %}suspicious-flag{% endif %}">
 
-                        <h4>{{ opp.name }}</h4>
+                        {% if opp.is_suspicious %}
+                            <div class="spam-warning">⚠️ AUTO-FLAGGED: POTENTIAL SPAM</div>
+                        {% endif %}
+
+                        <h4>{{ opp.title }}</h4>
 
                         <div class="moderation-meta">
-                            Type: {{ opp.type }} |
-                            contact: {{ opp.contact }} |
-                            Submitted: {{ opp.created_at|date:"M d, Y" }}
+                            <strong>Type:</strong> {{ opp.type }} |
+                            <strong>Contact:</strong> {{ opp.contact }} |
+                            <strong>Submitted:</strong> {{ opp.created_at|date:"M d, Y" }}
                         </div>
 
                         <p>{{ opp.description }}</p>
@@ -114,7 +139,7 @@
                             <form method="POST" action="{% url 'finance:approve_opportunity' opp.id %}">
                                 {% csrf_token %}
                                 <button type="submit" class="btn-approve">
-                                    Approve
+                                    Approve & Notify User
                                 </button>
                             </form>
 

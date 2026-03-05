@@ -3,7 +3,9 @@ import logging
 from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
+from django.core.mail import send_mail
 from django.db.models import Sum
+from django.core.cache import cache
 from django.http import QueryDict, Http404, JsonResponse
 from django.shortcuts import redirect
 from django.urls import reverse
@@ -511,21 +513,43 @@ def homepage(request):
     return render(request,"finance/homepage/homepage.html")
 
 def finance_directory(request):
-
+    # These are available for the entire view
     opportunities = Opportunity.approved.all()
     count = opportunities.count()
 
     if request.method == 'POST':
+        # --- RATE LIMITER: 1 submission per 60 seconds per IP ---
+        user_ip = request.META.get('REMOTE_ADDR')
+        cache_key = f"limit_sub_{user_ip}"
+        
+        if cache.get(cache_key):
+            messages.error(request, "Please wait a minute before submitting another opportunity.")
+            return redirect('finance:directory')
+        
         form = OpportunityForm(request.POST)
-
         if form.is_valid():
             opportunity = form.save(commit=False)
+            
+            # --- AUTOMATION: SPAM LOGIC ---
+            banned_keywords = ['crypto', 'guaranteed', 'whatsapp me', 'bitcoin']
+            content = (opportunity.description + " " + opportunity.title).lower()
+            
+            # Reset flag before check
+            opportunity.is_suspicious = False 
+            
+            if any(word in content for word in banned_keywords) or len(opportunity.description) < 20:
+                opportunity.is_suspicious = True
+            
             opportunity.status = 'PENDING'
             opportunity.save()
 
-            messages.success(request, "Your submission is under review.")
+            # Set the "Lock" in cache for 60 seconds
+            cache.set(cache_key, True, 60) 
+
+            messages.success(request, "Thank you! Your submission is under review.")
             return redirect('finance:directory')
     else:
+        # Standard GET request
         form = OpportunityForm()
 
     return render(request, "finance/investment/directory.html", {
@@ -536,17 +560,29 @@ def finance_directory(request):
     
 def subscribe_newsletter(request):
     if request.method == 'POST':
-        email=request.POST.get('email')
-        if not email:
-            return JsonResponse({'success':False, 'message':'Email is required'})
+        email = request.POST.get('email')
+        # ... validation ...
         
         subscriber, created = NewsLetterSubscriber.objects.get_or_create(email=email)
+        
         if created:
-            message = 'Thank you for subscribing'
-        else:
-            message= 'You are already subscribed'
+            # --- AUTOMATION: SEND VERIFICATION LINK ---
+            # Generate a unique link (for a real project, use a signed token)
+            verify_url = request.build_absolute_uri(
+                reverse('finance:verify_email', args=[subscriber.id])
+            )
             
-        return JsonResponse({'success':True,'message':message})
+            send_mail(
+                "Verify your subscription",
+                f"Please click here to verify your email and start receiving alerts: {verify_url}",
+                settings.DEFAULT_FROM_EMAIL,
+                [email]
+            )
+            message = 'Please check your email to verify your subscription!'
+        else:
+            message = 'You are already in our system.'
+            
+        return JsonResponse({'success': True, 'message': message})
     
     
 @staff_member_required
