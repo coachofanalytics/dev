@@ -5,6 +5,9 @@ from .models import CustomerUser
 from django.contrib import admin
 from .models import PaymentHistory
 
+
+from .models import Tracker
+
 # admin.site.register(CustomerUser)
 class CustomerAdmin(UserAdmin):
     add_form = UserCreationForm

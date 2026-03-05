@@ -9,6 +9,9 @@ from django.contrib.auth import get_user_model
 from accounts.models import PaymentHistory
 
 
+from accounts.models import Tracker
+from datetime import datetime, time
+
 # User = get_user_model()
 
 
@@ -201,3 +204,43 @@ class TestPaymentHistoryModel:
         valid_currencies = [choice[0] for choice in PaymentHistory.Currency.choices]
         assert "USD" in valid_currencies
         assert "KES" in valid_currencies
+
+
+
+
+class TrackerModelTest(TestCase):
+
+    def setUp(self):
+        self.tracker = Tracker.objects.create(
+            category="Finance",
+            sub_category="Payments",
+            plan="Premium Plan",
+            empname=101,
+            author=1,
+            employee="John Doe",
+            login_date=datetime(2026, 3, 5, 9, 0, 0),
+            start_time=time(9, 0, 0),
+            duration=120
+        )
+
+    def test_tracker_creation(self):
+        """Test if tracker object is created correctly"""
+        self.assertEqual(self.tracker.category, "Finance")
+        self.assertEqual(self.tracker.sub_category, "Payments")
+        self.assertEqual(self.tracker.plan, "Premium Plan")
+
+    def test_employee_fields(self):
+        """Test employee related fields"""
+        self.assertEqual(self.tracker.empname, 101)
+        self.assertEqual(self.tracker.author, 1)
+        self.assertEqual(self.tracker.employee, "John Doe")
+
+    def test_time_fields(self):
+        """Test time and duration fields"""
+        self.assertEqual(self.tracker.duration, 120)
+        self.assertEqual(self.tracker.start_time, time(9, 0, 0))
+
+    def test_string_representation(self):
+        """Test __str__ method"""
+        expected = f"{self.tracker.employee} - {self.tracker.category} - {self.tracker.login_date}"
+        self.assertEqual(str(self.tracker), expected)

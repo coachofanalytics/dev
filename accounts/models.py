@@ -209,4 +209,24 @@ class PaymentHistory(models.Model):
 
 
 
+class Tracker(models.Model):
+    category = models.CharField(max_length=25)
+    sub_category = models.CharField(max_length=25)
+    plan = models.CharField(max_length=255)
 
+    empname = models.IntegerField()
+    author = models.IntegerField()
+
+    employee = models.CharField(max_length=255)
+
+    login_date = models.DateTimeField()
+
+    start_time = models.TimeField(null=True, blank=True)
+
+    duration = models.PositiveIntegerField(null=True, blank=True)
+
+    def __str__(self):
+        return f"{self.employee} - {self.category} - {self.login_date}"
+
+
+        
