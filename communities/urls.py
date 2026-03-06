@@ -1,6 +1,7 @@
 from django.urls import path
 from  . import views
 
+app_name = 'communities'
 
 urlpatterns = [
     path('', views.home, name='home'),
@@ -14,10 +15,10 @@ urlpatterns = [
     path('post/<int:post_id>/comment/', views.add_comment, name='add_comment'),
     path('category/<slug:slug>/create/', views.create_post, name='create_post'),
     path('events/', views.event_calendar, name='event_calendar'),
-    path('events/create/', views.create_event, name='create_event'),
+    path('event/create/', views.create_event, name='create_event'),
     path('event/<int:id>/', views.event_detail, name='event_detail'),
     path('event/<int:id>/edit/', views.edit_event, name='edit_event'),
     path('event/<int:id>/delete/', views.delete_event, name='delete_event'),
-     path('contact/', views.contact_view, name='contact'),
+    path('contact/', views.contact_view, name='contact'),
    
 ]

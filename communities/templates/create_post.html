@@ -17,7 +17,7 @@
     <section class="bg-white shadow-lg rounded-lg p-6">
         <h2 class="text-3xl font-bold text-brand-blue mb-6">Create a New Post</h2>
 
-        <form method="POST" action="{% url 'create_post' category.slug %}" class="space-y-4">
+        <form method="POST" action="{% url 'communities:create_post' category.slug %}" class="space-y-4">
             {% csrf_token %}
             
             <!-- Title -->

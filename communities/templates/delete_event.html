@@ -56,7 +56,7 @@
         <!-- Confirmation Buttons -->
         <div class="flex gap-4 justify-center">
             <!-- Delete Button -->
-            <form method="POST" action="{% url 'delete_event' event.id %}" style="display:inline;">
+            <form method="POST" action="{% url 'communities:delete_event' event.id %}" style="display:inline;">
                 {% csrf_token %}
                 <button type="submit" class="bg-red-600 text-white py-3 px-8 rounded-lg hover:bg-red-700 transition duration-300 font-semibold shadow-md hover:shadow-lg flex items-center gap-2">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -67,7 +67,7 @@
             </form>
             
             <!-- Cancel Button -->
-            <a href="{% url 'event_detail' event.id %}" class="bg-gray-500 text-white py-3 px-8 rounded-lg hover:bg-gray-600 transition duration-300 font-semibold shadow-md hover:shadow-lg flex items-center gap-2">
+            <a href="{% url 'communities:event_detail' event.id %}" class="bg-gray-500 text-white py-3 px-8 rounded-lg hover:bg-gray-600 transition duration-300 font-semibold shadow-md hover:shadow-lg flex items-center gap-2">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
                 </svg>

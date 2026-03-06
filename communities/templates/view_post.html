@@ -39,7 +39,7 @@
     <!-- Comment Form (Optional) -->
     <section class="mt-16">
         <h3 class="text-3xl font-extrabold text-brand-blue mb-4">Add a Comment</h3>
-        <form method="POST" action="{% url 'add_comment' post.id %}" class="space-y-4">
+        <form method="POST" action="{% url 'communities:add_comment' post.id %}" class="space-y-4">
             {% csrf_token %}
             <textarea name="content" rows="4" class="w-full p-4 border rounded-lg" placeholder="Write your comment here..."></textarea>
             <button type="submit" class="bg-brand-green text-white py-3 px-6 rounded-lg hover:bg-[#086a4f] transition duration-300">

@@ -214,7 +214,7 @@
         </div>
         
         <!-- Form - ONLY 2 FIELDS -->
-        <form method="POST" action="{% url 'join' %}">
+        <form method="POST" action="{% url 'communities:join' %}">
             {% csrf_token %}
             
             <!-- Field 1: Name -->
@@ -264,7 +264,7 @@
         
         <!-- Back Link -->
         <div class="back-link">
-            <a href="{% url 'home' %}">
+            <a href="{% url 'communities:home' %}">
                 <i class="fas fa-arrow-left"></i> Back to Home
             </a>
         </div>
