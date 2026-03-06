@@ -19,7 +19,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = os.environ.get("SECRET_KEY") or "!cxl7yhjsl00964n=#e-=xblp4u!hbajo2k8u#$v9&s6__5=xf"
 
 # Default to False unless explicitly enabled via environment variable.
-DEBUG = False  # development only
+DEBUG = True  # development only
 
 SECURE_SSL_REDIRECT = False
 
