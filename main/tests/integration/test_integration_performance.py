@@ -27,7 +27,7 @@ class PerformanceIntegrationTests(TransactionTestCase):
         self.user = get_user_model().objects.create_user(
             username='perfuser',
             email='perf@example.com',
-            password='perfpass123'
+            password = os.getenv("TEST_PASSWORD")
         )
         
         # Clear cache before tests
