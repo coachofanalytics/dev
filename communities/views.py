@@ -63,56 +63,41 @@ def join(request):
     return render(request, 'join.html')
 
 def member_directory(request):
-    """
-    Verified Member Directory with search functionality
-    """
-    # Start with ALL members (remove restrictive filters temporarily)
-    members = CommunityMember.objects.all().order_by('-date_joined')
-
-    # Initialize variables
+    # Filter by public status so only "joined" members appear
+    members = CommunityMember.objects.filter(is_public_directory=True).order_by('-date_joined')
+    
     search_query = request.GET.get('search', '')
     region_filter = request.GET.get('region', '')
     profession_filter = request.GET.get('profession', '')
     
-    # Apply search by name or profession
+    # Apply Search Logic
     if search_query:
         members = members.filter(
-            Q(name__icontains=search_query) |
-            Q(profession__icontains=search_query) |
-            Q(specialization__icontains=search_query) |
+            Q(name__icontains=search_query) | 
+            Q(profession__icontains=search_query) | 
+            Q(specialization__icontains=search_query) | 
             Q(bio__icontains=search_query)
         )
-
-    # Apply region filter
+        
+    # Apply Filters
     if region_filter:
         members = members.filter(region__icontains=region_filter)
-    
-    # Apply profession filter
     if profession_filter:
         members = members.filter(profession__icontains=profession_filter)
+        
+    # Dynamic dropdown data based on existing public members
+    unique_regions = CommunityMember.objects.filter(is_public_directory=True).values_list('region', flat=True).distinct().order_by('region')
+    unique_professions = CommunityMember.objects.filter(is_public_directory=True).values_list('profession', flat=True).distinct().order_by('profession')
     
-    # OPTIONAL: Only show members who want to be in directory
-    # Uncomment this line if you want directory-only members
-    # members = members.filter(is_public_directory=True)
-    
-    # Get unique regions and professions for filter dropdowns
-    unique_regions = CommunityMember.objects.values_list('region', flat=True).distinct().order_by('region')
-    unique_professions = CommunityMember.objects.values_list('profession', flat=True).distinct().order_by('profession')
-
-    # Add is_premium field (temporary)
-    for member in members:
-        member.is_premium = member.id % 3 == 0  # Every 3rd member is premium for demo
-
     context = {
-        'members': members,
-        'search_query': search_query,
-        'region_filter': region_filter,
-        'profession_filter': profession_filter,
-        'unique_regions': unique_regions,
-        'unique_professions': unique_professions,
-        'total_members': members.count(),
+        'members': members, 
+        'search_query': search_query, 
+        'region_filter': region_filter, 
+        'profession_filter': profession_filter, 
+        'unique_regions': unique_regions, 
+        'unique_professions': unique_professions, 
+        'total_members': members.count()
     }
-    
     return render(request, 'member_directory.html', context)
 
 def join_directory(request, member_id):
@@ -130,69 +115,60 @@ def join_directory(request, member_id):
 # REMOVE @login_required OR update to:
 def join_directory_form(request):
     """
-    Form for joining the professional directory
+    Form for joining the professional directory.
+    Always creates a NEW member to prevent overwriting.
     """
-    # Check if user just joined (has member_id in session)
-    member_id = request.session.get('joined_member_id')
-    
-    if member_id:
-        try:
-            member = CommunityMember.objects.get(id=member_id)
-        except CommunityMember.DoesNotExist:
-            member = None
-    else:
-        member = None
-    
     if request.method == 'POST':
-        # Get form data
-        name = request.POST.get('name')
-        profession = request.POST.get('profession')
-        region = request.POST.get('region')
-        category = request.POST.get('category')
-        expertise = request.POST.get('expertise')
+        name = request.POST.get('name', '').strip()
+        profession = request.POST.get('profession', '').strip()
+        region = request.POST.get('region', '').strip()
+        category = request.POST.get('category', '').strip()
+        expertise = request.POST.get('expertise', '').strip()
+
+        # Basic validation
+        errors = []
+        if not name: errors.append('Name is required.')
+        if not profession: errors.append('Profession is required.')
+        if not region: errors.append('Region is required.')
+
+        if errors:
+            for e in errors:
+                messages.error(request, e)
+            return render(request, 'join_directory_form.html', {
+                'name': name, 'profession': profession, 'region': region,
+                'categories': ['Tech & IT', 'Legal', 'Finance', 'Healthcare', 'Education', 'Business', 'Creative & Media', 'Engineering', 'Other'],
+            })
+
+        # ALWAYS create a new member record
+        member = CommunityMember.objects.create(
+            name=name,
+            profession=profession,
+            region=region,
+            is_public_directory=True
+        )
+
+        # ALWAYS create a new associated directory profile
+        DirectoryProfile.objects.create(
+            community_member=member,
+            full_name=name,
+            profession=profession,
+            region_city=region,
+            category=category,
+            expertise_summary=expertise,
+            is_approved=True,
+        )
         
-        # Update the member if exists
-        if member:
-            member.name = name
-            member.profession = profession
-            member.region = region
-            member.save()
+        # Optional: Clear session if you were using it previously to avoid pre-filling
+        if 'joined_member_id' in request.session:
+            del request.session['joined_member_id']
             
-            # Create or update DirectoryProfile
-            DirectoryProfile.objects.update_or_create(
-                community_member=member,
-                defaults={
-                    'full_name': name,
-                    'profession': profession,
-                    'region_city': region,
-                    'category': category,
-                    'expertise_summary': expertise,
-                    'is_approved': True,
-                }
-            )
-            
-            messages.success(request, f'Profile updated for {name}!')
-        else:
-            messages.success(request, 'Profile information saved!')
-        
-        return redirect('member_directory')
-    
-    # Pre-fill with member data if exists
-    initial_data = {}
-    if member:
-        initial_data = {
-            'name': member.name,
-            'profession': member.profession,
-            'region': member.region,
-        }
-    
+        messages.success(request, f'Successfully added {name} to the directory!')
+        return redirect('communities:member_directory')
+
+    # GET request: Show an empty form
     context = {
-        'name': initial_data.get('name', 'Your Name'),
-        'profession': initial_data.get('profession', ''),
-        'region': initial_data.get('region', ''),
-        'categories': ['Tech & IT', 'Legal', 'Finance', 'Healthcare', 'Education', 'Business', 'Creative & Media', 'Engineering', 'Other'],
+        'categories': ['Tech & IT', 'Legal', 'Finance', 'Healthcare', 'Education', 'Business', 'Creative & Media', 'Engineering', 'Other']
     }
-    
     return render(request, 'join_directory_form.html', context)
 
 # Forum Home Page
@@ -279,6 +255,10 @@ def event_detail(request, id):
     
     return render(request, 'event_detail.html', {'event': event})
 
+def home(request):
+    return render(request, 'home.html')
+
+
 # Edit event
 def edit_event(request, id):
     # Fetch the event by ID
@@ -289,7 +269,7 @@ def edit_event(request, id):
         if form.is_valid():
             form.save()  # Save the updated event to the database
             messages.success(request, "Event updated successfully!")
-            return redirect('event_detail', id=event.id)  # Redirect to event detail page
+            return redirect('communities:event_detail', id=event.id)  # Redirect to event detail page
         else:
             messages.error(request, "There was an error with your form. Please try again.")
     else:
@@ -299,13 +279,16 @@ def edit_event(request, id):
 
 # Delete event
 def delete_event(request, id):
-    # Fetch the event by ID
-    event = get_object_or_404(EventCalendar, id=id)
-    
+    try:
+        event = EventCalendar.objects.get(id=id)
+    except EventCalendar.DoesNotExist:
+        messages.error(request, "This event has already been deleted or does not exist.")
+        return redirect('communities:event_calendar')
+
     if request.method == 'POST':
-        event.delete()  # Delete the event from the database
+        event.delete()
         messages.success(request, "Event deleted successfully!")
-        return redirect('event_calendar')  # Redirect to the event calendar page
+        return redirect('communities:event_calendar')
     
     return render(request, 'delete_event.html', {'event': event})
 
@@ -327,86 +310,103 @@ def contact_view(request):
 		form = ContactForm()
 	return render(request, 'contact_form.html', {'form': form})
 
-
 def member_directory(request):
-	members = CommunityMember.objects.all().order_by('-date_joined')
-	search_query = request.GET.get('search', '')
-	region_filter = request.GET.get('region', '')
-	profession_filter = request.GET.get('profession', '')
-	if search_query:
-		members = members.filter(
-			Q(name__icontains=search_query) | Q(profession__icontains=search_query) | Q(specialization__icontains=search_query) | Q(bio__icontains=search_query)
-		)
-	if region_filter:
-		members = members.filter(region__icontains=region_filter)
-	if profession_filter:
-		members = members.filter(profession__icontains=profession_filter)
-	unique_regions = CommunityMember.objects.values_list('region', flat=True).distinct().order_by('region')
-	unique_professions = CommunityMember.objects.values_list('profession', flat=True).distinct().order_by('profession')
-	for member in members:
-		member.is_premium = member.id % 3 == 0
-	context = {'members': members, 'search_query': search_query, 'region_filter': region_filter, 'profession_filter': profession_filter, 'unique_regions': unique_regions, 'unique_professions': unique_professions, 'total_members': members.count()}
-	return render(request, 'member_directory.html', context)
+    # CHANGED: Filter by is_public_directory=True
+    members = CommunityMember.objects.filter(is_public_directory=True).order_by('-date_joined')
+    search_query = request.GET.get('search', '')
+    region_filter = request.GET.get('region', '')
+    profession_filter = request.GET.get('profession', '')
+    
+    if search_query:
+        members = members.filter(
+            Q(name__icontains=search_query) | Q(profession__icontains=search_query) | Q(specialization__icontains=search_query) | Q(bio__icontains=search_query)
+        )
+    if region_filter:
+        members = members.filter(region__icontains=region_filter)
+    if profession_filter:
+        members = members.filter(profession__icontains=profession_filter)
+        
+    # CHANGED: Ensure filter dropdowns only show data from public members
+    unique_regions = CommunityMember.objects.filter(is_public_directory=True).values_list('region', flat=True).distinct().order_by('region')
+    unique_professions = CommunityMember.objects.filter(is_public_directory=True).values_list('profession', flat=True).distinct().order_by('profession')
+    
+    for member in members:
+        member.is_premium = member.id % 3 == 0
+        
+    context = {
+        'members': members, 'search_query': search_query, 'region_filter': region_filter, 
+        'profession_filter': profession_filter, 'unique_regions': unique_regions, 
+        'unique_professions': unique_professions, 'total_members': members.count()
+    }
+    return render(request, 'member_directory.html', context)
 
 
 def join_directory(request, member_id):
-	if request.method == 'POST':
-		member = get_object_or_404(CommunityMember, id=member_id)
-		member.is_public_directory = True
-		member.save()
-		messages.success(request, 'Your profile is now visible in the directory!')
-		return redirect('communities:member_directory')
-	return redirect('communities:member_directory')
+    if request.method == 'POST':
+        member = get_object_or_404(CommunityMember, id=member_id)
+        member.is_public_directory = True
+        member.save()
+        messages.success(request, 'Your profile is now visible in the directory!')
+        return redirect('communities:member_directory')
+    return redirect('communities:member_directory')
 
 
 def join_directory_form(request):
-	member_id = request.session.get('joined_member_id')
-	member = None
-	if member_id:
-		try:
-			member = CommunityMember.objects.get(id=member_id)
-		except CommunityMember.DoesNotExist:
-			member = None
-	if request.method == 'POST':
-		name = request.POST.get('name', '').strip()
-		profession = request.POST.get('profession', '').strip()
-		region = request.POST.get('region', '').strip()
-		category = request.POST.get('category', '').strip()
-		expertise = request.POST.get('expertise', '').strip()
+    member_id = request.session.get('joined_member_id')
+    member = None
+    if member_id:
+        try:
+            member = CommunityMember.objects.get(id=member_id)
+        except CommunityMember.DoesNotExist:
+            pass # Removed 'member = None' as it's already None
 
-		# Basic validation: required fields
-		errors = []
-		if not name:
-			errors.append('Name is required.')
-		if not profession:
-			errors.append('Profession is required.')
-		if not region:
-			errors.append('Region is required.')
+    if request.method == 'POST':
+        name = request.POST.get('name', '').strip()
+        profession = request.POST.get('profession', '').strip()
+        region = request.POST.get('region', '').strip()
+        category = request.POST.get('category', '').strip()
+        expertise = request.POST.get('expertise', '').strip()
 
-		if errors:
-			for e in errors:
-				messages.error(request, e)
-			# re-render form with submitted values
-			context = {
-				'name': name,
-				'profession': profession,
-				'region': region,
-				'categories': ['Tech & IT', 'Legal', 'Finance', 'Healthcare', 'Education', 'Business', 'Creative & Media', 'Engineering', 'Other'],
-			}
-			return render(request, 'join_directory_form.html', context)
+        # Basic validation
+        errors = []
+        if not name: errors.append('Name is required.')
+        if not profession: errors.append('Profession is required.')
+        if not region: errors.append('Region is required.')
 
-		if member:
-			member.name = name
-			member.profession = profession
-			member.region = region
-			member.save()
+        if errors:
+            for e in errors:
+                messages.error(request, e)
+            context = {
+                'name': name, 'profession': profession, 'region': region,
+                'categories': ['Tech & IT', 'Legal', 'Finance', 'Healthcare', 'Education', 'Business', 'Creative & Media', 'Engineering', 'Other'],
+            }
+            return render(request, 'join_directory_form.html', context)
 
-			DirectoryProfile.objects.update_or_create(
-				community_member=member,
-				defaults={'full_name': name, 'profession': profession, 'region_city': region, 'category': category, 'expertise_summary': expertise, 'is_approved': True},
-			)
-			messages.success(request, f'Profile updated for {name}!')
-		return redirect('communities:member_directory')
-	context = {'name': member.name if member else '', 'profession': member.profession if member else '', 'region': member.region if member else '', 'categories': ['Tech & IT', 'Legal', 'Finance', 'Healthcare', 'Education', 'Business', 'Creative & Media', 'Engineering', 'Other']}
-	return render(request, 'join_directory_form.html', context)
+        # CHANGED: Create new member if they don't exist in session
+        if not member:
+            member = CommunityMember.objects.create(
+                name=name, profession=profession, region=region, is_public_directory=True
+            )
+            request.session['joined_member_id'] = member.id
+        else:
+            member.name = name
+            member.profession = profession
+            member.region = region
+            member.is_public_directory = True
+            member.save()
 
+        # Update or create the extended directory profile
+        DirectoryProfile.objects.update_or_create(
+            community_member=member,
+            defaults={'full_name': name, 'profession': profession, 'region_city': region, 'category': category, 'expertise_summary': expertise, 'is_approved': True},
+        )
+        
+        messages.success(request, f'Profile updated for {name}!')
+        return redirect('communities:member_directory')
+
+    context = {
+        'name': member.name if member else '', 'profession': member.profession if member else '', 
+        'region': member.region if member else '', 
+        'categories': ['Tech & IT', 'Legal', 'Finance', 'Healthcare', 'Education', 'Business', 'Creative & Media', 'Engineering', 'Other']
+    }
+    return render(request, 'join_directory_form.html', context)
