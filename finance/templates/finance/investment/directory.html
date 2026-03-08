@@ -42,7 +42,28 @@
     .form-group textarea { resize: none; height: 100px; }
     .btn-submit { background: #0a926d; color: white; padding: 12px 25px; border: none; border-radius: 8px; font-weight: 700; cursor: pointer; width: 100%; }
     .btn-submit:hover { opacity: 0.9; }
-    #newsletter-message { color: green; font-size: 14px; }
+    #newsletter-message {
+        margin-top: 15px;
+        font-weight: 600;
+        font-size: 14px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+    }
+
+    /* LOADING SPINNER */
+    .spinner {
+        width: 18px;
+        height: 18px;
+        border: 2px solid rgba(0,0,0,0.1);
+        border-top: 2px solid #0a926d;
+        border-radius: 50%;
+        animation: spin 0.8s linear infinite;
+        display: inline-block;
+    }
+
+    @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
     /* --- ADDED: ALERT MESSAGE STYLING --- */
     .alert-box {
@@ -156,14 +177,20 @@
         </div>
     </div>
 </section>
-
 <script>
 document.getElementById("newsletter-form").addEventListener("submit", function(e) {
     e.preventDefault();
     const form = e.target;
     const emailInput = form.querySelector("input[name='email']");
     const csrfToken = form.querySelector("[name=csrfmiddlewaretoken]").value;
+    const messageEl = document.getElementById("newsletter-message");
 
+    // 1. Show Loading State
+    messageEl.style.display = "flex";
+    messageEl.style.color = "#4b5563"; 
+    messageEl.innerHTML = '<div class="spinner"></div> Checking...';
+
+    // Fetch using the named route directly
     fetch("{% url 'finance:subscribe_newsletter' %}", {
         method: "POST",
         headers: {
@@ -172,14 +199,38 @@ document.getElementById("newsletter-form").addEventListener("submit", function(e
         },
         body: new URLSearchParams({ email: emailInput.value })
     })
-    .then(response => response.json())
-    .then(data => {
-        const messageEl = document.getElementById("newsletter-message");
-        messageEl.innerText = data.message;
-        messageEl.style.display = "block";
-        if (data.success) { emailInput.value = ""; }
+    .then(response => {
+        // --- IMPROVED ERROR CATCHING ---
+        // If the server crashed (500), this prevents the JSON error
+        if (!response.ok) {
+            return response.text().then(text => {
+                throw new Error("Server crashed. Check your Python terminal.");
+            });
+        }
+        return response.json();
     })
-    .catch(error => { console.error("Error:", error); });
+    .then(data => {
+        // 2. Handle Response Icons
+        if (data.exists) {
+            messageEl.style.color = "#dc2626"; 
+            messageEl.innerHTML = '<span>✘</span> ' + data.message;
+            emailInput.style.borderColor = "#dc2626";
+        } else if (data.success) {
+            messageEl.style.color = "#0a926d";
+            messageEl.innerHTML = '<span>✔</span> ' + data.message;
+            emailInput.style.borderColor = "#0a926d";
+            emailInput.value = ""; 
+        } else {
+            messageEl.style.color = "#991b1b";
+            messageEl.innerText = data.message;
+        }
+    })
+    .catch(error => { 
+        // This will now catch the "Server crashed" error explicitly
+        console.error("Debug Details:", error);
+        messageEl.style.color = "#dc2626";
+        messageEl.innerText = error.message || "Connection error. Please try again.";
+    });
 });
 </script>
 {% endblock %}

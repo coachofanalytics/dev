@@ -17,8 +17,11 @@ urlpatterns = [
     path('moderation/', views.moderation_queue, name='moderation_queue'),
     path('approve/<int:pk>/', views.approve_opportunity, name ='approve_opportunity'),
     path('reject_opportunity/<int:pk>/', views.reject_opportunity, name='reject_opportunity'),
-    path('subscribe/', views.subscribe_newsletter, name='subscribe_newsletter'),
+    path('opportunity/delete/<int:pk>/', views.delete_opportunity, name='delete_opportunity'),
     
+    path('subscribe/', views.subscribe_newsletter, name='subscribe_newsletter'),
+    path('verify/<int:subscriber_id>/', views.verify_email, name='verify_email'),
+    path('admin/send-newsletter/', views.admin_send_newsletter, name='admin_send_newsletter'),
     path('transact/', views.transact, name='finance-transact'),
     path('transaction/', TransactionListView.as_view(), name='transaction-list'),
     path('transaction/<int:pk>/', TransanctionDetailView.as_view(), name='transaction-detail'),

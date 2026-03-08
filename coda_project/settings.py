@@ -387,16 +387,16 @@ LOGIN_REDIRECT_URL = "main:layout"
 LOGIN_URL = "accounts:account-login"
 
 
-# Email Configuration - Mailtrap Sandbox Mode
+
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-EMAIL_HOST = 'sandbox.smtp.mailtrap.io'
-EMAIL_PORT = 2525
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_PORT = 587
 EMAIL_USE_TLS = True
 EMAIL_USE_SSL = False
 
 # Credentials pulled from your .env file
-EMAIL_HOST_USER = os.environ.get('MAILTRAP_USER')
-EMAIL_HOST_PASSWORD = os.environ.get('MAILTRAP_PASS')
+EMAIL_HOST_USER = os.environ.get('HOST_USER')
+EMAIL_HOST_PASSWORD = os.environ.get('HOST_PASS')
 
 # Identity settings
 DEFAULT_FROM_EMAIL = '"DC48 Investment Team" <hello@demomailtrap.com>'

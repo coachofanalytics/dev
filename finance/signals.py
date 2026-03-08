@@ -2,7 +2,7 @@ from django.db.models.signals import post_save, pre_save
 from django.dispatch import receiver
 from django.core.mail import send_mail
 from django.conf import settings
-from .models import Opportunity
+from .models import Opportunity, NewsLetterSubscriber
 
 @receiver(pre_save, sender=Opportunity)
 def store_original_status(sender, instance, **kwargs):
@@ -64,4 +64,15 @@ def notify_user_on_status_change(sender, instance, created, **kwargs):
             settings.DEFAULT_FROM_EMAIL,
             [instance.contact], # Assuming contact field holds the submitter's email
             fail_silently=True,
+        )
+        
+@receiver(post_save, sender=NewsLetterSubscriber)
+def send_welcome_email(sender, instance, created, **kwargs):
+    if created:  # Only send on the FIRST save
+        send_mail(
+            'Welcome to the DC48 Investment Network!',
+            f'Hi {instance.email},\n\nThank you for subscribing to our directory alerts. We will notify you as soon as new vetted opportunities are posted.',
+            'noreply@dc48.com',
+            [instance.email],
+            fail_silently=False,
         )
