@@ -1,0 +1,42 @@
+{% extends "main/base_templates/accounts_base.html" %}
+
+{% block title %}Login History Details{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h4 class="fw-bold">Login History Details</h4>
+        <a href="{% url 'accounts:login_history_list' %}" class="btn btn-outline-secondary btn-sm">
+            ← Back to List
+        </a>
+    </div>
+
+    <!-- Details Card -->
+    <div class="card shadow-sm">
+        <div class="card-body">
+            <table class="table table-borderless mb-0">
+                <tbody>
+                    <tr>
+                        <th class="text-muted" style="width: 200px;">User</th>
+                        <td>{{ login_history.user }}</td>
+                    </tr>
+                    <tr>
+                        <th class="text-muted">IP Address</th>
+                        <td>{{ login_history.ip_address }}</td>
+                    </tr>
+                    <tr>
+                        <th class="text-muted">User Agent</th>
+                        <td class="text-break">
+                            {{ login_history.user_agent|default:"—" }}
+                        </td>
+                    </tr>
+                    <tr>
+                        <th class="text-muted">Login Time</th>
+                        <td>{{ login_history.login_time|date:"Y-m-d H:i:s" }}</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>

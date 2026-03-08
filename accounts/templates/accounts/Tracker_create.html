@@ -1,0 +1,24 @@
+{% extends "main/base_templates/accounts_base.html" %}
+{% block content %}
+<div class="container mt-4">
+    <h3>Create Login History</h3>
+
+    <form method="post">
+        {% csrf_token %}
+        {{ form.as_p }}
+
+        <button type="submit" class="btn btn-primary">
+            Save
+        </button>
+
+        <a href="{% url 'accounts:tracker_list' %}
+" class="btn btn-secondary">
+            Cancel
+        </a>
+    </form>
+</div>
+{% endblock %}
+
+
+               
+

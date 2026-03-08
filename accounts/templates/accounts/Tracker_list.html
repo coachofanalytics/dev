@@ -1,0 +1,58 @@
+{% extends "main/base_templates/accounts_base.html" %}
+
+{% block title %}Trackers{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h4 class="fw-bold">Tracker Records</h4>
+      <a href="{% url 'accounts:tracker_create' %}"
+       class="btn btn-primary btn-sm">
+        + Add Tracker
+    </a>
+</div>
+
+        </a>
+    </div>
+
+    <div class="card shadow-sm">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th>#</th>
+                        <th>Employee</th>
+                        <th>Category</th>
+                        <th>Sub Category</th>
+                        <th>Plan</th>
+                        <th>Login Date</th>
+                        <th>Duration (min)</th>
+                        <th>Time (min)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tbody>
+    {% for t in trackers %}
+    <tr>
+        <td>{{ forloop.counter }}</td>
+        <td>{{ t.employee }}</td>
+        <td>{{ t.category }}</td>
+        <td>{{ t.sub_category }}</td>
+        <td>{{ t.plan }}</td>
+        <td>{{ t.login_date|date:"Y-m-d H:i" }}</td>
+        <td>{{ t.duration }}</td>
+        <td>{{ t.time }}</td>
+        <td class="text-end">
+            <a href="{% url 'accounts:tracker_detail' t.id %}" class="btn btn-sm btn-outline-secondary">View</a>
+            <a href="{% url 'accounts:tracker_update' %}" class="btn btn-sm btn-outline-primary">Edit</a>
+            <a href="{% url 'accounts:tracker_delete' t.id %}" class="btn btn-sm btn-outline-danger">Delete</a>
+        </td>
+    </tr>
+    {% endfor %}
+</tbody>
+  </tbody>
+    </table>
+</div>
+{% endblock %}
+
+                   

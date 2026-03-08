@@ -1,0 +1,40 @@
+{% extends "main/base_templates/accounts_base.html" %}
+
+{% block title %}Tracker Detail{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h4 class="fw-bold">Tracker Details</h4>
+        <a href="{% url 'accounts:tracker_list' %}" class="btn btn-outline-secondary btn-sm">
+            ← Back
+        </a>
+    </div>
+
+    <div class="card shadow-sm">
+        <div class="card-body">
+            <table class="table table-borderless">
+                <tr><th>Employee</th><td>{{ tracker.employee }}</td></tr>
+                <tr><th>Category</th><td>{{ tracker.category }}</td></tr>
+                <tr><th>Sub Category</th><td>{{ tracker.sub_category }}</td></tr>
+                <tr><th>Plan</th><td>{{ tracker.plan }}</td></tr>
+                <tr><th>Login Date</th><td>{{ tracker.login_date }}</td></tr>
+                <tr><th>Start Time</th><td>{{ tracker.start_time }}</td></tr>
+                <tr><th>Duration</th><td>{{ tracker.duration }} min</td></tr>
+                <tr><th>Total Time</th><td>{{ tracker.time }} min</td></tr>
+            </table>
+        </div>
+    </div>
+
+    <div class="mt-3 d-flex gap-2">
+        <a href="{% url 'accounts:tracker_update' tracker.id %}" class="btn btn-primary btn-sm">
+            Edit
+        </a>
+        <a href="{% url 'accounts:tracker_delete' tracker.id %}" class="btn btn-danger btn-sm">
+            Delete
+        </a>
+    </div>
+
+</div>
+{% endblock %}

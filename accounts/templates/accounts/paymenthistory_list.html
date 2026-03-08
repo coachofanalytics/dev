@@ -1,0 +1,69 @@
+{% extends "main/base_templates/new_base.html"%} {%load crispy_forms_tags%}{% block content %}
+ 
+{% block title %}Add New Employee Records{% endblock title %}
+ 
+{% block content %}
+<div class="container mt-4">
+
+    <!-- Page Header -->
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h4 class="fw-bold">Payment History</h4>
+        <span class="text-muted">Finance & Records</span>
+    </div>
+
+    <!-- Table -->
+    <div class="table-responsive">
+        <table class="table table-bordered table-hover align-middle">
+            <thead class="table-dark">
+                <tr>
+                    <th>#</th>
+                    <th>Customer</th>
+                    <th>Total Fees</th>
+                    <th>Down Payment</th>
+                    <th>Bonus</th>
+                    <th>Balance</th>
+                    <th>Plan</th>
+                    <th>Sub Plan</th>
+                    <th>Method</th>
+                    <th>Contract Date</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                {% for p in payments %}
+                <tr>
+                    <td>{{ forloop.counter }}</td>
+                    <td>{{ p.customer }}</td>
+                    <td>{{ p.payment_fees }}</td>
+                    <td>{{ p.down_payment }}</td>
+                    <td>{{ p.student_bonus|default:"0" }}</td>
+
+                    <!-- Balance Highlight -->
+                    <td>
+                        {% if p.fee_balance == 0 %}
+                            <span class="badge bg-success">Cleared</span>
+                        {% else %}
+                            <span class="badge bg-warning text-dark">
+                                {{ p.fee_balance }}
+                            </span>
+                        {% endif %}
+                    </td>
+
+                    <td>{{ p.plan }}</td>
+                    <td>{{ p.subplan|default:"-" }}</td>
+                    <td>{{ p.payment_method }}</td>
+                    <td>{{ p.contract_submitted_date|date:"Y-m-d H:i" }}</td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="10" class="text-center text-muted py-4">
+                        No payment records available.
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+</div>
+{% endblock %}
