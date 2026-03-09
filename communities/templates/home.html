@@ -15,7 +15,7 @@
                     <h2 class="text-xl font-medium text-gray-200 mb-8">
                         Connecting the diaspora through networking, cultural events, and reliable social resources.
                     </h2>
-                 <a id="join-btn" href="{% url 'directory' %}" 
+                 <a id="join-btn" href="{% url 'communities:member_directory' %}" 
    class="inline-block bg-brand-red text-white font-bold py-3 px-6 rounded-lg uppercase text-sm tracking-wider hover:bg-red-700 transition duration-300 shadow-lg">
    JOIN THE COMMUNITY
 </a>
@@ -65,7 +65,7 @@ data-src="{% static 'community/img/img2.png' %}"
                     </ul>
                     <div class="mt-6">
                         <!-- UPDATED: Hover class now uses a custom dark teal hex for consistency with the document services page -->
-                        <a href="{% url 'forum_home' %}" class="inline-block bg-brand-green text-white font-bold py-3 px-6 rounded-md uppercase text-sm tracking-wider hover:bg-[#086a4f] transition duration-300">
+                        <a href="{% url 'communities:forum_home' %}" class="inline-block bg-brand-green text-white font-bold py-3 px-6 rounded-md uppercase text-sm tracking-wider hover:bg-[#086a4f] transition duration-300">
                             Access Digital Forums
                         </a>
                     </div>
@@ -87,7 +87,7 @@ data-src="{% static 'community/img/img2.png' %}"
                         <li>Volunteer and philanthropic opportunities</li>
                     </ul>
                      <div class="mt-6">
-                        <a href="{% url 'event_calendar' %}" class="inline-block bg-brand-red text-white font-bold py-3 px-6 rounded-md uppercase text-sm tracking-wider hover:bg-red-800 transition duration-300">
+                        <a href="{% url 'communities:event_calendar' %}" class="inline-block bg-brand-red text-white font-bold py-3 px-6 rounded-md uppercase text-sm tracking-wider hover:bg-red-800 transition duration-300">
                             View Event Calendar
                         </a>
                     </div>
@@ -107,7 +107,7 @@ data-src="{% static 'community/img/img2.png' %}"
                 <p class="text-xl text-gray-200 mb-6">
                     Connect with your regional coordinator to propose a new meetup, workshop, or event in your area.
                 </p>
-                <a href="{% url 'contact' %}" class="inline-block bg-brand-red text-white font-bold py-3 px-8 rounded-full uppercase tracking-wider text-lg hover:bg-red-800 transition duration-300 shadow-lg">
+                <a href="{% url 'communities:contact' %}" class="inline-block bg-brand-red text-white font-bold py-3 px-8 rounded-full uppercase tracking-wider text-lg hover:bg-red-800 transition duration-300 shadow-lg">
                     Contact Regional Coordinator
                 </a>
             </div>

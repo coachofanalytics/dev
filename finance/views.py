@@ -3,7 +3,9 @@ import logging
 from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
+from django.core.mail import send_mail
 from django.db.models import Sum
+from django.core.cache import cache
 from django.http import QueryDict, Http404, JsonResponse
 from django.shortcuts import redirect
 from django.urls import reverse
@@ -511,21 +513,43 @@ def homepage(request):
     return render(request,"finance/homepage/homepage.html")
 
 def finance_directory(request):
-
+    
     opportunities = Opportunity.approved.all()
     count = opportunities.count()
 
     if request.method == 'POST':
+       
+        user_ip = request.META.get('REMOTE_ADDR')
+        cache_key = f"limit_sub_{user_ip}"
+        
+        if cache.get(cache_key):
+            messages.error(request, "Please wait a minute before submitting another opportunity.")
+            return redirect('finance:directory')
+        
         form = OpportunityForm(request.POST)
-
         if form.is_valid():
             opportunity = form.save(commit=False)
+            
+            # --- AUTOMATION: SPAM LOGIC ---
+            banned_keywords = ['crypto', 'guaranteed', 'whatsapp me', 'bitcoin']
+            content = (opportunity.description + " " + opportunity.title).lower()
+            
+            # Reset flag before check
+            opportunity.is_suspicious = False 
+            
+            if any(word in content for word in banned_keywords) or len(opportunity.description) < 20:
+                opportunity.is_suspicious = True
+            
             opportunity.status = 'PENDING'
             opportunity.save()
 
-            messages.success(request, "Your submission is under review.")
+            
+            cache.set(cache_key, True, 60) 
+
+            messages.success(request, "Thank you! Your submission is under review.")
             return redirect('finance:directory')
     else:
+      
         form = OpportunityForm()
 
     return render(request, "finance/investment/directory.html", {
@@ -536,24 +560,97 @@ def finance_directory(request):
     
 def subscribe_newsletter(request):
     if request.method == 'POST':
-        email=request.POST.get('email')
+        email = request.POST.get('email', '').strip().lower()
+        
         if not email:
-            return JsonResponse({'success':False, 'message':'Email is required'})
+            return JsonResponse({'success': False, 'message': 'Email is required.'}, status=400)
+
         
         subscriber, created = NewsLetterSubscriber.objects.get_or_create(email=email)
-        if created:
-            message = 'Thank you for subscribing'
-        else:
-            message= 'You are already subscribed'
+        
+        if not created and subscriber.is_verified:
+            return JsonResponse({
+                'success': False, 
+                'exists': True, 
+                'message': 'You are already a verified subscriber!'
+            })
+
+       
+        verify_url = request.build_absolute_uri(
+            reverse('finance:verify_email', args=[subscriber.id])
+        )
+        
+       
+        try:
+            send_mail(
+                "Verify your Subscription",
+                f"Welcome! Please click the link below to verify your email and start receiving alerts:\n\n{verify_url}\n\nIf you didn't request this, you can safely ignore this email.",
+                settings.DEFAULT_FROM_EMAIL,
+                [email],
+                fail_silently=False, 
+            )
+            return JsonResponse({
+                'success': True, 
+                'exists': False, 
+                'message': 'Subscription pending. Please check your inbox to verify!'
+            })
+        except Exception as e:
             
-        return JsonResponse({'success':True,'message':message})
+            logger.error(f"SMTP Error: {e}")
+            return JsonResponse({
+                'success': False, 
+                'message': 'System is busy. We saved your email, but verification might be delayed.'
+            })
+
+def verify_email(request, subscriber_id):
+   
+    subscriber = get_object_or_404(NewsLetterSubscriber, id=subscriber_id)
     
+    if not subscriber.is_verified:
+        subscriber.is_verified = True 
+        subscriber.save()
+        
+    
+    return render(request, "finance/investment/verified_success.html", {
+        "email": subscriber.email,
+        "title": "Verified Successfully"
+    })
+    
+@staff_member_required 
+def admin_send_newsletter(request):
+    if request.method == 'POST':
+        subject = request.POST.get('subject')
+        message = request.POST.get('message')
+        
+        
+        subscribers = NewsLetterSubscriber.objects.filter(is_verified=True)
+        recipient_list = [s.email for s in subscribers]
+
+        if recipient_list:
+            try:
+                send_mail(
+                    subject,
+                    message,
+                    settings.DEFAULT_FROM_EMAIL,
+                    recipient_list,
+                    fail_silently=False,
+                )
+                messages.success(request, f"Successfully sent to {len(recipient_list)} subscribers!")
+            except Exception as e:
+                messages.error(request, f"Mail Error: {e}")
+        else:
+            messages.warning(request, "No verified subscribers to send to.")
+            
+    return redirect('finance:moderation_queue')    
     
 @staff_member_required
 def moderation_queue(request):
-    pending_items = Opportunity.objects.filter(status='PENDING')
-    return render(request,'finance/investment/moderation.html',{
-        'pending_items': pending_items
+    all_items = Opportunity.objects.all().order_by('-created_at')
+    subscribers_count = NewsLetterSubscriber.objects.filter(is_verified=True).count()
+    
+    return render(request, 'finance/investment/moderation.html', {
+        'all_items': all_items, 
+        'subscribers_count': subscribers_count
     })
     
 @staff_member_required
@@ -570,3 +667,10 @@ def reject_opportunity(request,pk):
     opportunity.save()
     return redirect('finance:moderation_queue')
 
+@staff_member_required
+def delete_opportunity(request, pk):
+    opportunity = get_object_or_404(Opportunity, pk=pk)
+    if request.method == 'POST':
+        opportunity.delete()
+        messages.success(request, "Opportunity has been permanently deleted.")
+    return redirect('finance:moderation_queue')

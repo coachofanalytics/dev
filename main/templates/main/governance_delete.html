@@ -1,0 +1,55 @@
+{% extends "main/base_templates/base.html" %}
+{% load static %}
+
+{% block content %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Delete Governance</title>
+</head>
+<body>
+    <h1>Delete Governance</h1>
+    <p>Are you sure you want to delete this governance from <strong>{{ object.governance_category }}</strong>?</p>
+    <form method="post" class="form-container">
+        {% csrf_token %}
+        <button type="submit" class="action-btn delete-btn"> Yes, delete </button> 
+        <a href="{% url 'main:governance_list' %}" class="action-btn cancel-btn"> Cancel </a>
+    </form>
+    <style>
+        .form-container {
+            background: #fff;
+            padding: 2rem;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            max-width: 400px;
+            margin: 2rem auto;
+        }
+        .action-btn {
+            display: inline-block;
+            padding: 6px 14px;
+            border-radius: 4px;
+            color: #fff;
+            text-decoration: none;
+            margin-right: 4px;
+            font-size: 0.95em;
+            border: none;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        .delete-btn {
+            background: #dc3545;
+        }
+        .delete-btn:hover {
+            background: #a71d2a;
+        }
+        .cancel-btn {
+            background: #6c757d;
+        }
+        .cancel-btn:hover {
+            background: #343a40;
+        }
+    </style>
+</body>
+</html>
+{% endblock %}

@@ -1,14 +1,10 @@
-from django.shortcuts import render
-
-# Create your views here.
-from sched import Event
-from django.http import JsonResponse, HttpResponse
-from django.shortcuts import render
 from django.shortcuts import render, redirect, get_object_or_404
+from django.http import JsonResponse, HttpResponse
 from django.contrib import messages
 from django.core.paginator import Paginator
 from django.contrib.auth.decorators import login_required
 from django.utils import timezone
+from django.db.models import Q
 
 from main.forms import MessageForm
 from .utils import send_email
@@ -17,7 +13,8 @@ from .models import Post, ForumCategory, CommentP, EventCalendar, CommunityMembe
 from django.db.models import Q
 # Create your views here.
 def home(request):
-    return render(request, 'home.html')
+	return render(request, 'home.html')
+
 
 # community views
 # views.py - Minimal join view with only 2 fields
@@ -66,56 +63,41 @@ def join(request):
     return render(request, 'join.html')
 
 def member_directory(request):
-    """
-    Verified Member Directory with search functionality
-    """
-    # Start with ALL members (remove restrictive filters temporarily)
-    members = CommunityMember.objects.all().order_by('-date_joined')
-
-    # Initialize variables
+    # Filter by public status so only "joined" members appear
+    members = CommunityMember.objects.filter(is_public_directory=True).order_by('-date_joined')
+    
     search_query = request.GET.get('search', '')
     region_filter = request.GET.get('region', '')
     profession_filter = request.GET.get('profession', '')
     
-    # Apply search by name or profession
+    # Apply Search Logic
     if search_query:
         members = members.filter(
-            Q(name__icontains=search_query) |
-            Q(profession__icontains=search_query) |
-            Q(specialization__icontains=search_query) |
+            Q(name__icontains=search_query) | 
+            Q(profession__icontains=search_query) | 
+            Q(specialization__icontains=search_query) | 
             Q(bio__icontains=search_query)
         )
-
-    # Apply region filter
+        
+    # Apply Filters
     if region_filter:
         members = members.filter(region__icontains=region_filter)
-    
-    # Apply profession filter
     if profession_filter:
         members = members.filter(profession__icontains=profession_filter)
+        
+    # Dynamic dropdown data based on existing public members
+    unique_regions = CommunityMember.objects.filter(is_public_directory=True).values_list('region', flat=True).distinct().order_by('region')
+    unique_professions = CommunityMember.objects.filter(is_public_directory=True).values_list('profession', flat=True).distinct().order_by('profession')
     
-    # OPTIONAL: Only show members who want to be in directory
-    # Uncomment this line if you want directory-only members
-    # members = members.filter(is_public_directory=True)
-    
-    # Get unique regions and professions for filter dropdowns
-    unique_regions = CommunityMember.objects.values_list('region', flat=True).distinct().order_by('region')
-    unique_professions = CommunityMember.objects.values_list('profession', flat=True).distinct().order_by('profession')
-
-    # Add is_premium field (temporary)
-    for member in members:
-        member.is_premium = member.id % 3 == 0  # Every 3rd member is premium for demo
-
     context = {
-        'members': members,
-        'search_query': search_query,
-        'region_filter': region_filter,
-        'profession_filter': profession_filter,
-        'unique_regions': unique_regions,
-        'unique_professions': unique_professions,
-        'total_members': members.count(),
+        'members': members, 
+        'search_query': search_query, 
+        'region_filter': region_filter, 
+        'profession_filter': profession_filter, 
+        'unique_regions': unique_regions, 
+        'unique_professions': unique_professions, 
+        'total_members': members.count()
     }
-    
     return render(request, 'member_directory.html', context)
 
 def join_directory(request, member_id):
@@ -133,190 +115,149 @@ def join_directory(request, member_id):
 # REMOVE @login_required OR update to:
 def join_directory_form(request):
     """
-    Form for joining the professional directory
+    Form for joining the professional directory.
+    Always creates a NEW member to prevent overwriting.
     """
-    # Check if user just joined (has member_id in session)
-    member_id = request.session.get('joined_member_id')
-    
-    if member_id:
-        try:
-            member = CommunityMember.objects.get(id=member_id)
-        except CommunityMember.DoesNotExist:
-            member = None
-    else:
-        member = None
-    
     if request.method == 'POST':
-        # Get form data
-        name = request.POST.get('name')
-        profession = request.POST.get('profession')
-        region = request.POST.get('region')
-        category = request.POST.get('category')
-        expertise = request.POST.get('expertise')
+        name = request.POST.get('name', '').strip()
+        profession = request.POST.get('profession', '').strip()
+        region = request.POST.get('region', '').strip()
+        category = request.POST.get('category', '').strip()
+        expertise = request.POST.get('expertise', '').strip()
+
+        # Basic validation
+        errors = []
+        if not name: errors.append('Name is required.')
+        if not profession: errors.append('Profession is required.')
+        if not region: errors.append('Region is required.')
+
+        if errors:
+            for e in errors:
+                messages.error(request, e)
+            return render(request, 'join_directory_form.html', {
+                'name': name, 'profession': profession, 'region': region,
+                'categories': ['Tech & IT', 'Legal', 'Finance', 'Healthcare', 'Education', 'Business', 'Creative & Media', 'Engineering', 'Other'],
+            })
+
+        # ALWAYS create a new member record
+        member = CommunityMember.objects.create(
+            name=name,
+            profession=profession,
+            region=region,
+            is_public_directory=True
+        )
+
+        # ALWAYS create a new associated directory profile
+        DirectoryProfile.objects.create(
+            community_member=member,
+            full_name=name,
+            profession=profession,
+            region_city=region,
+            category=category,
+            expertise_summary=expertise,
+            is_approved=True,
+        )
         
-        # Update the member if exists
-        if member:
-            member.name = name
-            member.profession = profession
-            member.region = region
-            member.save()
+        # Optional: Clear session if you were using it previously to avoid pre-filling
+        if 'joined_member_id' in request.session:
+            del request.session['joined_member_id']
             
-            # Create or update DirectoryProfile
-            DirectoryProfile.objects.update_or_create(
-                community_member=member,
-                defaults={
-                    'full_name': name,
-                    'profession': profession,
-                    'region_city': region,
-                    'category': category,
-                    'expertise_summary': expertise,
-                    'is_approved': True,
-                }
-            )
-            
-            messages.success(request, f'Profile updated for {name}!')
-        else:
-            messages.success(request, 'Profile information saved!')
-        
-        return redirect('member_directory')
-    
-    # Pre-fill with member data if exists
-    initial_data = {}
-    if member:
-        initial_data = {
-            'name': member.name,
-            'profession': member.profession,
-            'region': member.region,
-        }
-    
+        messages.success(request, f'Successfully added {name} to the directory!')
+        return redirect('communities:member_directory')
+
+    # GET request: Show an empty form
     context = {
-        'name': initial_data.get('name', 'Your Name'),
-        'profession': initial_data.get('profession', ''),
-        'region': initial_data.get('region', ''),
-        'categories': ['Tech & IT', 'Legal', 'Finance', 'Healthcare', 'Education', 'Business', 'Creative & Media', 'Engineering', 'Other'],
+        'categories': ['Tech & IT', 'Legal', 'Finance', 'Healthcare', 'Education', 'Business', 'Creative & Media', 'Engineering', 'Other']
     }
-    
     return render(request, 'join_directory_form.html', context)
 
 # Forum Home Page
 def forum_home(request):
-    # Fetch all categories for the homepage
-    forum_categories = ForumCategory.objects.all()
-    return render(request, 'forum_home.html', {'forum_categories': forum_categories})
+	forum_categories = ForumCategory.objects.all()
+	return render(request, 'forum_home.html', {'forum_categories': forum_categories})
 
-#category detail view
+
 def category_detail(request, slug):
-    category = ForumCategory.objects.get(slug=slug)
-    posts = Post.objects.filter(category=category).order_by('-created_at')
+	category = get_object_or_404(ForumCategory, slug=slug)
+	posts = Post.objects.filter(category=category).order_by('-created_at')
+	paginator = Paginator(posts, 5)
+	page_number = request.GET.get('page')
+	page_obj = paginator.get_page(page_number)
+	return render(request, 'category_detail.html', {'category': category, 'posts': page_obj})
 
-    # Pagination
-    paginator = Paginator(posts, 5)  # Show 5 posts per page
-    page_number = request.GET.get('page')
-    page_obj = paginator.get_page(page_number)
 
-    return render(request, 'category_detail.html', {
-        'category': category,
-        'posts': page_obj
-    })
-# View a single post and its comments
 def view_post(request, post_id):
-    # Get the post based on the post ID
-    post = get_object_or_404(Post, id=post_id)
+	post = get_object_or_404(Post, id=post_id)
+	comments = CommentP.objects.filter(post=post).order_by('-created_at')
+	if request.method == 'POST':
+		form = CommentForm(request.POST)
+		if form.is_valid():
+			comment = form.save(commit=False)
+			comment.post = post
+			comment.author = request.user
+			comment.save()
+			return redirect('communities:view_post', post_id=post.id)
+	else:
+		form = CommentForm()
+	return render(request, 'view_post.html', {'post': post, 'comments': comments, 'form': form})
 
-    # Retrieve comments related to the post, ordered by date
-    comments = CommentP.objects.filter(post=post).order_by('-created_at')
 
-    # Handle comment form submission
-    if request.method == 'POST':
-        form = CommentForm(request.POST)
-        if form.is_valid():
-            comment = form.save(commit=False)
-            comment.post = post
-            comment.author = request.user  # Assuming the user is logged in
-            comment.save()
-            # Redirect to the same post page after comment submission
-            return redirect('view_post', post_id=post.id)  # Corrected: 'post_id' instead of 'id'
-    else:
-        form = CommentForm()
-
-    return render(request, 'view_post.html', {
-        'post': post,
-        'comments': comments,
-        'form': form
-    })
-
-# Create a new post in a category
 def create_post(request, slug):
-    # Get the category based on the slug
-    category = get_object_or_404(ForumCategory, slug=slug)
+	category = get_object_or_404(ForumCategory, slug=slug)
+	if request.method == 'POST':
+		form = PostForm(request.POST)
+		if form.is_valid():
+			post = form.save(commit=False)
+			post.category = category
+			post.save()
+			return redirect('communities:category_detail', slug=category.slug)
+	else:
+		form = PostForm()
+	return render(request, 'create_post.html', {'form': form, 'category': category})
 
-    if request.method == 'POST':
-        form = PostForm(request.POST)
-        if form.is_valid():
-            # Save the form data but associate the category with the post
-            post = form.save(commit=False)
-            post.category = category  # Associate the post with the category
-            post.save()  # Save the post to the database
-            return render(request, 'category_detail.html', {'category': category})
-    else:
-        form = PostForm()
-
-    return render(request, 'create_post.html', {'form': form, 'category': category})
 
 @login_required
 def add_comment(request, post_id):
-    # Get the post to which the comment will be added
-    post = get_object_or_404(Post, id=post_id)
+	post = get_object_or_404(Post, id=post_id)
+	if request.method == 'POST':
+		form = CommentForm(request.POST)
+		if form.is_valid():
+			comment = form.save(commit=False)
+			comment.post = post
+			comment.author = request.user
+			comment.save()
+			return redirect('communities:view_post', post_id=post.id)
+	return redirect('communities:view_post', post_id=post.id)
 
-    if request.method == 'POST':
-        form = CommentForm(request.POST)
-        if form.is_valid():
-            # Create a new comment and associate it with the post
-            comment = form.save(commit=False)
-            comment.post = post  # Associate the comment with the post
-            comment.author = request.user  # Associate the comment with the logged-in user
-            comment.save()
 
-            # Redirect to the post detail page
-            return redirect('view_post', post_id=post.id)  # Corrected: 'post_id' instead of 'id'
-    else:
-        form = CommentForm()
-
-    return render(request, 'add_comment.html', {
-        'form': form,
-        'post': post
-    })
-# Event Calendar Views
 def event_calendar(request):
-    # Fetch all events from the EventCalendar model, paginated
-    events = EventCalendar.objects.all().order_by('start_date')
+	events = EventCalendar.objects.all().order_by('start_date')
+	return render(request, 'event_calendar.html', {'events': events})
 
-    # Add pagination
-    from django.core.paginator import Paginator
-    paginator = Paginator(events, 5)  # Show 5 events per page
-    page_number = request.GET.get('page')
-    page_obj = paginator.get_page(page_number)
 
-    return render(request, 'event_calendar.html', {'events': page_obj})
-# Create a new event
 def create_event(request):
-    if request.method == 'POST':
-        form = EventForm(request.POST)
-        if form.is_valid():
-            form.save()  # Save the event to the database
-            messages.success(request, "Event created successfully!")
-            return redirect('event_calendar')  # Redirect to the event calendar page
-        else:
-            messages.error(request, "There was an error with your form. Please try again.")
-    else:
-        form = EventForm()
-    return render(request, 'create_event.html', {'form': form})
-# View event details
+	if request.method == 'POST':
+		form = EventForm(request.POST)
+		if form.is_valid():
+			form.save()
+			messages.success(request, 'Event created successfully')
+			return redirect('communities:event_calendar')
+		else:
+			messages.error(request, 'There was an error in your form.')
+	else:
+		form = EventForm()
+	return render(request, 'create_event.html', {'form': form})
+
+
 def event_detail(request, id):
     # Fetch the event by ID
     event = get_object_or_404(EventCalendar, id=id)
     
     return render(request, 'event_detail.html', {'event': event})
+
+def home(request):
+    return render(request, 'home.html')
+
 
 # Edit event
 def edit_event(request, id):
@@ -328,7 +269,7 @@ def edit_event(request, id):
         if form.is_valid():
             form.save()  # Save the updated event to the database
             messages.success(request, "Event updated successfully!")
-            return redirect('event_detail', id=event.id)  # Redirect to event detail page
+            return redirect('communities:event_detail', id=event.id)  # Redirect to event detail page
         else:
             messages.error(request, "There was an error with your form. Please try again.")
     else:
@@ -338,57 +279,134 @@ def edit_event(request, id):
 
 # Delete event
 def delete_event(request, id):
-    # Fetch the event by ID
-    event = get_object_or_404(EventCalendar, id=id)
-    
+    try:
+        event = EventCalendar.objects.get(id=id)
+    except EventCalendar.DoesNotExist:
+        messages.error(request, "This event has already been deleted or does not exist.")
+        return redirect('communities:event_calendar')
+
     if request.method == 'POST':
-        event.delete()  # Delete the event from the database
+        event.delete()
         messages.success(request, "Event deleted successfully!")
-        return redirect('event_calendar')  # Redirect to the event calendar page
+        return redirect('communities:event_calendar')
     
     return render(request, 'delete_event.html', {'event': event})
 
 # Contact Regional Coordinator
 def contact_view(request):
+	if request.method == 'POST':
+		form = ContactForm(request.POST)
+		if form.is_valid():
+			contact = form.save()
+			context = {'name': contact.name, 'email': contact.email, 'message': contact.message}
+			subject = f'Hello {contact.name}, thank you for contacting us!'
+			recipient_list = [contact.email]
+			send_email(subject=subject, recipient_list=recipient_list, context=context, html_template='contact_response.html', plain_template='contact_response.txt')
+			admin_subject = f'New Contact Message from {contact.name}'
+			admin_recipient = ['info@gcicrwanda.com']
+			send_email(subject=admin_subject, recipient_list=admin_recipient, context=context, html_template='emails/admin_contact_notification.html', plain_template='emails/admin_contact_notification.txt')
+			return redirect('communities:home')
+	else:
+		form = ContactForm()
+	return render(request, 'contact_form.html', {'form': form})
+
+def member_directory(request):
+    # CHANGED: Filter by is_public_directory=True
+    members = CommunityMember.objects.filter(is_public_directory=True).order_by('-date_joined')
+    search_query = request.GET.get('search', '')
+    region_filter = request.GET.get('region', '')
+    profession_filter = request.GET.get('profession', '')
+    
+    if search_query:
+        members = members.filter(
+            Q(name__icontains=search_query) | Q(profession__icontains=search_query) | Q(specialization__icontains=search_query) | Q(bio__icontains=search_query)
+        )
+    if region_filter:
+        members = members.filter(region__icontains=region_filter)
+    if profession_filter:
+        members = members.filter(profession__icontains=profession_filter)
+        
+    # CHANGED: Ensure filter dropdowns only show data from public members
+    unique_regions = CommunityMember.objects.filter(is_public_directory=True).values_list('region', flat=True).distinct().order_by('region')
+    unique_professions = CommunityMember.objects.filter(is_public_directory=True).values_list('profession', flat=True).distinct().order_by('profession')
+    
+    for member in members:
+        member.is_premium = member.id % 3 == 0
+        
+    context = {
+        'members': members, 'search_query': search_query, 'region_filter': region_filter, 
+        'profession_filter': profession_filter, 'unique_regions': unique_regions, 
+        'unique_professions': unique_professions, 'total_members': members.count()
+    }
+    return render(request, 'member_directory.html', context)
+
+
+def join_directory(request, member_id):
     if request.method == 'POST':
-        form = ContactForm(request.POST)
-        if form.is_valid():
-            contact = form.save()  # Save the form data to DB
+        member = get_object_or_404(CommunityMember, id=member_id)
+        member.is_public_directory = True
+        member.save()
+        messages.success(request, 'Your profile is now visible in the directory!')
+        return redirect('communities:member_directory')
+    return redirect('communities:member_directory')
 
-            # Prepare email context
+
+def join_directory_form(request):
+    member_id = request.session.get('joined_member_id')
+    member = None
+    if member_id:
+        try:
+            member = CommunityMember.objects.get(id=member_id)
+        except CommunityMember.DoesNotExist:
+            pass # Removed 'member = None' as it's already None
+
+    if request.method == 'POST':
+        name = request.POST.get('name', '').strip()
+        profession = request.POST.get('profession', '').strip()
+        region = request.POST.get('region', '').strip()
+        category = request.POST.get('category', '').strip()
+        expertise = request.POST.get('expertise', '').strip()
+
+        # Basic validation
+        errors = []
+        if not name: errors.append('Name is required.')
+        if not profession: errors.append('Profession is required.')
+        if not region: errors.append('Region is required.')
+
+        if errors:
+            for e in errors:
+                messages.error(request, e)
             context = {
-                'name': contact.name,
-                'email': contact.email,
-                'message': contact.message,
+                'name': name, 'profession': profession, 'region': region,
+                'categories': ['Tech & IT', 'Legal', 'Finance', 'Healthcare', 'Education', 'Business', 'Creative & Media', 'Engineering', 'Other'],
             }
+            return render(request, 'join_directory_form.html', context)
 
-            # Email details
-            subject = f"Hello {contact.name}, thank you for contacting us!"
-            recipient_list = [contact.email]
-
-            # Send confirmation email
-            send_email(
-                subject=subject,
-                recipient_list=recipient_list,
-                context=context,
-                html_template='contact_response.html',  # HTML version
-                plain_template='contact_response.txt'   # Plain-text version
+        # CHANGED: Create new member if they don't exist in session
+        if not member:
+            member = CommunityMember.objects.create(
+                name=name, profession=profession, region=region, is_public_directory=True
             )
+            request.session['joined_member_id'] = member.id
+        else:
+            member.name = name
+            member.profession = profession
+            member.region = region
+            member.is_public_directory = True
+            member.save()
 
-            # Optionally, send a notification to admin too:
-            admin_subject = f"New Contact Message from {contact.name}"
-            admin_recipient = ['info@gcicrwanda.com']  # or settings.DEFAULT_FROM_EMAIL
-            send_email(
-                subject=admin_subject,
-                recipient_list=admin_recipient,
-                context=context,
-                html_template='emails/admin_contact_notification.html',
-                plain_template='emails/admin_contact_notification.txt'
-            )
+        # Update or create the extended directory profile
+        DirectoryProfile.objects.update_or_create(
+            community_member=member,
+            defaults={'full_name': name, 'profession': profession, 'region_city': region, 'category': category, 'expertise_summary': expertise, 'is_approved': True},
+        )
+        
+        messages.success(request, f'Profile updated for {name}!')
+        return redirect('communities:member_directory')
 
-            return redirect('home')  # Redirect after success
-
-    else:
-        form = ContactForm()
-
-    return render(request, 'contact_form.html', {'form': form})
+    context = {
+        'name': member.name if member else '', 'profession': member.profession if member else '', 
+        'region': member.region if member else '', 
+        'categories': ['Tech & IT', 'Legal', 'Finance', 'Healthcare', 'Education', 'Business', 'Creative & Media', 'Engineering', 'Other']
+    }
+    return render(request, 'join_directory_form.html', context)

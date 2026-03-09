@@ -20,6 +20,7 @@ urlpatterns = [
     path('data/consular/information-updates/', views.consular_information_updates, name='consular_information_updates'),
     # path('gallery/', views.gallery_list, name='gallery_list'),
     path('news/', views.news_list, name='news_list'),
+    path('news/<int:id>/', views.news_detail, name='news_detail'),
     path('contract-us/', views.contact_us_list, name='contact_us_list'),
     path('about/', AboutView.as_view(), name='about'),
 #<<<<<<< 25.10_DC48_UAT_UO
@@ -81,10 +82,8 @@ urlpatterns = [
     path('education/courses/register/', views.course_register, name='course_register'),
     path('education/request-mentorship/', views.request_mentorship, name='request_mentorship'),
 
-
     path('Testimonial/', views.testimonial_list, name = 'testimonial_list'),
-
-     path('governance/', views.governance_list, name='governance_list'),
+    path('governance/', views.governance_list, name='governance_list'),
     path('governance/create/', views.governance_create, name='governance_create'),
     path('governance/<int:pk>/', views.governance_detail, name='governance_detail'),
     path('governance/<int:pk>/update/', views.governance_update, name='governance_update'),

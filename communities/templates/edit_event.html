@@ -15,7 +15,7 @@
 
     <!-- Event Edit Form -->
     <section class="bg-white shadow-lg rounded-lg p-8 mb-16">
-        <form method="POST" action="{% url 'edit_event' event.id %}">
+        <form method="POST" action="{% url 'communities:edit_event' event.id %}">
             {% csrf_token %}
             
             {% if form.non_field_errors %}
@@ -82,7 +82,7 @@
                     </button>
                     
                     <!-- Cancel Button -->
-                    <a href="{% url 'event_detail' event.id %}" class="bg-gray-500 text-white py-3 px-8 rounded-lg hover:bg-gray-600 transition duration-300 font-semibold shadow-md hover:shadow-lg flex items-center gap-2">
+                    <a href="{% url 'communities:event_detail' event.id %}" class="bg-gray-500 text-white py-3 px-8 rounded-lg hover:bg-gray-600 transition duration-300 font-semibold shadow-md hover:shadow-lg flex items-center gap-2">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
                         </svg>

@@ -12,6 +12,7 @@ from django.utils.translation import gettext_lazy as _
 from django.db.models.signals import pre_save, post_save
 from django.conf import settings
 from django.contrib.auth import get_user_model
+import uuid
 
 
 from accounts.models import CustomerUser, Department
@@ -384,6 +385,9 @@ class Opportunity(models.Model):
     title = models.CharField(max_length=255)
     description = models.TextField()
     contact = models.CharField(max_length=255, null=True, blank=True)
+    rejection_reason = models.TextField(null=True, blank=True)
+    last_notified_at = models.DateTimeField(null=True, blank=True)
+    is_suspicious = models.BooleanField(default=False)
     type = models.CharField(max_length=255)
     status = models.CharField(
         max_length=10,
@@ -401,6 +405,7 @@ class NewsLetterSubscriber(models.Model):
     email = models.EmailField(unique=True)
     is_verified = models.BooleanField(default=False)
     subscribed_at = models.DateTimeField(auto_now_add=True)
+    verification_token = models.UUIDField(default=uuid.uuid4, editable=False)
 
     def __str__(self):
         return self.email

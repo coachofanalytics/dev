@@ -353,7 +353,7 @@
         
         <!-- ===== FORM ===== -->
         <div class="form-card">
-            <form method="POST" action="{% url 'join_directory_form' %}">
+            <form method="POST" action="{% url 'communities:join_directory_form' %}">
                 {% csrf_token %}
                 
                 <!-- Basic Information Section -->
@@ -499,7 +499,7 @@
                 
                 <!-- Submit Buttons -->
                 <div class="button-group">
-                    <a href="{% url 'member_directory' %}" class="cancel-btn">
+                    <a href="{% url 'communities:member_directory' %}" class="cancel-btn">
                         <i class="fas fa-times"></i> Cancel
                     </a>
                     <button type="submit" class="submit-btn">

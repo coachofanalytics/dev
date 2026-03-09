@@ -1,5 +1,8 @@
+from django.shortcuts import redirect, render, get_object_or_404
+from datetime import datetime,date,timedelta
+from dateutil.relativedelta import relativedelta
+from django.contrib.auth.decorators import login_required
 from django.conf import settings
-from django.shortcuts import redirect, render
 from django.urls import reverse
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
@@ -16,10 +19,14 @@ from .models import Assets,Description, News, Page, Service, SubService,Team, Sa
 from django.db.models import Q
 #<<<<<<< HEAD
 from .models import Scholarship, Donation_organisation, ContactMessage, Testimonial
-#>>>>>>> 25.10_DC48_UAT_ND
+#>>>>>>> origin/25.11_DC48K_UAT_FN
+from accounts.models import CustomerUser
+##=======
+from .models import Assets,Description, News, Page, Service, SubService,Team, Donation_organization, MedicalResourceInquiry,Governance
+from accounts.models import CustomerUser
+from .utils import image_view,path_values
 from .forms import ContactForm, DonorForm, MessageForm,ScholarshipSearchForm
 ##=======
-from .models import Donation_organization, MedicalResourceInquiry, Governance
 from django.views.decorators.csrf import csrf_exempt
 from main.forms import ContactForm, GovernanceForm
 #>>>>>>> origin/25.10_DC48K_UAT_FN
@@ -411,6 +418,11 @@ def news_list(request):
     return render(request, 'main/snippets_templates/table/news.html', {'news_list': news_list})
 
 
+def news_detail(request, id):
+    news = get_object_or_404(News, id=id)
+    return render(request, 'main/snippets_templates/table/news_detail.html', {'news': news})
+
+
 def contact_us_list(request):
     # Fetch the list of ContactUs objects
     contact_us_list = ContactUs.objects.all()
@@ -672,6 +684,17 @@ class DonationDeleteView(DeleteView):
 def scholarship_search(request):
     scholarships = Scholarship.objects.all()
     form = ScholarshipSearchForm(request.GET or None)
+
+    # Direct GET filters (used by integration tests)
+    level = request.GET.get('level')
+    field = request.GET.get('field')
+
+    if level and level != 'All':
+        scholarships = scholarships.filter(level=level)
+
+    if field and field != 'All':
+        scholarships = scholarships.filter(field=field)
+
     if form.is_valid():
         data = form.cleaned_data
         # apply filter
