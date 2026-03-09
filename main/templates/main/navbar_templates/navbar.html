@@ -92,7 +92,7 @@
     </div>
     <div class="list" id="navList">
         <ul class="navList">
-            <li><a href="https://dc48k.org/" class="navLin">HOME</a></li>
+            <li><a href="{% url 'main:layout' %}" class="navLin">HOME</a></li>
             <li class="dropdown">
                 <a href="#" class="navLin">ABOUT US</a>
                 <div class="dropdown-content">
@@ -187,10 +187,9 @@
                 </li>
                 
             
-            <li><a href="https://dc48k.org/membership/" class="navLin">MEMBERSHIP</a></li>
            
             <li><a href="https://dc48k.org/news/" class="navLin">NEWS</a></li>
-            <li><a href="{% url 'accounts:membership_registration' %}" class="navLin">MEMBERSHIP</a></li>
+            <!-- Membership link shows only for authenticated users (moved to auth block) -->
             <li><a href="https://dc48k.org/contact/" class="navLin">CONTACT US</a></li>
             <li class="dropdown">
                 <a href="https://dc48k.org/support/" class="navLin">SUPPORT</a>
@@ -202,8 +201,9 @@
                 </div>
             </li>
             {% if user.is_authenticated %}
+            <li><a href="{% url 'accounts:membership_registration' %}" class="navLin">MEMBERSHIP</a></li>
             <li><a href="https://dc48k.org/gallery/" class="navLin">GALLERY</a></li>
-            <li><a href="{% url 'accounts:account-login' %}" class="navLin">LOGOUT</a></li>
+            <li><a href="{% url 'account-logout' %}" class="navLin">LOGOUT</a></li>
             {% else %}
             <li><a href="{% url 'accounts:account-login' %}" class="navLin">LOGIN</a></li>
             <li><a href="{% url 'accounts:joins' %}" class="navLin">REGISTER</a></li>

@@ -198,18 +198,30 @@
                         </div>
                     </div>
 
+                    <div class="form-group row">
+                <div class="col-md-12">
+                        {{ form.password1|as_crispy_field }}
+                    </div>
+                </div>
+
+                <div class="form-group row">
+                <div class="col-md-12">
+                        {{ form.password2|as_crispy_field }}
+                    </div>
+                </div>
+
                     <!-- Sign Up Button -->
                     <div class="form-group">
                         <button type="submit" id="signupBtn">Sign Up</button>
                     </div>
 
-                    <!-- Already Have an Account Link -->
+                    <!-- Already Have an Account Link
                     <div class="already-account">
                         <small class="text-muted">
                             Already have an account?
                             <a href="{% url 'accounts:account-login' %}">Sign In</a>
                         </small>
-                    </div>
+                    </div> -->
 
                     <!-- Separator -->
                     <div class="separator">
