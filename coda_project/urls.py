@@ -21,6 +21,7 @@ from django.conf.urls import handler400
 from django.conf.urls.static import static
 from django.views.static import serve
 from django.contrib.auth import views as auth_views
+from django.urls import reverse_lazy
 
 from accounts import views as account_views
 from coda_project import settings
@@ -40,9 +41,7 @@ urlpatterns = [
     re_path(r"^media/(?P<path>.*)$", serve, {"document_root": settings.MEDIA_ROOT}),
     path(
         "logout/",
-        auth_views.LogoutView.as_view(
-            template_name="accounts/registration/DC48K/logins.html"
-        ),
+        account_views.logout_view,
         name="account-logout",
     ),
     path(

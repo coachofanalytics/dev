@@ -144,8 +144,8 @@ form .btn:hover {
                 {% csrf_token %}
                 {{ form|crispy }}
                 <div class="form-check">
-                    <input type="checkbox" id="agree" name="agree" required>
-                    <label for="agree">
+                    {{ form.accepted_terms }}
+                    <label for="id_accepted_terms">
                         I agree to the <a href="#">privacy policy</a>
                     </label>
                 </div>
@@ -153,7 +153,7 @@ form .btn:hover {
             </form>
         </div>
         <div class="form-footer">
-            <p>Already have an account? <a href="#">Login here</a></p>
+            <p>Already have an account? <a href="{% url 'accounts:account-login' %}">Login here</a></p>
         </div>
     </div>
 </div>

@@ -6,33 +6,64 @@ from django.core.validators import validate_email
 class CustomUserCreationForm(UserCreationForm):
     class Meta:
         model = CustomerUser
-        fields = ('username', 'first_name', 'last_name', 'email', 'password1', 'password2')
+        fields = ('username', 'first_name', 'last_name', 'email', 'password1', 'password2', 'accepted_terms')
+
+    accepted_terms = forms.BooleanField(required=True, label="I agree to the terms and conditions")
+
+    def save(self, commit=True):
+        user = super().save(commit=False)
+        user.accepted_terms = self.cleaned_data.get('accepted_terms', False)
+        if commit:
+            user.save()
+        return user
 
 class CustomAuthenticationForm(AuthenticationForm):
-    username = forms.CharField(label="Username or E-mail")
+    username = forms.CharField(
+        label="Username or E-mail",
+        widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Enter username or email'})
+    )
+    password = forms.CharField(
+        label="Password",
+        widget=forms.PasswordInput(attrs={'class': 'form-control', 'placeholder': 'Enter password'})
+    )
     remember_me = forms.BooleanField(required=False, label="Keep me signed in")
+
+    class Meta:
+        fields = ['username', 'password', 'remember_me']
+
 class UserForm(forms.ModelForm):
+    # Add password fields
+    password1 = forms.CharField(
+        label="Password",
+        widget=forms.PasswordInput(attrs={'class': 'form-control', 'autocomplete': 'new-password'}),
+        help_text="Your password must be at least 8 characters long and contain letters and numbers."
+    )
+    password2 = forms.CharField(
+        label="Confirm Password",
+        widget=forms.PasswordInput(attrs={'class': 'form-control', 'autocomplete': 'new-password'}),
+        help_text="Enter the same password as above, for verification."
+    )
+
     class Meta:
         model = CustomerUser
         fields = [
             "category",
-           
             "first_name",
             "last_name",
             "email",
             "is_staff",
         ]
         labels = {
-            
             "first_name": "",
             "last_name": "",
             "email": "",
         }
     
-   
     def clean(self):
         cleaned_data = super().clean()
         email = cleaned_data.get("email")
+        password1 = cleaned_data.get("password1")
+        password2 = cleaned_data.get("password2")
 
         # Validate email format
         if email:
@@ -41,15 +72,30 @@ class UserForm(forms.ModelForm):
             except forms.ValidationError:
                 self.add_error("email", "Invalid email address.")
 
+        # Validate passwords match
+        if password1 and password2 and password1 != password2:
+            self.add_error("password2", "Passwords do not match.")
+
+        # Password length validation
+        if password1 and len(password1) < 8:
+            self.add_error("password1", "Password must be at least 8 characters long.")
+
         # Check for disallowed names
         disallowed_names = ["test", "testing"]
         for field in ["first_name", "last_name"]:
             value = cleaned_data.get(field, "").lower()
             if value in disallowed_names:
                 self.add_error(field, f"This {field.replace('_', ' ')} is not allowed.")
+        
+        return cleaned_data
     
     def save(self, commit=True):
         user = super().save(commit=False)
+        
+        # Set the password from form data
+        password = self.cleaned_data.get("password1")
+        if password:
+            user.set_password(password)
         
         # Automatically generate a username if it's not provided
         if not user.username:
@@ -74,52 +120,29 @@ class UserForm(forms.ModelForm):
             counter += 1
         return username
 
-
-
 class LoginForms(forms.Form):
-    # username = forms.CharField(widget=forms.TextInput(attrs={"class": "form-control"}))
     email = forms.EmailField(widget=forms.EmailInput(attrs={"class": "form-control"}))
     password = forms.CharField(
         widget=forms.PasswordInput(attrs={"class": "form-control"})
     )
+
 class LoginForm(forms.Form):
     enter_your_username_or_email = forms.CharField(widget=forms.TextInput(attrs={"class": "form-control","autocomplete": "username email"}))
     enter_your_password = forms.CharField(
         widget=forms.PasswordInput(attrs={"class": "form-control"})
     )
-    # def clean_enter_your_username_or_email(self):
-    #     username_or_email = self.cleaned_data.get('enter_your_username_or_email')
-    #     # Add your validation logic for email format here
-    #     # For example:
-    #     if '@' not in username_or_email:
-    #         raise forms.ValidationError("Please enter a valid email address.")
-    #     return username_or_email
 
     def clean(self):
         cleaned_data = super().clean()
         username_or_email = cleaned_data.get('enter_your_username_or_email')
         password = cleaned_data.get('enter_your_password')
-        # Add validation for required fields here
-        # For example:
         if not username_or_email:
             self.add_error('enter_your_username_or_email', "This field is required.")
         if not password:
-            self.add_error('password', "This field is required.") ,
+            # FIX THIS LINE - change 'password' to 'enter_your_password'
+            self.add_error('enter_your_password', "This field is required.")
+        return cleaned_data
 
-# class MemberRegistrationForm(forms.ModelForm):
-#     class Meta:
-#         model = MemberRegistration
-#         fields = ['email', 'first_name', 'last_name', 'gender', 'phone_number', 'country', 'city', 'agree']
-#         widgets = {
-#             'gender': forms.RadioSelect(choices=MemberRegistration.GENDER_CHOICES),
-#             'agree': forms.CheckboxInput()
-#         }
-#         labels = {
-#             'agree': 'I agree to the terms and conditions'
-#         }
-
-
-# form for account model
 class AccountForm(forms.ModelForm):
     class Meta:
         model = Account
