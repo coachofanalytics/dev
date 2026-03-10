@@ -46,4 +46,15 @@ urlpatterns = [
     
     # Contributions
     path('contributions/new/', views.contribution_log, name='contribution_log'),
+    
+    # Direct Deposit Flow (Phase 6: Full deposit → contribution pipeline)
+    path('deposit/', views.shareholder_deposit, name='shareholder_deposit'),
+    path('deposit/process/<str:method>/', views.shareholder_deposit_process, name='shareholder_deposit_process'),
+    path('deposit/success/', views.shareholder_deposit_success, name='shareholder_deposit_success'),
+
+    # Real Payment Gateway AJAX Endpoints
+    path('deposit/paypal/capture/', views.shareholder_paypal_capture, name='shareholder_paypal_capture'),
+    path('deposit/cashapp/capture/', views.shareholder_cashapp_capture, name='shareholder_cashapp_capture'),
+    path('deposit/mpesa/stk-push/', views.shareholder_mpesa_stk_push, name='shareholder_mpesa_stk_push'),
+    path('deposit/mpesa/check-status/', views.shareholder_mpesa_check_status, name='shareholder_mpesa_check_status'),
 ]

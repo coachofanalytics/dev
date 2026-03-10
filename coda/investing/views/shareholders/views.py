@@ -1354,7 +1354,69 @@ def snapshot_create(request):
             },
             ip_address=get_client_ip(request)
         )
-        
+
+        # ── Phase: Monthly snapshot email notifications ──────────────────────
+        # Send each member a personal copy of their equity snapshot using the
+        # email address registered to their member profile.
+        try:
+            from mail.custom_email import send_email
+            from django.urls import reverse
+
+            snapshot_url = request.build_absolute_uri(
+                reverse('shareholders:snapshot_detail', args=[snapshot.id])
+            )
+
+            email_errors = []
+            email_sent = 0
+
+            lines = snapshot.lines.select_related('member')
+            for line in lines:
+                member = line.member
+                if not member.email:
+                    logger.warning(
+                        f"Snapshot email skipped for member '{member.legal_name}': no email on record."
+                    )
+                    continue
+
+                email_context = {
+                    'member': member,
+                    'snapshot': snapshot,
+                    'line': line,
+                    'dashboard_url': snapshot_url,
+                    # category 2 → EMAIL_INFO route (non-payment, non-HR)
+                    'purpose': 'info',
+                }
+
+                success = send_email(
+                    category=2,  # routes to EMAIL_INFO (non-zero avoids falsy check)
+                    to_email=[member.email],
+                    subject=f"Your Equity Snapshot \u2013 {snapshot.version_id}",
+                    html_template='investing/shareholders/emails/snapshot_email.html',
+                    context=email_context,
+                )
+
+                if success:
+                    email_sent += 1
+                else:
+                    email_errors.append(member.email)
+                    logger.error(
+                        f"Failed to send snapshot email to {member.email} for snapshot {snapshot.version_id}"
+                    )
+
+            if email_sent:
+                logger.info(
+                    f"Snapshot {snapshot.version_id}: emailed {email_sent}/{lines.count()} members."
+                )
+            if email_errors:
+                logger.warning(
+                    f"Snapshot {snapshot.version_id}: failed to email: {', '.join(email_errors)}"
+                )
+
+        except Exception as email_exc:
+            # Email failures must never block snapshot creation
+            logger.error(f"Snapshot email dispatch error for {version_id}: {str(email_exc)}")
+        # ────────────────────────────────────────────────────────────────────
+
         messages.success(
             request,
             f"Snapshot {version_id} created successfully with {snapshot.members_count} members."
@@ -1715,3 +1777,670 @@ def audit_log_view(request):
         logger.error(f"Error in audit log view: {str(e)}")
         messages.error(request, f"Error loading audit log: {str(e)}")
         return redirect('shareholders:shareholders_dashboard')
+
+
+# =============================================================================
+# SHAREHOLDER DIRECT DEPOSIT FLOW
+# =============================================================================
+
+# Payment method configuration for shareholder deposits
+SHAREHOLDER_PAYMENT_METHODS = {
+    'stripe': {
+        'name': 'Card (Stripe)',
+        'icon_bg': '#f0f0fe',
+        'icon_color': '#6366f1',
+        'desc': 'Secure card payment',
+        'time': 'Instant',
+        'fee': '2.9% + 30¢',
+        'has_api': True,
+    },
+    'paypal': {
+        'name': 'PayPal',
+        'icon_bg': '#dbeafe',
+        'icon_color': '#1d4ed8',
+        'desc': 'Pay with PayPal',
+        'time': 'Instant',
+        'fee': '3.5%',
+        'has_api': True,
+    },
+    'mpesa': {
+        'name': 'M-Pesa',
+        'icon_bg': '#f0fdf4',
+        'icon_color': '#16a34a',
+        'desc': 'Mobile money (Kenya)',
+        'time': 'Instant',
+        'fee': '2.5%',
+        'has_api': True,
+    },
+    'cashapp': {
+        'name': 'Cash App',
+        'icon_bg': '#dcfce7',
+        'icon_color': '#16a34a',
+        'desc': 'Pay with Cash App',
+        'time': 'Instant',
+        'fee': '1.5%',
+        'has_api': True,
+    },
+}
+
+
+@login_required
+@require_admin
+def shareholder_deposit(request):
+    """
+    Shareholder Direct Deposit - Method Selection Page
+    
+    Flow: contribution_log → THIS PAGE → gateway page → success → contribution_log (pre-filled)
+    
+    Accepts query params:
+        ?amount=<USD amount>
+        ?member_id=<member ID>
+        ?contributor=<member ID>
+    """
+    try:
+        deal = get_active_deal()
+        if not deal:
+            messages.warning(request, "No active deal found.")
+            return redirect('shareholders:contribution_log')
+
+        amount = request.GET.get('amount', '')
+        member_id = request.GET.get('member_id', '') or request.GET.get('contributor', '')
+
+        # Validate amount
+        try:
+            amount_float = float(amount) if amount else 0.0
+        except (ValueError, TypeError):
+            amount_float = 0.0
+
+        # Get member name for display
+        member_name = ''
+        if member_id:
+            try:
+                member = Member.objects.get(id=int(member_id), deal=deal, is_archived=False)
+                member_name = member.legal_name
+            except (ValueError, TypeError, Member.DoesNotExist):
+                pass
+
+        context = {
+            'title': 'Direct Deposit',
+            'page_title': 'Direct Deposit - Shareholder Contribution',
+            'user': request.user,
+            'deal': deal,
+            'amount': amount_float,
+            'amount_str': f'{amount_float:.2f}' if amount_float > 0 else '',
+            'member_id': member_id,
+            'member_name': member_name,
+            'payment_methods': SHAREHOLDER_PAYMENT_METHODS,
+        }
+
+        return render(request, 'investing/shareholders/shareholders_deposit.html', context)
+
+    except Exception as e:
+        logger.error(f"Error in shareholder_deposit: {str(e)}")
+        messages.error(request, f"Error loading deposit page: {str(e)}")
+        return redirect('shareholders:contribution_log')
+
+
+@login_required
+@require_admin
+def shareholder_deposit_process(request, method):
+    """
+    Process shareholder deposit for a specific payment gateway.
+    
+    For Stripe: Creates Stripe Checkout Session and redirects to Stripe hosted page.
+    For manual methods: Shows payment instructions with reference + "I've Deposited" button.
+    
+    Accepts GET params: ?amount=<USD>
+    Accepts POST: amount field
+    """
+    import os
+
+    if method not in SHAREHOLDER_PAYMENT_METHODS:
+        messages.error(request, 'Invalid payment method.')
+        return redirect('shareholders:shareholder_deposit')
+
+    try:
+        deal = get_active_deal()
+        if not deal:
+            messages.warning(request, "No active deal found.")
+            return redirect('shareholders:shareholder_deposit')
+
+        # Get amount from POST or GET
+        amount = 0.0
+        member_id = ''
+        if request.method == 'POST':
+            try:
+                amount = float(request.POST.get('amount', 0))
+            except (ValueError, TypeError):
+                amount = 0.0
+            member_id = request.POST.get('member_id', '')
+        else:
+            try:
+                amount = float(request.GET.get('amount', 0))
+            except (ValueError, TypeError):
+                amount = 0.0
+            member_id = request.GET.get('member_id', '')
+
+        if amount <= 0:
+            messages.error(request, 'Please enter a valid deposit amount.')
+            return redirect('shareholders:shareholder_deposit')
+
+        # Store deposit info in session for success redirect
+        request.session['sh_deposit_amount'] = amount
+        request.session['sh_deposit_method'] = method
+        request.session['sh_deposit_member_id'] = member_id
+
+        method_info = SHAREHOLDER_PAYMENT_METHODS[method]
+
+        # ── STRIPE: Redirect to Stripe Checkout ─────────────────────────
+        if method == 'stripe':
+            try:
+                import stripe
+                from django.conf import settings
+                from django.urls import reverse
+
+                stripe_key = getattr(settings, 'STRIPE_SECRET_KEY', None)
+                if not stripe_key:
+                    # Fallback to manual payment details
+                    messages.info(request, 'Stripe is not configured. Showing manual payment details.')
+                    # Fall through to manual flow below
+                else:
+                    stripe.api_key = stripe_key
+
+                    success_url = request.build_absolute_uri(
+                        reverse('shareholders:shareholder_deposit_success')
+                    ) + '?session_id={CHECKOUT_SESSION_ID}&method=stripe'
+                    cancel_url = request.build_absolute_uri(
+                        reverse('shareholders:shareholder_deposit')
+                    ) + f'?amount={amount}&member_id={member_id}'
+
+                    checkout_session = stripe.checkout.Session.create(
+                        payment_method_types=['card'],
+                        line_items=[{
+                            'price_data': {
+                                'currency': 'usd',
+                                'product_data': {
+                                    'name': 'Shareholder Cash Contribution',
+                                    'description': f'Direct deposit of ${amount:.2f} USD',
+                                },
+                                'unit_amount': int(amount * 100),
+                            },
+                            'quantity': 1,
+                        }],
+                        mode='payment',
+                        success_url=success_url,
+                        cancel_url=cancel_url,
+                        customer_email=request.user.email if request.user.email else None,
+                        metadata={
+                            'source': 'shareholder_contribution',
+                            'user_id': str(request.user.id),
+                            'member_id': str(member_id),
+                            'amount': str(amount),
+                        },
+                    )
+
+                    return redirect(checkout_session.url)
+
+            except ImportError:
+                messages.info(request, 'Stripe library not installed. Showing manual payment details.')
+            except Exception as stripe_err:
+                logger.error(f"Stripe checkout error: {str(stripe_err)}")
+                messages.warning(request, 'Card payment temporarily unavailable. Use manual payment details below.')
+
+        # ── ROUTE TO METHOD-SPECIFIC REAL GATEWAY PAGES ────────────────
+        from finance.views.payment.payment_details import (
+            generate_payment_reference,
+        )
+
+        payment_reference = generate_payment_reference(request.user.id, method)
+        request.session['sh_deposit_reference'] = payment_reference
+
+        base_context = {
+            'title': f'Deposit via {method_info["name"]}',
+            'page_title': f'Direct Deposit - {method_info["name"]}',
+            'user': request.user,
+            'deal': deal,
+            'method': method,
+            'method_info': method_info,
+            'amount': amount,
+            'member_id': member_id,
+            'payment_reference': payment_reference,
+        }
+
+        # ── PayPal: Real PayPal JS SDK Smart Payment Buttons ──────────
+        if method == 'paypal':
+            from django.conf import settings as django_settings
+            paypal_client_id = getattr(django_settings, 'PAYPAL_CLIENT_ID', '') or 'AYsNJlHsAzemW-IvLkkf42iMHGdTMxFfupX6CTI2-rhDDfU67zTQ2n_lszMkxcrrYq_5Qltrw99Lep4D'
+            base_context['paypal_client_id'] = paypal_client_id
+            return render(request, 'investing/shareholders/shareholders_deposit_paypal.html', base_context)
+
+        # ── M-Pesa: Real STK Push (Daraja API) ───────────────────────
+        if method == 'mpesa':
+            base_context['mpesa_phone'] = os.environ.get('MPESA_PHONE_NUMBER', '+254 728905233')
+            base_context['mpesa_paybill'] = os.environ.get('MPESA_PAYBILL', '600100')
+            return render(request, 'investing/shareholders/shareholders_deposit_mpesa.html', base_context)
+
+        # ── CashApp: Square Web Payments SDK + Cash App direct payment ──
+        if method == 'cashapp':
+            from django.conf import settings as django_settings
+
+            # Square SDK credentials (for full Cash App Pay integration)
+            square_app_id = getattr(django_settings, 'SQUARE_APPLICATION_ID', '') or os.environ.get('SQUARE_APPLICATION_ID', '')
+            square_location_id = getattr(django_settings, 'SQUARE_LOCATION_ID', '') or os.environ.get('SQUARE_LOCATION_ID', '')
+            square_env = getattr(django_settings, 'SQUARE_ENVIRONMENT', 'sandbox')
+            # Check if Square is actually configured (not placeholder)
+            square_configured = bool(
+                square_app_id and square_location_id
+                and 'PLACEHOLDER' not in square_app_id.upper()
+            )
+            base_context['square_application_id'] = square_app_id
+            base_context['square_location_id'] = square_location_id
+            base_context['square_environment'] = square_env
+            base_context['square_configured'] = square_configured
+
+            # Cash App direct payment info (always available)
+            cashapp_tag = os.environ.get('CASHAPP', '$codainfo')
+            cashapp_id = cashapp_tag.lstrip('$')
+            base_context['cashapp_tag'] = cashapp_tag
+            base_context['cashapp_url'] = f'https://cash.app/${cashapp_id}/{amount:.2f}'
+
+            return render(request, 'investing/shareholders/shareholders_deposit_cashapp.html', base_context)
+
+    except Exception as e:
+        logger.error(f"Error in shareholder_deposit_process: {str(e)}")
+        messages.error(request, f"Error processing deposit: {str(e)}")
+        return redirect('shareholders:shareholder_deposit')
+
+
+@login_required
+@require_admin
+def shareholder_deposit_success(request):
+    """
+    Shareholder Deposit Success - redirects back to contribution_log with amount pre-filled.
+    
+    Handles:
+    - Stripe success callback (with ?session_id=...)
+    - Manual "I've deposited" confirmation (POST)
+    """
+    method = request.GET.get('method', '') or request.POST.get('method', '')
+    
+    # Retrieve deposit data from session
+    amount = request.session.get('sh_deposit_amount', 0)
+    deposit_method = request.session.get('sh_deposit_method', method or 'unknown')
+    member_id = request.session.get('sh_deposit_member_id', '')
+    reference = request.session.get('sh_deposit_reference', '')
+
+    # For Stripe: verify the checkout session
+    if method == 'stripe':
+        session_id = request.GET.get('session_id', '')
+        if session_id:
+            try:
+                import stripe
+                from django.conf import settings
+                stripe.api_key = getattr(settings, 'STRIPE_SECRET_KEY', '')
+                checkout_session = stripe.checkout.Session.retrieve(session_id)
+                if checkout_session.payment_status == 'paid':
+                    metadata = checkout_session.metadata or {}
+                    amount = float(metadata.get('amount', amount))
+                    member_id = metadata.get('member_id', member_id)
+                    reference = f"STRIPE-SH-{session_id[:12]}"
+                    logger.info(f"Stripe shareholder deposit verified: ${amount} session={session_id}")
+                else:
+                    messages.warning(request, 'Payment session found but not yet confirmed. Please check back later.')
+            except Exception as e:
+                logger.error(f"Error verifying Stripe session for shareholder deposit: {str(e)}")
+                # Still proceed - amount is in session
+
+    # Clear session deposit data
+    for key in ['sh_deposit_amount', 'sh_deposit_method', 'sh_deposit_member_id', 'sh_deposit_reference', 'sh_mpesa_checkout_id']:
+        request.session.pop(key, None)
+
+    if not amount or float(amount) <= 0:
+        messages.warning(request, 'No deposit amount recorded. Please try again.')
+        return redirect('shareholders:shareholder_deposit')
+
+    # Build redirect URL back to contribution_log with pre-filled data
+    from django.urls import reverse
+    import urllib.parse
+
+    params = {
+        'deposit_amount': f'{float(amount):.2f}',
+        'deposit_method': deposit_method,
+        'deposit_ref': reference,
+    }
+    if member_id:
+        params['member_id'] = member_id
+
+    contribution_url = reverse('shareholders:contribution_log') + '?' + urllib.parse.urlencode(params)
+
+    messages.success(
+        request,
+        f'Deposit of ${float(amount):,.2f} via {deposit_method.title()} recorded successfully! '
+        f'Reference: {reference}. Now submit your contribution below.'
+    )
+
+    return redirect(contribution_url)
+
+
+# =============================================================================
+# SHAREHOLDER DEPOSIT: REAL PAYMENT GATEWAY AJAX ENDPOINTS
+# =============================================================================
+
+@login_required
+@require_admin
+def shareholder_paypal_capture(request):
+    """
+    AJAX endpoint: Record PayPal payment captured via PayPal JS SDK.
+    Called from shareholders_deposit_paypal.html after PayPal onApprove callback.
+    """
+    import json
+
+    if request.method != 'POST':
+        return JsonResponse({'error': 'POST required'}, status=405)
+
+    try:
+        data = json.loads(request.body)
+        order_id = data.get('orderID', '')
+        transaction_id = data.get('transactionID', '')
+        amount = float(data.get('amount', 0))
+        payer_email = data.get('payerEmail', '')
+        payment_method = data.get('method', 'paypal')  # 'paypal' or 'venmo'
+
+        if amount <= 0:
+            return JsonResponse({'error': 'Invalid amount'}, status=400)
+
+        # Update session deposit data
+        member_id = request.session.get('sh_deposit_member_id', '')
+        request.session['sh_deposit_amount'] = amount
+        request.session['sh_deposit_method'] = payment_method
+        request.session['sh_deposit_reference'] = f"{payment_method.upper()}-SH-{transaction_id or order_id}"
+
+        logger.info(
+            f"PayPal shareholder deposit captured: ${amount:.2f}, "
+            f"order={order_id}, tx={transaction_id}, payer={payer_email}"
+        )
+
+        from django.urls import reverse
+        success_url = reverse('shareholders:shareholder_deposit_success') + '?method=paypal'
+
+        return JsonResponse({
+            'success': True,
+            'redirect_url': success_url,
+        })
+
+    except Exception as e:
+        logger.error(f"Error capturing PayPal shareholder payment: {str(e)}")
+        return JsonResponse({'error': str(e)}, status=500)
+
+
+@login_required
+@require_admin
+def shareholder_cashapp_capture(request):
+    """
+    AJAX endpoint: Process Cash App Pay payment via Square Payments API.
+    Called from shareholders_deposit_cashapp.html after Square SDK tokenization.
+    """
+    import json
+
+    if request.method != 'POST':
+        return JsonResponse({'error': 'POST required'}, status=405)
+
+    try:
+        data = json.loads(request.body)
+        source_id = data.get('sourceId', '')  # Token from Square SDK
+        amount = float(data.get('amount', 0))
+
+        if not source_id:
+            return JsonResponse({'error': 'Payment token required'}, status=400)
+        if amount <= 0:
+            return JsonResponse({'error': 'Invalid amount'}, status=400)
+
+        import os
+        access_token = os.environ.get('SQUARE_ACCESS_TOKEN', '')
+        location_id = os.environ.get('SQUARE_LOCATION_ID', '')
+
+        if not access_token or not location_id:
+            return JsonResponse({'error': 'Cash App Pay not configured. Contact support.'}, status=503)
+
+        # Create payment via Square Payments API
+        import requests as http_requests
+        import uuid
+
+        square_env = os.environ.get('SQUARE_ENVIRONMENT', 'sandbox')
+        if square_env == 'production':
+            square_api_url = 'https://connect.squareup.com/v2/payments'
+        else:
+            square_api_url = 'https://connect.squareupsandbox.com/v2/payments'
+
+        idempotency_key = str(uuid.uuid4())
+        member_id = request.session.get('sh_deposit_member_id', '')
+
+        payment_body = {
+            'source_id': source_id,
+            'idempotency_key': idempotency_key,
+            'amount_money': {
+                'amount': int(amount * 100),  # Square uses cents
+                'currency': 'USD'
+            },
+            'location_id': location_id,
+            'note': f'Shareholder Cash Contribution ${amount:.2f}',
+            'reference_id': f'SH-CASHAPP-{request.user.id}-{idempotency_key[:8]}',
+        }
+
+        headers = {
+            'Square-Version': '2024-01-18',
+            'Authorization': f'Bearer {access_token}',
+            'Content-Type': 'application/json',
+        }
+
+        response = http_requests.post(square_api_url, headers=headers, json=payment_body, timeout=30)
+        result = response.json()
+
+        if response.status_code == 200 and 'payment' in result:
+            payment = result['payment']
+            payment_id = payment.get('id', '')
+            status = payment.get('status', '')
+
+            request.session['sh_deposit_amount'] = amount
+            request.session['sh_deposit_method'] = 'cashapp'
+            request.session['sh_deposit_reference'] = f'CASHAPP-SH-{payment_id[:16]}'
+
+            logger.info(
+                f"Cash App Pay shareholder deposit captured: ${amount:.2f}, "
+                f"payment_id={payment_id}, status={status}"
+            )
+
+            from django.urls import reverse
+            success_url = reverse('shareholders:shareholder_deposit_success') + '?method=cashapp'
+
+            return JsonResponse({
+                'success': True,
+                'redirect_url': success_url,
+                'payment_id': payment_id,
+            })
+        else:
+            errors = result.get('errors', [{}])
+            error_detail = errors[0].get('detail', 'Payment failed') if errors else 'Payment failed'
+            logger.error(f"Square Cash App Pay error: {result}")
+            return JsonResponse({'error': error_detail}, status=400)
+
+    except Exception as e:
+        logger.error(f"Error capturing Cash App Pay shareholder payment: {str(e)}")
+        return JsonResponse({'error': str(e)}, status=500)
+
+
+@login_required
+@require_admin
+def shareholder_mpesa_stk_push(request):
+    """
+    AJAX endpoint: Initiate M-Pesa STK Push via Safaricom Daraja API.
+    Sends a payment prompt directly to the user's phone.
+    """
+    import json
+    import os
+
+    if request.method != 'POST':
+        return JsonResponse({'error': 'POST required'}, status=405)
+
+    try:
+        data = json.loads(request.body)
+        phone_number = data.get('phone_number', '')
+        amount = float(data.get('amount', 0))
+
+        if not phone_number or amount <= 0:
+            return JsonResponse({'error': 'Phone number and valid amount required'}, status=400)
+
+        # Check if M-Pesa credentials are available
+        consumer_key = os.environ.get('MPESA_CONSUMER_KEY', '')
+        consumer_secret = os.environ.get('MPESA_CONSUMER_SECRET', '')
+        shortcode = os.environ.get('MPESA_SHORTCODE', '')
+
+        if not all([consumer_key, consumer_secret, shortcode]):
+            return JsonResponse({
+                'error': 'M-Pesa API credentials not configured. Please contact support.'
+            }, status=503)
+
+        from finance.services.mpesa_service import MPESAService
+        mpesa = MPESAService()
+
+        # Validate and format phone number
+        is_valid, formatted_phone = mpesa.validate_phone_number(phone_number)
+        if not is_valid:
+            return JsonResponse({
+                'error': 'Invalid phone number. Please use format 254XXXXXXXXX or 07XXXXXXXX'
+            }, status=400)
+
+        # Get access token
+        access_token = mpesa.get_access_token()
+
+        # Prepare STK Push request
+        import requests as http_requests
+
+        timestamp = timezone.now().strftime('%Y%m%d%H%M%S')
+        password = mpesa._generate_password(timestamp)
+        member_id = request.session.get('sh_deposit_member_id', '')
+        reference = f"SH-MPESA-{request.user.id}-{timestamp}"
+
+        stk_data = {
+            "BusinessShortCode": mpesa.shortcode,
+            "Password": password,
+            "Timestamp": timestamp,
+            "TransactionType": "CustomerPayBillOnline",
+            "Amount": int(amount),
+            "PartyA": formatted_phone,
+            "PartyB": mpesa.shortcode,
+            "PhoneNumber": formatted_phone,
+            "CallBackURL": f"{mpesa.callback_url}/mpesa/stk-callback",
+            "AccountReference": reference,
+            "TransactionDesc": f"Shareholder Contribution ${amount:.2f}"
+        }
+
+        stk_url = f"{mpesa.base_url}/mpesa/stkpush/v1/processrequest"
+        headers = {
+            'Authorization': f'Bearer {access_token}',
+            'Content-Type': 'application/json'
+        }
+
+        response = http_requests.post(stk_url, headers=headers, json=stk_data, timeout=30)
+        result = response.json()
+
+        if result.get('ResponseCode') == '0':
+            checkout_request_id = result.get('CheckoutRequestID', '')
+            request.session['sh_mpesa_checkout_id'] = checkout_request_id
+            request.session['sh_deposit_reference'] = reference
+            request.session['sh_deposit_amount'] = amount
+            request.session['sh_deposit_method'] = 'mpesa'
+
+            logger.info(f"M-Pesa STK Push initiated: checkout={checkout_request_id}, phone={formatted_phone}")
+
+            return JsonResponse({
+                'success': True,
+                'checkout_request_id': checkout_request_id,
+                'message': 'Payment prompt sent to your phone. Please enter your M-Pesa PIN.'
+            })
+        else:
+            error_msg = result.get('ResponseDescription', '') or result.get('errorMessage', 'Failed to initiate STK Push')
+            logger.error(f"M-Pesa STK Push failed: {result}")
+            return JsonResponse({'success': False, 'error': error_msg})
+
+    except Exception as e:
+        logger.error(f"M-Pesa STK Push error: {str(e)}")
+        return JsonResponse({'error': str(e)}, status=500)
+
+
+@login_required
+@require_admin
+def shareholder_mpesa_check_status(request):
+    """
+    AJAX endpoint: Check M-Pesa STK Push payment status.
+    Called by polling from the M-Pesa deposit page.
+    """
+    import os
+
+    checkout_id = request.GET.get('checkout_request_id', '') or request.session.get('sh_mpesa_checkout_id', '')
+
+    if not checkout_id:
+        return JsonResponse({'error': 'No checkout request ID'}, status=400)
+
+    try:
+        consumer_key = os.environ.get('MPESA_CONSUMER_KEY', '')
+        consumer_secret = os.environ.get('MPESA_CONSUMER_SECRET', '')
+
+        if not all([consumer_key, consumer_secret]):
+            return JsonResponse({'status': 'pending', 'message': 'Checking payment status...'})
+
+        from finance.services.mpesa_service import MPESAService
+        mpesa = MPESAService()
+        access_token = mpesa.get_access_token()
+
+        import requests as http_requests
+
+        timestamp = timezone.now().strftime('%Y%m%d%H%M%S')
+        password = mpesa._generate_password(timestamp)
+
+        query_data = {
+            "BusinessShortCode": mpesa.shortcode,
+            "Password": password,
+            "Timestamp": timestamp,
+            "CheckoutRequestID": checkout_id
+        }
+
+        query_url = f"{mpesa.base_url}/mpesa/stkpushquery/v1/query"
+        headers = {
+            'Authorization': f'Bearer {access_token}',
+            'Content-Type': 'application/json'
+        }
+
+        response = http_requests.post(query_url, headers=headers, json=query_data, timeout=15)
+        result = response.json()
+
+        result_code = result.get('ResultCode')
+
+        # Result codes: 0 = success, 1032 = cancelled by user, 1 = insufficient balance
+        if str(result_code) == '0':
+            from django.urls import reverse
+            success_url = reverse('shareholders:shareholder_deposit_success') + '?method=mpesa'
+            logger.info(f"M-Pesa STK Push confirmed: checkout={checkout_id}")
+            return JsonResponse({
+                'status': 'completed',
+                'redirect_url': success_url,
+            })
+        elif str(result_code) == '1032':
+            return JsonResponse({
+                'status': 'cancelled',
+                'message': 'Payment was cancelled. You can try again.'
+            })
+        elif str(result_code) in ('1', '2001'):
+            return JsonResponse({
+                'status': 'failed',
+                'message': 'Insufficient balance or transaction limit reached.'
+            })
+        else:
+            return JsonResponse({
+                'status': 'pending',
+                'message': 'Waiting for payment confirmation...'
+            })
+
+    except Exception as e:
+        logger.error(f"M-Pesa status check error: {str(e)}")
+        return JsonResponse({'status': 'pending', 'message': 'Checking payment status...'})

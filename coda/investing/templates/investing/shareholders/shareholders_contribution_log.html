@@ -699,6 +699,33 @@
                                 </div>
                             </div>
 
+                            <!-- ========== CASH: Direct Deposit Button ========== -->      
+                            <div id="cash-direct-deposit-section" style="display:none; margin-top:1.25rem;">
+                                <div style="background:linear-gradient(135deg,#eff6ff,#dbeafe); border:1px solid #93c5fd; border-radius:10px; padding:1.25rem; display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:0.75rem;">
+                                    <div style="display:flex; align-items:center; gap:0.75rem;">
+                                        <div style="width:40px; height:40px; background:#2563eb; border-radius:8px; display:flex; align-items:center; justify-content:center; flex-shrink:0;">
+                                            <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" width="20" height="20"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
+                                        </div>
+                                        <div>
+                                            <div style="font-weight:600; color:#1e40af; font-size:0.9rem;">Ready to deposit?</div>
+                                            <div style="color:#3b82f6; font-size:0.8rem;">Pay via Stripe, M-Pesa, CashApp, Zelle, Venmo or PayPal</div>
+                                        </div>
+                                    </div>
+                                    <button type="button" onclick="goToDirectDeposit()" style="background:#2563eb; color:white; border:none; border-radius:8px; padding:0.65rem 1.25rem; cursor:pointer; font-size:0.875rem; font-weight:600; display:flex; align-items:center; gap:0.4rem;">
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
+                                        Direct Deposit
+                                    </button>
+                                </div>
+                                <!-- Deposit success indicator (shown when returning from deposit) -->
+                                <div id="deposit-success-banner" style="display:none; margin-top:0.75rem; padding:0.75rem 1rem; background:#dcfce7; border:1px solid #86efac; border-radius:8px; font-size:0.85rem; color:#166534;">
+                                    <strong>Deposit recorded!</strong>
+                                    <span id="deposit-success-detail"></span>
+                                    — Amount has been pre-filled below. Now submit your contribution.
+                                </div>
+                            </div>
+
+                            <!-- Direct Deposit Modal removed - now uses dedicated deposit pages -->
+
                             <!-- ========== IN-KIND extra fields ========== -->
                             <div id="tier-fields-inkind" class="tier-fields-section" style="display:none;">
                                 <div class="sh-form-group">
@@ -888,15 +915,16 @@
         // Phase 5: Show/hide appropriate contribution row (CASH vs non-CASH)
         const cashRow = document.getElementById('cash-contribution-row');
         const nonCashRow = document.getElementById('non-cash-contribution-row');
+        const cashDepositSection = document.getElementById('cash-direct-deposit-section');
         
         if (tier === 'CASH') {
-            // Show CASH row (Amount, Currency, Value USD, Exchange Rate)
             if (cashRow) cashRow.style.display = 'grid';
             if (nonCashRow) nonCashRow.style.display = 'none';
+            if (cashDepositSection) cashDepositSection.style.display = 'block';
         } else {
-            // Show non-CASH row (Amount, Unit Label, Value USD)
             if (cashRow) cashRow.style.display = 'none';
             if (nonCashRow) nonCashRow.style.display = 'grid';
+            if (cashDepositSection) cashDepositSection.style.display = 'none';
         }
 
         // Show / hide extra panels
@@ -1071,11 +1099,122 @@
     var checked = document.querySelector('input[name="tier"]:checked');
     if (checked) {
         switchTier(checked.value);
-        // Phase 5: Calculate Value (USD) on page load if amount/currency present
-        setTimeout(function() {
-            calculateValueUsd();
-        }, 100); // Small delay to ensure DOM is ready
+        setTimeout(function() { calculateValueUsd(); }, 100);
     }
+
+    // ========================================================================
+    // Phase 6: Direct Deposit - Navigate to deposit page
+    // ========================================================================
+    function goToDirectDeposit() {
+        // Get current USD amount from form
+        var cashInput = document.getElementById('input-units-value-cash');
+        var usdInput = document.getElementById('input-value-usd-cash');
+        var currencySelect = document.getElementById('id_currency');
+
+        var amountUSD = '';
+        if (usdInput && usdInput.value) {
+            amountUSD = parseFloat(usdInput.value).toFixed(2);
+        } else if (cashInput && cashInput.value && currencySelect && currencySelect.value === 'USD') {
+            amountUSD = parseFloat(cashInput.value).toFixed(2);
+        }
+
+        // Get selected member ID
+        var memberSelect = document.querySelector('select[name="contributor"]');
+        var memberHidden = document.querySelector('input[name="contributor"]');
+        var memberId = '';
+        if (memberHidden) {
+            memberId = memberHidden.value;
+        } else if (memberSelect && memberSelect.value) {
+            memberId = memberSelect.value;
+        }
+
+        // Build deposit URL
+        var url = '{% url "shareholders:shareholder_deposit" %}';
+        var params = [];
+        if (amountUSD) params.push('amount=' + encodeURIComponent(amountUSD));
+        if (memberId) params.push('member_id=' + encodeURIComponent(memberId));
+        if (params.length > 0) url += '?' + params.join('&');
+
+        window.location.href = url;
+    }
+
+    // ========================================================================
+    // Phase 6: Pre-fill form from deposit success redirect
+    // ========================================================================
+    function checkDepositReturn() {
+        var urlParams = new URLSearchParams(window.location.search);
+        var depositAmount = urlParams.get('deposit_amount');
+        var depositMethod = urlParams.get('deposit_method');
+        var depositRef = urlParams.get('deposit_ref');
+
+        if (depositAmount && parseFloat(depositAmount) > 0) {
+            var amt = parseFloat(depositAmount);
+
+            // Ensure CASH tier is selected
+            var cashRadio = document.querySelector('input[name="tier"][value="CASH"]');
+            if (cashRadio && !cashRadio.checked) {
+                cashRadio.checked = true;
+                switchTier('CASH');
+            }
+
+            // Set currency to USD
+            var currencySelect = document.getElementById('id_currency');
+            if (currencySelect) {
+                currencySelect.value = 'USD';
+            }
+
+            // Fill in the amount fields
+            var cashInput = document.getElementById('input-units-value-cash');
+            var usdInput = document.getElementById('input-value-usd-cash');
+
+            if (cashInput) {
+                cashInput.value = amt.toFixed(2);
+            }
+            if (usdInput) {
+                usdInput.value = amt.toFixed(2);
+            }
+
+            // Set asset class description
+            var assetInput = document.getElementById('input-asset-class');
+            if (assetInput && !assetInput.value) {
+                assetInput.value = 'Cash Deposit via ' + (depositMethod || 'Direct Deposit').charAt(0).toUpperCase() + (depositMethod || 'direct deposit').slice(1);
+            }
+
+            // Set today's date
+            var dateInput = document.querySelector('input[name="date"]');
+            if (dateInput && !dateInput.value) {
+                var today = new Date();
+                dateInput.value = today.toISOString().split('T')[0];
+            }
+
+            // Show deposit success banner
+            var banner = document.getElementById('deposit-success-banner');
+            var detail = document.getElementById('deposit-success-detail');
+            if (banner) {
+                banner.style.display = 'block';
+                if (detail) {
+                    var detailText = '$' + amt.toLocaleString('en-US', {minimumFractionDigits: 2});
+                    if (depositMethod) detailText += ' via ' + depositMethod.charAt(0).toUpperCase() + depositMethod.slice(1);
+                    if (depositRef) detailText += ' (Ref: ' + depositRef + ')';
+                    detail.textContent = ' ' + detailText;
+                }
+            }
+
+            // Trigger recalculation
+            setTimeout(function() { calculateValueUsd(); }, 200);
+
+            // Scroll to the form
+            var form = document.getElementById('contributionForm');
+            if (form) form.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+    }
+
+    // Run deposit return check after page init
+    setTimeout(checkDepositReturn, 300);
+
+    // Expose goToDirectDeposit to global scope for onclick
+    window.goToDirectDeposit = goToDirectDeposit;
+
 })();
 </script>
 {% endblock %}

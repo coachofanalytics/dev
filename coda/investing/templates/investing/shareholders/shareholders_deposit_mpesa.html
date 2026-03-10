@@ -1,0 +1,288 @@
+{% extends "main/base_templates/new_base.html" %}
+{% load static %}
+
+{% block title %}Pay with M-Pesa - Shareholder Contribution{% endblock %}
+
+{% block extra_css %}
+<style>
+:root { --sh-primary: #2563eb; --sh-primary-light: #60a5fa; --sh-text-dark: #1e293b; --sh-text-muted: #64748b; --sh-border: #e2e8f0; --sh-bg-dark: #0f172a; }
+.sh-dashboard-container { display: flex; min-height: 100vh; background: #f8fafc; }
+.sh-sidebar { width: 280px; background: var(--sh-bg-dark); padding: 1.5rem; display: flex; flex-direction: column; flex-shrink: 0; }
+.sh-sidebar-header { display: flex; flex-direction: column; gap: 2rem; }
+.sh-logo-container { display: flex; align-items: center; gap: 0.75rem; }
+.sh-logo-icon { width: 40px; height: 40px; background: var(--sh-primary); border-radius: 12px; display: flex; align-items: center; justify-content: center; color: white; box-shadow: 0 4px 14px rgba(37, 99, 235, 0.3); }
+.sh-logo-text { color: white; font-weight: 900; font-size: 1.25rem; letter-spacing: -0.5px; }
+.sh-logo-text span { color: var(--sh-primary-light); }
+.sh-logo-subtitle { color: #475569; font-size: 9px; font-weight: 800; text-transform: uppercase; letter-spacing: 1.5px; }
+.sh-nav { display: flex; flex-direction: column; gap: 0.5rem; }
+.sh-nav-item { display: flex; align-items: center; gap: 0.75rem; padding: 0.875rem 1rem; border-radius: 10px; color: #94a3b8; text-decoration: none; font-weight: 500; font-size: 0.875rem; transition: all 0.2s ease; }
+.sh-nav-item:hover { background: rgba(255, 255, 255, 0.05); color: white; }
+.sh-nav-item.active { background: var(--sh-primary); color: white; box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3); }
+.sh-main { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+.sh-header { height: 80px; background: white; border-bottom: 1px solid var(--sh-border); padding: 0 2.5rem; display: flex; align-items: center; justify-content: space-between; }
+.sh-breadcrumb { display: flex; align-items: center; gap: 0.5rem; color: var(--sh-text-muted); font-size: 0.875rem; }
+.sh-breadcrumb-current { color: var(--sh-text-dark); font-weight: 600; }
+.sh-content { flex: 1; overflow-y: auto; padding: 2.5rem; }
+
+.gateway-container { max-width: 560px; margin: 0 auto; }
+.gateway-back-link { display: inline-flex; align-items: center; gap: 0.5rem; color: #64748b; text-decoration: none; font-size: 0.875rem; font-weight: 500; margin-bottom: 1.5rem; transition: color 0.2s; }
+.gateway-back-link:hover { color: #1e293b; }
+
+.mpesa-hero {
+    background: linear-gradient(135deg, #0d5e2e, #16a34a);
+    border-radius: 14px; padding: 2rem; color: white; text-align: center;
+    margin-bottom: 2rem; box-shadow: 0 10px 30px rgba(22, 163, 74, 0.3);
+}
+.mpesa-hero h2 { font-size: 1.5rem; font-weight: 700; margin: 0 0 0.25rem 0; }
+.mpesa-hero .amount-display { font-size: 2.5rem; font-weight: 800; margin: 0.75rem 0; }
+.mpesa-hero .ref-display { font-size: 0.8rem; opacity: 0.8; }
+.mpesa-hero .ref-code { background: rgba(255,255,255,0.15); padding: 0.25rem 0.75rem; border-radius: 6px; font-family: monospace; font-weight: 600; }
+
+.mpesa-card {
+    background: white; border: 1px solid #e2e8f0; border-radius: 14px;
+    padding: 2rem; margin-bottom: 1.5rem; box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+}
+.mpesa-card-title { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: #64748b; margin-bottom: 1.25rem; }
+
+.phone-input-group { display: flex; align-items: center; gap: 0; margin-bottom: 1.5rem; }
+.phone-prefix {
+    background: #f1f5f9; border: 2px solid #e2e8f0; border-right: none;
+    border-radius: 10px 0 0 10px; padding: 0.875rem 1rem;
+    font-weight: 700; color: #1e293b; font-size: 1rem; white-space: nowrap;
+}
+.phone-input {
+    flex: 1; border: 2px solid #e2e8f0; border-radius: 0 10px 10px 0;
+    padding: 0.875rem 1rem; font-size: 1rem; font-weight: 600;
+    outline: none; transition: border-color 0.2s;
+}
+.phone-input:focus { border-color: #16a34a; }
+.phone-input::placeholder { color: #94a3b8; font-weight: 400; }
+
+.btn-mpesa-pay {
+    width: 100%; background: #16a34a; color: white; border: none;
+    border-radius: 12px; padding: 1rem; font-size: 1.05rem; font-weight: 700;
+    cursor: pointer; transition: all 0.2s; display: flex; align-items: center;
+    justify-content: center; gap: 0.5rem; box-shadow: 0 4px 14px rgba(22, 163, 74, 0.3);
+}
+.btn-mpesa-pay:hover { background: #15803d; transform: translateY(-1px); }
+.btn-mpesa-pay:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+
+/* Waiting state */
+#mpesa-waiting { display: none; text-align: center; padding: 2rem 0; }
+.mpesa-waiting-spinner { width: 48px; height: 48px; border: 4px solid #dcfce7; border-top: 4px solid #16a34a; border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto 1.25rem; }
+@keyframes spin { to { transform: rotate(360deg); } }
+.mpesa-waiting-title { font-size: 1.1rem; font-weight: 700; color: #1e293b; margin-bottom: 0.5rem; }
+.mpesa-waiting-text { color: #64748b; font-size: 0.9rem; margin-bottom: 1rem; }
+.mpesa-waiting-phone { background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 8px; padding: 0.5rem 1rem; display: inline-block; font-weight: 700; color: #15803d; font-family: monospace; font-size: 1rem; }
+#mpesa-status-msg { color: #64748b; font-size: 0.85rem; margin-top: 1rem; }
+
+/* Error/result states */
+#mpesa-error { display: none; padding: 1rem 1.25rem; background: #fef2f2; border: 1px solid #fecaca; border-radius: 10px; color: #991b1b; font-size: 0.9rem; margin-bottom: 1rem; }
+#mpesa-success { display: none; padding: 1rem 1.25rem; background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 10px; color: #166534; font-size: 0.9rem; margin-bottom: 1rem; text-align: center; }
+
+.mpesa-info { padding: 1rem 1.25rem; background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 10px; font-size: 0.85rem; color: #166534; margin-bottom: 1.5rem; }
+.btn-back-methods { display: block; text-align: center; background: transparent; color: #64748b; border: 1px solid #e2e8f0; border-radius: 12px; padding: 0.75rem; font-size: 0.875rem; font-weight: 600; text-decoration: none; transition: all 0.2s; }
+.btn-back-methods:hover { background: #f8fafc; color: #1e293b; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="sh-dashboard-container">
+    <aside class="sh-sidebar">
+        <div class="sh-sidebar-header">
+            <div class="sh-logo-container">
+                <div class="sh-logo-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/></svg></div>
+                <div><h1 class="sh-logo-text">SHARE<span>HOLD</span></h1><p class="sh-logo-subtitle">Equity Pilot v1.0</p></div>
+            </div>
+            <nav class="sh-nav">
+                <a href="{% url 'shareholders:shareholders_dashboard' %}" class="sh-nav-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg><span>Dashboard</span></a>
+                <a href="{% url 'shareholders:ledgers_view' %}" class="sh-nav-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg><span>Ledgers</span></a>
+                <a href="{% url 'shareholders:members_overview' %}" class="sh-nav-item active"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg><span>Members & Equity</span></a>
+            </nav>
+        </div>
+    </aside>
+
+    <main class="sh-main">
+        <header class="sh-header">
+            <div class="sh-breadcrumb">
+                <a href="{% url 'shareholders:shareholders_dashboard' %}" style="color:#64748b;text-decoration:none;">Deal Portal</a>
+                <span style="color:#cbd5e1;">›</span>
+                <a href="{% url 'shareholders:contribution_log' %}" style="color:#64748b;text-decoration:none;">Log Contribution</a>
+                <span style="color:#cbd5e1;">›</span>
+                <a href="{% url 'shareholders:shareholder_deposit' %}?amount={{ amount }}&member_id={{ member_id }}" style="color:#64748b;text-decoration:none;">Direct Deposit</a>
+                <span style="color:#cbd5e1;">›</span>
+                <span class="sh-breadcrumb-current">M-Pesa</span>
+            </div>
+        </header>
+
+        <div class="sh-content">
+            <div class="gateway-container">
+                <a href="{% url 'shareholders:shareholder_deposit' %}?amount={{ amount }}&member_id={{ member_id }}" class="gateway-back-link">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+                    Back to Payment Methods
+                </a>
+
+                <div class="mpesa-hero">
+                    <h2>Pay with M-Pesa</h2>
+                    <div class="amount-display">${{ amount|floatformat:2 }}</div>
+                    <div class="ref-display">Reference: <span class="ref-code">{{ payment_reference }}</span></div>
+                </div>
+
+                <div id="mpesa-error"></div>
+                <div id="mpesa-success"></div>
+
+                <!-- Phone Input Form -->
+                <div class="mpesa-card" id="mpesa-form-card">
+                    <div class="mpesa-card-title">Enter Your M-Pesa Phone Number</div>
+                    <div class="phone-input-group">
+                        <span class="phone-prefix">+254</span>
+                        <input type="tel" id="mpesa-phone" class="phone-input" placeholder="7XXXXXXXX" maxlength="10" autocomplete="tel">
+                    </div>
+                    <button type="button" id="btn-pay-mpesa" class="btn-mpesa-pay" onclick="initiateStkPush()">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20"><rect x="5" y="2" width="14" height="20" rx="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg>
+                        Pay ${{ amount|floatformat:2 }} with M-Pesa
+                    </button>
+                    <div style="text-align:center;margin-top:0.75rem;color:#64748b;font-size:0.8rem;">
+                        A payment prompt will be sent directly to your phone
+                    </div>
+                </div>
+
+                <!-- Waiting State -->
+                <div id="mpesa-waiting">
+                    <div class="mpesa-waiting-spinner"></div>
+                    <div class="mpesa-waiting-title">Check Your Phone</div>
+                    <div class="mpesa-waiting-text">An M-Pesa payment prompt has been sent to</div>
+                    <div class="mpesa-waiting-phone" id="mpesa-waiting-phone"></div>
+                    <div id="mpesa-status-msg">Waiting for you to enter your M-Pesa PIN...</div>
+                    <div style="margin-top:1.5rem;">
+                        <button type="button" class="btn-back-methods" onclick="resetForm()" style="display:inline-block;padding:0.5rem 1.5rem;">Cancel & Try Again</button>
+                    </div>
+                </div>
+
+                <div class="mpesa-info">
+                    <strong>How it works:</strong> Enter your Safaricom M-Pesa phone number above. You'll receive a payment prompt on your phone — enter your M-Pesa PIN to complete the deposit instantly.
+                </div>
+
+                <a href="{% url 'shareholders:shareholder_deposit' %}?amount={{ amount }}&member_id={{ member_id }}" class="btn-back-methods">
+                    Use a Different Payment Method
+                </a>
+            </div>
+        </div>
+    </main>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+(function() {
+    var STK_PUSH_URL = '{% url "shareholders:shareholder_mpesa_stk_push" %}';
+    var CHECK_STATUS_URL = '{% url "shareholders:shareholder_mpesa_check_status" %}';
+    var AMOUNT = {{ amount|floatformat:2 }};
+    var pollTimer = null;
+    var pollCount = 0;
+    var MAX_POLLS = 60;
+
+    function getCsrfToken() {
+        var cookies = document.cookie.split(';');
+        for (var i = 0; i < cookies.length; i++) {
+            var c = cookies[i].trim();
+            if (c.indexOf('csrftoken=') === 0) return decodeURIComponent(c.substring(10));
+        }
+        return '';
+    }
+
+    function showError(msg) {
+        var el = document.getElementById('mpesa-error');
+        el.textContent = msg;
+        el.style.display = 'block';
+        setTimeout(function() { el.style.display = 'none'; }, 8000);
+    }
+
+    window.initiateStkPush = function() {
+        var phoneInput = document.getElementById('mpesa-phone');
+        var raw = phoneInput.value.replace(/\D/g, '');
+
+        if (raw.length < 9) {
+            phoneInput.style.borderColor = '#ef4444';
+            showError('Please enter a valid Safaricom phone number (e.g. 712345678)');
+            return;
+        }
+
+        var fullPhone = raw.startsWith('0') ? '254' + raw.substring(1) :
+                         raw.startsWith('254') ? raw : '254' + raw;
+
+        var btn = document.getElementById('btn-pay-mpesa');
+        btn.disabled = true;
+        btn.innerHTML = '<div class="mpesa-waiting-spinner" style="width:20px;height:20px;border-width:2px;margin:0;"></div> Sending prompt...';
+
+        fetch(STK_PUSH_URL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'X-CSRFToken': getCsrfToken() },
+            body: JSON.stringify({ phone_number: fullPhone, amount: AMOUNT })
+        })
+        .then(function(r) { return r.json(); })
+        .then(function(data) {
+            if (data.success) {
+                document.getElementById('mpesa-form-card').style.display = 'none';
+                document.getElementById('mpesa-waiting').style.display = 'block';
+                document.getElementById('mpesa-waiting-phone').textContent = '+' + fullPhone;
+                startPolling(data.checkout_request_id);
+            } else {
+                btn.disabled = false;
+                btn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20"><rect x="5" y="2" width="14" height="20" rx="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg> Pay $' + AMOUNT.toFixed(2) + ' with M-Pesa';
+                showError(data.error || 'Failed to send payment prompt. Please try again.');
+            }
+        })
+        .catch(function(err) {
+            btn.disabled = false;
+            btn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20"><rect x="5" y="2" width="14" height="20" rx="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg> Pay $' + AMOUNT.toFixed(2) + ' with M-Pesa';
+            showError('Network error. Please check your connection and try again.');
+        });
+    };
+
+    function startPolling(checkoutId) {
+        pollCount = 0;
+        pollTimer = setInterval(function() {
+            pollCount++;
+            if (pollCount > MAX_POLLS) {
+                clearInterval(pollTimer);
+                document.getElementById('mpesa-status-msg').textContent = 'Payment timed out. Please try again.';
+                return;
+            }
+
+            var url = CHECK_STATUS_URL + '?checkout_request_id=' + encodeURIComponent(checkoutId);
+            fetch(url)
+                .then(function(r) { return r.json(); })
+                .then(function(data) {
+                    if (data.status === 'completed') {
+                        clearInterval(pollTimer);
+                        document.getElementById('mpesa-status-msg').innerHTML = '<strong style="color:#16a34a;">Payment confirmed!</strong> Redirecting...';
+                        setTimeout(function() { window.location.href = data.redirect_url; }, 1000);
+                    } else if (data.status === 'cancelled' || data.status === 'failed') {
+                        clearInterval(pollTimer);
+                        document.getElementById('mpesa-status-msg').innerHTML = '<span style="color:#dc2626;">' + (data.message || 'Payment failed.') + '</span>';
+                    } else {
+                        document.getElementById('mpesa-status-msg').textContent = data.message || 'Waiting for payment confirmation...';
+                    }
+                })
+                .catch(function() {
+                    document.getElementById('mpesa-status-msg').textContent = 'Checking payment status...';
+                });
+        }, 5000);
+    }
+
+    window.resetForm = function() {
+        if (pollTimer) clearInterval(pollTimer);
+        document.getElementById('mpesa-form-card').style.display = 'block';
+        document.getElementById('mpesa-waiting').style.display = 'none';
+        var btn = document.getElementById('btn-pay-mpesa');
+        btn.disabled = false;
+        btn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20"><rect x="5" y="2" width="14" height="20" rx="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg> Pay $' + AMOUNT.toFixed(2) + ' with M-Pesa';
+    };
+
+    document.getElementById('mpesa-phone').addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') { e.preventDefault(); window.initiateStkPush(); }
+    });
+})();
+</script>
+{% endblock %}

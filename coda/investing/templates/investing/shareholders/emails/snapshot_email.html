@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Your Monthly Equity Snapshot – {{ snapshot.version_id }}</title>
+<style>
+  body { margin: 0; padding: 0; background: #f1f5f9; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; color: #1e293b; }
+  .wrapper { max-width: 620px; margin: 0 auto; padding: 24px 12px; }
+  .card { background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.08); }
+  .header { background: linear-gradient(135deg, #1e40af 0%, #2563eb 100%); padding: 36px 32px; text-align: center; }
+  .header-logo { font-size: 22px; font-weight: 800; color: white; letter-spacing: -0.5px; }
+  .header-sub { color: #bfdbfe; font-size: 13px; margin-top: 4px; }
+  .body { padding: 32px; }
+  .greeting { font-size: 16px; color: #334155; margin-bottom: 8px; }
+  .intro { font-size: 14px; color: #64748b; line-height: 1.6; margin-bottom: 24px; }
+  .equity-hero { background: linear-gradient(135deg, #eff6ff, #dbeafe); border: 1px solid #93c5fd; border-radius: 10px; padding: 20px; text-align: center; margin-bottom: 24px; }
+  .equity-label { font-size: 11px; text-transform: uppercase; letter-spacing: 0.08em; color: #3b82f6; font-weight: 600; margin-bottom: 4px; }
+  .equity-value { font-size: 42px; font-weight: 800; color: #1e40af; line-height: 1; }
+  .equity-note { font-size: 12px; color: #60a5fa; margin-top: 6px; }
+  .section-title { font-size: 12px; font-weight: 700; color: #64748b; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 12px; border-bottom: 1px solid #e2e8f0; padding-bottom: 8px; }
+  .tier-grid { display: table; width: 100%; border-collapse: collapse; margin-bottom: 24px; }
+  .tier-row { display: table-row; }
+  .tier-cell { display: table-cell; padding: 10px 12px; font-size: 13px; border-bottom: 1px solid #f1f5f9; vertical-align: middle; }
+  .tier-cell.label { color: #475569; width: 40%; }
+  .tier-cell.amount { text-align: right; font-weight: 600; color: #1e293b; }
+  .tier-cell.badge { width: 20%; text-align: center; }
+  .badge { display: inline-block; padding: 2px 8px; border-radius: 20px; font-size: 10px; font-weight: 600; }
+  .badge-cash { background: #dcfce7; color: #166534; }
+  .badge-inkind { background: #fef3c7; color: #92400e; }
+  .badge-time { background: #e0f2fe; color: #0c4a6e; }
+  .badge-work { background: #f5f3ff; color: #4c1d95; }
+  .totals-box { background: #f8fafc; border-radius: 8px; padding: 16px; margin-bottom: 24px; }
+  .total-row { display: flex; justify-content: space-between; align-items: center; font-size: 13px; margin-bottom: 6px; }
+  .total-row:last-child { margin-bottom: 0; font-size: 14px; font-weight: 700; color: #1e293b; border-top: 1px solid #e2e8f0; padding-top: 8px; margin-top: 4px; }
+  .total-label { color: #64748b; }
+  .total-value { font-weight: 600; }
+  .snapshot-meta { background: #f8fafc; border-radius: 8px; padding: 16px; margin-bottom: 24px; font-size: 12px; color: #64748b; }
+  .meta-row { display: flex; justify-content: space-between; margin-bottom: 4px; }
+  .meta-row:last-child { margin-bottom: 0; }
+  .meta-val { color: #1e293b; font-weight: 500; }
+  .cta-btn { display: block; text-align: center; background: #2563eb; color: white !important; text-decoration: none; padding: 13px 28px; border-radius: 8px; font-weight: 700; font-size: 14px; margin-bottom: 24px; }
+  .notice { background: #fef9c3; border: 1px solid #fde047; border-radius: 8px; padding: 14px; font-size: 12px; color: #713f12; line-height: 1.5; margin-bottom: 24px; }
+  .footer { text-align: center; font-size: 11px; color: #94a3b8; padding: 20px 32px 24px; border-top: 1px solid #f1f5f9; }
+  .footer a { color: #3b82f6; text-decoration: none; }
+</style>
+</head>
+<body>
+<div class="wrapper">
+  <div class="card">
+
+    <!-- Header -->
+    <div class="header">
+      <div class="header-logo">&#9679; CODA Shareholders</div>
+      <div class="header-sub">Equity Pilot v1.0 &bull; Monthly Snapshot Report</div>
+    </div>
+
+    <!-- Body -->
+    <div class="body">
+      <p class="greeting">Hello, <strong>{{ member.legal_name }}</strong></p>
+      <p class="intro">
+        Your monthly equity snapshot for <strong>{{ snapshot.period_start|date:"F j" }} – {{ snapshot.period_end|date:"F j, Y" }}</strong>
+        has been generated. Below is a summary of your current standing in the deal.
+      </p>
+
+      <!-- Equity Hero -->
+      <div class="equity-hero">
+        <div class="equity-label">Your Equity Stake</div>
+        <div class="equity-value">{{ line.equity_percentage|floatformat:2 }}%</div>
+        <div class="equity-note">Snapshot {{ snapshot.version_id }} &bull; {{ snapshot.snapshot_date|date:"N j, Y" }}</div>
+      </div>
+
+      <!-- Contribution Breakdown -->
+      <div class="section-title">Contribution Breakdown</div>
+      <div class="tier-grid">
+        <div class="tier-row">
+          <div class="tier-cell label">&#128181; Cash</div>
+          <div class="tier-cell badge"><span class="badge badge-cash">CASH</span></div>
+          <div class="tier-cell amount">${{ line.cash_usd|floatformat:2 }}</div>
+        </div>
+        <div class="tier-row">
+          <div class="tier-cell label">&#128230; In-Kind</div>
+          <div class="tier-cell badge"><span class="badge badge-inkind">IN-KIND</span></div>
+          <div class="tier-cell amount">${{ line.inkind_usd|floatformat:2 }}</div>
+        </div>
+        <div class="tier-row">
+          <div class="tier-cell label">&#9201; Time</div>
+          <div class="tier-cell badge"><span class="badge badge-time">TIME</span></div>
+          <div class="tier-cell amount">${{ line.time_usd|floatformat:2 }}</div>
+        </div>
+        <div class="tier-row">
+          <div class="tier-cell label">&#128188; Work</div>
+          <div class="tier-cell badge"><span class="badge badge-work">WORK</span></div>
+          <div class="tier-cell amount">${{ line.work_usd|floatformat:2 }}</div>
+        </div>
+      </div>
+
+      <!-- Totals -->
+      <div class="totals-box">
+        <div class="total-row">
+          <span class="total-label">Weighted Contribution</span>
+          <span class="total-value">${{ line.weighted_total_usd|floatformat:2 }}</span>
+        </div>
+        <div class="total-row">
+          <span class="total-label">Deal Total Valuation</span>
+          <span class="total-value">${{ snapshot.total_valuation_usd|floatformat:2 }}</span>
+        </div>
+        <div class="total-row">
+          <span class="total-label">Your Equity %</span>
+          <span style="color:#2563eb;">{{ line.equity_percentage|floatformat:2 }}%</span>
+        </div>
+      </div>
+
+      <!-- Snapshot Meta -->
+      <div class="section-title">Snapshot Details</div>
+      <div class="snapshot-meta">
+        <div class="meta-row"><span>Version</span><span class="meta-val">{{ snapshot.version_id }}</span></div>
+        <div class="meta-row"><span>Period</span><span class="meta-val">{{ snapshot.period_start|date:"M j, Y" }} – {{ snapshot.period_end|date:"M j, Y" }}</span></div>
+        <div class="meta-row"><span>Generated</span><span class="meta-val">{{ snapshot.snapshot_date|date:"F j, Y" }}</span></div>
+        <div class="meta-row"><span>Status</span><span class="meta-val">{{ snapshot.get_status_display }}</span></div>
+        <div class="meta-row"><span>Checksum</span><span class="meta-val" style="font-family:monospace;">{{ snapshot.checksum }}</span></div>
+      </div>
+
+      <!-- CTA -->
+      <a href="{{ dashboard_url }}" class="cta-btn">View Full Dashboard &rarr;</a>
+
+      <!-- Notice -->
+      <div class="notice">
+        <strong>&#128274; Immutable Record:</strong> This snapshot is cryptographically checksummed and represents your official equity record as of
+        {{ snapshot.snapshot_date|date:"F j, Y" }}.
+        If you believe there is an error, you have <strong>{{ snapshot.dispute_window_days }} days</strong> from the snapshot date to raise a dispute.
+        Contact your deal administrator immediately.
+      </div>
+    </div>
+
+    <!-- Footer -->
+    <div class="footer">
+      <p>This is an automated email from the CODA Shareholders Management System.<br>
+        <strong>CODA &bull; Equity Pilot v1.0</strong><br>
+        If you did not expect this email, please contact your administrator.</p>
+    </div>
+
+  </div>
+</div>
+</body>
+</html>

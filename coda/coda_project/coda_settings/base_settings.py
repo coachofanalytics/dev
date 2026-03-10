@@ -265,6 +265,13 @@ AWS_S3_FILE_OVERWRITE = False
 AWS_DEFAULT_ACL = None
 
 #==================PAYMENT SETTINGS=================
+
+# Square / Cash App Pay SDK
+SQUARE_APPLICATION_ID = os.environ.get('SQUARE_APPLICATION_ID', 'sandbox-sq0idb-PLACEHOLDER')
+SQUARE_ACCESS_TOKEN = os.environ.get('SQUARE_ACCESS_TOKEN', '')
+SQUARE_LOCATION_ID = os.environ.get('SQUARE_LOCATION_ID', '')
+SQUARE_ENVIRONMENT = os.environ.get('SQUARE_ENVIRONMENT', 'sandbox')  # 'sandbox' or 'production'
+
 def payment_details(request):
     # ================MPESA/CASHAPP/VENMO========================
     phone_number = os.environ.get('MPESA_PHONE_NUMBER')

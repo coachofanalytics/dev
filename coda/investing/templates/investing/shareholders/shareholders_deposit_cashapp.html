@@ -1,0 +1,474 @@
+{% extends "main/base_templates/new_base.html" %}
+{% load static %}
+
+{% block title %}Pay with Cash App - Shareholder Contribution{% endblock %}
+
+{% block extra_css %}
+<style>
+:root { --sh-primary: #2563eb; --sh-primary-light: #60a5fa; --sh-text-dark: #1e293b; --sh-text-muted: #64748b; --sh-border: #e2e8f0; --sh-bg-dark: #0f172a; }
+.sh-dashboard-container { display: flex; min-height: 100vh; background: #f8fafc; }
+.sh-sidebar { width: 280px; background: var(--sh-bg-dark); padding: 1.5rem; display: flex; flex-direction: column; flex-shrink: 0; }
+.sh-sidebar-header { display: flex; flex-direction: column; gap: 2rem; }
+.sh-logo-container { display: flex; align-items: center; gap: 0.75rem; }
+.sh-logo-icon { width: 40px; height: 40px; background: var(--sh-primary); border-radius: 12px; display: flex; align-items: center; justify-content: center; color: white; box-shadow: 0 4px 14px rgba(37, 99, 235, 0.3); }
+.sh-logo-text { color: white; font-weight: 900; font-size: 1.25rem; letter-spacing: -0.5px; }
+.sh-logo-text span { color: var(--sh-primary-light); }
+.sh-logo-subtitle { color: #475569; font-size: 9px; font-weight: 800; text-transform: uppercase; letter-spacing: 1.5px; }
+.sh-nav { display: flex; flex-direction: column; gap: 0.5rem; }
+.sh-nav-item { display: flex; align-items: center; gap: 0.75rem; padding: 0.875rem 1rem; border-radius: 10px; color: #94a3b8; text-decoration: none; font-weight: 500; font-size: 0.875rem; transition: all 0.2s ease; }
+.sh-nav-item:hover { background: rgba(255, 255, 255, 0.05); color: white; }
+.sh-nav-item.active { background: var(--sh-primary); color: white; box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3); }
+.sh-main { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+.sh-header { height: 80px; background: white; border-bottom: 1px solid var(--sh-border); padding: 0 2.5rem; display: flex; align-items: center; justify-content: space-between; }
+.sh-breadcrumb { display: flex; align-items: center; gap: 0.5rem; color: var(--sh-text-muted); font-size: 0.875rem; }
+.sh-breadcrumb-current { color: var(--sh-text-dark); font-weight: 600; }
+.sh-content { flex: 1; overflow-y: auto; padding: 2.5rem; }
+
+.gateway-container { max-width: 560px; margin: 0 auto; }
+.gateway-back-link { display: inline-flex; align-items: center; gap: 0.5rem; color: #64748b; text-decoration: none; font-size: 0.875rem; font-weight: 500; margin-bottom: 1.5rem; transition: color 0.2s; }
+.gateway-back-link:hover { color: #1e293b; }
+
+.cashapp-hero {
+    background: linear-gradient(135deg, #00c853, #00e676);
+    border-radius: 14px; padding: 2rem; color: #004d1a; text-align: center;
+    margin-bottom: 2rem; box-shadow: 0 10px 30px rgba(0, 200, 83, 0.3);
+}
+.cashapp-hero h2 { font-size: 1.5rem; font-weight: 700; margin: 0 0 0.25rem 0; color: white; }
+.cashapp-hero .amount-display { font-size: 2.5rem; font-weight: 800; margin: 0.75rem 0; color: white; }
+.cashapp-hero .ref-display { font-size: 0.8rem; opacity: 0.85; color: white; }
+.cashapp-hero .ref-code { background: rgba(255,255,255,0.25); padding: 0.25rem 0.75rem; border-radius: 6px; font-family: monospace; font-weight: 600; }
+.cashapp-hero .live-badge { display: inline-block; background: rgba(255,255,255,0.25); color: white; font-size: 10px; font-weight: 800; padding: 2px 8px; border-radius: 20px; letter-spacing: 1px; margin-bottom: 0.5rem; }
+
+.cashapp-card {
+    background: white; border: 1px solid #e2e8f0; border-radius: 14px;
+    padding: 2rem; margin-bottom: 1.5rem; box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+}
+.cashapp-card-title { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: #64748b; margin-bottom: 1.25rem; }
+
+/* Square SDK button container */
+#cashapp-button-container { min-height: 56px; display: flex; align-items: center; justify-content: center; }
+#cashapp-button-container:empty::after { content: 'Loading Cash App Pay...'; color: #64748b; font-size: 0.875rem; }
+
+/* ── QR Code Payment Interface ──────────────────────────── */
+.cashapp-qr-section { display: none; }
+.cashapp-qr-section.active { display: block; }
+
+.cashapp-qr-wrapper {
+    display: flex; flex-direction: column; align-items: center; gap: 1.25rem;
+    padding: 1.5rem; background: #f8fdf8; border: 2px dashed #86efac; border-radius: 14px;
+    margin-bottom: 1.5rem;
+}
+.cashapp-qr-wrapper canvas { border-radius: 8px; border: 4px solid white; box-shadow: 0 2px 12px rgba(0,0,0,0.08); }
+.cashapp-qr-label { font-size: 0.85rem; color: #16a34a; font-weight: 700; text-align: center; }
+.cashapp-qr-sublabel { font-size: 0.78rem; color: #64748b; text-align: center; margin-top: -0.5rem; }
+
+.cashapp-or-divider {
+    display: flex; align-items: center; gap: 1rem;
+    margin: 1.25rem 0; color: #94a3b8; font-size: 0.8rem; font-weight: 600;
+}
+.cashapp-or-divider::before, .cashapp-or-divider::after {
+    content: ''; flex: 1; height: 1px; background: #e2e8f0;
+}
+
+.btn-cashapp-pay {
+    display: flex; align-items: center; justify-content: center; gap: 0.75rem;
+    width: 100%; background: #00c853; color: white; border: none; border-radius: 12px;
+    padding: 1.125rem; font-size: 1.1rem; font-weight: 800; cursor: pointer;
+    text-decoration: none; transition: all 0.2s;
+    box-shadow: 0 6px 20px rgba(0, 200, 83, 0.35); letter-spacing: -0.3px;
+}
+.btn-cashapp-pay:hover { background: #00b84a; transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0, 200, 83, 0.4); color: white; }
+
+.cashapp-tag-display {
+    display: flex; align-items: center; justify-content: space-between;
+    background: #f0fdf4; border: 2px solid #bbf7d0; border-radius: 12px;
+    padding: 1rem 1.25rem; margin-top: 1rem;
+}
+.cashapp-tag-info { display: flex; flex-direction: column; }
+.cashapp-tag-label { font-size: 0.7rem; color: #64748b; text-transform: uppercase; font-weight: 700; letter-spacing: 0.05em; }
+.cashapp-tag-value { font-size: 1.4rem; font-weight: 800; color: #16a34a; font-family: 'Courier New', monospace; }
+.cashapp-tag-copy { background: #16a34a; color: white; border: none; border-radius: 8px; padding: 0.5rem 1rem; font-size: 0.8rem; font-weight: 700; cursor: pointer; transition: background 0.2s; }
+.cashapp-tag-copy:hover { background: #15803d; }
+
+/* ── Awaiting Confirmation ─────────────────────────────── */
+.cashapp-confirm-section {
+    display: none; background: white; border: 2px solid #86efac; border-radius: 14px;
+    padding: 2rem; text-align: center;
+}
+.cashapp-confirm-section.active { display: block; }
+.cashapp-confirm-icon {
+    width: 64px; height: 64px; background: linear-gradient(135deg, #00c853, #00e676);
+    border-radius: 50%; display: flex; align-items: center; justify-content: center;
+    margin: 0 auto 1rem; box-shadow: 0 6px 20px rgba(0, 200, 83, 0.3);
+}
+.btn-confirm-deposit {
+    display: flex; align-items: center; justify-content: center; gap: 0.5rem;
+    width: 100%; background: #16a34a; color: white; border: none; border-radius: 12px;
+    padding: 1rem; font-size: 1rem; font-weight: 700; cursor: pointer;
+    transition: all 0.2s; box-shadow: 0 4px 14px rgba(22, 163, 74, 0.3);
+    margin-top: 1.25rem;
+}
+.btn-confirm-deposit:hover { background: #15803d; transform: translateY(-1px); }
+.btn-go-back-payment { background: none; border: none; color: #64748b; font-size: 0.85rem; cursor: pointer; margin-top: 0.75rem; text-decoration: underline; }
+
+/* ── States ────────────────────────────────────────────── */
+.cashapp-processing { display: none; text-align: center; padding: 2rem; background: #f0fdf4; border: 2px solid #86efac; border-radius: 14px; }
+.cashapp-processing.active { display: block; }
+.cashapp-processing .spinner {
+    width: 48px; height: 48px; border: 4px solid #bbf7d0;
+    border-top-color: #16a34a; border-radius: 50%;
+    animation: spin 0.8s linear infinite; margin: 0 auto 1rem;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.cashapp-success { display: none; text-align: center; padding: 2rem; background: #f0fdf4; border: 2px solid #4ade80; border-radius: 14px; }
+.cashapp-success.active { display: block; }
+
+.cashapp-error { display: none; padding: 1rem 1.25rem; background: #fef2f2; border: 1px solid #fca5a5; border-radius: 10px; color: #991b1b; font-size: 0.875rem; margin-top: 1rem; }
+.cashapp-error.active { display: block; }
+
+.cashapp-security { padding: 1rem; background: #f8fafc; border-radius: 10px; margin-top: 1.5rem; }
+.cashapp-security-item { display: flex; align-items: center; gap: 0.5rem; font-size: 0.8rem; color: #64748b; padding: 0.25rem 0; }
+.cashapp-security-item svg { color: #16a34a; flex-shrink: 0; }
+
+.btn-back-methods { display: block; text-align: center; background: transparent; color: #64748b; border: 1px solid #e2e8f0; border-radius: 12px; padding: 0.75rem; font-size: 0.875rem; font-weight: 600; text-decoration: none; transition: all 0.2s; }
+.btn-back-methods:hover { background: #f8fafc; color: #1e293b; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="sh-dashboard-container">
+    <aside class="sh-sidebar">
+        <div class="sh-sidebar-header">
+            <div class="sh-logo-container">
+                <div class="sh-logo-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/></svg></div>
+                <div><h1 class="sh-logo-text">SHARE<span>HOLD</span></h1><p class="sh-logo-subtitle">Equity Pilot v1.0</p></div>
+            </div>
+            <nav class="sh-nav">
+                <a href="{% url 'shareholders:shareholders_dashboard' %}" class="sh-nav-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg><span>Dashboard</span></a>
+                <a href="{% url 'shareholders:ledgers_view' %}" class="sh-nav-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg><span>Ledgers</span></a>
+                <a href="{% url 'shareholders:members_overview' %}" class="sh-nav-item active"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg><span>Members & Equity</span></a>
+            </nav>
+        </div>
+    </aside>
+
+    <main class="sh-main">
+        <header class="sh-header">
+            <div class="sh-breadcrumb">
+                <a href="{% url 'shareholders:shareholders_dashboard' %}" style="color:#64748b;text-decoration:none;">Deal Portal</a>
+                <span style="color:#cbd5e1;">&rsaquo;</span>
+                <a href="{% url 'shareholders:contribution_log' %}" style="color:#64748b;text-decoration:none;">Log Contribution</a>
+                <span style="color:#cbd5e1;">&rsaquo;</span>
+                <a href="{% url 'shareholders:shareholder_deposit' %}?amount={{ amount }}&member_id={{ member_id }}" style="color:#64748b;text-decoration:none;">Direct Deposit</a>
+                <span style="color:#cbd5e1;">&rsaquo;</span>
+                <span class="sh-breadcrumb-current">Cash App Pay</span>
+            </div>
+        </header>
+
+        <div class="sh-content">
+            <div class="gateway-container">
+                <a href="{% url 'shareholders:shareholder_deposit' %}?amount={{ amount }}&member_id={{ member_id }}" class="gateway-back-link">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+                    Back to Payment Methods
+                </a>
+
+                <div class="cashapp-hero">
+                    <div class="live-badge">LIVE PAYMENT</div>
+                    <h2>Cash App Pay</h2>
+                    <div class="amount-display">${{ amount|floatformat:2 }}</div>
+                    <div class="ref-display">Reference: <span class="ref-code">{{ payment_reference }}</span></div>
+                </div>
+
+                <!-- ═══ MODE 1: Square SDK Button (if configured) ═══ -->
+                {% if square_configured %}
+                <div class="cashapp-card" id="square-sdk-card">
+                    <div class="cashapp-card-title">Secure Cash App Payment</div>
+                    <div id="cashapp-button-container"></div>
+                    <div class="cashapp-error" id="sdk-error"></div>
+                </div>
+                {% endif %}
+
+                <!-- ═══ MODE 2: Direct Cash App Pay (QR + Deep Link) ═══ -->
+                <div class="cashapp-qr-section{% if not square_configured %} active{% endif %}" id="direct-pay-section">
+
+                    <!-- QR Code -->
+                    <div class="cashapp-card">
+                        <div class="cashapp-card-title">Scan to Pay with Cash App</div>
+                        <div class="cashapp-qr-wrapper">
+                            <canvas id="qr-canvas"></canvas>
+                            <div class="cashapp-qr-label">Scan this QR code with your Cash App</div>
+                            <div class="cashapp-qr-sublabel">Amount and recipient are pre-filled automatically</div>
+                        </div>
+                    </div>
+
+                    <!-- OR divider -->
+                    <div class="cashapp-or-divider">or tap below on mobile</div>
+
+                    <!-- Deep link button -->
+                    <a href="{{ cashapp_url }}" target="_blank" rel="noopener" class="btn-cashapp-pay" id="cashapp-deeplink-btn" onclick="window._cashAppOpened=true;">
+                        <svg viewBox="0 0 24 24" fill="currentColor" width="28" height="28"><rect width="24" height="24" rx="6" fill="white" fill-opacity="0.2"/><path d="M17.1 10.5c0-2.5-1.7-4-4.2-4-.7 0-1.5.1-2.2.4L11.5 9c.4-.1.8-.2 1.2-.2 1.2 0 2.1.6 2.1 1.8 0 1.3-.8 2.8-1.7 4.2l-.1.1c-.6.9-1.2 1.7-1.6 2.5H8.2l-.8-7.5L5 10.2l.9 7.3h3.9c1.4-1.8 3.5-4.5 4.3-5.8.5-.9 1-1.9 1-2.7l2 1.5c0 1.2-.5 2.5-1.2 3.7-.9 1.4-2 2.8-3 4h3.5c.7-1.2 1.6-2.6 2.3-4 .7-1.3 1.3-2.7 1.3-3.7z" fill="white" opacity="0.9"/></svg>
+                        Pay ${{ amount|floatformat:2 }} with Cash App
+                    </a>
+
+                    <!-- Cash Tag -->
+                    <div class="cashapp-tag-display">
+                        <div class="cashapp-tag-info">
+                            <span class="cashapp-tag-label">Recipient</span>
+                            <span class="cashapp-tag-value">{{ cashapp_tag }}</span>
+                        </div>
+                        <button class="cashapp-tag-copy" onclick="copyCashTag()">Copy</button>
+                    </div>
+                </div>
+
+                <!-- ═══ Confirm Payment (shown after user clicks Pay) ═══ -->
+                <div class="cashapp-confirm-section" id="confirm-section">
+                    <div class="cashapp-confirm-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" width="32" height="32"><path d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z"/><path d="M9 12l2 2 4-4"/></svg>
+                    </div>
+                    <h3 style="color:#1e293b;font-weight:700;font-size:1.15rem;margin:0 0 0.25rem 0;">Complete Your Deposit</h3>
+                    <p style="color:#64748b;font-size:0.85rem;margin:0 0 0.25rem 0;">After sending <strong>${{ amount|floatformat:2 }}</strong> to <strong>{{ cashapp_tag }}</strong> in Cash App</p>
+                    <p style="color:#94a3b8;font-size:0.78rem;margin:0;">Include reference: <code style="background:#f0fdf4;padding:0.15rem 0.4rem;border-radius:4px;font-weight:600;color:#16a34a;">{{ payment_reference }}</code></p>
+
+                    <form method="POST" action="{% url 'shareholders:shareholder_deposit_success' %}" id="confirm-form">
+                        {% csrf_token %}
+                        <input type="hidden" name="method" value="cashapp">
+                        <input type="hidden" name="amount" value="{{ amount }}">
+                        <input type="hidden" name="member_id" value="{{ member_id }}">
+                        <input type="hidden" name="reference" value="{{ payment_reference }}">
+                        <button type="submit" class="btn-confirm-deposit">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="20" height="20"><polyline points="20 6 9 17 4 12"/></svg>
+                            Confirm Payment Sent
+                        </button>
+                    </form>
+                    <button class="btn-go-back-payment" onclick="showDirectPay()">Go back to payment</button>
+                </div>
+
+                <!-- Processing State -->
+                <div class="cashapp-processing" id="processing-state">
+                    <div class="spinner"></div>
+                    <h3 style="color:#16a34a;font-weight:700;margin:0 0 0.5rem 0;">Processing Payment...</h3>
+                    <p style="color:#64748b;font-size:0.9rem;margin:0;">Completing your Cash App deposit. Please wait.</p>
+                </div>
+
+                <!-- Success State -->
+                <div class="cashapp-success" id="success-state">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="2.5" width="48" height="48" style="margin-bottom:1rem;"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+                    <h3 style="color:#16a34a;font-weight:700;margin:0 0 0.5rem 0;">Payment Successful!</h3>
+                    <p style="color:#64748b;font-size:0.9rem;margin:0;">Redirecting to your contribution form...</p>
+                </div>
+
+                <!-- Security -->
+                <div class="cashapp-security" id="security-info">
+                    <div class="cashapp-security-item">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                        <span>Secured by Cash App's encryption</span>
+                    </div>
+                    <div class="cashapp-security-item">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                        <span>Direct peer-to-peer payment via Cash App</span>
+                    </div>
+                    <div class="cashapp-security-item">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><polyline points="20 6 9 17 4 12"/></svg>
+                        <span>Pre-filled amount &amp; recipient for accuracy</span>
+                    </div>
+                </div>
+
+                <div style="margin-top:1.5rem;">
+                    <a href="{% url 'shareholders:shareholder_deposit' %}?amount={{ amount }}&member_id={{ member_id }}" class="btn-back-methods">
+                        Use a Different Payment Method
+                    </a>
+                </div>
+            </div>
+        </div>
+    </main>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<!-- QR Code Generator (lightweight, client-side only - no external API) -->
+<script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
+
+{% if square_configured %}
+<!-- Square Web Payments SDK -->
+{% if square_environment == 'production' %}
+<script src="https://web.squarecdn.com/v1/square.js"></script>
+{% else %}
+<script src="https://sandbox.web.squarecdn.com/v1/square.js"></script>
+{% endif %}
+{% endif %}
+
+<script>
+(function() {
+    var CASHAPP_URL = '{{ cashapp_url|escapejs }}';
+    var CASHAPP_TAG = '{{ cashapp_tag|escapejs }}';
+    var AMOUNT = parseFloat('{{ amount|floatformat:2 }}');
+    var CAPTURE_URL = '{% url "shareholders:shareholder_cashapp_capture" %}';
+    var SQUARE_CONFIGURED = {{ square_configured|yesno:"true,false" }};
+
+    // ── Generate QR Code ─────────────────────────────────────
+    function generateQR() {
+        var canvas = document.getElementById('qr-canvas');
+        if (canvas && typeof QRCode !== 'undefined') {
+            QRCode.toCanvas(canvas, CASHAPP_URL, {
+                width: 220,
+                margin: 2,
+                color: { dark: '#1e293b', light: '#ffffff' }
+            }, function(err) {
+                if (err) console.error('QR generation error:', err);
+            });
+        }
+    }
+
+    // ── Copy Cash Tag ────────────────────────────────────────
+    window.copyCashTag = function() {
+        if (navigator.clipboard) {
+            navigator.clipboard.writeText(CASHAPP_TAG).then(function() { showToast('Copied ' + CASHAPP_TAG); });
+        } else {
+            var ta = document.createElement('textarea');
+            ta.value = CASHAPP_TAG; document.body.appendChild(ta); ta.select();
+            document.execCommand('copy'); document.body.removeChild(ta);
+            showToast('Copied ' + CASHAPP_TAG);
+        }
+    };
+
+    function showToast(msg) {
+        var t = document.createElement('div');
+        t.textContent = msg;
+        t.style.cssText = 'position:fixed;bottom:2rem;left:50%;transform:translateX(-50%);background:#1e293b;color:white;padding:0.5rem 1.25rem;border-radius:8px;font-size:0.85rem;font-weight:600;z-index:9999;';
+        document.body.appendChild(t);
+        setTimeout(function() { t.remove(); }, 1500);
+    }
+
+    // ── Show confirm section after user opens Cash App ───────
+    window._cashAppOpened = false;
+
+    function watchForCashAppOpen() {
+        var btn = document.getElementById('cashapp-deeplink-btn');
+        if (!btn) return;
+
+        btn.addEventListener('click', function() {
+            // Show confirm section after a short delay (user switches to Cash App)
+            setTimeout(function() {
+                document.getElementById('direct-pay-section').style.display = 'none';
+                document.getElementById('confirm-section').classList.add('active');
+            }, 1500);
+        });
+    }
+
+    // ── Go back from confirm to payment ──────────────────────
+    window.showDirectPay = function() {
+        document.getElementById('confirm-section').classList.remove('active');
+        var section = document.getElementById('direct-pay-section');
+        section.style.display = '';
+        section.classList.add('active');
+    };
+
+    // ── CSRF helper ──────────────────────────────────────────
+    function getCsrfToken() {
+        var name = 'csrftoken';
+        var cookies = document.cookie.split(';');
+        for (var i = 0; i < cookies.length; i++) {
+            var c = cookies[i].trim();
+            if (c.indexOf(name + '=') === 0) return decodeURIComponent(c.substring(name.length + 1));
+        }
+        return '';
+    }
+
+    // ── Square SDK Integration (when configured) ─────────────
+    {% if square_configured %}
+    var SQUARE_APP_ID = '{{ square_application_id|escapejs }}';
+    var SQUARE_LOCATION_ID = '{{ square_location_id|escapejs }}';
+
+    async function initSquareCashAppPay() {
+        if (!window.Square) {
+            // Square SDK didn't load — activate direct pay fallback
+            activateDirectPayFallback();
+            return;
+        }
+        try {
+            var payments = window.Square.payments(SQUARE_APP_ID, SQUARE_LOCATION_ID);
+            var paymentRequest = payments.paymentRequest({
+                countryCode: 'US',
+                currencyCode: 'USD',
+                total: { amount: AMOUNT.toFixed(2), label: 'Shareholder Cash Contribution' },
+            });
+
+            var cashAppButton = await payments.cashAppPay(paymentRequest, {
+                redirectURL: window.location.href,
+                referenceId: '{{ payment_reference|escapejs }}',
+            });
+
+            await cashAppButton.attach('#cashapp-button-container', {
+                shape: 'semiround', width: 'full', size: 'medium',
+            });
+
+            cashAppButton.addEventListener('ontokenization', async function(event) {
+                var tokenResult = event.detail;
+                if (tokenResult.status === 'OK') {
+                    document.getElementById('square-sdk-card').style.display = 'none';
+                    document.getElementById('processing-state').classList.add('active');
+
+                    try {
+                        var resp = await fetch(CAPTURE_URL, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json', 'X-CSRFToken': getCsrfToken() },
+                            body: JSON.stringify({ sourceId: tokenResult.token, amount: AMOUNT }),
+                        });
+                        var result = await resp.json();
+                        if (result.success && result.redirect_url) {
+                            document.getElementById('processing-state').classList.remove('active');
+                            document.getElementById('success-state').classList.add('active');
+                            setTimeout(function() { window.location.href = result.redirect_url; }, 1000);
+                        } else {
+                            document.getElementById('processing-state').classList.remove('active');
+                            document.getElementById('square-sdk-card').style.display = 'block';
+                            showSdkError(result.error || 'Payment failed. Please try again.');
+                        }
+                    } catch (e) {
+                        document.getElementById('processing-state').classList.remove('active');
+                        document.getElementById('square-sdk-card').style.display = 'block';
+                        showSdkError('Network error. Please try again.');
+                    }
+                } else {
+                    var msgs = tokenResult.errors ? tokenResult.errors.map(function(e) { return e.message; }).join(', ') : 'Authorization failed.';
+                    showSdkError(msgs);
+                }
+            });
+
+        } catch (err) {
+            console.error('Square SDK init error:', err);
+            // SDK failed — seamlessly switch to direct pay
+            activateDirectPayFallback();
+        }
+    }
+
+    function showSdkError(msg) {
+        var el = document.getElementById('sdk-error');
+        el.textContent = msg;
+        el.classList.add('active');
+    }
+
+    function activateDirectPayFallback() {
+        var sdkCard = document.getElementById('square-sdk-card');
+        if (sdkCard) sdkCard.style.display = 'none';
+        document.getElementById('direct-pay-section').classList.add('active');
+    }
+    {% endif %}
+
+    // ── Init ─────────────────────────────────────────────────
+    function init() {
+        generateQR();
+        watchForCashAppOpen();
+        {% if square_configured %}
+        initSquareCashAppPay();
+        {% endif %}
+    }
+
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', init);
+    } else {
+        init();
+    }
+})();
+</script>
+{% endblock %}

@@ -1,0 +1,334 @@
+{% extends "main/base_templates/new_base.html" %}
+{% load static %}
+
+{% block title %}Direct Deposit - Shareholder Contribution{% endblock %}
+
+{% block extra_css %}
+<style>
+:root {
+    --sh-primary: #2563eb;
+    --sh-primary-light: #60a5fa;
+    --sh-text-dark: #1e293b;
+    --sh-text-muted: #64748b;
+    --sh-border: #e2e8f0;
+    --sh-bg-dark: #0f172a;
+}
+.sh-dashboard-container { display: flex; min-height: 100vh; background: #f8fafc; }
+.sh-sidebar { width: 280px; background: var(--sh-bg-dark); padding: 1.5rem; display: flex; flex-direction: column; flex-shrink: 0; }
+.sh-sidebar-header { display: flex; flex-direction: column; gap: 2rem; }
+.sh-logo-container { display: flex; align-items: center; gap: 0.75rem; }
+.sh-logo-icon { width: 40px; height: 40px; background: var(--sh-primary); border-radius: 12px; display: flex; align-items: center; justify-content: center; color: white; box-shadow: 0 4px 14px rgba(37, 99, 235, 0.3); }
+.sh-logo-text { color: white; font-weight: 900; font-size: 1.25rem; letter-spacing: -0.5px; }
+.sh-logo-text span { color: var(--sh-primary-light); }
+.sh-logo-subtitle { color: #475569; font-size: 9px; font-weight: 800; text-transform: uppercase; letter-spacing: 1.5px; }
+.sh-nav { display: flex; flex-direction: column; gap: 0.5rem; }
+.sh-nav-item { display: flex; align-items: center; gap: 0.75rem; padding: 0.875rem 1rem; border-radius: 10px; color: #94a3b8; text-decoration: none; font-weight: 500; font-size: 0.875rem; transition: all 0.2s ease; }
+.sh-nav-item:hover { background: rgba(255, 255, 255, 0.05); color: white; }
+.sh-nav-item.active { background: var(--sh-primary); color: white; box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3); }
+.sh-main { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+.sh-header { height: 80px; background: white; border-bottom: 1px solid var(--sh-border); padding: 0 2.5rem; display: flex; align-items: center; justify-content: space-between; }
+.sh-breadcrumb { display: flex; align-items: center; gap: 0.5rem; color: var(--sh-text-muted); font-size: 0.875rem; }
+.sh-breadcrumb-current { color: var(--sh-text-dark); font-weight: 600; }
+.sh-content { flex: 1; overflow-y: auto; padding: 2.5rem; }
+
+/* Deposit Page Styles */
+.deposit-container { max-width: 720px; margin: 0 auto; }
+.deposit-header { text-align: center; margin-bottom: 2rem; }
+.deposit-header h2 { font-size: 1.75rem; font-weight: 700; color: #1e293b; margin: 0 0 0.5rem 0; }
+.deposit-header p { color: #64748b; font-size: 0.95rem; margin: 0; }
+
+.deposit-amount-card {
+    background: linear-gradient(135deg, #1e40af, #2563eb);
+    border-radius: 14px;
+    padding: 1.5rem 2rem;
+    color: white;
+    margin-bottom: 2rem;
+    box-shadow: 0 10px 30px rgba(37, 99, 235, 0.3);
+}
+.deposit-amount-label { font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.1em; opacity: 0.8; margin-bottom: 0.25rem; }
+.deposit-amount-input-wrap { display: flex; align-items: center; gap: 0.5rem; }
+.deposit-amount-input-wrap .dollar-sign { font-size: 2rem; font-weight: 700; opacity: 0.7; }
+.deposit-amount-input {
+    background: rgba(255,255,255,0.15);
+    border: 2px solid rgba(255,255,255,0.3);
+    border-radius: 10px;
+    color: white;
+    font-size: 2rem;
+    font-weight: 700;
+    padding: 0.5rem 1rem;
+    width: 100%;
+    outline: none;
+    transition: border-color 0.2s;
+}
+.deposit-amount-input::placeholder { color: rgba(255,255,255,0.4); }
+.deposit-amount-input:focus { border-color: rgba(255,255,255,0.7); background: rgba(255,255,255,0.2); }
+
+.deposit-member-info {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-top: 1rem;
+    padding-top: 1rem;
+    border-top: 1px solid rgba(255,255,255,0.15);
+}
+.deposit-member-info .avatar {
+    width: 32px; height: 32px; border-radius: 50%; background: rgba(255,255,255,0.2);
+    display: flex; align-items: center; justify-content: center; font-weight: 600; font-size: 0.8rem;
+}
+.deposit-member-info .name { font-weight: 600; font-size: 0.9rem; }
+.deposit-member-info .role { font-size: 0.75rem; opacity: 0.7; }
+
+.methods-title {
+    font-size: 0.8rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: #64748b;
+    margin-bottom: 1rem;
+}
+.methods-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.85rem; margin-bottom: 2rem; }
+
+.method-card {
+    background: white;
+    border: 2px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 1.25rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+.method-card:hover { border-color: #93c5fd; background: #f8fafc; transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.08); }
+.method-card .icon-wrap {
+    width: 44px; height: 44px; border-radius: 10px;
+    display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+}
+.method-card .method-name { font-weight: 600; color: #1e293b; font-size: 0.9rem; }
+.method-card .method-desc { font-size: 0.75rem; color: #64748b; }
+.method-card .method-meta { font-size: 0.7rem; color: #94a3b8; margin-top: 0.15rem; }
+
+.deposit-info-banner {
+    padding: 1rem 1.25rem;
+    background: #eff6ff;
+    border: 1px solid #bfdbfe;
+    border-radius: 10px;
+    font-size: 0.85rem;
+    color: #1e40af;
+    margin-bottom: 1.5rem;
+}
+
+.deposit-back-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: #64748b;
+    text-decoration: none;
+    font-size: 0.875rem;
+    font-weight: 500;
+    transition: color 0.2s;
+}
+.deposit-back-link:hover { color: #1e293b; }
+
+@media (max-width: 768px) {
+    .methods-grid { grid-template-columns: 1fr; }
+    .deposit-amount-input { font-size: 1.5rem; }
+    .deposit-amount-input-wrap .dollar-sign { font-size: 1.5rem; }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="sh-dashboard-container">
+    <!-- Sidebar -->
+    <aside class="sh-sidebar">
+        <div class="sh-sidebar-header">
+            <div class="sh-logo-container">
+                <div class="sh-logo-icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/></svg>
+                </div>
+                <div>
+                    <h1 class="sh-logo-text">SHARE<span>HOLD</span></h1>
+                    <p class="sh-logo-subtitle">Equity Pilot v1.0</p>
+                </div>
+            </div>
+            <nav class="sh-nav">
+                <a href="{% url 'shareholders:shareholders_dashboard' %}" class="sh-nav-item">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+                    <span>Dashboard</span>
+                </a>
+                <a href="{% url 'shareholders:ledgers_view' %}" class="sh-nav-item">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                    <span>Ledgers</span>
+                </a>
+                <a href="{% url 'shareholders:members_overview' %}" class="sh-nav-item active">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                    <span>Members & Equity</span>
+                </a>
+            </nav>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="sh-main">
+        <header class="sh-header">
+            <div class="sh-breadcrumb">
+                <a href="{% url 'shareholders:shareholders_dashboard' %}" style="color: #64748b; text-decoration: none;">Deal Portal</a>
+                <span style="color: #cbd5e1;">›</span>
+                <a href="{% url 'shareholders:contribution_log' %}" style="color: #64748b; text-decoration: none;">Log Contribution</a>
+                <span style="color: #cbd5e1;">›</span>
+                <span class="sh-breadcrumb-current">Direct Deposit</span>
+            </div>
+        </header>
+
+        <div class="sh-content">
+            <div class="deposit-container">
+                <!-- Back Link -->
+                <a href="{% url 'shareholders:contribution_log' %}{% if member_id %}?member_id={{ member_id }}{% endif %}" class="deposit-back-link" style="margin-bottom: 1.5rem; display: inline-flex;">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+                    Back to Contribution Form
+                </a>
+
+                <!-- Header -->
+                <div class="deposit-header">
+                    <h2>Direct Deposit</h2>
+                    <p>Enter your deposit amount and choose a payment method to proceed</p>
+                </div>
+
+                <!-- Amount Card -->
+                <div class="deposit-amount-card">
+                    <div class="deposit-amount-label">Deposit Amount (USD)</div>
+                    <div class="deposit-amount-input-wrap">
+                        <span class="dollar-sign">$</span>
+                        <input type="number"
+                               id="deposit-amount"
+                               class="deposit-amount-input"
+                               placeholder="0.00"
+                               step="0.01"
+                               min="0.01"
+                               value="{{ amount_str }}"
+                               required>
+                    </div>
+                    {% if member_name %}
+                    <div class="deposit-member-info">
+                        <div class="avatar">{{ member_name|truncatechars:2 }}</div>
+                        <div>
+                            <div class="name">{{ member_name }}</div>
+                            <div class="role">Contributing Member</div>
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+
+                <!-- Info Banner -->
+                <div class="deposit-info-banner">
+                    <strong>How it works:</strong> Enter your amount above, select a payment method below, complete the deposit, then you'll be redirected back to submit your contribution with the amount already filled in.
+                </div>
+
+                <!-- Payment Methods -->
+                <div class="methods-title">Select Payment Method</div>
+                <div class="methods-grid">
+                    <!-- Stripe -->
+                    <form method="POST" action="{% url 'shareholders:shareholder_deposit_process' 'stripe' %}" class="method-form">
+                        {% csrf_token %}
+                        <input type="hidden" name="amount" class="method-amount-field">
+                        <input type="hidden" name="member_id" value="{{ member_id }}">
+                        <button type="submit" class="method-card" style="width:100%; border:2px solid #e2e8f0; background:white;">
+                            <div class="icon-wrap" style="background:#f0f0fe;">
+                                <svg viewBox="0 0 24 24" fill="#6366f1" width="20" height="20"><rect x="1" y="4" width="22" height="16" rx="2"/></svg>
+                            </div>
+                            <div style="text-align:left;flex:1;">
+                                <div class="method-name">Card (Stripe) <span style="background:#dcfce7;color:#16a34a;font-size:9px;padding:2px 6px;border-radius:4px;font-weight:700;vertical-align:middle;">LIVE</span></div>
+                                <div class="method-desc">Secure card payment via Stripe Checkout</div>
+                                <div class="method-meta">Instant &bull; 2.9% + 30¢</div>
+                            </div>
+                        </button>
+                    </form>
+
+                    <!-- PayPal -->
+                    <form method="POST" action="{% url 'shareholders:shareholder_deposit_process' 'paypal' %}" class="method-form">
+                        {% csrf_token %}
+                        <input type="hidden" name="amount" class="method-amount-field">
+                        <input type="hidden" name="member_id" value="{{ member_id }}">
+                        <button type="submit" class="method-card" style="width:100%; border:2px solid #e2e8f0; background:white;">
+                            <div class="icon-wrap" style="background:#dbeafe;">
+                                <svg viewBox="0 0 24 24" fill="#1d4ed8" width="20" height="20"><circle cx="12" cy="12" r="10"/><path d="M8 8h5c2 0 3 1 3 2.5S15 13 13 13H10l-1 4H8l1.5-9z" stroke="white" stroke-width="0.5"/></svg>
+                            </div>
+                            <div style="text-align:left;flex:1;">
+                                <div class="method-name">PayPal <span style="background:#dcfce7;color:#16a34a;font-size:9px;padding:2px 6px;border-radius:4px;font-weight:700;vertical-align:middle;">LIVE</span></div>
+                                <div class="method-desc">Pay with PayPal Smart Buttons</div>
+                                <div class="method-meta">Instant &bull; 3.5%</div>
+                            </div>
+                        </button>
+                    </form>
+
+                    <!-- M-Pesa -->
+                    <form method="POST" action="{% url 'shareholders:shareholder_deposit_process' 'mpesa' %}" class="method-form">
+                        {% csrf_token %}
+                        <input type="hidden" name="amount" class="method-amount-field">
+                        <input type="hidden" name="member_id" value="{{ member_id }}">
+                        <button type="submit" class="method-card" style="width:100%; border:2px solid #e2e8f0; background:white;">
+                            <div class="icon-wrap" style="background:#f0fdf4;">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="2" width="20" height="20"><rect x="5" y="2" width="14" height="20" rx="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg>
+                            </div>
+                            <div style="text-align:left;flex:1;">
+                                <div class="method-name">M-Pesa <span style="background:#dcfce7;color:#16a34a;font-size:9px;padding:2px 6px;border-radius:4px;font-weight:700;vertical-align:middle;">LIVE</span></div>
+                                <div class="method-desc">Pay via STK Push to your phone</div>
+                                <div class="method-meta">Instant &bull; 2.5%</div>
+                            </div>
+                        </button>
+                    </form>
+
+                    <!-- CashApp -->
+                    <form method="POST" action="{% url 'shareholders:shareholder_deposit_process' 'cashapp' %}" class="method-form">
+                        {% csrf_token %}
+                        <input type="hidden" name="amount" class="method-amount-field">
+                        <input type="hidden" name="member_id" value="{{ member_id }}">
+                        <button type="submit" class="method-card" style="width:100%; border:2px solid #e2e8f0; background:white;">
+                            <div class="icon-wrap" style="background:#dcfce7;">
+                                <svg viewBox="0 0 24 24" fill="#16a34a" width="20" height="20"><rect width="24" height="24" rx="6"/><path d="M15.5 8.5c.45.52.68 1.18.68 1.95 0 2.41-2.06 5.55-3.72 7.75H9.36L8.15 9.88l2.72-.26.61 4.97c.58-.94 1.28-2.42 1.28-3.44 0-.72-.12-1.21-.33-1.61L15.5 8.5z" fill="white"/></svg>
+                            </div>
+                            <div style="text-align:left;flex:1;">
+                                <div class="method-name">Cash App <span style="background:#dcfce7;color:#16a34a;font-size:9px;padding:2px 6px;border-radius:4px;font-weight:700;vertical-align:middle;">LIVE</span></div>
+                                <div class="method-desc">Pay with Cash App</div>
+                                <div class="method-meta">Instant &bull; 1.5%</div>
+                            </div>
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </main>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+(function() {
+    var amountInput = document.getElementById('deposit-amount');
+    var forms = document.querySelectorAll('.method-form');
+
+    // Sync amount to all hidden fields before form submit
+    forms.forEach(function(form) {
+        form.addEventListener('submit', function(e) {
+            var val = parseFloat(amountInput.value);
+            if (!val || val <= 0) {
+                e.preventDefault();
+                amountInput.style.borderColor = '#ef4444';
+                amountInput.focus();
+                alert('Please enter a valid deposit amount before selecting a payment method.');
+                return false;
+            }
+            // Set amount in the hidden field
+            form.querySelector('.method-amount-field').value = val.toFixed(2);
+        });
+    });
+
+    // Focus amount input on load if empty
+    if (!amountInput.value) {
+        amountInput.focus();
+    }
+})();
+</script>
+{% endblock %}

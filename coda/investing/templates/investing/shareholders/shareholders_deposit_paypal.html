@@ -1,0 +1,227 @@
+{% extends "main/base_templates/new_base.html" %}
+{% load static %}
+
+{% block title %}Pay with PayPal - Shareholder Contribution{% endblock %}
+
+{% block extra_css %}
+<style>
+:root { --sh-primary: #2563eb; --sh-primary-light: #60a5fa; --sh-text-dark: #1e293b; --sh-text-muted: #64748b; --sh-border: #e2e8f0; --sh-bg-dark: #0f172a; }
+.sh-dashboard-container { display: flex; min-height: 100vh; background: #f8fafc; }
+.sh-sidebar { width: 280px; background: var(--sh-bg-dark); padding: 1.5rem; display: flex; flex-direction: column; flex-shrink: 0; }
+.sh-sidebar-header { display: flex; flex-direction: column; gap: 2rem; }
+.sh-logo-container { display: flex; align-items: center; gap: 0.75rem; }
+.sh-logo-icon { width: 40px; height: 40px; background: var(--sh-primary); border-radius: 12px; display: flex; align-items: center; justify-content: center; color: white; box-shadow: 0 4px 14px rgba(37, 99, 235, 0.3); }
+.sh-logo-text { color: white; font-weight: 900; font-size: 1.25rem; letter-spacing: -0.5px; }
+.sh-logo-text span { color: var(--sh-primary-light); }
+.sh-logo-subtitle { color: #475569; font-size: 9px; font-weight: 800; text-transform: uppercase; letter-spacing: 1.5px; }
+.sh-nav { display: flex; flex-direction: column; gap: 0.5rem; }
+.sh-nav-item { display: flex; align-items: center; gap: 0.75rem; padding: 0.875rem 1rem; border-radius: 10px; color: #94a3b8; text-decoration: none; font-weight: 500; font-size: 0.875rem; transition: all 0.2s ease; }
+.sh-nav-item:hover { background: rgba(255, 255, 255, 0.05); color: white; }
+.sh-nav-item.active { background: var(--sh-primary); color: white; box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3); }
+.sh-main { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+.sh-header { height: 80px; background: white; border-bottom: 1px solid var(--sh-border); padding: 0 2.5rem; display: flex; align-items: center; justify-content: space-between; }
+.sh-breadcrumb { display: flex; align-items: center; gap: 0.5rem; color: var(--sh-text-muted); font-size: 0.875rem; }
+.sh-breadcrumb-current { color: var(--sh-text-dark); font-weight: 600; }
+.sh-content { flex: 1; overflow-y: auto; padding: 2.5rem; }
+
+.gateway-container { max-width: 560px; margin: 0 auto; }
+.gateway-back-link { display: inline-flex; align-items: center; gap: 0.5rem; color: #64748b; text-decoration: none; font-size: 0.875rem; font-weight: 500; margin-bottom: 1.5rem; transition: color 0.2s; }
+.gateway-back-link:hover { color: #1e293b; }
+
+.paypal-hero {
+    background: linear-gradient(135deg, #003087, #009cde);
+    border-radius: 14px; padding: 2rem; color: white; text-align: center;
+    margin-bottom: 2rem; box-shadow: 0 10px 30px rgba(0, 60, 135, 0.3);
+}
+.paypal-hero h2 { font-size: 1.5rem; font-weight: 700; margin: 0 0 0.25rem 0; }
+.paypal-hero .amount-display { font-size: 2.5rem; font-weight: 800; margin: 0.75rem 0; }
+.paypal-hero .ref-display { font-size: 0.8rem; opacity: 0.8; }
+.paypal-hero .ref-code { background: rgba(255,255,255,0.15); padding: 0.25rem 0.75rem; border-radius: 6px; font-family: monospace; font-weight: 600; }
+
+.paypal-card {
+    background: white; border: 1px solid #e2e8f0; border-radius: 14px;
+    padding: 2rem; margin-bottom: 1.5rem; box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+}
+.paypal-card-title { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: #64748b; margin-bottom: 1.25rem; }
+#paypal-button-container { min-height: 55px; }
+
+.paypal-loading { text-align: center; padding: 2rem; color: #64748b; }
+.paypal-loading .spinner { width: 36px; height: 36px; border: 3px solid #e2e8f0; border-top: 3px solid #003087; border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto 1rem; }
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.paypal-secure { display: flex; align-items: center; gap: 0.5rem; color: #16a34a; font-size: 0.8rem; font-weight: 600; margin-top: 1rem; }
+.paypal-info { padding: 1rem 1.25rem; background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 10px; font-size: 0.85rem; color: #1e40af; margin-bottom: 1.5rem; }
+
+.btn-back-methods { display: block; text-align: center; background: transparent; color: #64748b; border: 1px solid #e2e8f0; border-radius: 12px; padding: 0.75rem; font-size: 0.875rem; font-weight: 600; text-decoration: none; transition: all 0.2s; }
+.btn-back-methods:hover { background: #f8fafc; color: #1e293b; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="sh-dashboard-container">
+    <aside class="sh-sidebar">
+        <div class="sh-sidebar-header">
+            <div class="sh-logo-container">
+                <div class="sh-logo-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/></svg></div>
+                <div><h1 class="sh-logo-text">SHARE<span>HOLD</span></h1><p class="sh-logo-subtitle">Equity Pilot v1.0</p></div>
+            </div>
+            <nav class="sh-nav">
+                <a href="{% url 'shareholders:shareholders_dashboard' %}" class="sh-nav-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg><span>Dashboard</span></a>
+                <a href="{% url 'shareholders:ledgers_view' %}" class="sh-nav-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg><span>Ledgers</span></a>
+                <a href="{% url 'shareholders:members_overview' %}" class="sh-nav-item active"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg><span>Members & Equity</span></a>
+            </nav>
+        </div>
+    </aside>
+
+    <main class="sh-main">
+        <header class="sh-header">
+            <div class="sh-breadcrumb">
+                <a href="{% url 'shareholders:shareholders_dashboard' %}" style="color:#64748b;text-decoration:none;">Deal Portal</a>
+                <span style="color:#cbd5e1;">›</span>
+                <a href="{% url 'shareholders:contribution_log' %}" style="color:#64748b;text-decoration:none;">Log Contribution</a>
+                <span style="color:#cbd5e1;">›</span>
+                <a href="{% url 'shareholders:shareholder_deposit' %}?amount={{ amount }}&member_id={{ member_id }}" style="color:#64748b;text-decoration:none;">Direct Deposit</a>
+                <span style="color:#cbd5e1;">›</span>
+                <span class="sh-breadcrumb-current">PayPal</span>
+            </div>
+        </header>
+
+        <div class="sh-content">
+            <div class="gateway-container">
+                <a href="{% url 'shareholders:shareholder_deposit' %}?amount={{ amount }}&member_id={{ member_id }}" class="gateway-back-link">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+                    Back to Payment Methods
+                </a>
+
+                <!-- PayPal Hero -->
+                <div class="paypal-hero">
+                    <h2>Pay with PayPal</h2>
+                    <div class="amount-display">${{ amount|floatformat:2 }}</div>
+                    <div class="ref-display">Reference: <span class="ref-code">{{ payment_reference }}</span></div>
+                </div>
+
+                <!-- PayPal Buttons -->
+                <div class="paypal-card">
+                    <div class="paypal-card-title">Complete Your Payment</div>
+                    <div id="paypal-button-container">
+                        <div class="paypal-loading">
+                            <div class="spinner"></div>
+                            <div>Loading PayPal...</div>
+                        </div>
+                    </div>
+                    <div class="paypal-secure">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
+                        Secured by PayPal Buyer Protection
+                    </div>
+                </div>
+
+                <div class="paypal-info">
+                    <strong>How it works:</strong> Click the PayPal button above to pay securely through PayPal's checkout. Once complete, you'll be redirected back to submit your contribution automatically.
+                </div>
+
+                <a href="{% url 'shareholders:shareholder_deposit' %}?amount={{ amount }}&member_id={{ member_id }}" class="btn-back-methods">
+                    Use a Different Payment Method
+                </a>
+            </div>
+        </div>
+    </main>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<!-- PayPal JavaScript SDK -->
+<script src="https://www.paypal.com/sdk/js?client-id={{ paypal_client_id }}&currency=USD"></script>
+
+<script>
+(function() {
+    var AMOUNT = '{{ amount|floatformat:2 }}';
+    var CAPTURE_URL = '{% url "shareholders:shareholder_paypal_capture" %}';
+
+    function getCsrfToken() {
+        var cookies = document.cookie.split(';');
+        for (var i = 0; i < cookies.length; i++) {
+            var c = cookies[i].trim();
+            if (c.indexOf('csrftoken=') === 0) return decodeURIComponent(c.substring(10));
+        }
+        return '';
+    }
+
+    if (typeof paypal === 'undefined') {
+        document.getElementById('paypal-button-container').innerHTML =
+            '<div style="padding:1.5rem;background:#fef2f2;border:1px solid #fecaca;border-radius:10px;color:#991b1b;text-align:center;">' +
+            '<strong>PayPal SDK failed to load.</strong><br>Please check your internet connection and try again.' +
+            '</div>';
+        return;
+    }
+
+    paypal.Buttons({
+        style: {
+            layout: 'vertical',
+            color: 'blue',
+            shape: 'rect',
+            label: 'pay',
+            height: 55
+        },
+
+        createOrder: function(data, actions) {
+            return actions.order.create({
+                purchase_units: [{
+                    amount: {
+                        value: AMOUNT,
+                        currency_code: 'USD'
+                    },
+                    description: 'Shareholder Cash Contribution'
+                }]
+            });
+        },
+
+        onApprove: function(data, actions) {
+            document.getElementById('paypal-button-container').innerHTML =
+                '<div class="paypal-loading"><div class="spinner"></div><div>Processing payment...</div></div>';
+
+            return actions.order.capture().then(function(orderData) {
+                var transaction = orderData.purchase_units[0].payments.captures[0];
+                var payerEmail = orderData.payer && orderData.payer.email_address ? orderData.payer.email_address : '';
+
+                return fetch(CAPTURE_URL, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': getCsrfToken()
+                    },
+                    body: JSON.stringify({
+                        orderID: data.orderID,
+                        transactionID: transaction.id,
+                        amount: AMOUNT,
+                        payerEmail: payerEmail,
+                        method: 'paypal'
+                    })
+                }).then(function(resp) { return resp.json(); })
+                  .then(function(result) {
+                    if (result.success && result.redirect_url) {
+                        window.location.href = result.redirect_url;
+                    } else {
+                        alert('Payment captured but recording failed. Transaction ID: ' + transaction.id + '. Please contact support.');
+                    }
+                }).catch(function(err) {
+                    alert('Payment successful! Transaction ID: ' + transaction.id + '. Redirecting...');
+                    window.location.href = '{% url "shareholders:shareholder_deposit_success" %}?method=paypal';
+                });
+            });
+        },
+
+        onError: function(err) {
+            console.error('PayPal error:', err);
+            document.getElementById('paypal-button-container').innerHTML =
+                '<div style="padding:1rem;background:#fef2f2;border:1px solid #fecaca;border-radius:10px;color:#991b1b;text-align:center;">' +
+                'PayPal encountered an error. Please try again or use a different payment method.' +
+                '</div>';
+        },
+
+        onCancel: function(data) {
+            console.log('PayPal payment cancelled');
+        }
+    }).render('#paypal-button-container');
+})();
+</script>
+{% endblock %}
