@@ -170,14 +170,22 @@
         </div>
     </main>
 </div>
+
+<!-- Django → JS config bridge: avoids template tags inside <script> blocks -->
+<div id="mpesa-config"
+     data-stk-push-url="{% url 'shareholders:shareholder_mpesa_stk_push' %}"
+     data-check-status-url="{% url 'shareholders:shareholder_mpesa_check_status' %}"
+     data-amount="{{ amount|floatformat:2 }}"
+     style="display:none;"></div>
 {% endblock %}
 
 {% block extra_js %}
 <script>
 (function() {
-    var STK_PUSH_URL = '{% url "shareholders:shareholder_mpesa_stk_push" %}';
-    var CHECK_STATUS_URL = '{% url "shareholders:shareholder_mpesa_check_status" %}';
-    var AMOUNT = {{ amount|floatformat:2 }};
+    var cfg = document.getElementById('mpesa-config').dataset;
+    var STK_PUSH_URL    = cfg.stkPushUrl;
+    var CHECK_STATUS_URL = cfg.checkStatusUrl;
+    var AMOUNT          = parseFloat(cfg.amount);
     var pollTimer = null;
     var pollCount = 0;
     var MAX_POLLS = 60;

@@ -282,6 +282,19 @@
         </div>
     </main>
 </div>
+
+<!-- Django → JS config bridge: all server values go here as data attributes -->
+<!-- This avoids putting Django template tags inside <script> blocks -->
+<div id="cashapp-config"
+     data-cashapp-url="{{ cashapp_url|escapejs }}"
+     data-cashapp-tag="{{ cashapp_tag|escapejs }}"
+     data-amount="{{ amount|floatformat:2 }}"
+     data-reference="{{ payment_reference|escapejs }}"
+     data-capture-url="{% url 'shareholders:shareholder_cashapp_capture' %}"
+     data-square-configured="{{ square_configured|yesno:'1,0' }}"
+     data-square-app-id="{{ square_application_id|escapejs }}"
+     data-square-location-id="{{ square_location_id|escapejs }}"
+     style="display:none;"></div>
 {% endblock %}
 
 {% block extra_js %}
@@ -299,11 +312,169 @@
 
 <script>
 (function() {
-    var CASHAPP_URL = '{{ cashapp_url|escapejs }}';
-    var CASHAPP_TAG = '{{ cashapp_tag|escapejs }}';
-    var AMOUNT = parseFloat('{{ amount|floatformat:2 }}');
-    var CAPTURE_URL = '{% url "shareholders:shareholder_cashapp_capture" %}';
-    var SQUARE_CONFIGURED = {{ square_configured|yesno:"true,false" }};
+    // Read all Django-rendered values from data attributes — zero template tags in JS
+    var cfg = document.getElementById('cashapp-config').dataset;
+    var CASHAPP_URL        = cfg.cashappUrl;
+    var CASHAPP_TAG        = cfg.cashappTag;
+    var AMOUNT             = parseFloat(cfg.amount);
+    var CAPTURE_URL        = cfg.captureUrl;
+    var REFERENCE          = cfg.reference;
+    var SQUARE_CONFIGURED  = (cfg.squareConfigured === '1');
+    var SQUARE_APP_ID      = cfg.squareAppId      || '';
+    var SQUARE_LOCATION_ID = cfg.squareLocationId || '';
+
+    // ── Generate QR Code ─────────────────────────
+    function generateQR() {
+        var canvas = document.getElementById('qr-canvas');
+        if (canvas && typeof QRCode !== 'undefined') {
+            QRCode.toCanvas(canvas, CASHAPP_URL, {
+                width: 220,
+                margin: 2,
+                color: { dark: '#1e293b', light: '#ffffff' }
+            }, function(err) {
+                if (err) console.error('QR generation error:', err);
+            });
+        }
+    }
+
+    // ── Copy Cash Tag ────────────────────────
+    window.copyCashTag = function() {
+        if (navigator.clipboard) {
+            navigator.clipboard.writeText(CASHAPP_TAG).then(function() { showToast('Copied ' + CASHAPP_TAG); });
+        } else {
+            var ta = document.createElement('textarea');
+            ta.value = CASHAPP_TAG; document.body.appendChild(ta); ta.select();
+            document.execCommand('copy'); document.body.removeChild(ta);
+            showToast('Copied ' + CASHAPP_TAG);
+        }
+    };
+
+    function showToast(msg) {
+        var t = document.createElement('div');
+        t.textContent = msg;
+        t.style.cssText = 'position:fixed;bottom:2rem;left:50%;transform:translateX(-50%);background:#1e293b;color:white;padding:0.5rem 1.25rem;border-radius:8px;font-size:0.85rem;font-weight:600;z-index:9999;';
+        document.body.appendChild(t);
+        setTimeout(function() { t.remove(); }, 1500);
+    }
+
+    // ── Show confirm section after user opens Cash App ───────
+    function watchForCashAppOpen() {
+        var btn = document.getElementById('cashapp-deeplink-btn');
+        if (!btn) return;
+        btn.addEventListener('click', function() {
+            setTimeout(function() {
+                document.getElementById('direct-pay-section').style.display = 'none';
+                document.getElementById('confirm-section').classList.add('active');
+            }, 1500);
+        });
+    }
+
+    // ── Go back from confirm to payment ────────────────
+    window.showDirectPay = function() {
+        document.getElementById('confirm-section').classList.remove('active');
+        var section = document.getElementById('direct-pay-section');
+        section.style.display = '';
+        section.classList.add('active');
+    };
+
+    // ── CSRF helper ────────────────────────────
+    function getCsrfToken() {
+        var name = 'csrftoken';
+        var cookies = document.cookie.split(';');
+        for (var i = 0; i < cookies.length; i++) {
+            var c = cookies[i].trim();
+            if (c.indexOf(name + '=') === 0) return decodeURIComponent(c.substring(name.length + 1));
+        }
+        return '';
+    }
+
+    // ── Square SDK Integration ─────────────────────────
+    async function initSquareCashAppPay() {
+        if (!window.Square) {
+            activateDirectPayFallback();
+            return;
+        }
+        try {
+            var payments = window.Square.payments(SQUARE_APP_ID, SQUARE_LOCATION_ID);
+            var paymentRequest = payments.paymentRequest({
+                countryCode: 'US',
+                currencyCode: 'USD',
+                total: { amount: AMOUNT.toFixed(2), label: 'Shareholder Cash Contribution' },
+            });
+            var cashAppButton = await payments.cashAppPay(paymentRequest, {
+                redirectURL: window.location.href,
+                referenceId: REFERENCE,
+            });
+            await cashAppButton.attach('#cashapp-button-container', {
+                shape: 'semiround', width: 'full', size: 'medium',
+            });
+            cashAppButton.addEventListener('ontokenization', async function(event) {
+                var tokenResult = event.detail;
+                if (tokenResult.status === 'OK') {
+                    document.getElementById('square-sdk-card').style.display = 'none';
+                    document.getElementById('processing-state').classList.add('active');
+                    try {
+                        var resp = await fetch(CAPTURE_URL, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json', 'X-CSRFToken': getCsrfToken() },
+                            body: JSON.stringify({ sourceId: tokenResult.token, amount: AMOUNT }),
+                        });
+                        var result = await resp.json();
+                        if (result.success && result.redirect_url) {
+                            document.getElementById('processing-state').classList.remove('active');
+                            document.getElementById('success-state').classList.add('active');
+                            setTimeout(function() { window.location.href = result.redirect_url; }, 1000);
+                        } else {
+                            document.getElementById('processing-state').classList.remove('active');
+                            document.getElementById('square-sdk-card').style.display = 'block';
+                            showSdkError(result.error || 'Payment failed. Please try again.');
+                        }
+                    } catch (e) {
+                        document.getElementById('processing-state').classList.remove('active');
+                        document.getElementById('square-sdk-card').style.display = 'block';
+                        showSdkError('Network error. Please try again.');
+                    }
+                } else {
+                    var msgs = tokenResult.errors
+                        ? tokenResult.errors.map(function(e) { return e.message; }).join(', ')
+                        : 'Authorization failed.';
+                    showSdkError(msgs);
+                }
+            });
+        } catch (err) {
+            console.error('Square SDK init error:', err);
+            activateDirectPayFallback();
+        }
+    }
+
+    function showSdkError(msg) {
+        var el = document.getElementById('sdk-error');
+        el.textContent = msg;
+        el.classList.add('active');
+    }
+
+    function activateDirectPayFallback() {
+        var sdkCard = document.getElementById('square-sdk-card');
+        if (sdkCard) sdkCard.style.display = 'none';
+        document.getElementById('direct-pay-section').classList.add('active');
+    }
+
+    // ── Init ────────────────────────────────────
+    function init() {
+        generateQR();
+        watchForCashAppOpen();
+        if (SQUARE_CONFIGURED) {
+            initSquareCashAppPay();
+        }
+    }
+
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', init);
+    } else {
+        init();
+    }
+})();
+</script>
 
     // ── Generate QR Code ─────────────────────────────────────
     function generateQR() {
