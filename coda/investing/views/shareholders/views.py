@@ -2046,6 +2046,10 @@ def shareholder_deposit_process(request, method):
 
             return render(request, 'investing/shareholders/shareholders_deposit_cashapp.html', base_context)
 
+        # ── Stripe fallback: if Stripe was unconfigured / errored, redirect back ──
+        if method == 'stripe':
+            return redirect('shareholders:shareholder_deposit')
+
     except Exception as e:
         logger.error(f"Error in shareholder_deposit_process: {str(e)}")
         messages.error(request, f"Error processing deposit: {str(e)}")
