@@ -317,10 +317,9 @@ def get_dashboard_metrics(deal: Deal) -> Dict:
         is_archived=False
     ).count()
     
-    # Stats Card: Total Cash Invested (APPROVED only, respecting spec)
+    # Stats Card: Total Amount Invested (ALL tiers, APPROVED only)
     total_cash_approved = LedgerEntry.objects.filter(
         deal=deal,
-        tier='CASH',
         status='APPROVED'
     ).aggregate(total=Sum('value_usd'))['total'] or Decimal('0.00')
     
@@ -330,12 +329,17 @@ def get_dashboard_metrics(deal: Deal) -> Dict:
         status='SUBMITTED'
     ).count()
     
-    # Stats Card: Next Snapshot
+    # Stats Card: Next Snapshot (always calculate dynamically — stored date can go stale)
+    from investing.services.shareholders.deal_config_service import DealConfigService
     from django.utils import timezone
-    next_snapshot_date = config.next_snapshot_date if config else None
+    config_service = DealConfigService(deal)
+    next_snapshot_date = config_service.calculate_next_snapshot_date()
+    # Fallback: use stored date if config is MANUAL / frequency not set
+    if next_snapshot_date is None:
+        next_snapshot_date = config.next_snapshot_date if config else None
     if next_snapshot_date:
         days_until = (next_snapshot_date - timezone.now().date()).days
-        snapshot_display = f"{days_until}d" if days_until > 0 else "Past due"
+        snapshot_display = f"{days_until}d" if days_until > 0 else "Today"
         snapshot_date_formatted = next_snapshot_date.strftime('%b %d, %Y')
     else:
         snapshot_display = "—"

@@ -141,12 +141,43 @@ def get_deal_member_summary(deal: Deal, include_submitted: bool = False) -> List
         
     Returns:
         List of member summary dicts
+    
+    Performance: Uses bulk annotate() to compute all metrics in ~2 queries
+    instead of 6 queries per member (N+1 elimination).
     """
     from investing.services.shareholders.dashboard_service import EquityEstimationService
     
+    # Determine which statuses to include
+    statuses = ['APPROVED', 'SUBMITTED'] if include_submitted else ['APPROVED']
+    
+    # Bulk-annotate all member metrics in a single query (replaces 6N queries)
+    # NOTE: Sum(..., default=) was added in Django 4.0 — on Django 3.2 the annotation
+    # can return None when no matching rows exist, so we use `or 0` in the dict below.
     members = Member.objects.filter(
         deal=deal,
         is_archived=False
+    ).annotate(
+        cash_invested=Sum(
+            'contributions__value_usd',
+            filter=Q(contributions__tier='CASH', contributions__status__in=statuses),
+        ),
+        in_kind_value=Sum(
+            'contributions__value_usd',
+            filter=Q(contributions__tier='IN_KIND', contributions__status__in=statuses),
+        ),
+        time_logged=Sum(
+            'contributions__internal_units_value',
+            filter=Q(contributions__tier='TIME', contributions__status__in=statuses),
+        ),
+        work_units=Sum(
+            'contributions__internal_units_value',
+            filter=Q(contributions__tier='WORK', contributions__status__in=statuses),
+        ),
+        contribution_count=Count('contributions'),
+        pending_count=Count(
+            'contributions',
+            filter=Q(contributions__status='SUBMITTED'),
+        ),
     ).order_by('legal_name')
     
     # Calculate equity for all members using EquityEstimationService
@@ -158,9 +189,6 @@ def get_deal_member_summary(deal: Deal, include_submitted: bool = False) -> List
     
     summaries = []
     for member in members:
-        service = MemberMetricsService(member, include_submitted=include_submitted)
-        metrics = service.get_all_metrics()
-        
         summaries.append({
             'id': member.id,
             'name': member.legal_name,
@@ -171,15 +199,17 @@ def get_deal_member_summary(deal: Deal, include_submitted: bool = False) -> List
             'email': member.email,
             'phone': member.phone or '',
             'joined_date': member.joined_date.strftime('%Y-%m-%d'),
-            'cash_invested': float(metrics['cash_invested']),
-            'in_kind_value': float(metrics['in_kind_value']),
-            'time_logged': float(metrics['time_logged']),
-            'work_units': float(metrics['work_units']),
-            'contribution_count': service.get_contribution_count(),
-            'pending_count': service.get_pending_count(),
+            # Use `or 0` fallback — Sum() can return None in Django 3.2 when no rows match
+            'cash_invested': float(member.cash_invested or 0),
+            'in_kind_value': float(member.in_kind_value or 0),
+            'time_logged': float(member.time_logged or 0),
+            'work_units': float(member.work_units or 0),
+            'contribution_count': member.contribution_count,
+            'pending_count': member.pending_count,
             # Equity calculated from approved contributions with tier weights
             'equity_percentage': float(equity_by_member.get(member.id, Decimal('0.00'))),
             'profile_photo': member.profile_photo.url if member.profile_photo else None,
         })
     
     return summaries
+

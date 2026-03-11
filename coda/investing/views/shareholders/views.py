@@ -1547,13 +1547,19 @@ def deal_config_save(request):
             if deal:
                 AuditLog.objects.create(
                     deal=deal,
-                    user=request.user,
-                    action='UPDATE_BLOCKED',
+                    actor=request.user,
+                    action_type='CONFIG_UPDATED',
                     entity_type='DEAL_CONFIG',
-                    entity_id=None,
-                    changes_json={'error': 'Unauthorized attempt by non-superuser'},
+                    entity_id=str(deal.id),
+                    entity_reference=f'Deal Config - {deal.name}',
+                    description=f'Unauthorized config edit attempt by {request.user.username}',
                     ip_address=get_client_ip(request),
-                    user_agent=request.META.get('HTTP_USER_AGENT', '')[:255]
+                    request_source='web',
+                    status='FAILED',
+                    details={
+                        'error': 'Unauthorized attempt by non-superuser',
+                        'user_agent': request.META.get('HTTP_USER_AGENT', '')[:255],
+                    },
                 )
         except Exception as e:
             logger.error(f"Error logging unauthorized config edit attempt: {str(e)}")

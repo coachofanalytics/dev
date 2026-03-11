@@ -376,9 +376,9 @@ class LedgerQueryService:
         if queryset is None:
             queryset = self.get_base_queryset()
         
-        # Total volume (all statuses except REJECTED)
-        total_volume = queryset.exclude(
-            status='REJECTED'
+        # Total volume (APPROVED entries only — matches dashboard metric)
+        total_volume = queryset.filter(
+            status='APPROVED'
         ).aggregate(
             total=Sum('value_usd')
         )['total'] or Decimal('0.00')
