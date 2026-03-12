@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Assets, Readme, Location,Pricing,Plan,ClientAvailability,Search
+from .models import Assets, Readme, Location,Pricing,Plan,ClientAvailability,Search,Company
 
 
 # Simple registrations (no custom admin needed)
@@ -11,6 +11,7 @@ admin.site.register(Pricing)
 admin.site.register(Plan)
 admin.site.register(ClientAvailability)
 # admin.site.register(Search)
+admin.site.register(Company)
 
 
 # Custom admin for Location
