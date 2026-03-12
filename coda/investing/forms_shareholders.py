@@ -334,22 +334,24 @@ class ContributionLogForm(forms.ModelForm):
                 is_archived=False
             ).order_by('legal_name')
             
-            # Phase 2: Set currency and exchange rate from DealConfig (read-only)
+            # Phase 2: Set currency and exchange rate — live rate from CurrencyConverter
             try:
                 config = self.deal.config
-                # Set initial values from DealConfig
+                from investing.services.shareholders.deal_config_service import DealConfigService
+                live_fx_rate = DealConfigService.get_live_fx_rate(config)
+                # Set initial values: currency from DealConfig, rate from live API
                 self.fields['currency'].initial = config.base_currency
-                self.fields['exchange_rate'].initial = config.fx_peg_rate
+                self.fields['exchange_rate'].initial = live_fx_rate
                 
                 # Phase 5: Currency editable for CASH tier (JS will handle)
-                # exchange_rate remains read-only
+                # exchange_rate always read-only (populated from live API)
                 self.fields['exchange_rate'].widget.attrs['readonly'] = True
                 self.fields['exchange_rate'].widget.attrs['class'] = 'form-control bg-light'
                 
                 # Store rates for JavaScript dynamic calculation
                 self.time_rate = config.time_rate
                 self.work_rate = config.work_rate
-                self.fx_peg_rate = config.fx_peg_rate  # Phase 5: For currency conversion
+                self.fx_peg_rate = live_fx_rate  # Phase 5: For currency conversion — live rate
                 
             except Exception as e:
                 # If no DealConfig, use defaults
@@ -357,7 +359,8 @@ class ContributionLogForm(forms.ModelForm):
                 self.fields['exchange_rate'].initial = Decimal('1.0000')
                 self.time_rate = Decimal('50.00')  # Default fallback
                 self.work_rate = Decimal('100.00')  # Default fallback
-                self.fx_peg_rate = Decimal('127.0000')  # Phase 5: Default KES/USD rate
+                from investing.services.shareholders.deal_config_service import DealConfigService
+                self.fx_peg_rate = DealConfigService.get_live_fx_rate()  # Live rate, no config fallback
         
         # Make value_usd not required for TIME and WORK tiers (will be auto-calculated)
         # User can still override if needed
@@ -521,7 +524,8 @@ class ContributionLogForm(forms.ModelForm):
             if self.deal:
                 try:
                     config = self.deal.config
-                    fx_rate = config.fx_peg_rate  # KES per 1 USD
+                    from investing.services.shareholders.deal_config_service import DealConfigService
+                    fx_rate = DealConfigService.get_live_fx_rate(config)  # Live KES per 1 USD
                     # Convert: amount_kes / fx_rate = amount_usd
                     calculated_usd = internal_units_value / fx_rate
                     cleaned_data['value_usd'] = calculated_usd.quantize(Decimal('0.01'))
@@ -573,9 +577,10 @@ class ContributionLogForm(forms.ModelForm):
         if self.deal and tier not in ['CASH']:  # Phase 5: Allow CASH to use user-selected currency
             try:
                 config = self.deal.config
-                # Override with DealConfig values for non-CASH tiers (security: prevent tampering)
+                from investing.services.shareholders.deal_config_service import DealConfigService
+                # Override with live rate for non-CASH tiers (security: prevent tampering)
                 cleaned_data['currency'] = config.base_currency
-                cleaned_data['exchange_rate'] = config.fx_peg_rate
+                cleaned_data['exchange_rate'] = DealConfigService.get_live_fx_rate(config)
             except Exception:
                 # Fallback to defaults if DealConfig not available
                 cleaned_data['currency'] = 'USD'

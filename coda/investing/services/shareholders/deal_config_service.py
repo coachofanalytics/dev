@@ -125,10 +125,10 @@ class DealConfigService:
             old_values['fx_mode'] = config.fx_mode
             config.fx_mode = config_data['fx_mode']
         
-        if 'fx_peg_rate' in config_data:
-            old_values['fx_peg_rate'] = str(config.fx_peg_rate)
-            config.fx_peg_rate = Decimal(str(config_data['fx_peg_rate']))
-        
+        # NOTE: fx_peg_rate is no longer manually configurable — it is retrieved
+        # live from the CurrencyConverter API via get_live_fx_rate().  Any
+        # 'fx_peg_rate' key in config_data is intentionally ignored here.
+
         # Update Valuation Rules
         if 'time_rate' in config_data:
             old_values['time_rate'] = str(config.time_rate)
@@ -275,7 +275,40 @@ class DealConfigService:
             return config.work_rate
         else:
             return Decimal('0.00')
-    
+
+    @staticmethod
+    def get_live_fx_rate(config=None) -> Decimal:
+        """
+        Retrieve the live USD/KES exchange rate via the shared CurrencyConverter
+        (finance/utils/currency_converter.py).
+
+        The CurrencyConverter uses a 1-hour Django cache, so the external API
+        (exchangerate-api.com) is only hit once per hour.  If the API is
+        unavailable the converter falls back to its own hardcoded rates.
+        If the converter itself fails entirely we fall back to the stored
+        config.fx_peg_rate, or Decimal('127.0000') as a last resort.
+
+        Args:
+            config: Optional DealConfig instance used as last-resort fallback.
+
+        Returns:
+            Decimal exchange rate — KES per 1 USD (e.g. ~150.00).
+        """
+        try:
+            from finance.utils.currency_converter import currency_converter
+            live_rate = currency_converter.get_exchange_rate('USD', 'KES')
+            if live_rate and live_rate > 0:
+                return live_rate
+        except Exception as e:
+            logger.warning(
+                f"Could not fetch live FX rate from CurrencyConverter: {e}. "
+                f"Falling back to stored/default rate."
+            )
+        # Fallback: stored config rate → system default
+        if config is not None:
+            return config.fx_peg_rate
+        return Decimal('127.0000')
+
     def calculate_next_snapshot_date(self) -> date:
         """
         Calculate the next scheduled snapshot date based on frequency.

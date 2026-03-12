@@ -564,9 +564,9 @@ Phase 1: UI only with dummy data, no persistence
                 </div>
 
                 <div class="form-group">
-                    <label class="form-label">Pegged Rate ($1 USD = X KES)</label>
-                    <input type="number" class="form-input" id="pegRate" value="{{ config.peg_rate }}" placeholder="127" {% if not can_edit %}disabled{% endif %}>
-                    <div class="form-hint">Current pilot rate: 1 USD = 127 KES</div>
+                    <label class="form-label">Live Exchange Rate ($1 USD = X KES)</label>
+                    <input type="number" class="form-input" id="pegRate" value="{{ config.peg_rate }}" placeholder="127" disabled>
+                    <div class="form-hint">Live market rate — auto-retrieved from exchange rate API (read-only, refreshed every hour)</div>
                 </div>
 
                 <div class="form-group">

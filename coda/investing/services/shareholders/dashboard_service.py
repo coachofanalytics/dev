@@ -345,8 +345,9 @@ def get_dashboard_metrics(deal: Deal) -> Dict:
         snapshot_display = "—"
         snapshot_date_formatted = "Not scheduled"
     
-    # FX Peg Rate
-    fx_peg_rate = config.fx_peg_rate if config else Decimal('127.0000')
+    # FX Rate (live, via CurrencyConverter — 1-hour cached)
+    from investing.services.shareholders.deal_config_service import DealConfigService
+    fx_peg_rate = DealConfigService.get_live_fx_rate(config)
     
     # Equity Cap Table (top 4 for dashboard)
     cap_table = equity_service.get_dashboard_cap_table(limit=4)

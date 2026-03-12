@@ -671,10 +671,11 @@ def contribution_log(request):
         work_rate = Decimal('100.00')  # Default
         fx_peg_rate = Decimal('127.0000')  # Phase 5: Default KES/USD rate
         try:
+            from investing.services.shareholders.deal_config_service import DealConfigService
             config = deal.config
             time_rate = config.time_rate
             work_rate = config.work_rate
-            fx_peg_rate = config.fx_peg_rate  # Phase 5: For currency conversion
+            fx_peg_rate = DealConfigService.get_live_fx_rate(config)  # Live market rate via CurrencyConverter
         except:
             pass
         
@@ -1475,7 +1476,7 @@ def deal_config_view(request):
             # FX & Currency Policy
             'base_currency': config.base_currency,
             'fx_mode': config.fx_mode,
-            'peg_rate': float(config.fx_peg_rate),
+            'peg_rate': float(DealConfigService.get_live_fx_rate(config)),
             
             # Contribution Weights (from DealWeights)
             'cash_weight': float(weights.cash_weight),
@@ -1584,7 +1585,8 @@ def deal_config_save(request):
         # Extract config data from POST
         config_data = {
             'fx_mode': request.POST.get('fx_mode'),
-            'fx_peg_rate': request.POST.get('peg_rate'),
+            # fx_peg_rate is intentionally excluded: it is now fetched live
+            # from the CurrencyConverter API and is not user-configurable.
             'time_rate': request.POST.get('time_rate'),
             'work_rate': request.POST.get('work_rate'),
             'inkind_valuation_mode': request.POST.get('inkind_mode'),
