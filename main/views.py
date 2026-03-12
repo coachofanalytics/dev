@@ -551,4 +551,13 @@ def search_delete(request, pk):
 
     return render(request, 'main/search_delete.html', {'search': search})
 
+def search_detail(request, pk):
+    search = get_object_or_404(Search, pk=pk)
+    return render(request, 'main/search_detail.html', {'search': search})
+
+
+def company_list(request):
+    companies = Company.objects.all()
+    return render(request, "main/company_list.html", {"companies": companies})
+
     

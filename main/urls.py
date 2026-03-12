@@ -36,6 +36,9 @@ path('searchlist/', views.search_list, name='search_list'),
 path('searchcreate/', views.search_create, name='search_create'),
 path('searchupdate/<int:pk>/', views.search_update, name='search_update'),
 path("searchdelete/<int:pk>/", views. search_delete, name="search_delete"),
+path("search_detail/<int:pk>/", views. search_detail, name="search_detail"),
+path('companylist/', views.company_list, name='company_list'),
+
 
 
 
