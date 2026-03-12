@@ -913,18 +913,35 @@
         }
         
         // Phase 5: Show/hide appropriate contribution row (CASH vs non-CASH)
+        // Also toggle `required` so browser validation only fires on visible fields.
         const cashRow = document.getElementById('cash-contribution-row');
         const nonCashRow = document.getElementById('non-cash-contribution-row');
         const cashDepositSection = document.getElementById('cash-direct-deposit-section');
+        const cashUnitsInput = document.getElementById('input-units-value-cash');
+        const cashUsdInput   = document.getElementById('input-value-usd-cash');
+        const nonCashUnitsInput = document.getElementById('input-units-value');
+        // inputValueUsd (non-cash) is already defined above
         
         if (tier === 'CASH') {
             if (cashRow) cashRow.style.display = 'grid';
             if (nonCashRow) nonCashRow.style.display = 'none';
             if (cashDepositSection) cashDepositSection.style.display = 'block';
+            // Enable required on visible cash inputs
+            if (cashUnitsInput) cashUnitsInput.required = true;
+            if (cashUsdInput)   cashUsdInput.required   = true;
+            // Disable required on hidden non-cash inputs
+            if (nonCashUnitsInput) nonCashUnitsInput.required = false;
+            if (inputValueUsd)     inputValueUsd.required     = false;
         } else {
             if (cashRow) cashRow.style.display = 'none';
             if (nonCashRow) nonCashRow.style.display = 'grid';
             if (cashDepositSection) cashDepositSection.style.display = 'none';
+            // Disable required on hidden cash inputs
+            if (cashUnitsInput) cashUnitsInput.required = false;
+            if (cashUsdInput)   cashUsdInput.required   = false;
+            // Non-cash units always required
+            if (nonCashUnitsInput) nonCashUnitsInput.required = true;
+            // Non-cash value_usd required is managed by the TIME/WORK block above
         }
 
         // Show / hide extra panels
