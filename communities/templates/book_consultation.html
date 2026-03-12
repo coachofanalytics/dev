@@ -1,0 +1,35 @@
+<h2>Book a Legal Consultation</h2>
+
+<form method="POST" enctype="multipart/form-data">
+
+    {% csrf_token %}
+
+    <label>Full Name</label><br>
+    {{ form.full_name }}<br><br>
+
+    <label>Email</label><br>
+    {{ form.email }}<br><br>
+
+    <label>Phone</label><br>
+    {{ form.phone }}<br><br>
+
+    <label>Country</label><br>
+    {{ form.country }}<br><br>
+
+    <label>Consultation Type</label><br>
+    {{ form.consultation_type }}<br><br>
+
+    <label>Description</label><br>
+    {{ form.description }}<br><br>
+
+    <label>Upload Document</label><br>
+    {{ form.document }}<br><br>
+
+    <label>Preferred Date</label><br>
+    {{ form.preferred_date }}<br><br>
+
+    <button type="submit">
+        Submit Consultation
+    </button>
+
+</form>

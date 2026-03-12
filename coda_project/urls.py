@@ -21,6 +21,7 @@ from django.conf.urls import handler400
 from django.conf.urls.static import static
 from django.views.static import serve
 from django.contrib.auth import views as auth_views
+from django.conf.urls.static import static
 
 from accounts import views as account_views
 from coda_project import settings
@@ -36,6 +37,10 @@ handler500 = "main.views.hendler500"
 
 urlpatterns = [
     path("admin/", admin.site.urls),
+    path('consultations/', include('consultations.urls', namespace='consultations')),
+    
+    
+
     re_path(r"^static/(?P<path>.*)$", serve, {"document_root": settings.STATIC_ROOT}),
     re_path(r"^media/(?P<path>.*)$", serve, {"document_root": settings.MEDIA_ROOT}),
     path(
@@ -81,6 +86,8 @@ urlpatterns = [
 ]
 
 if settings.DEBUG:
-    urlpatterns += static(
-        settings.MEDIA_URL, document_root=settings.MEDIA_ROOT
+    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT
     ) + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
+    
+
+

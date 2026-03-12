@@ -2,6 +2,7 @@ from django import forms
 from django.forms import ModelForm
 from .models import Feedback, Donation_organisation, Donation_organization, ContactMessage, Scholarship
 
+from .models import Consultation
 # Feedback / Contact Form
 class ContactForm(forms.ModelForm):
     class Meta:
@@ -94,3 +95,22 @@ class ScholarshipSearchForm(forms.Form):
         )
     )
 
+#added myself
+
+
+
+class ConsultationForm(forms.ModelForm):
+
+    class Meta:
+        model = Consultation
+
+        fields = [
+            'full_name',
+            'email',
+            'phone',
+            'country',
+            'consultation_type',
+            'description',
+            'document',
+            'preferred_date'
+        ]

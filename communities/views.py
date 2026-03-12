@@ -11,6 +11,8 @@ from django.contrib.auth.decorators import login_required
 from django.utils import timezone
 from django.db import models
 from django.db.models import Q
+from .forms import ConsultationForm
+
 
 from main.forms import MessageForm
 from .utils import send_email
@@ -218,3 +220,4 @@ def contact_view(request):
 
 # Legal Immigration Guidance Views
 # Legal & immigration views moved to main.views
+# added myself

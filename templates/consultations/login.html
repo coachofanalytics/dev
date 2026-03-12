@@ -1,0 +1,75 @@
+{% extends "main/base_templates/base.html" %}
+
+{% block content %}
+
+
+
+{% load static %}
+
+
+
+
+
+<div class="container py-5">
+    
+    <div class="text-center mb-4 "style="display: inline-flex; font-size: 24px; gap: 90px">
+        <h2>Start Your Application</h2>
+        
+        <h3 class="link-create"style="background-color: blue; text-decolation: none;">
+            <a href="/consultations/signup/">Create Account</a>
+        </h3>
+        </div>
+    </div>
+
+    {% if messages %}
+        {% for message in messages %}
+            <div class="alert alert-success">
+                {{ message }}
+            </div>
+        {% endfor %}
+    {% endif %}
+
+    <div class="card shadow p-4">
+        <form method="POST">
+            {% csrf_token %}
+
+           
+
+            <div class="mb-3">
+                <label class="form-label">Email Address</label>
+                <input type="email" name="email" class="form-control" required>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Password</label>
+                <input type="password" name="password" class="form-control" required>
+            </div>
+
+           
+
+            <button type="submit" class="btn btn-primary">
+                Login
+            </button>
+
+        </form>
+    </div>
+
+</div>
+
+<style>
+    .link-create{
+    display: inline-block;
+    background-color: #007BFF;   /* blue background */
+    color: white;                /* text color */
+    padding: 8px 10px;
+    text-decoration: none;       /* remove underline */
+    border-radius: 6px;
+    font-weight: bold;
+    }
+    .link-create a{
+        text-decoration: none;
+        color: white;
+
+    }
+</style>
+{% endblock %}

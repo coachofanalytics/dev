@@ -1,13 +1,14 @@
 from django.shortcuts import redirect, render
 from datetime import datetime,date,timedelta
-from dateutil.relativedelta import relativedelta
+
 from django.contrib.auth.decorators import login_required
 from django.urls import reverse
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.views.generic import (
     CreateView,
     UpdateView,
-)
+    DeleteView,)
+from django.core.mail import send_mail
 #<<<<<<< 25.10_DC48_UAT_UO
 from .models import Assets,Description, News, Page, Service, SubService,Team, SafetyAlertSubscription, EmergencyHotlines, StaffContact, EmergencyHelpActivations
 #=======
@@ -40,6 +41,12 @@ from django.utils.html import strip_tags
 from django.urls import reverse_lazy
 from django.views.generic.edit import CreateView, UpdateView, DeleteView
 from django.views.generic.detail import DetailView
+from django.shortcuts import render, redirect
+from django.contrib.auth.decorators import login_required
+from django.core.mail import send_mail
+from .forms import ConsultationForm
+from .models import Consultation
+
 # Details Donation View
 class DonationDetailView(DetailView):
     model = Donation_organization
@@ -115,8 +122,7 @@ def hendler400(request,exception):
 def hendler403(request,exception):
     return render(request, "main/errors/403.html")
 
-def hendler404(request,exception):
-    return render(request, "main/errors/404.html")
+
 
 def hendler404(request,exception):
     return render(request, "main/errors/404.html")
@@ -751,3 +757,103 @@ def scholarship_search(request):
 #=======
     return render(request, 'scholarship_app/scholarship_search.html', context)
 #>>>>>>> origin/25.11_DC48K_UAT_FN
+from django.shortcuts import render
+from django.http import HttpResponse
+from django.core.mail import send_mail
+from django.conf import settings
+from .forms import ConsultationForm
+from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer
+from reportlab.lib.styles import getSampleStyleSheet
+from reportlab.lib.units import inch
+import io
+
+
+
+
+
+@login_required
+def book_consultation(request):
+
+    consultation, created = Consultation.objects.get_or_create(
+        user=request.user,
+        status='draft'
+    )
+
+    if request.method == "POST":
+
+        form = ConsultationForm(request.POST, instance=consultation)
+
+        if form.is_valid():
+
+            consult = form.save(commit=False)
+
+            completed = sum([
+                bool(consult.full_name),
+                bool(consult.email),
+                bool(consult.phone),
+                bool(consult.consultation_type),
+                bool(consult.consultation_date),
+            ])
+
+            consult.progress = int((completed / 5) * 100)
+
+            if "submit" in request.POST:
+                consult.status = "submitted"
+
+                send_mail(
+                    "Consultation Booking Received",
+                    "Your consultation request has been submitted successfully.",
+                    "noreply@yourdomain.com",
+                    [consult.email],
+                    fail_silently=True,
+                )
+
+            consult.save()
+
+            return redirect("consultation_dashboard")
+
+    else:
+        form = ConsultationForm(instance=consultation)
+
+    return render(request, "consultations/book_consultation.html", {"form": form})
+
+
+
+def consultation_dashboard(request):
+    return render(request, "consultation_dashboard.html")
+
+
+def home(request):
+    return render(request, 'home.html')
+def home(request):
+    return render(request, "main/index.html")
+
+from django.shortcuts import render, redirect
+from django.contrib.auth.models import User
+from django.contrib.auth import login
+from django.contrib import messages
+
+
+def signup(request):
+
+    if request.method == "POST":
+
+        username = request.POST.get("username")
+        email = request.POST.get("email")
+        password = request.POST.get("password")
+
+        user = User.objects.create_user(
+            username=username,
+            email=email,
+            password=password
+        )
+
+        user.save()
+
+        # automation login
+        login(request, user)
+
+        # redirect to visa application
+        return redirect('visa_applicationform')
+
+    return render(request, "sign_up.html")

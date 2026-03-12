@@ -378,3 +378,49 @@ class LegalImmigrationResource(models.Model):
 
     def __str__(self):
         return f"{self.title} ({self.category})"
+#added myself
+
+
+class Consultation(models.Model):
+
+    CONSULTATION_TYPES = [
+        ('immigration', 'Immigration Visa'),
+        ('asylum', 'Asylum'),
+        ('family', 'Family Immigration'),
+        ('work', 'Work Permit'),
+        ('student', 'Student Visa'),
+        ('legal', 'General Legal Advice'),
+    ]
+
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+
+    full_name = models.CharField(max_length=200)
+
+    email = models.EmailField()
+
+    phone = models.CharField(max_length=20)
+
+    country = models.CharField(max_length=100)
+
+    consultation_type = models.CharField(
+        max_length=100,
+        choices=CONSULTATION_TYPES
+    )
+
+    description = models.TextField()
+
+    document = models.FileField(
+        upload_to='consultation_documents/',
+        blank=True,
+        null=True
+    )
+
+    preferred_date = models.DateField(
+        blank=True,
+        null=True
+    )
+
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return self.full_name

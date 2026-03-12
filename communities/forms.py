@@ -3,6 +3,7 @@ from asyncio import Event
 from django import forms
 from django.utils import timezone
 from .models import CommentP, CommunityMember, ContactMessage, Post, EventCalendar
+from .models import Consultation
 
 class JoinForm(forms.ModelForm):
     class Meta:
@@ -42,3 +43,25 @@ class ContactForm(forms.ModelForm):
     class Meta:
         model = ContactMessage
         fields = ['name', 'email', 'message']
+
+        #added myself
+
+        from django import forms
+from .models import Consultation
+
+
+class ConsultationForm(forms.ModelForm):
+
+    class Meta:
+        model = Consultation
+
+        fields = [
+            'full_name',
+            'email',
+            'phone',
+            'country',
+            'consultation_type',
+            'description',
+            'document',
+            'preferred_date'
+        ]

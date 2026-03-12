@@ -2,6 +2,8 @@ from django.urls import path
 from  . import views
 
 
+
+
 urlpatterns = [
     path('', views.home, name='home'),
     path('join/', views.join, name='join'),
@@ -15,4 +17,5 @@ urlpatterns = [
     path('event/<int:id>/', views.event_detail, name='event_detail'),
     path('contact/', views.contact_view, name='contact'),
     
+
 ]

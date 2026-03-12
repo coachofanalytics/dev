@@ -63,7 +63,11 @@ INSTALLED_APPS = [
     "allauth.socialaccount.providers.facebook",
     "django_crontab",
     'memberjoin',
-    'communities'
+    'communities',
+    'consultations',
+    
+    
+    
 
 ]
 
@@ -242,6 +246,8 @@ STATIC_URL = "/static/"
 STATICFILES_DIRS = [
     os.path.join(BASE_DIR, 'static'),  # If you have a project-level static directory
     # Add other directories if necessary
+
+
 ]
 STATICFILES_STORAGE = 'django.contrib.staticfiles.storage.ManifestStaticFilesStorage'
 
@@ -365,3 +371,19 @@ SOCIALACCOUNT_QUERY_EMAIL = True
 
 LOGIN_REDIRECT_URL = "main:layout"
 LOGIN_URL = "accounts:account-login"
+
+# Static files
+STATIC_URL = '/static/'
+
+# Media files
+MEDIA_URL = '/media/'
+MEDIA_ROOT = BASE_DIR / 'media'
+# EMAIL SETTINGS
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+EMAIL_HOST_USER = "dc48kvisaassistance@gmail.com"
+EMAIL_HOST_PASSWORD = "kphmvzsbajpunjkx"
+DEFAULT_FROM_EMAIL = "dc48kvisaassistance@gmail.com"
