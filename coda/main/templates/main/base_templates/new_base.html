@@ -175,6 +175,7 @@
     <!-- Script for success stories -->
     <script>
       var currentIndex = 0;
+      var investmentsLength = parseInt('{{ investments|length|default:0 }}', 10);
     
       function moveCarousel(direction) {
         var carousel = document.querySelector('.owl-carousel');
@@ -184,8 +185,8 @@
     
         if (currentIndex < 0) {
           currentIndex = 0;
-        } else if (currentIndex >= {{ investments|length }} - 3) {
-          currentIndex = {{ investments|length }} - 3;
+        } else if (currentIndex >= investmentsLength - 3) {
+          currentIndex = investmentsLength - 3;
         }
     
         var translateValue = -currentIndex * cardWidth;
