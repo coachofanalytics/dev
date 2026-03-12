@@ -1,231 +1,26 @@
 {% extends 'main/base_templates/base.html' %}
 {% load static %}
 
-{% block title %}Legal & Immigration Guidance{% endblock %}
+{% block title %}Document{% endblock %}
 
 {% block content %}
 
-<div class="container py-5">
-    <!-- Header Section -->
-    
-        <div class="col-lg-10 mx-auto text-center" style="padding: 60px 40px; margin-left: 0; margin-right: 0; width: 100%; text-align: center;">
-            <div class="myhd text-lg-start"></div>
-            <h1 class="display-5 mb-3 text-white font " style="font-family: 'Montserrat-Black', sans-serif; font-weight: 900;">Legal & Immigration Guidance</h1>
-            <div></div>
-            <p class="lead p-3 rounded">Expert guidance and trusted referrals to help you navigate the complexities of international law and immigration processes.</p>
-            <p class="lead text-muted">Comprehensive resources and information for immigration matters and legal support</p>
-        </div>
-    </div>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <!-- Quick Links Navigation -->
-    <div class="row mb-4">
-        <div class="col-lg-10 mx-auto">
-            <nav class="nav nav-pills flex-column flex-sm-row gap-2" role="tablist">
-                <button class="nav-link active" id="immigration-tab" data-bs-toggle="tab" data-bs-target="#immigration" type="button" role="tab">Immigration Basics</button>
-                <button class="nav-link" id="legal-tab" data-bs-toggle="tab" data-bs-target="#legal" type="button" role="tab">Legal Rights</button>
-                <button class="nav-link" id="consular-tab" data-bs-toggle="tab" data-bs-target="#consular" type="button" role="tab">Consular Services</button>
-                <button class="nav-link" id="faq-tab" data-bs-toggle="tab" data-bs-target="#faq" type="button" role="tab">FAQ</button>
-            </nav>
-        </div>
-    </div>
+<style>
+    body {
+        background-color: #f0f0f0;
+        font-family: Arial, sans-serif;
+        padding: 20px;
+    }
+</style>
 
-    <!-- Tab Content -->
-    <div class="tab-content">
-        <!-- Immigration Basics Tab -->
-        <div class="tab-pane fade show active" id="immigration" role="tabpanel">
-            <div class="row">
-                <div class="col-lg-10 mx-auto">
-                    <h2 class="mb-4">Immigration Basics</h2>
-                    
-                    <div class="row g-4">
-                        <!-- Visa Types -->
-                        <div class="col-md-6">
-                            <div class="card h-100 shadow-sm">
-                                <div class="card-body">
-                                    <h5 class="card-title text-primary">
-                                        <i class="fas fa-passport me-2"></i>Visa Types
-                                    </h5>
-                                    <p class="card-text">Learn about different visa categories:</p>
-                                    <ul class="list-unstyled small">
-                                        <li><strong>Work Visas:</strong> H-1B, L-1, O-1</li>
-                                        <li><strong>Family Visas:</strong> IR, F2A, F2B</li>
-                                        <li><strong>Diversity Visas:</strong> DV Lottery</li>
-                                        <li><strong>Student Visas:</strong> F-1, M-1, J-1</li>
-                                        <li><strong>Tourist/Business:</strong> B-1, B-2</li>
-                                    </ul>
-                                    <a href="#consular" class="btn btn-sm btn-outline-primary mt-3">Get Help →</a>
-                                </div>
-                            </div>
-                        </div>
+<div class="honer">
+    <h1 class="text-center">Legal & Immigration Guidanceiii</h1>
+</div>
 
-                        <!-- Permanent Residency -->
-                        <div class="col-md-6">
-                            <div class="card h-100 shadow-sm">
-                                <div class="card-body">
-                                    <h5 class="card-title text-primary">
-                                        <i class="fas fa-id-card me-2"></i>Permanent Residency (Green Card)
-                                    </h5>
-                                    <p class="card-text">Pathways to obtaining permanent residency:</p>
-                                    <ul class="list-unstyled small">
-                                        <li><strong>Employment-Based:</strong> EB-1 through EB-5</li>
-                                        <li><strong>Family-Sponsored:</strong> Multiple categories</li>
-                                        <li><strong>Diversity Visa:</strong> Annual lottery program</li>
-                                        <li><strong>Refugee/Asylee:</strong> Humanitarian protection</li>
-                                        <li><strong>Special Programs:</strong> Various eligibility</li>
-                                    </ul>
-                                    <a href="#consular" class="btn btn-sm btn-outline-primary mt-3">Explore Options →</a>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Citizenship -->
-                        <div class="col-md-6">
-                            <div class="card h-100 shadow-sm">
-                                <div class="card-body">
-                                    <h5 class="card-title text-primary">
-                                        <i class="fas fa-flag-usa me-2"></i>Citizenship & Naturalization
-                                    </h5>
-                                    <p class="card-text">Steps to becoming a U.S. citizen:</p>
-                                    <ul class="list-unstyled small">
-                                        <li>Eligibility requirements (residency period, age)</li>
-                                        <li>Application process (Form N-400)</li>
-                                        <li>Civics test and English requirements</li>
-                                        <li>Interview preparation</li>
-                                        <li>Oath of allegiance ceremony</li>
-                                    </ul>
-                                    <a href="#consular" class="btn btn-sm btn-outline-primary mt-3">Learn More →</a>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Employment Authorization -->
-                        <div class="col-md-6">
-                            <div class="card h-100 shadow-sm">
-                                <div class="card-body">
-                                    <h5 class="card-title text-primary">
-                                        <i class="fas fa-briefcase me-2"></i>Employment Authorization
-                                    </h5>
-                                    <p class="card-text">Work eligibility and employment documents:</p>
-                                    <ul class="list-unstyled small">
-                                        <li>Employment Authorization Document (EAD)</li>
-                                        <li>Social Security Number (SSN) application</li>
-                                        <li>I-9 employment verification</li>
-                                        <li>Work permit sponsorship process</li>
-                                        <li>Employer responsibilities</li>
-                                    </ul>
-                                    <a href="#consular" class="btn btn-sm btn-outline-primary mt-3">Get Guidance →</a>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Important Notices -->
-                    <div class="alert alert-info mt-5" role="alert">
-                        <h5 class="alert-heading"><i class="fas fa-info-circle me-2"></i>Important Notice</h5>
-                        <p class="mb-0">Immigration laws are complex and frequently updated. This information is for general guidance only. Consult with qualified immigration attorneys for case-specific advice. Do not rely solely on online resources for legal matters.</p>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Legal Rights Tab -->
-        <div class="tab-pane fade" id="legal" role="tabpanel">
-            <div class="row">
-                <div class="col-lg-10 mx-auto">
-                    <h2 class="mb-4">Legal Rights & Protections</h2>
-                    
-                    <div class="row g-4">
-                        <!-- Rights Upon Arrival -->
-                        <div class="col-md-6">
-                            <div class="card h-100 shadow-sm">
-                                <div class="card-body">
-                                    <h5 class="card-title text-success">
-                                        <i class="fas fa-shield-alt me-2"></i>Your Rights Upon Arrival
-                                    </h5>
-                                    <p class="card-text">Know your constitutional rights:</p>
-                                    <ul class="list-unstyled small">
-                                        <li>Right to remain silent</li>
-                                        <li>Right to legal representation</li>
-                                        <li>Right to an interpreter</li>
-                                        <li>Freedom from unreasonable searches</li>
-                                        <li>Due process in deportation proceedings</li>
-                                    </ul>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Asylum & Protection -->
-                        <div class="col-md-6">
-                            <div class="card h-100 shadow-sm">
-                                <div class="card-body">
-                                    <h5 class="card-title text-success">
-                                        <i class="fas fa-hands-helping me-2"></i>Asylum & Refugee Protection
-                                    </h5>
-                                    <p class="card-text">Protection for those fleeing persecution:</p>
-                                    <ul class="list-unstyled small">
-                                        <li>Asylum application process</li>
-                                        <li>One-year filing deadline</li>
-                                        <li>Reasonable fear screening</li>
-                                        <li>Credible fear interview</li>
-                                        <li>Appeal procedures</li>
-                                    </ul>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Family Sponsorship -->
-                        <div class="col-md-6">
-                            <div class="card h-100 shadow-sm">
-                                <div class="card-body">
-                                    <h5 class="card-title text-success">
-                                        <i class="fas fa-heart me-2"></i>Family-Based Immigration
-                                    </h5>
-                                    <p class="card-text">Sponsoring family members:</p>
-                                    <ul class="list-unstyled small">
-                                        <li>Immediate relatives priority</li>
-                                        <li>Preference categories</li>
-                                        <li>Sponsorship affidavit (I-864)</li>
-                                        <li>Visa processing timelines</li>
-                                        <li>Spouse and children provisions</li>
-                                    </ul>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Deportation Defense -->
-                        <div class="col-md-6">
-                            <div class="card h-100 shadow-sm">
-                                <div class="card-body">
-                                    <h5 class="card-title text-success">
-                                        <i class="fas fa-gavel me-2"></i>Deportation Defense
-                                    </h5>
-                                    <p class="card-text">Understanding removal proceedings:</p>
-                                    <ul class="list-unstyled small">
-                                        <li>Notice to Appear (NTA)</li>
-                                        <li>Immigration court process</li>
-                                        <li>Relief from removal options</li>
-                                        <li>Appeals process</li>
-                                        <li>Bond hearings</li>
-                                    </ul>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Legal Help Resources -->
-                    <div class="alert alert-warning mt-5" role="alert">
-                        <h5 class="alert-heading"><i class="fas fa-exclamation-triangle me-2"></i>Critical Reminder</h5>
-                        <p>If facing deportation, immediately seek legal representation. Many organizations provide free or low-cost legal assistance to immigrants. Do not sign any documents without understanding them or without legal counsel.</p>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Consular Services Tab -->
-        <div class="tab-pane fade" id="consular" role="tabpanel">
-            <div class="row">
-                <div class="col-lg-10 mx-auto">
-                    <h2 class="mb-4">Consular Assistance Services</h2>
+{% endblock %}
                     <p class="lead text-muted mb-4">Connect with official government resources and diplomatic services for immigration matters.</p>
 
                     <!-- Main Consular Services -->
@@ -545,12 +340,6 @@
         background-color: #e7f3ff;
         color: #0066cc;
     }
-    .nav-pills .nav-link.active {
-        background-color: #007bff;
-    }
-    h1, h2 {
-        font-weight: 600;
-    }
-</style>
+
 
 {% endblock %}
