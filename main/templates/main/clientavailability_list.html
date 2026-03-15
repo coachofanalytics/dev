@@ -1,0 +1,102 @@
+{% extends 'admin_templates/base_template.html' %}
+{% load static %}
+
+{% block title %}CODA | Client Availability{% endblock %}
+{% block page_title %}Client Availability Dashboard{% endblock %}
+
+{% block page_content %}
+
+<!-- ================= Dashboard Cards ================= -->
+<div class="row mb-4">
+  <div class="col-md-3">
+    <div class="card bg-primary text-white shadow-sm">
+      <div class="card-body">
+        <h5>Total Records</h5>
+        <h3>{{ availabilities|length }}</h3>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-md-3">
+    <div class="card bg-success text-white shadow-sm">
+      <div class="card-body">
+        <h5>Active Days</h5>
+        <h3>{{ active_days }}</h3>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-md-3">
+    <div class="card bg-info text-white shadow-sm">
+      <div class="card-body">
+        <h5>Today Slots</h5>
+        <h3>{{ today_slots }}</h3>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ================= Table ================= -->
+<div class="card shadow-sm">
+  <div class="card-header d-flex justify-content-between align-items-center">
+    <h4 class="mb-0">Client Availability</h4>
+    <a href="#" class="btn btn-success btn-sm">
+      <i class="fas fa-plus"></i> Add New Availability
+    </a>
+  </div>
+
+  <div class="card-body p-0">
+    <div class="table-responsive">
+      <table class="table table-hover table-striped mb-0">
+        <thead class="thead-light">
+          <tr>
+            <th>Client</th>
+            <th>Day</th>
+            <th>Start</th>
+            <th>End</th>
+            <th>Time Standard</th>
+            <th>Topic</th>
+            <th class="text-center">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for availability in availabilities %}
+          <tr>
+            <td>{{ availability.client }}</td>
+            <td>{{ availability.day }}</td>
+            <td>{{ availability.start_time }}</td>
+            <td>{{ availability.end_time }}</td>
+            <td>{{ availability.time_standards }}</td>
+            <td>{{ availability.topic }}</td>
+
+            <td class="text-center">
+              <a href="#"
+                 class="btn btn-sm btn-secondary">Detail</a>
+
+              <a href="#"
+                 class="btn btn-sm btn-primary">Edit</a>
+
+              <a href="#"
+                 class="btn btn-sm btn-danger">Delete</a>
+            </td>
+          </tr>
+          {% empty %}
+          <tr>
+            <td colspan="7" class="text-center text-muted py-4">
+              No availability records found
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="card-footer text-right">
+    <small class="text-muted">
+      Showing {{ availabilities|length }} records
+    </small>
+  </div>
+</div>
+
+{% endblock %}

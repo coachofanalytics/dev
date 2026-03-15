@@ -1,30 +1,24 @@
 {% extends 'admin_templates/base_template.html' %}
-<!-- BLOCK FOR TITLE -->
-{% block title %}
-Dashboard
-{% endblock title %}
-<!-- END BLOCK FOR TITLE -->
 
-<!-- BLOCK FOR CUSTOM CSS -->
-{% block custom_css %}
+{% block title %}Admin Home{% endblock %}
+{% block page_title %}Dashboard{% endblock %}
 
-{% endblock custom_css %}
-<!-- END BLOCK FOR CUSTOM CSS -->
-
-<!-- BLOCK FOR PAGE TITLE -->
-{% block page_title %}
-Dashboard
-{% endblock page_title %}
-<!-- END BLOCK FOR PAGE TITLE -->
-
-<!-- BLOCK FOR PAGE MAIN CONTENT -->
 {% block page_content %}
-<p>Simple Dashboard Empty Page</p>
-{% endblock page_content %}
-<!-- END BLOCK FOR PAGE MAIN CONTENT -->
-
-<!-- BLOCK FOR CUSTOM JS -->
-{% block custom_js %}
-
-{% endblock custom_js %}
-<!-- END BLOCK FOR CUSTOM JS -->
+<div class="row">
+    <div class="col-lg-3 col-md-6 col-sm-6 col-12">
+        <div class="card card-statistic-1">
+            <div class="card-icon bg-primary">
+                <i class="fas fa-map-marker-alt"></i>
+            </div>
+            <div class="card-wrap">
+                <div class="card-header">
+                    <h4>Locations</h4>
+                </div>
+                <div class="card-body">
+                    {{ locations.count|default:"0" }}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

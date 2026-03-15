@@ -1,14 +1,11 @@
-from django.contrib.auth.models import User
+# from django.contrib.auth.models import User
 from django.db import models
-from django.utils.translation import gettext_lazy as _
-from django.db.models import Q
-from django.utils.text import slugify
 from django.db.models.signals import pre_save
-from .utils import unique_slug_generator,slug_pre_save_receiver
-from django.urls import reverse
-from django.utils import timezone
-from django.conf import settings
+from .utils import unique_slug_generator
 from django.contrib.auth import get_user_model
+from django.utils.text import slugify
+from django.utils import timezone
+
 
 # from tableauhyperapi import DatabaseName
 
@@ -24,7 +21,7 @@ class TimeStampedModel(models.Model):
     class Meta:
         abstract = True
 
-class Service(models.Model):
+class Services(models.Model):
     serial = models.PositiveIntegerField(null=True, blank=True)
     title = models.CharField(default='training',max_length=254)
     slug = models.SlugField(default='slug',max_length=255)
@@ -93,6 +90,7 @@ def readme_pre_save_receiver(sender, instance, *args, **kwargs):
 
 pre_save.connect(readme_pre_save_receiver, sender=Readme)
 
+<<<<<<< HEAD
 
 
 
@@ -224,14 +222,172 @@ class ServiceCategory(models.Model):
 
 
 
+=======
+class Location(models.Model):
+    zipcode =models.CharField(max_length=20)
+    city =models.CharField(max_length=100)
+    state =models.CharField(max_length=100)
+    country =models.CharField(max_length=100)
+
+    class Meta:
+        unique_together =('zipcode','city','state','country')
+        ordering =['country','state','city']
+
+        def __str__(self):
+            return f"{self.city}, {self.state},{self.country} ({self.zipcode})"
+        
+
+class Pricing(models.Model):
+    serial = models.PositiveIntegerField(unique=True)
+    title = models.CharField(max_length=255)
+    description = models.TextField()
+
+    # Strongly recommended: use choices or FK later
+    category = models.IntegerField(help_text="Category reference (e.g., Business, Individual)")
+    subcategory = models.CharField(max_length=255, null=True, blank=True)
+
+    price = models.FloatField()
+    discounted_price = models.FloatField(null=True, blank=True)
+
+    duration = models.PositiveIntegerField(
+        help_text="Duration value (e.g., 30, 6, 12)"
+    )
+    contract_length = models.IntegerField(
+        null=True,
+        blank=True,
+        help_text="Contract period if applicable"
+    )
+
+    is_direct = models.BooleanField(
+        default=False,
+        help_text="Can users purchase directly?"
+    )
+    is_active = models.BooleanField(
+        default=True,
+        help_text="Controls visibility on website"
+    )
+
+    redirect_url_path = models.CharField(
+        max_length=255,
+        null=True,
+        blank=True,
+        help_text="Redirect URL for purchase or details"
+    )
+
+    class Meta:
+        ordering = ["serial"]
+
+    def __str__(self):
+        return self.title
+
+        # models.py
+
+
+
+# class Testimonials(models.Model):
+#     title = models.CharField(null=False, max_length=255)
+#     slug = models.SlugField(unique=True, blank=True)
+#     content = models.TextField()
+#     date_posted = models.DateTimeField(auto_now_add=True)
+#     writer = models.IntegerField()
+
+#     def save(self, *args, **kwargs):
+#         if not self.slug:
+#             base_slug = slugify(self.title)
+#             slug = base_slug
+#             counter = 1
+
+#             while Testimonials.objects.filter(slug=slug).exists():
+#                 slug = f"{base_slug}-{counter}"
+#                 counter += 1
+
+#             self.slug = slug
+
+#         super().save(*args, **kwargs)
+
+#     class Meta:
+#         ordering = ['-date_posted']
+
+#     def __str__(self):
+#         return self.title
+
+        # main/models.py
+>>>>>>> e79fe45578418c384fbb84ca7760d91bef020a33
+
+
+
+
+<<<<<<< HEAD
 
 
 
 
 
 
+=======
+class Plan(models.Model):
+    ...
+    task = models.CharField(max_length=255, null=True, blank=True)
+    duration = models.IntegerField(null=True, blank=True)
+
+    created_at = models.DateTimeField(auto_now_add=True, null=True, blank=True)
+    updated_at = models.DateTimeField(auto_now=True, null=True, blank=True)
+
+    what = models.TextField(null=True, blank=True)
+    why = models.TextField(null=True, blank=True)
+    comments = models.TextField(null=True, blank=True)
+
+    doc = models.FileField(upload_to="plans/docs/", null=True, blank=True)
+
+    pptlink = models.CharField(max_length=500, null=True, blank=True)
+    videolink = models.CharField(max_length=500, null=True, blank=True)
+
+    is_active = models.BooleanField(default=True)
+    is_answered = models.BooleanField(default=False)
+    is_featured = models.BooleanField(default=False)
+
+    def __str__(self):
+        return self.task if self.task else f"Plan {self.id}"
+
+    
 
 
 
+      
+class ClientAvailability(models.Model):
+    client = models.IntegerField(null=False, blank=False)
+    day = models.CharField(max_length=20, null=False, blank=False)
+    start_time = models.TimeField(null=False, blank=False)
+    end_time = models.TimeField(null=False, blank=False)
+    time_standards = models.CharField(max_length=20, null=False, blank=False)
+    topic = models.CharField(max_length=255, null=False, blank=False)
 
+    def __str__(self):
+        return f"Client {self.client} - {self.day} ({self.start_time} to {self.end_time})"
+    
+  
+
+class Search(models.Model):
+    topic = models.CharField(max_length=255, null=False)
+    question = models.TextField(null=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    uploaded = models.BooleanField(default=False)
+
+    def __str__(self):
+        return self.topic
+    
+
+
+  
+class Company(models.Model):
+    name = models.CharField(max_length=100, null=True, blank=True)
+    slug = models.SlugField(null=True, blank=True)
+    sector = models.CharField(max_length=100, null=True, blank=True)
+    mission = models.CharField(max_length=255, null=True, blank=True)
+    website = models.URLField(null=True, blank=True)
+
+    def __str__(self):
+        return self.name or "Company"
+>>>>>>> e79fe45578418c384fbb84ca7760d91bef020a33
 

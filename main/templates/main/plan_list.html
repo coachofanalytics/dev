@@ -1,0 +1,91 @@
+{% extends 'admin_templates/base_template.html' %}
+{% load static %}
+
+{% block title %}CODA | Testimonials{% endblock %}
+{% block page_title %}Testimonials{% endblock %}
+
+{% block page_content %}
+<div class="card shadow-sm">
+  <div class="card-header d-flex justify-content-between align-items-center">
+    <h4 class="mb-0">CODA PLAN</h4>
+    <a href="#" class="btn btn-success btn-sm">
+      <i class="fas fa-plus"></i> Add New Plan
+    </a>
+  </div>
+
+  <div class="card-body p-0">
+    <div class="table-responsive">
+      <table class="table table-hover table-striped mb-0">
+        <thead class="thead-light">
+          <tr>
+            <th>task</th>
+            <th>duration</th>
+            <th>created_at,</th>
+            <th>updated_at</th>
+            <th>what</th>
+            <th>why</th>
+            <th>comments</th>
+            <th>doc</th>
+            <th>pptlink</th>
+            <th>videolink</th>
+            <th>is_active</th>
+            <th>is_answered</th>
+            <th>is_featured</th>
+               
+            <th class="text-center">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for plans in plans %}
+          <tr>
+            <td>{{ plans.task }}</td>
+            <td>{{ plans.duration }}</td>
+            <td>{{ plans.created_at }}</td>
+            <td>{{ plans.updated_at }}</td>
+            <td>{{ plans.what }}</td>
+            <td>{{ plans.why }}</td>
+            <td>{{ plans.comments }}</td>
+            <td>{{ plans.doc }}</td>
+            <td>{{ plans.pptlink }}</td>
+            <td>{{ plans.videolink }}</td>
+            <td>{{ plans.is_active }}</td>
+            <td>{{ plans.is_answered }}</td>
+            <td>{{ plans.is_featured }}</td>
+           
+            <td>
+              <span class="badge badge-success">Active</span>
+            </td>
+            <td class="text-center">
+              <a href="#"class="btn btn-sm btn-secondary">
+                Detail
+              </a>
+
+              <a href="#"
+                 class="btn btn-sm btn-warning">
+                Edit
+              </a>
+
+              <a href="#"
+                 class="btn btn-sm btn-danger">
+                Delete
+              </a>
+            </td>
+          </tr>
+          {% empty %}
+          <tr>
+            <td colspan="7" class="text-center text-muted py-4">
+              No Plan available
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="card-footer text-right">
+    <!-- Pagination placeholder -->
+    <small class="text-muted">Showing {{ locations|length }} records</small>
+  </div>
+</div>
+{% endblock %}

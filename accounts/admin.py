@@ -1,12 +1,10 @@
 from django.contrib import admin
-from django.contrib.auth.admin import UserAdmin
+from django.contrib.auth.afrom django.contrib.auth.admin import UserAdmin
 from django.contrib.auth.forms import UserChangeForm, UserCreationForm
-from .models import CustomerUser
 from django.contrib import admin
-from .models import PaymentHistory
 
-
-from .models import Tracker
+from .models import CustomerUser, PaymentHistory, LoginHistory
+mport Tracker
 
 # admin.site.register(CustomerUser)
 class CustomerAdmin(UserAdmin):
@@ -63,11 +61,19 @@ class CustomerAdmin(UserAdmin):
     filter_horizontal = ()
 
 
+class LoginHistoryAdmin(admin.ModelAdmin):
+    list_display = ('user', 'login_time', 'logout_time')
+    list_filter = ('user', 'login_time', 'logout_time')
+    search_fields = ('user__username',)
+
+
+
 # Now register the new UserAdmin...
 admin.site.register(CustomerUser, CustomerAdmin)
 # admin.site.register(CustomerUser)
 
 # Register your models here.
+<<<<<<< HEAD
 
 
 
@@ -133,3 +139,6 @@ class PaymentHistoryAdmin(admin.ModelAdmin):
             "fields": ("created_at", "updated_at")
         }),
     )
+=======
+admin.site.register(LoginHistory, LoginHistoryAdmin)
+>>>>>>> e79fe45578418c384fbb84ca7760d91bef020a33

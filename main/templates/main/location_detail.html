@@ -1,0 +1,36 @@
+{% extends "admin_templates/base_template.html" %}
+
+{% block title %}Location Detail{% endblock %}
+{% block page_title %}Location Details{% endblock %}
+
+{% block page_content %}
+<div class="card">
+  <div class="card-body">
+    <table class="table table-bordered">
+      <tr>
+        <th>Country</th>
+        <td>{{ location.country }}</td>
+      </tr>
+      <tr>
+        <th>State</th>
+        <td>{{ location.state }}</td>
+      </tr>
+      <tr>
+        <th>City</th>
+        <td>{{ location.city }}</td>
+      </tr>
+      <tr>
+        <th>Zip Code</th>
+        <td>{{ location.zipcode }}</td>
+      </tr>
+    </table>
+
+    <a href="{% url 'main:location_update' location.pk %}" class="btn btn-warning">
+      Edit
+    </a>
+    <a href="{% url 'main:location_list' %}" class="btn btn-secondary">
+      Back to List
+    </a>
+  </div>
+</div>
+{% endblock %}

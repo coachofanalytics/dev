@@ -1,20 +1,43 @@
-# settings
 """
 Django settings for coda_project project.
 """
 import os
+import sys
+import dj_database_url
+from celery.schedules import crontab
 
+# FIXED: BASE_DIR now points to the project root (where manage.py is)
+# This prevents the FileNotFoundError on Heroku
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+
+# <<<<<<< HEAD
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 SECRET_KEY = "!cxl7yhjsl00964n=#e-=xblp4u!hbajo2k8u#$v9&s6__5=xf"
+
+SECRET_KEY = os.environ.get('SECRET_KEY')
+# >>>>>>> e79fe45578418c384fbb84ca7760d91bef020a33
 ALLOWED_HOSTS = ["*"]
+
 AUTH_USER_MODEL = "accounts.CustomerUser"
-AUTHENTICATION_BACKENDS = (("accounts.custom_backend.EmailOrUsernameModelBackend"), ("django.contrib.auth.backends.ModelBackend"), ("allauth.account.auth_backends.AuthenticationBackend"))
+
+AUTHENTICATION_BACKENDS = (
+    "accounts.custom_backend.EmailOrUsernameModelBackend",
+    "django.contrib.auth.backends.ModelBackend",
+    "allauth.account.auth_backends.AuthenticationBackend",
+)
 
 # Application definition
 INSTALLED_APPS = [
     "main.apps.MainConfig",
+    "departments",
     "accounts.apps.AccountsConfig",
+# <<<<<<< HEAD
     "application.apps.ApplicationConfig",   # ✅ keep this
+
+    "finance",
+    "investments",
+    "application.apps.ApplicationConfig",
+# >>>>>>> e79fe45578418c384fbb84ca7760d91bef020a33
     "crispy_forms",
     "django.contrib.admin",
     "django.contrib.auth",
@@ -29,44 +52,52 @@ INSTALLED_APPS = [
     "mptt",
     "django_filters",
     "django.contrib.sites",
-    "allauth",
-    # "allauth.account",
-    # "allauth.socialaccount",
-    # "allauth.socialaccount.providers.google",
-    # "allauth.socialaccount.providers.facebook",
-]
+#     "allauth",
+# <<<<<<< HEAD
+#     # "allauth.account",
+#     # "allauth.socialaccount",
+#     # "allauth.socialaccount.providers.google",
+#     # "allauth.socialaccount.providers.facebook",
+# =======
+# >>>>>>> e79fe45578418c384fbb84ca7760d91bef020a33
+# ]
 
 
 DEFAULT_AUTO_FIELD = "django.db.models.AutoField"
 
 CRONJOBS = [
-    # ("*/1 * * * *", "coda_project.cron.my_backup"),
     ("* * * * *", "application.msg_send_cron.SendMsgApplicatUser"),
     ("*/5 * * * *", "management.cron.advertisement"),
 ]
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
+    "whitenoise.middleware.WhiteNoiseMiddleware",  # ✅ Corrected Position for Heroku
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
-    "whitenoise.middleware.WhiteNoiseMiddleware",
-    'Middleware.MiddlewareFile.MailMiddleware',
+    "Middleware.MiddlewareFile.MailMiddleware",
     "allauth.account.middleware.AccountMiddleware",
-
 ]
 
 CSRF_COOKIE_SECURE = False
-
 ROOT_URLCONF = "coda_project.urls"
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
         'DIRS': [],  # Add custom template dirs here if any
         'APP_DIRS': True,  # This enables Django to find templates inside app folders
+
+# ==================== TEMPLATE CONFIGURATION ====================
+# FIXED: DIRS now points to your global templates folder
+TEMPLATES = [
+    {
+        'BACKEND': 'django.template.backends.django.DjangoTemplates',
+        'DIRS': [os.path.join(BASE_DIR, 'templates')], 
+        'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
                 'django.template.context_processors.debug',
@@ -78,6 +109,7 @@ TEMPLATES = [
     },
 ]
 
+# <<<<<<< HEAD
 
 #  ==============DBFUNCTIONS=====================================
 def dba_values():
@@ -109,16 +141,19 @@ def dba_values():
         # password = os.environ.get('POSTGRESSPASS') 
     return host,dbname,user,password  
 
+# ============== DB FUNCTIONS =====================================
+def dba_values():
+    env = os.environ.get('ENVIRONMENT')
+    if env == 'production':
+        return os.environ.get('HEROKU_PROD_HOST'), os.environ.get('HEROKU_PROD_NAME'), os.environ.get('HEROKU_PROD_USER'), os.environ.get('HEROKU_PROD_PASS')
+    return os.environ.get('STG_DB_HOST'), os.environ.get('STG_DB_NAME'), os.environ.get('STG_DB_USER'), os.environ.get('STG_DB_PASSWORD')
+>>>>>>> e79fe45578418c384fbb84ca7760d91bef020a33
+
 WSGI_APPLICATION = "coda_project.wsgi.application"
-import dj_database_url
 
-host,dbname,user,password=dba_values()
+host, dbname, user, password = dba_values()
 
-
-
-# Database
-# https://docs.djangoproject.com/en/3.0/ref/settings/#databases
-
+<<<<<<< HEAD
 # DATABASES = {
 #     "default": {
 #         "ENGINE": "django.db.backends.postgresql",
@@ -133,67 +168,61 @@ DATABASES = {
 'ENGINE': 'django.db.backends.sqlite3',
 'NAME': os.path.join(BASE_DIR, 'coda_dev.db'),
 }
-}
-'''=========== Heroku DB ================'''
-db_from_env = dj_database_url.config(conn_max_age=600)
-DATABASES["default"].update(db_from_env)
 
-import sys
+# Database Configuration
+DATABASES = {
+    "default": {
+        "ENGINE": "django.db.backends.sqlite3",
+        "NAME": os.path.join(BASE_DIR, "db.sqlite3"),
+    }
+# >>>>>>> e79fe45578418c384fbb84ca7760d91bef020a33
+}
+
 if 'test' in sys.argv:
     DATABASES['default'] = {
         'ENGINE': 'django.db.backends.sqlite3',
         'NAME': 'coda_dev'
     }
 
+# Heroku DB override
+db_from_env = dj_database_url.config(conn_max_age=600)
+DATABASES["default"].update(db_from_env)
+
+# Password Validators
 AUTH_PASSWORD_VALIDATORS = [
-    {
-        "NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator",
-    },
-    {
-        "NAME": "django.contrib.auth.password_validation.MinimumLengthValidator",
-    },
-    {
-        "NAME": "django.contrib.auth.password_validation.CommonPasswordValidator",
-    },
-    {
-        "NAME": "django.contrib.auth.password_validation.NumericPasswordValidator",
-    },
+    {"NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator"},
+    {"NAME": "django.contrib.auth.password_validation.MinimumLengthValidator"},
+    {"NAME": "django.contrib.auth.password_validation.CommonPasswordValidator"},
+    {"NAME": "django.contrib.auth.password_validation.NumericPasswordValidator"},
 ]
 
-PASSWORD_HASHERS = [
-    "django.contrib.auth.hashers.MD5PasswordHasher",
-]
+PASSWORD_HASHERS = ["django.contrib.auth.hashers.MD5PasswordHasher"]
 
 # Internationalization
-
 LANGUAGE_CODE = "en-us"
-
 TIME_ZONE = "UTC"
-
 USE_I18N = True
-
 USE_L10N = True
-
 USE_TZ = True
 
-# Static files (CSS, JavaScript, Images)
-# https://docs.djangoproject.com/en/3.0/howto/static-files/
+# ==================== STATIC FILES CONFIGURATION ====================
+STATIC_URL = "/static/"
+STATIC_ROOT = os.path.join(BASE_DIR, "staticfiles")
+STATICFILES_DIRS = [
+    os.path.join(BASE_DIR, "static"),
+]
 
+WHITENOISE_MANIFEST_STRICT = False
 MEDIA_URL = "/media/"
 MEDIA_ROOT = os.path.join(BASE_DIR, "media")
 
-STATIC_ROOT = os.path.join(BASE_DIR, '..', "staticfiles")
-STATIC_URL = "/static/"
-STATICFILES_DIR = os.path.join(BASE_DIR, "static")
-
+# ====================================================================
 
 CRISPY_TEMPLATE_PACK = "bootstrap4"
-
 LOGIN_REDIRECT_URL = "main:layout"
 LOGIN_URL = "accounts:account-login"
 
-
-# private email
+# Email Settings
 EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
 EMAIL_USE_SSL = False
 EMAIL_USE_TLS = True
@@ -201,29 +230,11 @@ EMAIL_PORT = 587
 EMAIL_HOST = "smtp.privateemail.com"
 EMAIL_HOST_USER = os.environ.get("EMAIL_USER")
 EMAIL_HOST_PASSWORD = os.environ.get("EMAIL_PASS")
-EMAIL_FILE_PATH = BASE_DIR + "/emails"
-
+EMAIL_FILE_PATH = os.path.join(BASE_DIR, "emails")
 DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
 
-EMAIL_INFO = {
-    'USER': os.environ.get('EMAIL_INFO_USER'),
-    'PASS': os.environ.get('EMAIL_INFO_PASS'),
-    'HOST': os.environ.get('EMAIL_INFO_HOST'),
-    'PORT': os.environ.get('EMAIL_INFO_PORT'),
-    'USE_TLS': os.environ.get('EMAIL_INFO_USE_TLS'),
-    'USE_SSL': os.environ.get('EMAIL_INFO_USE_SSL'),
-}
-
-EMAIL_HR = {
-    'USER': os.environ.get('EMAIL_HR_USER'),
-    'PASS': os.environ.get('EMAIL_HR_PASS'),
-    'HOST': os.environ.get('EMAIL_HR_HOST'),
-    'PORT': os.environ.get('EMAIL_HR_PORT'),
-    'USE_TLS': os.environ.get('EMAIL_HR_USE_TLS'),
-    'USE_SSL': os.environ.get('EMAIL_HR_USE_SSL'),
-}
-
-AWS_S3_REGION_NAME = "us-east-2"  # change to your region
+# AWS S3 Settings
+AWS_S3_REGION_NAME = "us-east-2"
 AWS_S3_SIGNATURE_VERSION = "s3v4"
 AWS_ACCESS_KEY_ID = os.environ.get("AWS_ACCESS_KEY_ID")
 AWS_SECRET_ACCESS_KEY = os.environ.get("AWS_SECRET_ACCESS_KEY")
@@ -231,6 +242,7 @@ AWS_STORAGE_BUCKET_NAME = os.environ.get("AWS_STORAGE_BUCKET_NAME")
 AWS_S3_FILE_OVERWRITE = False
 AWS_DEFAULT_ACL = None
 
+<<<<<<< HEAD
 
 # from celery.schedules import crontab
 
@@ -255,71 +267,54 @@ AWS_DEFAULT_ACL = None
 #     },
 # }
 
-#==================PAYMENT SETTINGS=================
-# Testing Payment methods
-def payment_details(request):
-    # ================MPESA/CASHAPP/VENMO========================
-    phone_number =os.environ.get('MPESA_PHONE_NUMBER')
-    email_info =os.environ.get('EMAIL_INFO_USER')
-    cashapp = os.environ.get('CASHAPP'),
-    venmo= os.environ.get('VENMO'),
-    account_no = os.environ.get('STANBIC_ACCOUNT_NO'),
-    return (phone_number,email_info,cashapp,venmo,account_no)
+# Celery Settings
+CELERY_BROKER_URL = "redis://default:xjaoROhpU8Lbiz8OZskVTgyYDFAdSmlo@redis-11854.c240.us-east-1-3.ec2.cloud.redislabs.com:11854"
+CELERY_RESULT_BACKEND = "redis://default:xjaoROhpU8Lbiz8OZskVTgyYDFAdSmlo@redis-11854.c240.us-east-1-3.ec2.cloud.redislabs.com:11854"
+CELERY_ACCEPT_CONTENT = ["application/json"]
+CELERY_TASK_SERIALIZER = "json"
+CELERY_RESULT_SERIALIZER = "json"
+CELERY_IMPORTS = "coda_project.task"
 
+CELERYBEAT_SCHEDULE = {
+    "task_history_1st": {
+        "task": "task_history",
+        "schedule": crontab(0, 0, day_of_month="1"),
+    },
+    "advertisement_1st": {
+        "task": "advertisement",
+        "schedule": crontab(0, 0, day_of_month="1"),
+    },
+}
+>>>>>>> e79fe45578418c384fbb84ca7760d91bef020a33
 
-if os.environ.get('ENVIRONMENT') == 'production':
+# ================== ENVIRONMENT & STORAGE LOGIC ==================
+ENV = os.environ.get('ENVIRONMENT')
+
+if ENV == 'production':
     SITEURL = "https://www.codanalytics.net"
     SECURE_SSL_REDIRECT = True
     DEBUG = False
-elif os.environ.get('ENVIRONMENT') == 'testing':
-    SECURE_SSL_REDIRECT = True
-    SITEURL = "https://codamakutano.herokuapp.com"
     STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
+elif ENV == 'testing':
+    SITEURL = "https://codamakutano.herokuapp.com"
+    SECURE_SSL_REDIRECT = True
     DEBUG = True
+    STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 else:
     SITEURL = "http://127.0.0.1:8000"
-    STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
     DEBUG = True
+    STATICFILES_STORAGE = "django.contrib.staticfiles.storage.StaticFilesStorage"
 
-# -----------------------------------------
-def source_target():
-    # Source
-    source_host = os.environ.get('HEROKU_DEV_HOST')
-    source_dbname = os.environ.get('HEROKU_DEV_NAME')
-    source_user = os.environ.get('HEROKU_DEV_USER')
-    source_password = os.environ.get('HEROKU_DEV_PASS')
-    #Target                     
-    target_db_path=os.environ.get('TARGET_PATH_PROD')
-    return (source_host,source_dbname,source_user,source_password,target_db_path)
-
-
-#######################################
-# DAJNGO SOCIAL ALL AUTH LOGIN SETTING
-#######################################
-
-
+# Social Auth Settings
 SITE_ID = 1
 SOCIALACCOUNT_LOGIN_ON_GET = True
 SOCIALACCOUNT_ADAPTER = 'accounts.views.CustomSocialAccountAdapter'
 SOCIALACCOUNT_PROVIDERS = {
-    "google": {
-        "SCOPE": [
-            "profile",
-            "email"
-        ],
-        "AUTH_PARAMS": {"access_type": "online"}
-    },
-    "facebook": {
-        "SCOPE": [
-            "public_profile",
-            "email"
-        ],
-        "AUTH_PARAMS": {"access_type": "online"}
-    },
+    "google": {"SCOPE": ["profile", "email"], "AUTH_PARAMS": {"access_type": "online"}},
+    "facebook": {"SCOPE": ["public_profile", "email"], "AUTH_PARAMS": {"access_type": "online"}},
 }
 
-
-# settings.py
+# Mpesa Settings
 MPESA_CONSUMER_KEY = os.environ.get('MPESA_CONSUMER_KEY')
 MPESA_CONSUMER_SECRET = os.environ.get('MPESA_CONSUMER_SECRET')
 MPESA_SHORTCODE = os.environ.get('MPESA_SHORTCODE')

@@ -1,8 +1,6 @@
 import os
 from django.db import connection
-from django.apps import apps
 from django.db.utils import ProgrammingError
-import datetime
 
 def clear():
     if os.name == 'nt':  # for Windows

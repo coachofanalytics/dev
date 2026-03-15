@@ -1,5 +1,7 @@
 from django.contrib import admin
+from .models import Assets, Readme, Location,Pricing,Plan,ClientAvailability,Search,Company
 
+<<<<<<< HEAD
 from .models import (
     Company,
     Service,
@@ -78,3 +80,33 @@ class MembershipRegistrationAdmin(admin.ModelAdmin):
     list_display = ("id", "first_name", "last_name", "email", "is_active")
     search_fields = ("first_name", "last_name", "email")
     list_filter = ("is_active",)
+=======
+
+# Simple registrations (no custom admin needed)
+# admin.site.register(Service)
+admin.site.register(Assets)
+admin.site.register(Readme)
+admin.site.register(Pricing)
+# admin.site.register(Testimonials)
+admin.site.register(Plan)
+admin.site.register(ClientAvailability)
+# admin.site.register(Search)
+admin.site.register(Company)
+
+
+# Custom admin for Location
+@admin.register(Location)
+class LocationAdmin(admin.ModelAdmin):
+    list_display = ("zipcode", "city", "state", "country")
+    search_fields = ("city", "state", "country")
+    list_filter = ("country",)
+    ordering = ("country", "city")
+
+ 
+
+@admin.register(Search)
+class SearchAdmin(admin.ModelAdmin):
+    list_display = ("topic", "uploaded", "created_at")
+    search_fields = ("topic", "question")
+    list_filter = ("uploaded",)
+>>>>>>> e79fe45578418c384fbb84ca7760d91bef020a33

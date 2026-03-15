@@ -1,0 +1,174 @@
+{% extends 'admin_templates/base_template.html' %}
+{% load static %}
+
+{% block title %}CODA | Search{% endblock %}
+{% block page_title %}Client Search Dashboard{% endblock %}
+
+{% block page_content %}
+
+<!-- ================= Dashboard Cards ================= -->
+<div class="row mb-4">
+
+  <!-- Total Searches -->
+  <div class="col-md-3">
+    <div class="card bg-primary text-white shadow-sm">
+      <div class="card-body">
+        <h6>Total Searches</h6>
+        <h2>{{ Searches|length }}</h2>
+      </div>
+    </div>
+  </div>
+
+  <!-- Uploaded -->
+  <div class="col-md-3">
+    <div class="card bg-success text-white shadow-sm">
+      <div class="card-body">
+        <h6>Uploaded</h6>
+        <h2>{{ uploaded_count }}</h2>
+      </div>
+    </div>
+  </div>
+
+  <!-- Pending -->
+  <div class="col-md-3">
+    <div class="card bg-warning text-white shadow-sm">
+      <div class="card-body">
+        <h6>Pending Upload</h6>
+        <h2>{{ pending_count }}</h2>
+      </div>
+    </div>
+  </div>
+
+  <!-- Latest Created -->
+  <div class="col-md-3">
+    <div class="card bg-info text-white shadow-sm">
+      <div class="card-body">
+        <h6>Latest Entry</h6>
+        <small>
+        {% if Searches %}
+            {{ Searches.0.topic }}
+        {% else %}
+            None
+        {% endif %}
+        </small>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ================= Table ================= -->
+<div class="card shadow-sm">
+
+  <div class="card-header d-flex justify-content-between align-items-center">
+
+    <h4 class="mb-0">
+      <i class="fas fa-search"></i> Search Records
+    </h4>
+
+    <a href="#" class="btn btn-success btn-sm">
+      <i class="fas fa-plus"></i> Add Search
+    </a>
+
+  </div>
+
+  <div class="card-body p-0">
+
+    <div class="table-responsive">
+
+      <table class="table table-hover table-striped mb-0">
+
+        <thead class="thead-light">
+          <tr>
+            <th>#</th>
+            <th>Topic</th>
+            <th>Question</th>
+            <th>Created</th>
+            <th>Updated</th>
+            <th>Status</th>
+            <th class="text-center">Actions</th>
+          </tr>
+        </thead>
+
+        <tbody>
+
+        {% for search in searches %}
+
+        <tr>
+
+          <td>{{ forloop.counter }}</td>
+
+          <td>
+            <strong>{{ search.topic }}</strong>
+          </td>
+
+          <td>
+            {{ search.question|truncatechars:60 }}
+          </td>
+
+          <td>
+            {{ search.created_at|date:"Y-m-d" }}
+          </td>
+
+          <td>
+            {{ search.updated_at|date:"Y-m-d" }}
+          </td>
+
+          <td>
+            {% if search.uploaded %}
+              <span class="badge badge-success">Uploaded</span>
+            {% else %}
+              <span class="badge badge-warning">Pending</span>
+            {% endif %}
+          </td>
+
+          <td class="text-center">
+
+            <a href="#"
+               class="btn btn-sm btn-secondary">
+               <i class="fas fa-eye"></i>
+            </a>
+
+            <a href="#"
+               class="btn btn-sm btn-primary">
+               <i class="fas fa-edit"></i>
+            </a>
+
+            <a href="#"
+               class="btn btn-sm btn-danger">
+               <i class="fas fa-trash"></i>
+            </a>
+
+          </td>
+
+        </tr>
+
+        {% empty %}
+
+        <tr>
+          <td colspan="7" class="text-center text-muted py-4">
+            No Search Records Found
+          </td>
+        </tr>
+
+        {% endfor %}
+
+        </tbody>
+
+      </table>
+
+    </div>
+
+  </div>
+
+  <div class="card-footer text-right">
+
+    <small class="text-muted">
+      Showing {{ Searches|length }} records
+    </small>
+
+  </div>
+
+</div>
+
+{% endblock %}

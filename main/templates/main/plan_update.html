@@ -1,0 +1,101 @@
+{% extends 'admin_templates/base_template.html' %}
+{% load crispy_forms_tags %}
+
+{% block title %}
+    {% if object %}Edit Location{% else %} Edit Location{% endif %} | CODA
+{% endblock title %}
+
+{% block content %}
+
+<div class="container mt-4">
+    <div class="card shadow-sm border-warning">
+        <div class="card-header bg-warning text-dark">
+            <h4 class="fw-bold mb-0">
+                Update plan
+            </h4>
+        </div>
+
+        <div class="card-body">
+            <form method="post">
+                {% csrf_token %}
+
+                <div class="mb-3">
+                    <label class="form-label">task</label>
+                    {{ form.task }}
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">duration</label>
+                    {{ form.duration }}
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">created_at</label>
+                    {{ form.created_at }}
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">updated_at</label>
+                    {{ form.updated_at }}
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">what</label>
+                    {{ form.what }}
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">why</label>
+                    {{ form.why }}
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">comments</label>
+                    {{ form.comments}}
+                        <div class="mb-3">
+                    <label class="form-label">comments</label>
+                    {{ form
+                        <div class="mb-3">
+                    <label class="form-label">doc</label>
+                    {{ form.doc }}
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">pptlink</label>
+                    {{ form.pptlink }}
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">videolink</label>
+                    {{ form.videolink }}
+                    </div>
+                <div class="mb-3">
+                    <label class="form-label">is_active</label>
+                    {{ form.is_active }}
+
+                    </div>
+                <div class="mb-3">
+                    <label class="form-label">is_answered</label>
+                    {{ form.is_answered }}
+
+                    </div>
+                <div class="mb-3">
+                    <label class="form-label">is_featured</label>
+                    {{ form.is_featured }}
+
+                </div>.is_featured }}
+                </div>
+
+                <div class="mt-4">
+                    <button type="submit" class="btn btn-warning">
+                        Update Location
+                    </button>
+
+                    <a href="{% url 'main:plan_list' %}"
+                       class="btn btn-secondary ms-2">
+                        Cancel
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

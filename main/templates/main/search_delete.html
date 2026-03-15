@@ -1,0 +1,34 @@
+{% extends "admin_templates/base_template.html" %}
+
+{% block title %}Delete search{% endblock %}
+
+{% block page_content %}
+<div class="card card-danger">
+    <div class="card-header">
+        <h4>Confirm Delete</h4>
+    </div>
+    <div class="card-body">
+        <p>
+            Are you sure you want to delete this search record?
+        </p>
+
+        <ul>
+            <li><strong>topic:</strong> {{ search.topic }}</li>
+            <li><strong>question:</strong> {{ search.question }}</li>           
+            <li><strong>created_at</strong> {{ search.created_at }}</li>
+            <li><strong>updated_at</strong> {{ search.updated_at }}</li>
+            <li><strong>uploaded:</strong> {{ search.uploaded }}</li>
+        </ul>
+
+        <form method="post">
+            {% csrf_token %}
+            <a href="{% url 'main:search_list' %}" class="btn btn-secondary">
+                Cancel
+            </a>
+            <button type="submit" class="btn btn-danger">
+                Delete
+            </button>
+        </form>
+    </div>
+</div>
+{% endblock %}

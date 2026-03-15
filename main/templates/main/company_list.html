@@ -1,0 +1,176 @@
+{% extends 'admin_templates/base_template.html' %}
+{% load static %}
+
+{% block title %}CODA |company{% endblock %}
+{% block page_title %}Client company Dashboard{% endblock %}
+
+{% block page_content %}
+
+<!-- ================= Dashboard Cards ================= -->
+<div class="row mb-4">
+
+  <!-- Total Searches -->
+  <div class="col-md-3">
+    <div class="card bg-primary text-white shadow-sm">
+      <div class="card-body">
+        <h6>Total company</h6>
+        <h2>{{ company|length }}</h2>
+      </div>
+    </div>
+  </div>
+
+  <!-- Uploaded -->
+  <div class="col-md-3">
+    <div class="card bg-success text-white shadow-sm">
+      <div class="card-body">
+        <h6>mission</h6>
+        <h2>{{ website }}</h2>
+      </div>
+    </div>
+  </div>
+
+  <!-- Pending -->
+  <div class="col-md-3">
+    <div class="card bg-warning text-white shadow-sm">
+      <div class="card-body">
+        <h6>mission</h6>
+        <h2>{{ website }}</h2>
+      </div>
+    </div>
+  </div>
+
+  <!-- Latest Created -->
+  <div class="col-md-3">
+    <div class="card bg-info text-white shadow-sm">
+      <div class="card-body">
+        <h6>Latest Entry</h6>
+        <small>
+        {% if Searches %}
+            {{ Searches.0.topic }}
+        {% else %}
+            None
+        {% endif %}
+        </small>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ================= Table ================= -->
+<div class="card shadow-sm">
+
+  <div class="card-header d-flex justify-content-between align-items-center">
+
+    <h4 class="mb-0">
+      <i class="fas fa-search"></i> companies Records
+    </h4>
+
+    <a href="#" class="btn btn-success btn-sm">
+      <i class="fas fa-plus"></i> Add companies
+    </a>
+
+  </div>
+
+  <div class="card-body p-0">
+
+    <div class="table-responsive">
+
+      <table class="table table-hover table-striped mb-0">
+
+        <thead class="thead-light">
+          <tr>
+            <th>#</th>
+            <th>name</th>
+            <th>slug</th>
+            <th>sector</th>
+            <th>mission</th>
+            <th>website</th>
+            <th class="text-center">Actions</th>
+          </tr>
+        </thead>
+
+        <tbody>
+
+        {% for Company  in companies %}
+
+        <tr>
+
+          <td>{{ forloop.counter }}</td>
+
+          <td>
+            <strong>{{ Company.name }}</strong>
+          </td>
+
+          <td>
+            {{ Company.slug }}
+          </td>
+
+          <td>
+            {{ Company.sector }}
+          </td>
+
+          <td>
+            {{ Company.mission}}
+          </td>
+
+          <td>
+            {% if Company.website %}
+              <span class="badge badge-success">mission</span>
+            {% else %}
+              <span class="badge badge-warning">website</span>
+            {% endif %}
+          </td>
+
+          <td class="text-center">
+
+             <a href="#"
+                 class="btn btn-sm btn-secondary">
+                 Detail
+              </a>
+
+
+            <a href="#"
+                 class="btn btn-sm btn-primary">
+                 Edit
+              </a>
+
+              <a href="#"
+                 class="btn btn-sm btn-danger">
+                 Delete
+              </a>
+
+
+          </td>
+
+        </tr>
+
+        {% empty %}
+
+        <tr>
+          <td colspan="7" class="text-center text-muted py-4">
+            No Company Records Found
+          </td>
+        </tr>
+
+        {% endfor %}
+
+        </tbody>
+
+      </table>
+
+    </div>
+
+  </div>
+
+  <div class="card-footer text-right">
+
+    <small class="text-muted">
+      Showing {{ Company|length }} records
+    </small>
+
+  </div>
+
+</div>
+
+{% endblock %}

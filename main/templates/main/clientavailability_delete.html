@@ -1,0 +1,35 @@
+{% extends "admin_templates/base_template.html" %}
+
+{% block title %}Delete Client Availability{% endblock %}
+
+{% block page_content %}
+<div class="card card-danger">
+    <div class="card-header">
+        <h4>Confirm Delete</h4>
+    </div>
+    <div class="card-body">
+        <p>
+            Are you sure you want to delete this availability record?
+        </p>
+
+        <ul>
+            <li><strong>Client:</strong> {{ availability.client }}</li>
+            <li><strong>Day:</strong> {{ availability.day }}</li>
+            <li><strong>Start Time:</strong> {{ availability.start_time }}</li>
+            <li><strong>End Time:</strong> {{ availability.end_time }}</li>
+            <li><strong>Time Standard:</strong> {{ availability.time_standards }}</li>
+            <li><strong>Topic:</strong> {{ availability.topic }}</li>
+        </ul>
+
+        <form method="post">
+            {% csrf_token %}
+            <a href="{% url 'main:clientavailability_list' %}" class="btn btn-secondary">
+                Cancel
+            </a>
+            <button type="submit" class="btn btn-danger">
+                Delete
+            </button>
+        </form>
+    </div>
+</div>
+{% endblock %}
