@@ -13,7 +13,7 @@ from django.core.exceptions import ValidationError
 import logging
 
 from core.permissions import require_admin
-from investing.models_shareholders import EquitySnapshot
+from investing.models import EquitySnapshot
 from investing.services.shareholders.snapshot_query_service import SnapshotQueryService
 from investing.services.shareholders.snapshot_lock_service import SnapshotLockService
 from investing.services.shareholders.snapshot_export_service import SnapshotExportService
@@ -24,7 +24,7 @@ logger = logging.getLogger(__name__)
 
 def get_active_deal():
     """Get the currently active deal"""
-    from investing.models_shareholders import Deal
+    from investing.models import Deal
     return Deal.objects.filter(is_active=True).first()
 
 

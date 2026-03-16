@@ -12,6 +12,7 @@ admin.site.register(InvestmentsStrategy)
 admin.site.register(Daily_Trades)
 admin.site.register(Returns_Balances)
 
+
 # Investor Relations Models
 admin.site.register(InvestmentPerformance)
 admin.site.register(InvestmentReport)

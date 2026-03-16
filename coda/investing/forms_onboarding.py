@@ -14,6 +14,7 @@ from .models import (
 )
 
 
+
 class RiskToleranceQuestionnaireForm(forms.Form):
     """
     10-question risk tolerance assessment

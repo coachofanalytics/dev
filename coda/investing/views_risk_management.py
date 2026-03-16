@@ -12,7 +12,8 @@ from django.db.models import Q, Avg, Count, Max
 from django.http import JsonResponse
 from django.utils import timezone
 from datetime import datetime, timedelta, date
-from decimal import Decimal
+from decimal import Decimal 
+
 
 from .models import (
     Investor_Information,

@@ -16,6 +16,7 @@ class MultiLegOptionsForm(forms.Form):
     Handles Bull Put Spreads, Bear Call Spreads, Iron Condors, etc.
     """
     
+    
     # Account Selection
     managed_account = forms.ModelChoiceField(
         queryset=ManagedTradingAccount.objects.filter(status__in=['active', 'pending']),

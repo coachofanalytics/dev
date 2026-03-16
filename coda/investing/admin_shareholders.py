@@ -6,7 +6,7 @@ Migrated from shareholders app to investing app.
 """
 
 from django.contrib import admin
-from investing.models_shareholders import (
+from investing.models import (
     Deal, DealConfig, DealWeights, Member, LedgerEntry, LedgerEvidence,
     EquitySnapshot, EquitySnapshotLine, SnapshotAuditLog, AuditLog
 )

@@ -9,7 +9,7 @@ from typing import Dict
 import logging
 
 # Models imported from original shareholders app (preserves DB ownership)
-from investing.models_shareholders import Deal, ValuationRate
+from investing.models import Deal, ValuationRate
 
 logger = logging.getLogger(__name__)
 

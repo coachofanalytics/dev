@@ -13,7 +13,7 @@ from django.dispatch import receiver
 from decimal import Decimal
 import logging
 
-from investing.models_shareholders import DealConfig, LedgerEntry
+from investing.models import DealConfig, LedgerEntry
 from investing.services.shareholders.audit_service import AuditService
 
 logger = logging.getLogger(__name__)

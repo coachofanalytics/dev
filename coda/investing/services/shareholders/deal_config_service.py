@@ -12,7 +12,7 @@ from django.db import transaction
 from django.utils import timezone
 import logging
 
-from investing.models_shareholders import (
+from investing.models import (
     Deal, DealConfig, DealWeights, ValuationRate, LedgerAuditLog
 )
 

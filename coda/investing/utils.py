@@ -11,6 +11,7 @@ def send_investor_welcome_email(investment):
     """Send welcome email to new investor"""
     try:
         user = investment.investor
+        
         investor_type = getattr(investment, "investor_type", "individual")
 
         template_name = "investing/emails/welcome_individual.html"

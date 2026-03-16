@@ -14,6 +14,7 @@ try:
     NUMPY_AVAILABLE = True
 except ImportError:
     np = None
+    
     NUMPY_AVAILABLE = False
 # Optional imports - removed during optimization to reduce slug size
 try:

@@ -13,7 +13,7 @@ import json
 import logging
 
 # Models imported from original shareholders app (preserves DB ownership)
-from investing.models_shareholders import LedgerAuditLog, Member, LedgerEntry
+from investing.models import LedgerAuditLog, Member, LedgerEntry
 
 logger = logging.getLogger(__name__)
 User = get_user_model()

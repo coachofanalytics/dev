@@ -10,3 +10,4 @@ class PortfolioFilter(django_filters.FilterSet):
         fields = [
             "is_active",
         ]
+

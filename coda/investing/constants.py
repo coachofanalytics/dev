@@ -8,6 +8,8 @@ Purpose: Consolidate strategy choices, source choices, and status choices across
 # OPTIONS STRATEGY CHOICES
 # ============================================================================
 
+
+
 STRATEGY_CHOICES = [
     # Core Strategies (Phase 1-9)
     ('short_put', 'Cash-Secured Short Put'),

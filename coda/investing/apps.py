@@ -7,6 +7,7 @@ logger = logging.getLogger(__name__)
 class InvestingConfig(AppConfig):
     name = "investing"
     
+    
     def ready(self):
         """
         Initialize app: load signals for automation

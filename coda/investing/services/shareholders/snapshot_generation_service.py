@@ -13,7 +13,7 @@ import hashlib
 import json
 import logging
 
-from investing.models_shareholders import (
+from investing.models import (
     Deal, DealWeights, Member, LedgerEntry,
     EquitySnapshot, EquitySnapshotLine
 )

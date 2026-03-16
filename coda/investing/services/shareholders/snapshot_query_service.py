@@ -12,7 +12,7 @@ from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.utils import timezone
 import logging
 
-from investing.models_shareholders import Deal, EquitySnapshot
+from investing.models import Deal, EquitySnapshot
 
 logger = logging.getLogger(__name__)
 

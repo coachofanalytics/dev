@@ -4,6 +4,7 @@ Celery Tasks for Managed Options Trading
 Background tasks for automated position fetching, batch processing, and notifications.
 """
 
+
 from celery import shared_task
 from django.core.mail import send_mail
 from django.contrib.auth import get_user_model

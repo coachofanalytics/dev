@@ -8,6 +8,7 @@ from django.core.exceptions import ValidationError
 from decimal import Decimal
 from datetime import date, timedelta
 
+
 from .models import (
     Investor_Information,
     RiskAssessment,

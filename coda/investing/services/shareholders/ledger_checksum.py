@@ -10,7 +10,7 @@ from decimal import Decimal
 import logging
 
 # Models imported from original shareholders app (preserves DB ownership)
-from investing.models_shareholders import Deal, LedgerEntry
+from investing.models import Deal, LedgerEntry
 
 logger = logging.getLogger(__name__)
 

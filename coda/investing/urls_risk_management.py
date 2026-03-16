@@ -8,6 +8,7 @@ from . import views_risk_management
 
 app_name = 'investing_risk'
 
+
 urlpatterns = [
     # Risk Management Dashboard
     path('risk-dashboard/', views_risk_management.RiskManagementDashboardView.as_view(), name='risk-dashboard'),

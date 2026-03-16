@@ -16,7 +16,7 @@ import uuid
 import logging
 
 # Models now owned by investing app
-from investing.models_shareholders import (
+from investing.models import (
     LedgerEntry, LedgerEvidence, Member, Deal
 )
 from .audit_service import AuditService

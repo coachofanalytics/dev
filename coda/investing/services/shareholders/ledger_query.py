@@ -16,7 +16,7 @@ from django.utils import timezone
 import logging
 
 # Models imported from original shareholders app (preserves DB ownership)
-from investing.models_shareholders import Deal, LedgerEntry, Member
+from investing.models import Deal, LedgerEntry, Member
 
 logger = logging.getLogger(__name__)
 

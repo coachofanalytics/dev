@@ -10,7 +10,7 @@ from typing import List
 from django.http import HttpResponse
 import logging
 
-from investing.models_shareholders import EquitySnapshot, EquitySnapshotLine
+from investing.models import EquitySnapshot, EquitySnapshotLine
 
 logger = logging.getLogger(__name__)
 

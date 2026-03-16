@@ -10,7 +10,7 @@ from django.contrib.auth import get_user_model
 from django.db import transaction
 import logging
 
-from investing.models_shareholders import (
+from investing.models import (
     AuditLog, Deal, Member, LedgerEntry, EquitySnapshot, 
     DealConfig, DealWeights
 )

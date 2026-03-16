@@ -9,7 +9,7 @@ from django.utils import timezone
 from django.core.exceptions import ValidationError
 import logging
 
-from investing.models_shareholders import EquitySnapshot, SnapshotAuditLog
+from investing.models import EquitySnapshot, SnapshotAuditLog
 
 logger = logging.getLogger(__name__)
 

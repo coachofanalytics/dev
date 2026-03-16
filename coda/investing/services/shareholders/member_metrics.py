@@ -16,7 +16,7 @@ from django.db.models import Sum, Q, Count
 import logging
 
 # Models imported from original shareholders app (preserves DB ownership)
-from investing.models_shareholders import Member, LedgerEntry, Deal
+from investing.models import Member, LedgerEntry, Deal
 
 logger = logging.getLogger(__name__)
 

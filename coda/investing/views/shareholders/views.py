@@ -24,7 +24,7 @@ from decimal import Decimal
 from core.permissions import is_admin, require_admin
 
 # Models now owned by investing app
-from investing.models_shareholders import (
+from investing.models import (
     Deal, DealConfig, DealWeights, Member, LedgerEntry, LedgerEvidence,
     LedgerApproval, LedgerDispute, LedgerAuditLog
 )
@@ -247,7 +247,7 @@ def member_register(request):
     
     Phase 3: Real POST handling with form validation, document upload, and audit logging.
     """
-    from investing.forms_shareholders import MemberRegisterForm
+    from investing.forms import MemberRegisterForm
     from investing.services.shareholders.audit_service import AuditService, get_client_ip
     
     try:
@@ -405,7 +405,7 @@ def member_edit(request, member_id):
         - Superusers can edit any member.
         - All other staff get 403 Forbidden on edit attempt.
     """
-    from investing.forms_shareholders import MemberEditForm
+    from investing.forms import MemberEditForm
     from investing.services.shareholders.audit_service import AuditService, get_client_ip
     from django.http import HttpResponseForbidden
     
@@ -508,7 +508,7 @@ def member_edit(request, member_id):
                 # SECURITY: Audit verification status changes via immutable AuditLog
                 if 'verified' in changed_fields:
                     try:
-                        from investing.models_shareholders import AuditLog
+                        from investing.models import AuditLog
                         old_verified = original_data['verified']
                         new_verified = updated_member.verified
                         action = 'VERIFICATION_APPROVED' if new_verified else 'VERIFICATION_REJECTED'
@@ -586,7 +586,7 @@ def contribution_log(request):
     
     Phase 3: Real POST handling with form validation, proof upload, and audit logging.
     """
-    from investing.forms_shareholders import ContributionLogForm
+    from investing.forms import ContributionLogForm
     from investing.services.shareholders.contribution_service import ContributionSubmissionService
     from investing.services.shareholders.audit_service import get_client_ip
     
@@ -1343,7 +1343,7 @@ def snapshot_create(request):
         )
         
         # Create audit log
-        from investing.models_shareholders import SnapshotAuditLog
+        from investing.models import SnapshotAuditLog
         SnapshotAuditLog.objects.create(
             snapshot=snapshot,
             action='CREATED',
@@ -1543,7 +1543,7 @@ def deal_config_save(request):
     if not request.user.is_superuser:
         # Log unauthorized attempt
         try:
-            from investing.models_shareholders import AuditLog
+            from investing.models import AuditLog
             deal = get_active_deal()
             if deal:
                 AuditLog.objects.create(
@@ -1660,7 +1660,7 @@ def audit_log_view(request):
         - Summary metrics
     """
     from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
-    from investing.models_shareholders import AuditLog
+    from investing.models import AuditLog
     from django.db.models import Q
     from datetime import datetime
     

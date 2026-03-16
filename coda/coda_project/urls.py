@@ -32,6 +32,7 @@ from coda_project import settings
 from mail.search_mail import parse_mail
 from . import views
 from Middleware.payment_control import PaymentStatusView
+from investing.urls import shareholders_urlpatterns
 
 # ===========ERROR HANDLING SECTION================
 handler400 = "main.views.hendler400"
@@ -107,8 +108,8 @@ urlpatterns = [
     path("investing/", include("investing.urls", namespace="investing")),
     path("management/", include("management.urls", namespace="management")),
     path("marketing/", include("marketing.urls", namespace="marketing")),
-    # Shareholders Management System - Primary route under investing path
-    path("investing/shareholders/", include("investing.urls_shareholders", namespace="shareholders")),
+    # Shareholders Management System - URL patterns consolidated in investing/urls.py
+    path("investing/shareholders/", include((shareholders_urlpatterns, 'shareholders'))),
     # Backward-compatible redirect from old /shareholders/ path
     re_path(r'^shareholders/(?P<path>.*)$', RedirectView.as_view(url='/investing/shareholders/%(path)s', permanent=False)),
     # path("globalsearch/", include("globalsearch.urls"), name="search"),
