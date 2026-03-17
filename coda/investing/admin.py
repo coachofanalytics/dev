@@ -1393,4 +1393,4 @@ class AuditLogAdmin(admin.ModelAdmin):
     
     def has_delete_permission(self, request, obj=None):
         """Prevent deletion of audit logs"""
-        return False
+        return False
