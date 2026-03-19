@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/3.0/ref/settings/
 """
 
 import os
+from decouple import config
 
 from pathlib import Path
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -405,3 +406,4 @@ ADMIN_EMAIL = 'your-email@gmail.com'  # Still use your real email here for admin
 
 # Site URL for email links
 SITE_URL = 'http://127.0.0.1:8000'
+GEMINI_API_KEY= config('GEMINI_API_KEY')
