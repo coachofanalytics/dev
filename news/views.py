@@ -5,7 +5,7 @@ from django.views.generic import ListView,DetailView, TemplateView
 from django.urls import reverse_lazy
 from django.db.models import Q
 from django.contrib.auth.mixins import (LoginRequiredMixin)
-
+from .forms import ArticleForm
 
 # Create your views here.
 
@@ -60,7 +60,7 @@ class ArticleDetailView(DetailView):
         ).exclude(
             id=self.object.id)[:3]
 
-class ArticleCreateView(LoginRequiredMixin, UpdateView):
+class ArticleCreateView(LoginRequiredMixin, CreateView):
     model = NewsArticle
     fields = ['name', 'description']
     template_name = 'news/category_form.html'
@@ -70,6 +70,13 @@ class ArticleCreateView(LoginRequiredMixin, UpdateView):
         if not form.instance.author:
             form.instance.author = self.request.user
         return super().form_valid(form)
+    
+class ArticleEditView(LoginRequiredMixin):
+    model = NewsArticle
+    form_class = ArticleForm
+    template_name = 'news/article_form.html'
+    success_url = reverse_lazy('news:dashboard')
+
     
 class ArticleDeleteView(LoginRequiredMixin, DeleteView):
     model = NewsArticle
