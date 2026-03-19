@@ -1,5 +1,6 @@
-{%extends "main/base_templates/base.html"%}
-{%block content %}
+{% extends "main/base_templates/base.html" %}
+{% load static %}
+{% block content %}
     <title>Scholarship Search Database | Diaspora County 48</title>
     
     <style>
@@ -23,25 +24,59 @@
                 display: block !important;
             }
         }
+        
+        /* Amount styling */
+        .amount-full-tuition {
+            color: #0a926d;
+            font-weight: 700;
+        }
+        .currency-usd { color: #2563eb; }
+        .currency-kes { color: #059669; }
+        .currency-eur { color: #7c3aed; }
+        .currency-gbp { color: #b91c1c; }
+        
+        /* Active filter badges */
+        .filter-badge {
+            transition: all 0.2s ease;
+        }
+        .filter-badge:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
     </style>
-</head>
-<body class="antialiased">
+
+     <header class="relative h-64 bg-gray-900">
+        <img src="{% static 'main/img/education/training.jpg' %}"
+             class="absolute inset-0 w-full h-full object-cover opacity-60">
+    
+        <div class="relative flex flex-col items-center justify-center h-full text-center text-white">
+            <h1 class="text-4xl md:text-5xl font-extrabold tracking-wide">
+                
+                         AI SCHOLARSHIP DISCOVERY
+            </h1>
+            <p>Our AI constantly scans the web for the latest funding opportunities.</p>
+            <br>
+            <button id="refresh-ai-search"
+             class="bg-green-600 text-white px-6 py-2 rounded-full font-semibold hover:bg-green-700 transition">
+             Refresh AI Research
+             </button>
+        </div>
+    </header>
+
     <!-- Main Content -->
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <!-- Breadcrumb -->
         <nav class="text-gray-500 text-base mb-6" aria-label="Breadcrumb">
             <ol class="list-none p-0 inline-flex">
                 <li class="flex items-center">
-                    <a href="#" class="text-brand-blue hover:underline">Home</a>
-                    <span class="mx-2 text-gray-400">/</span>
+                     <div class="max-w-6xl mx-auto px-6 mt-6">
+       <a href="{% url 'main:education_landing' %}" 
+          class="text-brand-blue font-medium hover:underline">
+           ← Back to Previous Page
+       </a>
+    </div>
                 </li>
-                <li class="flex items-center">
-                    <a href="#" class="text-brand-blue hover:underline">Services</a>
-                    <span class="mx-2 text-gray-400">/</span>
-                </li>
-                <li class="flex items-center">
-                    <span class="text-brand-green font-semibold">Scholarship Search Database</span>
-                </li>
+                
             </ol>
         </nav>
 
@@ -59,33 +94,41 @@
                     <div class="space-y-6">
                         <!-- Keyword Search -->
                         <div class="relative">
-                            <label for="search-keyword" class="block text-sm font-medium text-gray-700 mb-1">Keyword Search</label>
+                            <label for="{{ form.search_keyword.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">Keyword Search</label>
                             {{ form.search_keyword }}
                         </div>
 
                         <!-- Level Filter -->
                         <div class="relative">
-                            <label for="filter-level" class="block text-sm font-medium text-gray-700 mb-1">Study Level</label>
+                            <label for="{{ form.filter_level.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">Study Level</label>
                             {{ form.filter_level }}
                         </div>
 
                         <!-- Field Filter -->
                         <div class="relative">
-                            <label for="filter-field" class="block text-sm font-medium text-gray-700 mb-1">Field of Study</label>
+                            <label for="{{ form.filter_field.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">Field of Study</label>
                             {{ form.filter_field }}
                         </div>
 
                         <!-- Location Filter -->
                         <div class="relative">
-                            <label for="filter-location" class="block text-sm font-medium text-gray-700 mb-1">Study Location</label>
+                            <label for="{{ form.filter_location.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">Study Location</label>
                             {{ form.filter_location }}
                         </div>
 
-                        <!-- Status Checkbox -->
-                        <div class="flex items-center pt-2">
-                            {{ form.filter_status }}
-                            <label for="filter-status" class="ml-3 block text-sm font-medium text-gray-700">Show only "Closing Soon"</label>
+                        <!-- Currency Filter - FIXED: Using Django form rendering -->
+                        <div class="relative">
+                            <label for="{{ form.filter_currency.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">Currency</label>
+                            {{ form.filter_currency }}
                         </div>
+
+                        <!-- Status Checkbox -->
+                     <div class="flex items-center pt-2">
+                         {{ form.filter_status }}
+                         <label for="{{ form.filter_status.id_for_label }}" class="ml-3 block text-sm font-medium text-gray-700">
+                             Show only "Closing Soon"
+                         </label>
+                     </div>
                         
                         <button type="submit" class="w-full bg-brand-blue text-white font-bold py-2 px-4 rounded-lg hover:bg-[#183693] transition duration-300">
                             Apply Filters
@@ -106,7 +149,82 @@
                     </span>
                 </div>
 
-                <div id="scholarship-results" class="space-y-6">
+                <!-- Active Filters Display - NEW -->
+                {% if form.filter_currency.value or form.filter_level.value or form.filter_field.value or form.filter_location.value or form.filter_status.value or form.search_keyword.value %}
+                <div class="bg-blue-50 p-4 rounded-lg mb-6">
+                    <div class="flex flex-wrap items-center gap-2">
+                        <span class="text-sm font-medium text-gray-700 mr-2">Active filters:</span>
+                        
+                        {% if form.search_keyword.value %}
+                        <span class="filter-badge inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
+                            Keyword: "{{ form.search_keyword.value }}"
+                            <a href="?{% for key, value in request.GET.items %}{% if key != 'search_keyword' %}{{ key }}={{ value }}&{% endif %}{% endfor %}" class="ml-2 text-gray-600 hover:text-gray-800 font-bold">×</a>
+                        </span>
+                        {% endif %}
+                        
+                        {% if form.filter_currency.value %}
+                        <span class="filter-badge inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                            Currency: 
+                            {% for value, label in form.filter_currency.field.choices %}
+                                {% if value == form.filter_currency.value %}
+                                    {{ label }}
+                                {% endif %}
+                            {% endfor %}
+                            <a href="?{% for key, value in request.GET.items %}{% if key != 'filter_currency' %}{{ key }}={{ value }}&{% endif %}{% endfor %}" class="ml-2 text-blue-600 hover:text-blue-800 font-bold">×</a>
+                        </span>
+                        {% endif %}
+                        
+                        {% if form.filter_level.value %}
+                        <span class="filter-badge inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                            Level: 
+                            {% for value, label in form.filter_level.field.choices %}
+                                {% if value == form.filter_level.value %}
+                                    {{ label }}
+                                {% endif %}
+                            {% endfor %}
+                            <a href="?{% for key, value in request.GET.items %}{% if key != 'filter_level' %}{{ key }}={{ value }}&{% endif %}{% endfor %}" class="ml-2 text-green-600 hover:text-green-800 font-bold">×</a>
+                        </span>
+                        {% endif %}
+                        
+                        {% if form.filter_field.value %}
+                        <span class="filter-badge inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
+                            Field: 
+                            {% for value, label in form.filter_field.field.choices %}
+                                {% if value == form.filter_field.value %}
+                                    {{ label }}
+                                {% endif %}
+                            {% endfor %}
+                            <a href="?{% for key, value in request.GET.items %}{% if key != 'filter_field' %}{{ key }}={{ value }}&{% endif %}{% endfor %}" class="ml-2 text-purple-600 hover:text-purple-800 font-bold">×</a>
+                        </span>
+                        {% endif %}
+                        
+                        {% if form.filter_location.value %}
+                        <span class="filter-badge inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
+                            Location: 
+                            {% for value, label in form.filter_location.field.choices %}
+                                {% if value == form.filter_location.value %}
+                                    {{ label }}
+                                {% endif %}
+                            {% endfor %}
+                            <a href="?{% for key, value in request.GET.items %}{% if key != 'filter_location' %}{{ key }}={{ value }}&{% endif %}{% endfor %}" class="ml-2 text-yellow-600 hover:text-yellow-800 font-bold">×</a>
+                        </span>
+                        {% endif %}
+                        
+                        {% if form.filter_status.value %}
+                        <span class="filter-badge inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                            Closing Soon Only
+                            <a href="?{% for key, value in request.GET.items %}{% if key != 'filter_status' %}{{ key }}={{ value }}&{% endif %}{% endfor %}" class="ml-2 text-red-600 hover:text-red-800 font-bold">×</a>
+                        </span>
+                        {% endif %}
+                        
+                        <a href="{% url 'main:scholarship_search' %}" class="text-xs text-gray-500 hover:text-gray-700 ml-auto underline">
+                            Clear all filters
+                        </a>
+                    </div>
+                </div>
+                {% endif %}
+
+                <div id="scholarship-results" class="grid grid-cols-1 md:grid-cols-2 gap-6">
                     {% for scholarship in scholarships %}
                     <div class="bg-white p-6 rounded-xl shadow-lg hover:shadow-xl transition duration-300 border-t-4 {% if scholarship.status == 'Closing Soon' %}border-brand-red{% else %}border-brand-green{% endif %}">
                         <div class="flex justify-between items-start mb-4">
@@ -132,7 +250,28 @@
                             </div>
                             <div class="flex flex-col">
                                 <span class="text-xs font-medium text-gray-500 uppercase">Amount</span>
-                                <span class="font-semibold text-gray-800">{{ scholarship.amount }}</span>
+                                <span class="font-semibold 
+                                    {% if scholarship.amount_description %}
+                                        {% if 'full tuition' in scholarship.amount_description|lower %}
+                                            amount-full-tuition
+                                        {% endif %}
+                                    {% elif scholarship.amount_currency == 'USD' %}
+                                        currency-usd
+                                    {% elif scholarship.amount_currency == 'KES' %}
+                                        currency-kes
+                                    {% elif scholarship.amount_currency == 'EUR' %}
+                                        currency-eur
+                                    {% elif scholarship.amount_currency == 'GBP' %}
+                                        currency-gbp
+                                    {% endif %}
+                                ">
+                                    {{ scholarship.amount }}
+                                </span>
+                                {% if scholarship.amount_value and not scholarship.amount_description %}
+                                    <span class="text-xs text-gray-500 mt-1">
+                                        ({{ scholarship.get_amount_currency_display }})
+                                    </span>
+                                {% endif %}
                             </div>
                         </div>
                         
@@ -140,7 +279,7 @@
                             <p class="text-sm font-semibold text-gray-600">
                                 Deadline: <span class="text-brand-red">{{ scholarship.deadline|date:"m/d/Y" }}</span>
                             </p>
-                            <a href="#" onclick="console.log('Applying for {{ scholarship.title }}')" class="bg-brand-blue text-white font-bold py-2 px-4 rounded-md text-sm hover:bg-[#183693] transition duration-300 shadow-md">
+                            <a href="{% url 'main:course_register' %}" onclick="console.log('Applying for {{ scholarship.title }}')" class="bg-brand-blue text-white font-bold py-2 px-4 rounded-md text-sm hover:bg-[#183693] transition duration-300 shadow-md">
                                 Apply Now
                             </a>
                         </div>
@@ -165,21 +304,136 @@
             sidebar.classList.toggle('filter-hidden');
         }
 
-        function resetFilters() {
-            document.getElementById('search-form').reset();
-            document.getElementById('search-form').submit();
+      function resetFilters() {
+          const form = document.getElementById('search-form');
+          
+          // Reset all input and select fields
+          form.querySelectorAll('input, select').forEach(el => {
+              if (el.type === 'checkbox' || el.type === 'radio') {
+                  el.checked = false;
+              } else {
+                  el.value = '';
+              }
+          });
+      
+          // Submit the form after resetting
+          form.submit();
+      }
+
+    async function refreshAIResearch() {
+        const container = document.getElementById("scholarship-results");
+        const count = document.getElementById("result-count");
+
+        // Show loading message
+        container.innerHTML = `
+            <div class="col-span-2 text-center py-16">
+                <p class="text-lg font-semibold text-brand-green animate-pulse">
+                    🤖 AI is searching the web for real-time scholarship opportunities...
+                </p>
+                <p class="text-gray-500 mt-3">
+                    Analyzing deadlines, funding amounts, and availability
+                </p>
+            </div>
+        `;
+
+        try {
+            const response = await fetch("{% url 'main:ai_refresh_scholarships' %}");
+            const data = await response.json();
+
+            // Update result count
+            count.textContent = data.count;
+
+            // Clear results
+            container.innerHTML = "";
+
+            // Render scholarships
+            data.scholarships.forEach(s => {
+                const borderColor = s.status === "Closing Soon" ? "border-brand-red" : "border-brand-green";
+                const statusColor = s.status === "Closing Soon" ? "bg-brand-red text-white" : "bg-brand-green text-white";
+                
+                // Determine amount class
+                let amountClass = "";
+                if (s.amount_description && s.amount_description.toLowerCase().includes('full tuition')) {
+                    amountClass = "amount-full-tuition";
+                } else if (s.amount_currency === 'USD') {
+                    amountClass = "currency-usd";
+                } else if (s.amount_currency === 'KES') {
+                    amountClass = "currency-kes";
+                } else if (s.amount_currency === 'EUR') {
+                    amountClass = "currency-eur";
+                } else if (s.amount_currency === 'GBP') {
+                    amountClass = "currency-gbp";
+                }
+
+                const card = document.createElement("div");
+                card.className = `bg-white p-6 rounded-xl shadow-lg hover:shadow-xl transition duration-300 border-t-4 ${borderColor}`;
+
+                card.innerHTML = `
+                    <div class="flex justify-between items-start mb-4">
+                        <h3 class="text-xl font-bold text-brand-blue leading-tight">${s.title}</h3>
+                        <span class="text-sm font-semibold px-3 py-1 rounded-full ${statusColor}">${s.status.toUpperCase()}</span>
+                    </div>
+                    <p class="text-sm text-gray-500 mb-4 font-medium">${s.provider}</p>
+
+                    <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 text-sm mb-6 border-b pb-4">
+                        <div class="flex flex-col">
+                            <span class="text-xs font-medium text-gray-500 uppercase">Level</span>
+                            <span class="font-semibold text-gray-800">${s.level}</span>
+                        </div>
+                        <div class="flex flex-col">
+                            <span class="text-xs font-medium text-gray-500 uppercase">Field</span>
+                            <span class="font-semibold text-gray-800">${s.field}</span>
+                        </div>
+                        <div class="flex flex-col">
+                            <span class="text-xs font-medium text-gray-500 uppercase">Location</span>
+                            <span class="font-semibold text-gray-800">${s.location}</span>
+                        </div>
+                        <div class="flex flex-col">
+                            <span class="text-xs font-medium text-gray-500 uppercase">Amount</span>
+                            <span class="font-semibold ${amountClass}">${s.amount}</span>
+                            ${s.amount_value && !s.amount_description ? 
+                                `<span class="text-xs text-gray-500 mt-1">(${s.amount_currency})</span>` : ''}
+                        </div>
+                    </div>
+
+                    <div class="flex justify-between items-center">
+                        <p class="text-sm font-semibold text-gray-600">
+                            Deadline: <span class="text-brand-red">${s.deadline}</span>
+                        </p>
+                        <a href="#" class="bg-brand-blue text-white font-bold py-2 px-4 rounded-md text-sm hover:bg-[#183693] transition duration-300 shadow-md">Apply Now</a>
+                    </div>
+                `;
+
+                container.appendChild(card);
+            });
+
+        } catch (error) {
+            container.innerHTML = `
+                <div class="col-span-2 text-center py-10 text-red-500">
+                    ⚠️ AI failed to fetch scholarships
+                </div>
+            `;
+            console.error(error);
+        }
+    }
+
+    // Safe DOM ready initialization: bind handlers when DOM is loaded and elements exist
+    document.addEventListener('DOMContentLoaded', function() {
+        const refreshBtn = document.getElementById('refresh-ai-search');
+        if (refreshBtn) {
+            refreshBtn.addEventListener('click', refreshAIResearch);
         }
 
         // Auto-submit form when filters change (optional)
-        document.addEventListener('DOMContentLoaded', function() {
-            const form = document.getElementById('search-form');
-            const inputs = form.querySelectorAll('select, input[type="text"]');
-            
+        const form = document.getElementById('search-form');
+        if (form) {
+            const inputs = form.querySelectorAll('select, input[type="text"], input[type="search"], textarea, input[type="checkbox"], input[type="radio"]');
             inputs.forEach(input => {
                 input.addEventListener('change', function() {
                     form.submit();
                 });
             });
-        });
+        }
+    });
     </script>
 {% endblock %}

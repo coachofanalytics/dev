@@ -177,9 +177,9 @@ class ScholarshipSearchForm(forms.Form):
                        'rounded-lg focus:ring-2 focus:ring-brand-blue focus:border-transparent',
                    })
                    )
-    filter_status = forms.ChoiceField(required=False, 
+    filter_status = forms.BooleanField(required=False, 
                    label="Show only Closing Soon",
-                   widget=forms.Select(attrs={
+                   widget=forms.CheckboxInput(attrs={
                        'class': 'h-4 w-4 text-brand-blue focus:ring-brand-blue border-gray-300 rounded'
                    })
                    )

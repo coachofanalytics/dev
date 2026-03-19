@@ -731,25 +731,34 @@ def scholarship_search(request):
 def ai_refresh_scholarships(request):
     today = timezone.now().date()
     scholarships = Scholarship.objects.all()
-    scored =[]
+    scored = []
 
     for s in scholarships:
         score = 0
-        days_left = (s.deadline - today).days if s.deadline else 365
+
+        if not s.deadline:
+            continue
+
+        days_left = (s.deadline - today).days
+
+        if days_left < 0:
+            continue
 
         if days_left <= 7:
-            score +=5
+            score += 5
         elif days_left <= 30:
             score += 3
-        if s.status.lower() == "open":
+
+        if s.status and s.status.lower() == "open":
             score += 3
 
-        if s.amount and "full" in s.amount.lower():
-            score +=4
-        scored.append((score, 5))
+        if isinstance(s.amount, str) and "full" in s.amount.lower():
+            score += 4
 
-    scored.sort(reverse=True, key =lambda x: x[0])
-    best  = [s for score, s in scored[:6]]
+        scored.append((score, s))
+
+    scored.sort(reverse=True, key=lambda x: x[0])
+    best = [s for score, s in scored[:6]]
 
     data = []
     for s in best:
@@ -759,14 +768,14 @@ def ai_refresh_scholarships(request):
             "level": s.level,
             "field": s.field,
             "location": s.location,
-            "amount":s.amount,
-            "deadline": s.deadline.strftime("%Y-%m-%d"),
-            "status":s.status
+            "amount": s.amount,
+            "deadline": s.deadline.strftime("%Y-%m-%d") if s.deadline else None,
+            "status": s.status
         })
 
     return JsonResponse({
-        "scholarships":data,
-        "count":len(data)
+        "scholarships": data,
+        "count": len(data)
     })
 
 def testimonial_list(request):
