@@ -140,55 +140,53 @@ class MessageForm(forms.ModelForm):
 
 # Scholarship Search Form
 class ScholarshipSearchForm(forms.Form):
-    search_keyword = forms.CharField(
-        required=False,
-        widget=forms.TextInput(
-            attrs={
-                'placeholder': 'e.g., STEM, Business, PhP',
-                'class': 'w-full p-2 border border-gray-300 rounded-lg focus:ring-brand-blue focus:border-brand-blue'
-            }
-        )
+    search_keyword = forms.CharField(required=False,
+    widget=forms.TextInput(attrs={
+        'class': 'w-full px-4 py-2 border border-gray-300 '
+        'rounded-lg focus:ring-2 focus:ring-brand-blue focus:border-transparent',
+        'placeholder': 'Search By title, provider...'
+    })
     )
 
-    filter_level = forms.ChoiceField(
-        required=False,
-        choices=[('', 'All Levels')] + Scholarship.LEVEL_CHOICES,
-        widget=forms.Select(
-            attrs={
-                'class': 'w-full p-2 border border-gray-300 rounded-lg focus:ring-brand-blue focus:border-brand-blue bg-white'
-            }
-        )
-    )
-
-    filter_field = forms.ChoiceField(
-        required=False,
-        choices=[('', 'All Fields')] + Scholarship.FIELD_CHOICES,
-        widget=forms.Select(
-            attrs={
-                'class': 'w-full p-2 border border-gray-300 rounded-lg focus:ring-brand-blue focus:border-brand-blue bg-white'
-            }
-        )
-    )
-
-    filter_location = forms.ChoiceField(
-        required=False,
-        choices=[('', 'Any Location')] + Scholarship.LOCATION_CHOICES,
-        widget=forms.Select(
-            attrs={
-                'class': 'w-full p-2 border border-gray-300 rounded-lg focus:ring-brand-blue focus:border-brand-blue bg-white'
-            }
-        )
-    )
-
-    filter_status = forms.BooleanField(
-        required=False,
-        label='Show only "Closing Soon"',
-        widget=forms.CheckboxInput(
-            attrs={
-                'class': 'h-4 w-4 text-brand-red border-gray-300 rounded focus:ring-brand-red'
-            }
-        )
-    )
+    filter_level = forms.ChoiceField(required=False, 
+                   choices=[('', 'All Levels')] + Scholarship.Level.choices,
+                   widget=forms.Select(attrs={
+                       'class': 'w-full px-4 py-2 border border-gray-300 '
+                       'rounded-lg focus:ring-2 focus:ring-brand-blue focus:border-transparent',
+                   })
+                   )
+    
+    filter_field = forms.ChoiceField(required=False, 
+                   choices=[('', 'All Fields')] + Scholarship.Field.choices,
+                   widget=forms.Select(attrs={
+                       'class': 'w-full px-4 py-2 border border-gray-300 '
+                       'rounded-lg focus:ring-2 focus:ring-brand-blue focus:border-transparent',
+                   })
+                   )
+    filter_location = forms.ChoiceField(required=False, 
+                   choices=[('', 'All Locations')] + Scholarship.Location.choices,
+                   widget=forms.Select(attrs={
+                       'class': 'w-full px-4 py-2 border border-gray-300 '
+                       'rounded-lg focus:ring-2 focus:ring-brand-blue focus:border-transparent',
+                   })
+                   )
+    filter_currency = forms.ChoiceField(required=False, 
+                   choices=[('', 'All Currencies')] + Scholarship.Currency.choices,
+                   widget=forms.Select(attrs={
+                       'class': 'w-full px-4 py-2 border border-gray-300 '
+                       'rounded-lg focus:ring-2 focus:ring-brand-blue focus:border-transparent',
+                   })
+                   )
+    filter_status = forms.ChoiceField(required=False, 
+                   label="Show only Closing Soon",
+                   widget=forms.Select(attrs={
+                       'class': 'h-4 w-4 text-brand-blue focus:ring-brand-blue border-gray-300 rounded'
+                   })
+                   )
+    
+    
+    
+    
     
 
 

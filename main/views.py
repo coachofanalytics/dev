@@ -685,35 +685,41 @@ def scholarship_search(request):
     scholarships = Scholarship.objects.all()
     form = ScholarshipSearchForm(request.GET or None)
 
-    # Direct GET filters (used by integration tests)
-    level = request.GET.get('level')
-    field = request.GET.get('field')
-
-    if level and level != 'All':
-        scholarships = scholarships.filter(level=level)
-
-    if field and field != 'All':
-        scholarships = scholarships.filter(field=field)
 
     if form.is_valid():
         data = form.cleaned_data
         # apply filter
-        if data['search_keyword']:
+        keyword = data.get("search_keyword")
+        if keyword:
             scholarships = scholarships.filter(
-                Q(title__icontains=data['search_keyword']) |
-                Q(provider__icontains=data['search_keyword']) 
+                Q(title__icontains=keyword) |
+                Q(provider__icontains=keyword) 
             )
-        if data['filter_level'] and data['filter_level'] != 'All':
-            scholarships = scholarships.filter(level=data['filter_level'])
 
-        if data['filter_field'] and data['filter_field'] != 'All':
-            scholarships = scholarships.filter(field=data['filter_field'])
+        currency = data.get("filter_currency")
+        if currency:
+            scholarships = scholarships.filter(
+                amount_value__isnull=False, 
+                amount_currency = currency
+            )
+        else:
+            pass
 
-        if data['filter_location'] and data['filter_location'] != 'All':
-            scholarships = scholarships.filter(location=data['filter_location'])
+        level = data.get("filter_level")
+        if level:
+            scholarships = scholarships.filter(level=level)
 
-        if data['filter_status']:
-            scholarships = scholarships.filter(status='Closing soon')
+        field = data.get("filter_field")
+        if field:
+            scholarships = scholarships.filter(field=field)
+
+        location = data.get("filter_location")
+        if location:
+            scholarships = scholarships.filter(location=location)
+
+        if  data.get("filter_status"):
+            scholarships = scholarships.filter(status=Scholarship.Status.CLOSING_SOON)
+        
     context = {
         'scholarships': scholarships,
         'form': form,

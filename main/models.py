@@ -9,7 +9,9 @@ from django.template.loader import render_to_string
 from django.utils.html import strip_tags
 from django.db.models import Count
 from datetime import timedelta
-
+from django.utils.text import slugify
+import random
+import string
 
 User = get_user_model()
 
@@ -274,54 +276,114 @@ class MedicalResourceInquiry(models.Model):
 
 # Scholarship model with filters
 class Scholarship(models.Model):
-    LEVEL_CHOICES = [
-        ("Undergraduate", "Undergraduate"),
-        ("Masters", "Masters"),
-        ("PhD", "PhD"),
-        ("Vocational", "Vocational"),
-    ]
 
-    FIELD_CHOICES = [
-        ("STEM", "STEM"),
-        ("Humanities", "Humanities"),
-        ("Business", "Business"),
-        ("Arts", "Arts"),
-    ]
+    class Level(models.TextChoices):
+        UNDERGRADUATE = "Undergraduate", "Undergraduate"
+        MASTERS = "Masters", "Masters"
+        PHD = "PhD", "PhD"
+        VOCATIONAL = "Vocational", "Vocational"
 
-    LOCATION_CHOICES = [
-        ("Kenya", "Kenya"),
-        ("Global", "Global"),
-        ("UK", "UK"),
-        ("USA", "USA"),
-    ]
+    class Field(models.TextChoices):
+        STEM = "STEM", "STEM"
+        HUMANITIES = "Humanities", "Humanities"
+        BUSINESS = "Business", "Business"
+        ARTS = "Arts", "Arts"
 
-    STATUS_CHOICES = [
-        ("Open", "Open"),
-        ("Closing Soon", "Closing Soon"),
-        ("Closed", "Closed"),
-    ]
+    class Location(models.TextChoices):
+        KENYA = "Kenya", "Kenya"
+        GLOBAL = "Global", "Global"
+        UK = "UK", "UK"
+        USA = "USA", "USA"
+
+    class Status(models.TextChoices):
+        OPEN = "Open", "Open"
+        CLOSING_SOON = "Closing Soon", "Closing Soon"
+        CLOSED = "Closed", "Closed"
+
+    class Currency(models.TextChoices):
+        USD = "USD", "US Dollar ($)"
+        KES = "KES", "Kenyan Shilling (Ksh)"
+        EUR = "EUR", "Euro (€)"
+        GBP = "GBP", "British Pound (£)"
+
+    amount_value = models.DecimalField(max_digits = 12, decimal_places=2, null=True, blank=True)
+    amount_currency = models.CharField(
+        max_length=3,
+        choices=Currency.choices,
+        default=Currency.USD
+    )
+
+    amount_description = models.CharField(max_length=100, blank=True, 
+                                         help_text="E.g., 'Full tuition', 'Partial funding', etc.")
 
     title = models.CharField(max_length=255)
-    provider = models.CharField(max_length=255, blank=True, null=True)
-    level = models.CharField(
-        max_length=100, choices=LEVEL_CHOICES, blank=True, null=True
-    )
-    field = models.CharField(
-        max_length=100, choices=FIELD_CHOICES, blank=True, null=True
-    )
-    location = models.CharField(
-        max_length=200, choices=LOCATION_CHOICES, blank=True, null=True
-    )
-    deadline = models.DateField(blank=True, null=True)
-    amount = models.CharField(max_length=100, blank=True, null=True)
+    slug = models.SlugField(unique=True, blank=True)
+
+    provider = models.CharField(max_length=255, default='')
+    level = models.CharField(max_length=100, choices=Level.choices, default=Level.UNDERGRADUATE)
+    field = models.CharField(max_length=100, choices=Field.choices, default=Field.STEM)
+    location = models.CharField(max_length=200, choices=Location.choices, default=Location.GLOBAL)
+
+    deadline = models.DateField(default=timezone.now)
+    amount = models.CharField(max_length=100, default='0')
+
     status = models.CharField(
-        max_length=50, choices=STATUS_CHOICES, blank=True, null=True
+        max_length=50,
+        choices=Status.choices,
+        default=Status.OPEN
     )
 
+    created_at = models.DateTimeField(auto_now_add=True)
+
     class Meta:
-        verbose_name = "Scholarship"
-        verbose_name_plural = "Scholarships"
         ordering = ["deadline"]
+    
+    @property
+    def amount(self):
+        """Return formatted amount for display"""
+        if self.amount_description:
+            return self.amount_description
+        
+        if self.amount_value and self.amount_currency:
+            # Format based on currency
+            if self.amount_currency == 'USD':
+                return f"${self.amount_value:,.2f}"
+            elif self.amount_currency == 'KES':
+                return f"KSh {self.amount_value:,.2f}"
+            elif self.amount_currency == 'EUR':
+                return f"€{self.amount_value:,.2f}"
+            elif self.amount_currency == 'GBP':
+                return f"£{self.amount_value:,.2f}"
+            else:
+                return f"{self.amount_currency} {self.amount_value:,.2f}"
+        return "Varies"
+
+    def generate_unique_slug(self):
+        """Generates a unique slug for the scholarship"""
+        base_slug = slugify(self.title)
+        slug = base_slug
+        while Scholarship.objects.filter(slug=slug).exists():
+            slug = f"{base_slug}-{''.join(random.choices(string.digits, k=4))}"
+        return slug
+
+    def save(self, *args, **kwargs):
+        # auto create unique slug
+        if not self.slug:
+            self.slug = self.generate_unique_slug()
+
+        # auto update status based on deadline
+        if self.deadline:
+            today = timezone.now().date()
+            days_left = (self.deadline - today).days
+
+            if days_left < 0:
+                self.status = self.Status.CLOSED
+            elif days_left <= 7:
+                self.status = self.Status.CLOSING_SOON
+            else:
+                self.status = self.Status.OPEN
+
+        super().save(*args, **kwargs)
 
     def __str__(self):
         return self.title
