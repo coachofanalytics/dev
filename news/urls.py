@@ -8,9 +8,9 @@ app_name = 'news'
 urlpatterns = [
 
     path('news/', LandingPageView.as_view(), name='home'),
-    path('news/articles', ArticleHomeView.as_view(), name ='news-listing'),
+    path('news/details/', ArticleHomeView.as_view(), name ='news_listing'),
     path('article/<int:pk>/delete/', ArticleDeleteView.as_view(), name='article-delete'),
-    path('dashboard/article<int:pk>/edit/', ArticleEditView.as_view(), name='article_edit'),
+    path('dashboard/article<int:pk>/edit/', ArticleEditView, name='article_edit'),
     path('dashboard/article/add/', ArticleCreateView.as_view(), name='article_add'),
     path('dashboard/article/<slug:slug>', ArticleDetailView.as_view(), name='article_detail'),
     path('category/add/', CategoryCreateView.as_view(),name='category_add'),

@@ -37,7 +37,7 @@ class NewsArticle(models.Model):
     is_breaking = models.BooleanField(default=False)
     
     created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_created=True)
+    updated_at = models.DateTimeField(auto_now=True)
     views = models.PositiveBigIntegerField(default=0)
 
     def save(self, *args, **kwargs):

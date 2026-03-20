@@ -22,7 +22,7 @@ class LandingPageView(TemplateView):
 
 class ArticleHomeView(ListView):
     model = NewsArticle
-    template_name = 'news-listing.html'
+    template_name = 'news_listing.html'
     context_object_name = 'articles'
     paginate_by = 7
 
@@ -42,9 +42,9 @@ class ArticleHomeView(ListView):
         context = super().get_context_data(**kwargs)
         context['categories'] = Category.objects.all()
     
-        all_articles = context['article']
+        all_articles = context['articles']
         if all_articles:
-            context['hero-article'] = all_articles[0]
+            context['hero_article'] = all_articles[0]
             context['grid_articles'] = all_articles[1:]
         return context
 
