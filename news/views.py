@@ -50,15 +50,17 @@ class ArticleHomeView(ListView):
 
 class ArticleDetailView(DetailView):
     model = NewsArticle 
-    template_name = 'article_detail'
+    template_name = 'article_detail.html'
     context_object_name = 'article'
 
     def get_context_data(self, **kwargs):
-        context= super().get_context_data(**kwargs)
-        context ['related_articles'] = NewsArticle.objects.filter(
-            category = self.object.category
+        context = super().get_context_data(**kwargs)
+        context['related_articles'] = NewsArticle.objects.filter(
+            category=self.object.category
         ).exclude(
-            id=self.object.id)[:3]
+            id=self.object.id
+        )[:3]
+        return context
 
 class ArticleCreateView(LoginRequiredMixin, CreateView):
     model = NewsArticle
