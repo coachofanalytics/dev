@@ -129,3 +129,17 @@ class CategoryDeleteView(LoginRequiredMixin, DeleteView):
     model = Category
     success_url = reverse_lazy('news:dashboard')
 
+
+class AdminDashboardView(LoginRequiredMixin, TemplateView):
+    template_name = 'dashboard.html'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        articles = NewsArticle.objects.all()
+        context['total_count'] = articles.count()
+        context['published_count'] = articles.filter(status='PUBLISHED').count()
+        context['draft_count'] = articles.filter(status='DRAFT').count()
+        # context['subscriber_count'] = Subscriber.articles.objects.count()
+        context['recent_articles'] = articles.order_by('-created_at')[:10]
+        context['categories'] = Category.objects.all()
+        
