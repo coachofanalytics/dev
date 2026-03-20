@@ -88,10 +88,20 @@ class ArticleDeleteView(LoginRequiredMixin, DeleteView):
 
 # Category Views
 class CategoryArticleListView(ListView):
-    model: NewsArticle
-    template = 'category_articles.html'
+    model = NewsArticle
+    template_name = 'category_articles.html'
     context_object_name = 'articles'
     paginate_by = 6 
+
+    def get_queryset(self):
+        self.category = get_object_or_404(Category, slug=self.kwargs['slug'])
+        return NewsArticle.objects.filter(category=self.category, status = 'PUBLISHED').order_by('-created_at')
+    
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['category'] = self.category
+        return context
+        
 
 
 class CategoryCreateView(LoginRequiredMixin, CreateView):
