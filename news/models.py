@@ -1,4 +1,5 @@
 from django.db import models
+import uuid
 from django.utils.text import slugify
 from .ai_services import generate_article_summary
 # Create your models here.
@@ -49,3 +50,13 @@ class NewsArticle(models.Model):
         super().save(*args, **kwargs)
     def __str__(self):
         return self.title
+
+class Subscriber(models.Model):
+    email = models.EmailField(unique=True)
+    is_active = models.BooleanField(default=True)
+    conf_token = models.CharField(max_length=100, default=uuid.uuid4, editable=False)
+    confirmed = models.BooleanField(default=False)
+    subscribed_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return self.email
