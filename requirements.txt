@@ -2,6 +2,7 @@ aiohappyeyeballs==2.6.1
 aiohttp==3.12.15
 aiosignal==1.4.0
 amqp==5.1.1
+annotated-types==0.7.0
 asgiref==3.11.1
 async-timeout==4.0.2
 attrs==25.3.0
@@ -49,12 +50,16 @@ factory_boy==3.3.3
 Faker==40.1.2
 Flask==2.2.3
 frozenlist==1.7.0
+google-ai-generativelanguage==0.6.15
 google-api-core==2.11.0
 google-api-python-client==2.52.0
 google-auth==2.16.1
 google-auth-httplib2==0.1.0
 google-auth-oauthlib==0.5.2
+google-generativeai==0.8.6
 googleapis-common-protos==1.58.0
+grpcio==1.78.0
+grpcio-status==1.62.3
 gunicorn==20.1.0
 httplib2==0.21.0
 idna==2.10
@@ -78,6 +83,7 @@ Pillow==9.4.0
 pluggy==1.6.0
 prompt-toolkit==3.0.37
 propcache==0.3.2
+proto-plus==1.27.1
 protobuf==4.22.0
 psycopg2==2.9.5
 pyasn1==0.4.8
@@ -85,6 +91,8 @@ pyasn1-modules==0.2.8
 PyAutoGUI==0.9.53
 pycodestyle==2.7.0
 pycparser==2.23
+pydantic==2.12.5
+pydantic_core==2.41.5
 PyGetWindow==0.0.9
 Pygments==2.19.2
 PyJWT==2.10.1
@@ -99,6 +107,7 @@ pytest-django==4.11.1
 pytest-factoryboy==2.8.1
 python-crontab==2.7.1
 python-dateutil==2.8.1
+python-decouple==3.8
 python-dotenv==0.20.0
 python3-openid==3.2.0
 pytweening==1.0.4
@@ -118,6 +127,7 @@ tailwind==3.1.5b0
 toml==0.10.1
 tqdm==4.64.1
 tweepy==4.4.0
+typing-inspection==0.4.2
 typing_extensions==4.15.0
 tzdata==2022.7
 uritemplate==4.1.1
