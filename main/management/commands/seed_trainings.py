@@ -1,4 +1,3 @@
-# main/management/commands/seed_trainings.py
 
 from django.core.management.base import BaseCommand
 from main.create_training_data import (
@@ -17,7 +16,7 @@ class Command(BaseCommand):
         create_targeted_courses()
 
         self.stdout.write('Creating bulk training courses...')
-        create_bulk_training_course(60)
+        create_bulk_training_courses(60)
 
         self.stdout.write('Printing course stats...')
         print_course_stats()
