@@ -18,7 +18,7 @@ from .models import Assets,Description, News, Page, Service, SubService,Team, Sa
 #=======
 from django.db.models import Q
 #<<<<<<< HEAD
-from .models import Scholarship, Donation_organisation, ContactMessage, Testimonial
+from .models import Scholarship, Donation_organisation, ContactMessage, Testimonial, TrainingCourse
 #>>>>>>> origin/25.11_DC48K_UAT_FN
 from accounts.models import CustomerUser
 ##=======
@@ -777,6 +777,16 @@ def ai_refresh_scholarships(request):
         "scholarships": data,
         "count": len(data)
     })
+
+def education_training(request):
+    courses = TrainingCourse.objects.all()
+
+    context ={
+        "courses": courses
+    }
+    
+    return render(request, "main/education/training_skills.html", context)
+
 
 def testimonial_list(request):
     testimonial = Testimonial.objects.all() 
