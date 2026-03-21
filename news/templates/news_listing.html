@@ -320,6 +320,28 @@
     </div>
 </section>
 
+  <script>
+
+      document.getElementById('newsletter-form').addEventListener('submit', function(e){
+        e.preventDefault();
+        const formData = new FormData(this);
+        const msgBox = document.getElementById('subscribe-msg');
+
+        fetch("{% url 'news:subscribe' %}",{
+            method: 'POST',
+            body: formData,
+            headers: {'X-Requestes-With': 'XMLHttpRequest'}
+        })
+        .then(response => response.json())
+        .then(data => {
+            msgBox.style.display = 'block';
+            msgBox.style.color = data.status === 'success' ? '#1aca69' : '#c91313';
+            msgBox.innerText = data.msg;
+            if(data.status === 'success') this.reset();
+        });
+    });
+
+  </script>
 
 {% endblock %}
 
