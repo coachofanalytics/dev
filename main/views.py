@@ -44,6 +44,9 @@ from django.urls import reverse_lazy
 from django.views.generic.edit import CreateView, UpdateView, DeleteView
 from django.views.generic.detail import DetailView
 import csv
+import feedparser
+import random
+
 
 # Details Donation View
 class DonationDetailView(DetailView):
@@ -786,6 +789,68 @@ def education_training(request):
     }
     
     return render(request, "main/education/training_skills.html", context)
+
+
+
+def ai_course_discovery(request):
+
+    feeds = [
+        "https://ocw.mit.edu/courses/rss.xml",
+        "https://ocw.mit.edu/courses/new-courses/feed",
+    ]
+
+    courses = []
+
+    for url in feeds:
+        feed = feedparser.parse(url)
+
+        for entry in feed.entries[:10]:
+
+            courses.append({
+                "title": entry.title,
+                "university": "MIT",
+                "platform": "MIT OpenCourseWare",
+                "duration": "Self-paced",
+                "url": entry.link
+            })
+
+    # Harvard / edX courses
+    harvard_courses = [
+        {
+            "title": "CS50: Introduction to Computer Science",
+            "university": "Harvard University",
+            "platform": "edX",
+            "duration": "12 Weeks",
+            "url": "https://www.edx.org/cs50"
+        },
+        {
+            "title": "Data Science: Machine Learning",
+            "university": "Harvard University",
+            "platform": "edX",
+            "duration": "8 Weeks",
+            "url": "https://www.edx.org/course/data-science-machine-learning"
+        }
+    ]
+
+    stanford_courses = [
+        {
+            "title": "Machine Learning",
+            "university": "Stanford University",
+            "platform": "Coursera",
+            "duration": "10 Weeks",
+            "url": "https://www.coursera.org/learn/machine-learning"
+        }
+    ]
+
+    courses.extend(harvard_courses)
+    courses.extend(stanford_courses)
+
+    random.shuffle(courses)
+
+    return JsonResponse({
+        "courses": courses[:10]
+    })
+
 
 
 def testimonial_list(request):
