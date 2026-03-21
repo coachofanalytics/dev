@@ -390,20 +390,121 @@ class Scholarship(models.Model):
 
 
 class TrainingCourse(models.Model):
+    class Category(models.TextChoices):
+        TECH = "Tech", "Tech"
+        BUSINESS = "Business", "Business"
+        ART = "Art", "Art"
+        HEALTH = "Health", "Health"
+
+    class Format(models.TextChoices):
+        ONLINE = "Online", "Online"
+        OFFLINE = "Offline", "Offline"
+        HYBRID = "Hybrid", "Hybrid"
+
+    class Enrollment(models.TextChoices):
+        OPEN = "Open", "Open"
+        CLOSED = "Closed", "Closed"
+        CLOSING_SOON = "Closing Soon", "Closing Soon"  
+
+    class Status(models.TextChoices):
+        UPCOMING = "Upcoming", "Upcoming"
+        ONGOING = "Ongoing", "Ongoing"
+        COMPLETED = "Completed", "Completed"
+
+
     title = models.CharField(max_length=255)
-    category = models.CharField(max_length=150, blank=True, null=True)
-    duration = models.CharField(max_length=100, blank=True, null=True)
-    format = models.CharField(max_length=100, blank=True, null=True)
-    enrollment = models.CharField(max_length=100, blank=True, null=True)
-    start_date = models.DateField(blank=True, null=True)
+    slug = models.SlugField(unique=True, blank=True)
+    course_code = models.CharField(max_length=20, blank=True, help_text="e.g., CS101")
+    category = models.CharField(max_length=50, choices=Category.choices, default=Category.TECH)
+    description = models.TextField(blank=True, help_text="Brief course description")
+    duration = models.CharField(max_length=100, default="Self-paced", help_text="e.g., '6 weeks', '3 months', 'Self-paced'")
+    format = models.CharField(max_length=50, choices=Format.choices, default=Format.ONLINE)
+    enrollment = models.CharField(max_length=50, choices=Enrollment.choices, default=Enrollment.OPEN)
+    max_students = models.PositiveIntegerField(null=True, blank=True, help_text="Maximum capacity")
+    enrolled_students = models.PositiveIntegerField(default=0, editable=False)
+    start_date = models.DateField(default=timezone.now)
+    end_date = models.DateField(null=True, blank=True, help_text="Optional: Course end date")
+    status = models.CharField(max_length=20, choices=Status.choices, default=Status.UPCOMING, editable=False)
+    instructor = models.CharField(max_length=255, blank=True)
+    price = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+    certificate_offered = models.BooleanField(default=False)
+
+    syllabus = models.TextField(blank=True, help_text="Course outline/syllabus")
+    prerequisites = models.TextField(blank=True, help_text="Required knowledge or courses")
+    image = models.ImageField(upload_to='courses/', null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True) 
 
     class Meta:
         verbose_name = "Training Course"
         verbose_name_plural = "Training Courses"
+        ordering = ["start_date"]
+        indexes = [
+            models.Index(fields=['status']),
+            models.Index(fields=['category']),
+            models.Index(fields=['start_date']),
+        ]
 
+
+    def generate_unique_slug(self):
+        base_slug = slugify(self.title)
+        if self.course_code:
+            base_slug = f"{base_slug}-{self.course_code.lower()}"
+        slug = base_slug
+        counter = 1
+        while TrainingCourse.objects.filter(slug=slug).exists():
+            slug = f"{base_slug}-{counter}"
+            counter += 1
+        return slug
+    
+    def save(self, *args, **kwargs):
+        if not self.slug:
+            self.slug = self.generate_unique_slug()
+
+        if self.start_date:
+            today = timezone.now().date()
+            end = self.end_date if self.end_date else self.start_date
+
+            if today < self.start_date:
+                self.status = self.Status.UPCOMING
+
+            elif self.start_date <= today <= end:
+                self.status = self.Status.ONGOING
+
+            else:
+                self.status = self.Status.COMPLETED
+
+
+        if self.max_students and self.enrolled_students >= self.max_students:
+            self.enrollment = self.Enrollment.CLOSED 
+            
+        elif self.enrollment == self.Enrollment.CLOSED and self.enrolled_students < self.max_students:
+            pass
+
+        super().save(*args, **kwargs)
+
+    @property
+    def spots_available(self):
+        if self.max_students:
+            return max(0, self.max_students - self.enrolled_students)
+        return None
+    
+    @property
+    def is_null(self):
+        return self.max_students and self.enrolled_students >= self.max_students
+    
+    @property
+    def progress_percentage(self):
+        if self.status != self.Status.ONGOING or not self.end_date:
+            return None
+        total_duration = (self.end_date - self.start_date).days
+        days_passed = (timezone.now().date() - self.start_date).days
+
+        if total_duration > 0:
+            return min(100, int((days_passed / total_duration)*100))
+        return None
     def __str__(self):
-        return self.title
+        return f"{self.course_code} - {self.title}" if self.course_code else  self.title
 
 
 
