@@ -28,7 +28,7 @@ class NewsArticle(models.Model):
     )
     category = models.ForeignKey(Category, on_delete=models.CASCADE, related_name='articles')
     title = models.CharField(max_length=255)
-    slug = models.SlugField(unique=True, blank=True)
+    slug = models.SlugField(unique=True, blank=True, max_length=255)
     author = models.CharField(max_length=100)
     featured_image =models.ImageField(upload_to='news_images/')
     content = models.TextField()
@@ -43,7 +43,7 @@ class NewsArticle(models.Model):
 
     def save(self, *args, **kwargs):
         if not self.slug:
-            self.slug = slugify(self.title)
+            self.slug = slugify(self.title)[:250]
 
         if self.content and not self.ai_summary:
             self.ai_summary = generate_article_summary(self.content)
