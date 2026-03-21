@@ -32,8 +32,8 @@ class ArticleHomeView(ListView):
         query = self.request.GET.get('q')
         if query:
             queryset = queryset.filter(
-                Q(title_icontains=query) |
-                Q(content_icontains=query)
+                Q(title__icontains=query) |
+                Q(content__icontains=query)
             )
 
         return queryset
@@ -64,8 +64,8 @@ class ArticleDetailView(DetailView):
 
 class ArticleCreateView(LoginRequiredMixin, CreateView):
     model = NewsArticle
-    fields = ['name', 'description']
-    template_name = 'news/category_form.html'
+    form_class = ArticleForm
+    template_name = 'article_form.html'
     success_url =reverse_lazy('news:dashboard')
 
     def form_valid(self, form):
@@ -73,10 +73,10 @@ class ArticleCreateView(LoginRequiredMixin, CreateView):
             form.instance.author = self.request.user
         return super().form_valid(form)
     
-class ArticleEditView(LoginRequiredMixin):
+class ArticleEditView(LoginRequiredMixin, UpdateView):
     model = NewsArticle
     form_class = ArticleForm
-    template_name = 'news/article_form.html'
+    template_name = 'article_form.html'
     success_url = reverse_lazy('news:dashboard')
 
     
@@ -103,30 +103,22 @@ class CategoryArticleListView(ListView):
         return context
         
 
-
 class CategoryCreateView(LoginRequiredMixin, CreateView):
-    model =Category
+    model = Category
     fields = ['name', 'description']
-    template_name = 'news/category_form.html'
+    template_name = 'category_form.html'
     success_url = reverse_lazy('news:dashboard')
 
-    def get_queryset(self):
-        self.category = get_object_or_404(Category, slug=self.kwargs['slug'])
-        return NewsArticle.objects.filter(category=self.category, status ='PUBLISHED').order_by('-created_at')
-    
-    def get_context_data(self, **kwargs):
-        context =super().get_context_data(**kwargs)
-        context ['category'] = self.category
-        return context
     
 class CategoryEditView(LoginRequiredMixin, UpdateView):
     model = Category
     fields = ['name', 'description']
-    template_name = 'news/category_form.html'
+    template_name = 'category_form.html'
     success_url = reverse_lazy('news:dashboard')
 
 class CategoryDeleteView(LoginRequiredMixin, DeleteView):
     model = Category
+    template_name = 'category_confirm_delete.html'
     success_url = reverse_lazy('news:dashboard')
 
 
@@ -134,12 +126,26 @@ class AdminDashboardView(LoginRequiredMixin, TemplateView):
     template_name = 'dashboard.html'
 
     def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
+        context = super().get_context_data(**kwargs) 
+        query = self.request.GET.get('q')
         articles = NewsArticle.objects.all()
+        
+        if query:
+           
+            recent_articles = articles.filter(
+                Q(title__icontains=query) | 
+                Q(category__name__icontains=query)
+            ).order_by('-created_at')
+        else:
+           
+            recent_articles = articles.order_by('-created_at')[:10]
+
         context['total_count'] = articles.count()
         context['published_count'] = articles.filter(status='PUBLISHED').count()
         context['draft_count'] = articles.filter(status='DRAFT').count()
-        # context['subscriber_count'] = Subscriber.articles.objects.count()
-        context['recent_articles'] = articles.order_by('-created_at')[:10]
+        # context['subscriber_count'] = Subscriber.objects.count()
         context['categories'] = Category.objects.all()
+        context['recent_articles'] = recent_articles
+        context['query'] = query 
         
+        return context

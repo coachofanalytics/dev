@@ -183,7 +183,7 @@
         <h1 class="article-title">{{ article.title }}</h1>
         <div class="meta-row">
             <div class="met-text">
-                <span class="author-info">By {{ article.author| default:"DC48K Editorial Team" }}</span>
+                <span class="author-info">By {{ article.author|default:"DC48K Editorial Team" }}</span>
                 <span class="pub-date">| {{ article.created_at|date:"F d, Y" }}</span>
             </div>
             <span class="cat-badge">{{ article.category.name }}</span>
