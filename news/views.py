@@ -1,12 +1,14 @@
-from django.shortcuts import render,get_object_or_404
-from .models import Category, NewsArticle
+from django.shortcuts import get_object_or_404, render
 from django.views.generic.edit import CreateView,UpdateView,DeleteView
 from django.views.generic import ListView,DetailView, TemplateView
 from django.urls import reverse_lazy
 from django.db.models import Q
 from django.contrib.auth.mixins import (LoginRequiredMixin)
+from django.core.mail import send_mail
+from django.urls import reverse
+from django.http import JsonResponse
+from .models import Category, NewsArticle, Subscriber
 from .forms import ArticleForm
-
 # Create your views here.
 
 
@@ -144,9 +146,41 @@ class AdminDashboardView(LoginRequiredMixin, TemplateView):
         context['total_count'] = articles.count()
         context['published_count'] = articles.filter(status='PUBLISHED').count()
         context['draft_count'] = articles.filter(status='DRAFT').count()
-        # context['subscriber_count'] = Subscriber.objects.count()
+        context['subscriber_count'] = Subscriber.objects.count()
         context['categories'] = Category.objects.all()
         context['recent_articles'] = recent_articles
         context['query'] = query 
         
         return context
+
+def subscribe(request):
+    if request.method == "POST":
+        email = request.POST.get('email')
+        if email:
+            sub, created = Subscriber.objects.get_or_create(email=email)
+            if created:
+                verify_url = request.build_absolute_uri(
+                    reverse('news:confirm_email', args=[sub.conf_token])
+                )
+
+                send_mail(
+                    "Action Required: Confirm your subscription",
+                    f"Thanks for signing up! please Verify your email here: {verify_url}",
+                    "noreply@dc48kcoda.dev",
+                    [email]
+                )
+
+                return JsonResponse({"status": "success", "msg": "Check your email to confirm!"})
+            return JsonResponse({"status": "exists", "msg": "you're already on the list."})
+        return JsonResponse({"status": "error", "msg": "Invalid Request"})
+
+    return JsonResponse({"status": "error", "msg": "Only POST allowed"}, status=405)
+
+def confirm_email(request, token):
+    subscriber = get_object_or_404(Subscriber, conf_token=token)
+    subscriber.confirmed = True
+    subscriber.save()
+
+    return render(request, 'subscription_confirmed.html', {
+        'email': subscriber.email
+    })

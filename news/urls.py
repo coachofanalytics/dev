@@ -2,7 +2,7 @@ from django.urls import path
 
 from .views import CategoryCreateView,CategoryEditView,CategoryDeleteView,CategoryArticleListView
 from .views import LandingPageView,ArticleHomeView,ArticleDetailView,ArticleCreateView,ArticleDeleteView
-from .views import ArticleEditView, AdminDashboardView
+from .views import ArticleEditView, AdminDashboardView, subscribe
 app_name = 'news'
 
 urlpatterns = [
@@ -11,6 +11,7 @@ urlpatterns = [
     path('news/details/', ArticleHomeView.as_view(), name ='news_listing'),
      path('news/details/<slug:slug>', ArticleDetailView.as_view(), name='article_detail'),
     path('article/<int:pk>/delete/', ArticleDeleteView.as_view(), name='article_delete'),
+    path('news/subscribe/', subscribe, name='subscribe'),
     path('news/dashboard/', AdminDashboardView.as_view(), name='dashboard'),
     path('dashboard/article<int:pk>/edit/', ArticleEditView.as_view(), name='article_edit'),
     path('dashboard/article/add/', ArticleCreateView.as_view(), name='article_add'),
