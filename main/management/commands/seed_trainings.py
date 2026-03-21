@@ -3,7 +3,7 @@
 from django.core.management.base import BaseCommand
 from main.create_training_data import (
     create_training_courses, create_targeted_courses,
-    create_bulk_training_course, print_course_stats, fix_enrollment_statuses
+    create_bulk_training_courses, print_course_stats, fix_enrollment_statuses
 )
 
 class Command(BaseCommand):
