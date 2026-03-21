@@ -151,8 +151,180 @@
 
     </section>
 
+    <section class="max-w-6xl mx-auto px-6 py-16">
+        <div class="bg-white rounded-2xl shadow-xl p-8">
+            <div class="flex flex-col md:flex-row md:items-center md:justify-between mb-8">
+               <div>
+                       <h2 class="text-3xl font-extrabold text-brand-green">
+                        AI Course Discovery
+                       </h2>
+                       <p class="text-gray-600">
+                       Free online courses from MIT, Harvard, and Stanford populated in real-time.
+                       </p>
+               </div>
+                    <button id="refresh-ai-courses" class="mt-4 md:mt-0 bg-brand-blue text-white px-6 py-3 rounded-full font-semibold hover:bg-blue-700 transition">
+                  Refresh AI List
+               </button>
+            </div>
+
+            <div id="ai-course-container" class="grid grid-cols-1 md:grid-cols-2 gap-8 min-h-[300px]">
+
+            </div>
+
+        </div>
+
+    </section>
+
     </main>
 </div>   
+
+<script>
+    async function loadAICourses(){
+        const container = document.getElementById('ai-course-container');
+
+       
+        const steps = [
+            "Scanning MIT OpenCourseWare...",
+            "Checking Harvard course catalog...",
+            "Analyzing Stanford learning platform...",
+            "Ranking the best free courses..."
+        ];
+
+        container.innerHTML = `
+        <div class="col-span-2 text-center py-12 ">
+            <p id="ai-status" class ="text-lg font-semibold text-brand-blue animate-pulse">
+            Initializing AI Course discovery    
+            </p>
+            <p class="text-gray-500 mt-2">
+            Finding Free University courses worldwide
+            </p>
+        </div>
+        `;
+
+        const status = document.getElementById("ai-status");
+
+
+        for (let step of steps){
+            if (status) status.textContent = step;
+            await new Promise(resolve => setTimeout(resolve, 900));
+        }
+
+        try{
+            // to fetch backend courses
+            const response = await fetch("{% url 'main:ai_course_discovery' %}");
+
+            if(!response.ok){
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+
+            const data = await response.json();
+
+            container.innerHTML = "";
+
+            if (data.courses && data.courses.length > 0){
+                data.courses.forEach(course => {
+                    const card = document.createElement("div");
+                    card.className = "bg-gray-50 border rounded-xl p-6 shadow-sm hover:shadow-lg transition transform hover:scale-105";
+
+                    card.innerHTML = `
+                    <div class="flex items-start gap-4 mb-4">
+                        <div class="bg-gray-200 rounded-lg p-3 text-2xl"></div>
+
+                        <div>
+                            <h3 class="font-bold text-lg">
+                            ${escapeHtml(course.title || 'Untitled Course')}
+                            </h3>
+                            <p class="text-brand-green text-sm font-semibold">
+                                ${escapeHtml(course.university || 'University')}
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="flex flex-wrap justify-between text-sm text-gray-600 mb-4">
+                        <span>Platform:
+                          <strong>
+                             ${escapeHtml(course.platform || 'Online')} 
+                          </strong>
+                        </span>
+                        <span>Duration:
+                        <strong>
+                             ${escapeHtml(course.duration || 'Self-paced')} 
+                          </strong>
+                        </span>
+                    </div>
+                    <a href="${escapeHtml(course.url || '#')}" target="_blank" rel="noopener noreferrer"
+                    class="block text-center bg-white border rounded-lg py-2 font-semibold text-brand-blue hover:bg-gray-100 transition"
+                    >
+                     Visit Course title
+                    </a>
+                    `;
+                    container.appendChild(card);
+                });
+            } else {
+                container.innerHTML = `
+                <div class="col-span-2 text-center py-12">
+                    <p class="text-gray-500">
+                        No AI discovered Courses available at the moment.
+                    </p>
+                </div>
+                `;
+            }
+        }catch(error){
+            console.error('Error loading AI courses:', error);
+            container.innerHTML = `
+            <div class="col-span-2 text-center py-12">
+                <p class="text-red-500 font-semibold">
+                    AI Failed to load courses
+                </p>
+                <p class="text-gray-500 mt-2">
+                 Please try again later.
+                </p>
+            </div>
+            `;
+        }
+
+    }
+
+
+    function escapeHtml(unsafe){
+        if(!unsafe) return '';
+        return unsafe
+           .replace(/&/g, "&amp;")
+           .replace(/</g, "&lt;")
+           .replace(/>/g, "&gt;")
+           .replace(/"/g, "&quot;")
+           .replace(/'/g, "&#039;")
+
+    }
+
+    document.addEventListener('DOMContentLoaded', function(){
+        const modal = document.getElementById('mentorship-success-modal');
+        const closeBtn = document.getElementById('mentorship-success-close');
+
+        if (closeBtn){
+            closeBtn.addEventListener('click', function(){
+                modal.style.display = 'none';
+            });
+        }
+
+
+        if (modal){
+            modal.addEventListener('click', function(e){
+                if (e.target === modal){
+                    modal.style.display = 'none';
+                }
+            });
+        }
+    });
+   
+    const refreshBtn = document.getElementById('refresh-ai-courses');
+    if (refreshBtn) {
+        refreshBtn.addEventListener("click", loadAICourses);
+    }
+
+    window.addEventListener("DOMContentLoaded", loadAICourses);
+
+</script>
 
 
 {% endblock %}
