@@ -74,7 +74,7 @@ urlpatterns = [
 
     path('education/', views.education_landing, name = 'education_landing'),
     path('education/scholarship/',views.education_landing, name = 'education_scholarship'),
-    path('education/training/',views.education_landing, name = 'education_training'),
+    path('education/training/',views.education_training, name = 'education_training'),
     path('education/courses/register/', views.course_register, name='course_register'),
     path('education/request-mentorship/', views.request_mentorship, name='request_mentorship'),
 
