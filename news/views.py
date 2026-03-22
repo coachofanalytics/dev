@@ -146,7 +146,7 @@ class AdminDashboardView(LoginRequiredMixin, TemplateView):
         context['total_count'] = articles.count()
         context['published_count'] = articles.filter(status='PUBLISHED').count()
         context['draft_count'] = articles.filter(status='DRAFT').count()
-        context['subscriber_count'] = Subscriber.objects.count()
+        context['subscriber_count'] = Subscriber.objects.filter(confirmed=True).count()
         context['categories'] = Category.objects.all()
         context['recent_articles'] = recent_articles
         context['query'] = query 
