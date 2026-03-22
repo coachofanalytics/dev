@@ -1,0 +1,176 @@
+{% extends "main/base_templates/base.html" %}
+
+{% block content %}
+<style>
+    :root {
+        --bg-gray: #f8fafc;
+        --card-shadow: 0 4px 20px rgba(0,0,0,0.05);
+        --primary-blue: #2563eb;
+        --danger-red: #ef4444;
+    }
+
+    body { background-color: var(--bg-gray); font-family: 'Inter', sans-serif; }
+
+    .delete-wrapper {
+        max-width: 600px;
+        margin: 100px auto;
+        padding: 0 20px;
+    }
+
+    .delete-card {
+        background: white;
+        border-radius: 20px;
+        padding: 50px 40px;
+        box-shadow: var(--card-shadow);
+        text-align: center;
+        border-top: 6px solid var(--danger-red);
+    }
+
+    .delete-icon {
+        font-size: 4rem;
+        margin-bottom: 20px;
+        display: block;
+    }
+
+    .delete-title {
+        font-size: 1.8rem;
+        font-weight: 800;
+        color: #0f172a;
+        margin-bottom: 15px;
+    }
+
+    .delete-subtitle {
+        color: #64748b;
+        font-size: 1rem;
+        line-height: 1.6;
+        margin-bottom: 10px;
+    }
+
+    .article-meta {
+        background: #f8fafc;
+        border: 1px solid #e2e8f0;
+        border-radius: 10px;
+        padding: 15px 20px;
+        margin: 20px 0;
+        text-align: left;
+    }
+
+    .article-meta-row {
+        display: flex;
+        justify-content: space-between;
+        padding: 6px 0;
+        border-bottom: 1px solid #f1f5f9;
+        font-size: 0.9rem;
+    }
+
+    .article-meta-row:last-child { border-bottom: none; }
+
+    .meta-label {
+        color: #64748b;
+        font-weight: 600;
+    }
+
+    .meta-value {
+        color: #0f172a;
+        font-weight: 700;
+        text-align: right;
+        max-width: 60%;
+    }
+
+    .delete-warning {
+        background: #fef2f2;
+        border: 1px solid #fecaca;
+        border-radius: 10px;
+        padding: 12px 20px;
+        color: #991b1b;
+        font-size: 0.9rem;
+        font-weight: 600;
+        margin: 20px 0 35px;
+    }
+
+    .btn-group {
+        display: flex;
+        gap: 15px;
+        justify-content: center;
+        align-items: center;
+    }
+
+    .btn-delete {
+        background: var(--danger-red);
+        color: white;
+        padding: 14px 35px;
+        border: none;
+        border-radius: 10px;
+        font-weight: 700;
+        cursor: pointer;
+        font-size: 1rem;
+        transition: opacity 0.2s;
+    }
+
+    .btn-delete:hover { opacity: 0.85; }
+
+    .btn-cancel {
+        background: #f1f5f9;
+        color: #475569;
+        padding: 14px 35px;
+        border-radius: 10px;
+        font-weight: 700;
+        text-decoration: none;
+        font-size: 1rem;
+        transition: background 0.2s;
+    }
+
+    .btn-cancel:hover { background: #e2e8f0; }
+</style>
+
+<div class="delete-wrapper">
+    <div class="delete-card">
+        <span class="delete-icon">📰</span>
+        <h2 class="delete-title">Delete Article</h2>
+        <p class="delete-subtitle">
+            You are about to permanently delete this article:
+        </p>
+
+        <div class="article-meta">
+            <div class="article-meta-row">
+                <span class="meta-label">Title</span>
+                <span class="meta-value">{{ object.title|truncatechars:40 }}</span>
+            </div>
+            <div class="article-meta-row">
+                <span class="meta-label">Category</span>
+                <span class="meta-value" style="color: #8b5cf6;">{{ object.category.name }}</span>
+            </div>
+            <div class="article-meta-row">
+                <span class="meta-label">Status</span>
+                <span class="meta-value">
+                    {% if object.status == 'PUBLISHED' %}
+                        <span style="color: #10b981;">● Published</span>
+                    {% else %}
+                        <span style="color: #f59e0b;">● Draft</span>
+                    {% endif %}
+                </span>
+            </div>
+            <div class="article-meta-row">
+                <span class="meta-label">Date</span>
+                <span class="meta-value">{{ object.created_at|date:"M d, Y" }}</span>
+            </div>
+        </div>
+
+        <div class="delete-warning">
+            ⚠️ This action cannot be undone.
+        </div>
+
+        <form method="post">
+            {% csrf_token %}
+            <div class="btn-group">
+                <button type="submit" class="btn-delete">
+                    🗑️ Yes, Delete
+                </button>
+                <a href="{% url 'news:dashboard' %}" class="btn-cancel">
+                    Cancel
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
