@@ -238,8 +238,8 @@ class Location(models.Model):
         
 
 class Pricing(models.Model):
-    serial = models.PositiveIntegerField(unique=True)
-    title = models.CharField(max_length=255)
+    serial = models.CharField(max_length=50, null=True, blank=True)   
+    name = models.CharField(max_length=255)
     description = models.TextField()
 
     # Strongly recommended: use choices or FK later
@@ -390,4 +390,19 @@ class Company(models.Model):
     def __str__(self):
         return self.name or "Company"
 >>>>>>> e79fe45578418c384fbb84ca7760d91bef020a33
+
+        from django.db import models
+
+class PricingSubPlan(models.Model):
+    my_pricing = models.ForeignKey(
+        "Pricing",
+        on_delete=models.CASCADE,
+        related_name="subplans"
+    )
+    title = models.CharField(max_length=254)
+    description = models.TextField()
+    price = models.FloatField()
+
+    def __str__(self):
+        return f"{self.title} - {self.price}"
 

@@ -1,5 +1,5 @@
 from django.test import TestCase
-from main.models import Location   # adjust if model name differs
+from main.models import Location,Search  # adjust if model name differs
 
 
 class LocationIntegrationTest(TestCase):
@@ -97,3 +97,69 @@ class ClientAvailabilityIntegrationTests(TestCase):
 
         obj2 = ClientAvailability.objects.get(pk=obj.pk)
         self.assertEqual(obj2.topic, "Kickoff")
+
+
+class SearchIntegrationTest(TestCase):
+
+    def test_create_and_retrieve(self):
+        Search.objects.create(
+            topic="Biology",
+            question="What is DNA?",
+            uploaded=True
+        )
+
+        search = Search.objects.get(topic="Biology")
+        self.assertEqual(search.question, "What is DNA?")
+        self.assertTrue(search.uploaded)
+
+import uuid
+from django.test import TestCase
+from main.models import Pricing, PricingSubPlan
+import uuid
+
+
+class PricingSubPlanIntegrationTest(TestCase):
+
+
+
+  def setUp(self):
+    self.pricing = Pricing.objects.create(
+        name="Basic Plan",
+        serial=f"PR-{uuid.uuid4().hex[:6]}",
+        category=1,
+        price=1000,
+        duration=30   # ✅ ADD THIS (e.g., days)
+    )
+
+    def test_create_subplan(self):
+        subplan = PricingSubPlan.objects.create(
+            my_pricing=self.pricing,
+            title="Starter",
+            description="Starter package",
+            price=10.0
+        )
+
+        self.assertEqual(subplan.title, "Starter")
+        self.assertEqual(subplan.price, 10.0)
+        self.assertEqual(subplan.my_pricing, self.pricing)
+
+    def test_relationship(self):
+        PricingSubPlan.objects.create(
+            my_pricing=self.pricing,
+            title="Pro",
+            description="Pro package",
+            price=20.0
+        )
+
+        self.assertEqual(self.pricing.subplans.count(), 1)
+
+    def test_string_method(self):
+        subplan = PricingSubPlan.objects.create(
+            my_pricing=self.pricing,
+            title="Advanced",
+            description="Advanced package",
+            price=30.0
+        )
+
+        # ✅ COMPLETE THIS TEST
+        self.assertEqual(str(subplan), "Advanced - 30.0")

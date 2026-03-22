@@ -111,3 +111,37 @@ class SearchPerformanceTest(TestCase):
 
         duration = time.time() - start_time
         self.assertLess(duration, 5)
+
+        import time
+import uuid
+from django.test import TestCase
+from main.models import Pricing, PricingSubPlan
+
+
+class PricingPerformanceTest(TestCase):
+
+
+ def setUp(self):
+    self.pricing = Pricing.objects.create(
+        name="Basic Plan",
+        serial=f"PR-{uuid.uuid4().hex[:6]}",
+        category=1,
+        price=1000   # ✅ ADD THIS
+    )
+
+    def test_bulk_create_subplans_performance(self):
+        start = time.time()
+
+        for i in range(1000):
+            PricingSubPlan.objects.create(
+                my_pricing=self.pricing,
+                title=f"Plan {i}",
+                description="Performance test",
+                price=100 + i
+            )
+
+        end = time.time()
+        execution_time = end - start
+
+        # ⚠️ adjust threshold if needed
+        self.assertLess(execution_time, 3.0)

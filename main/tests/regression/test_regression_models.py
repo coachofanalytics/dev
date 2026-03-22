@@ -131,3 +131,56 @@ class SearchRegressionTest(TestCase):
         )
         self.assertIsNotNone(search.created_at)
         self.assertIsNotNone(search.updated_at)
+
+import uuid
+from django.test import TestCase
+from main.models import Pricing, PricingSubPlan
+
+from django.test import TestCase
+from main.models import Pricing, PricingSubPlan,Category
+
+
+
+
+
+class PricingSubPlanIntegrationTest(TestCase):
+
+    def setUp(self):
+        self.category = Category.objects.create(name="Standard")
+
+        self.pricing = Pricing.objects.create(
+            name="Basic Plan",
+            category=self.category   # ✅ FIX
+        )
+
+    def test_create_subplan(self):
+        subplan = PricingSubPlan.objects.create(
+            my_pricing=self.pricing,
+            title="Starter",
+            description="Starter package",
+            price=10.0
+        )
+
+        self.assertEqual(subplan.title, "Starter")
+        self.assertEqual(subplan.price, 10.0)
+        self.assertEqual(subplan.my_pricing, self.pricing)
+
+    def test_relationship(self):
+        PricingSubPlan.objects.create(
+            my_pricing=self.pricing,
+            title="Pro",
+            description="Pro package",
+            price=20.0
+        )
+
+        self.assertEqual(self.pricing.subplans.count(), 1)
+
+    def test_string_method(self):
+        subplan = PricingSubPlan.objects.create(
+            my_pricing=self.pricing,
+            title="Advanced",
+            description="Advanced package",
+            price=30.0
+        )
+
+        self.assertEqual(str(subplan), "Advanced - 30.0")

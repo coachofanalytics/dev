@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Assets, Readme, Location,Pricing,Plan,ClientAvailability,Search,Company
+from .models import Assets, Readme, Location,Pricing,Plan,ClientAvailability,Search,Company,PricingSubPlan
 
 <<<<<<< HEAD
 from .models import (
@@ -92,6 +92,7 @@ admin.site.register(Plan)
 admin.site.register(ClientAvailability)
 # admin.site.register(Search)
 admin.site.register(Company)
+admin.site.register(PricingSubPlan)
 
 
 # Custom admin for Location

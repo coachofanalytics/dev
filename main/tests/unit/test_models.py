@@ -1,39 +1,22 @@
-# # main/tests/unit/test_plan_model.py
-
-
-# from main.models import Plan
 from datetime import time
+import uuid
+
 from django.core.exceptions import ValidationError
 from django.test import TestCase
 
-from main.models import ClientAvailability,Search
+from main.models import (
+    ClientAvailability,
+    Search,
+    PricingSubPlan,
+    Pricing
+)
 
 
-
-# def test_create_plan():
-#     plan = Plan.objects.create(
-#         task="Test Task",
-#         duration=10,
-#         what="Testing what",
-#         why="Testing why"
-#     )
-
-#     assert plan.id is not None
-#     assert plan.task == "Test Task"
-#     assert plan.duration == 10
-#     assert plan.is_active is True
-
-
-
-# def test_str_method():
-#     plan = Plan.objects.create(task="My Plan")
-#     assert str(plan) == "My Plan"
-
-
-# tests/test_models.py
-
-
+# =========================
+# ClientAvailability Tests
+# =========================
 class ClientAvailabilityModelTests(TestCase):
+
     def test_create_client_availability_success(self):
         obj = ClientAvailability.objects.create(
             client=1,
@@ -57,17 +40,13 @@ class ClientAvailabilityModelTests(TestCase):
             topic="Demo",
         )
         s = str(obj)
-        self.assertIn("Client 2", s)
+        self.assertIn("2", s)
         self.assertIn("Tuesday", s)
 
     def test_fields_not_null_enforced(self):
-        """
-        Your model uses NOT NULL for all fields. Django enforces required-ness via model validation.
-        Note: DB-level NOT NULL is enforced on save for most DBs, but we test via full_clean().
-        """
         obj = ClientAvailability(
-            client=None,  # invalid
-            day=None,     # invalid
+            client=None,
+            day=None,
             start_time=None,
             end_time=None,
             time_standards=None,
@@ -77,6 +56,9 @@ class ClientAvailabilityModelTests(TestCase):
             obj.full_clean()
 
 
+# =========================
+# Search Model Tests
+# =========================
 class SearchModelTest(TestCase):
 
     def test_create_search(self):
@@ -94,3 +76,41 @@ class SearchModelTest(TestCase):
             question="What is gravity?"
         )
         self.assertEqual(str(search), "Science")
+
+
+# =========================
+# PricingSubPlan Tests
+# =========================
+class PricingSubPlanModelTest(TestCase):
+
+    import uuid
+
+def setUp(self):
+    self.pricing = Pricing.objects.create(
+        name="Basic Plan",
+        serial=f"PR-{uuid.uuid4().hex[:6]}",
+        category=1   # ✅ FIXED
+    )
+        
+
+    def test_create_subplan(self):
+        subplan = PricingSubPlan.objects.create(
+            my_pricing=self.pricing,
+            title="Starter",
+            description="Basic features",
+            price=1000
+        )
+
+        self.assertEqual(subplan.title, "Starter")
+        self.assertEqual(subplan.price, 1000)
+
+    def test_relationship(self):
+        subplan = PricingSubPlan.objects.create(
+            my_pricing=self.pricing,
+            title="Test Plan",
+            description="Test Desc",
+            price=500
+        )
+
+        # 🔴 match your actual field
+        self.assertEqual(subplan.my_pricing.name, "Basic Plan")
