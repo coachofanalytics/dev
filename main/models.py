@@ -93,3 +93,16 @@ def readme_pre_save_receiver(sender, instance, *args, **kwargs):
 
 pre_save.connect(readme_pre_save_receiver, sender=Readme)
 
+
+
+class WCAGStandardWebsite(models.Model):
+    company = models.CharField(max_length=500, null=True, blank=True)
+    app_name = models.CharField(max_length=500, null=True, blank=True)
+    page_name = models.TextField(null=True, blank=True)
+    website_url = models.FileField(upload_to="wcag_reports/", null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"{self.company} - {self.app_name}"
+
