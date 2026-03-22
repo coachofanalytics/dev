@@ -141,7 +141,7 @@ typing-inspection==0.4.2
 typing_extensions==4.15.0
 tzdata==2022.7
 uritemplate==4.1.1
-urllib3==2.6.3
+urllib3>=1.25.4,<1.27
 vine==5.0.0
 wcwidth==0.2.6
 webdriver-manager==3.8.5
