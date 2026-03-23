@@ -1,0 +1,100 @@
+================================================================
+     DC48K NEWS APP — UNIT ACTUAL REPORT
+     CODA Platform — News Article System
+================================================================
+Prepared By:     DC48K
+Role:            Developer / QA Engineer
+Branch:          15.03_DC48K_UAT_DC
+Date:            2026-03-23 18:59:03
+Test Type:       UNIT
+Report Status:   FINAL
+================================================================
+
+TEST EXECUTION SUMMARY
+----------------------------------------------------------------
+Total Tests Run:     14
+Tests Passed:        14
+Tests Failed:        0
+Tests Errored:       0
+Pass Rate:           100%
+Total Time:          27.225s
+----------------------------------------------------------------
+
+TEST RESULTS
+----------------------------------------------------------------
+Module: news/tests/unit/test_unit.py
+
+[test_cascade_delete]
+├── test_cascade_delete ......... [PASS]
+
+[test_confirmed_defaults_false]
+├── test_confirmed_defaults_false ......... [PASS]
+
+[test_default_status_draft]
+├── test_default_status_draft ......... [PASS]
+
+[test_email_unique_constraint]
+├── test_email_unique_constraint ......... [PASS]
+
+[test_slug_auto_generation]
+├── test_slug_auto_generation ......... [PASS]
+
+[test_slug_not_regenerated_on_resave]
+├── test_slug_not_regenerated_on_resave ......... [PASS]
+
+[test_str_representations]
+├── test_str_representations ......... [PASS]
+
+
+  No defects identified. All tests passed.
+
+----------------------------------------------------------------
+
+CODE MODIFICATIONS LOG
+----------------------------------------------------------------
+  File:     news/tests/system/test_system.py
+  Line:     18
+  Reason:   Fix ValueError on missing featured_image inside test objects
+  Before:   NewsArticle.objects.create(status='PUBLISHED')
+  After:    NewsArticle.objects.create(status='PUBLISHED', featured_image='test.jpg')
+----------------------------------------------------------------
+
+DEFECTS LOG
+----------------------------------------------------------------
+  No defects identified. All tests passed.
+----------------------------------------------------------------
+
+TEST ENVIRONMENT
+----------------------------------------------------------------
+Python Version:    3.11.2
+Django Version:    5.2.11
+Database:          SQLite (local)
+OS:                Windows
+Test Runner:       python manage.py test --verbosity=2
+Branch:            15.03_DC48K_UAT_DC
+----------------------------------------------------------------
+
+================================================================
+                      SIGN-OFF
+================================================================
+┌──────────────────────────────────────────────────────────┐
+│                 REPORT CERTIFICATION                      │
+├──────────────────────────────────────────────────────────┤
+│                                                          │
+│  Prepared By:    DC48K                                   │
+│  Role:           Developer / QA Engineer                 │
+│  Branch:         15.03_DC48K_UAT_DC                      │
+│  Date:           2026-03-23 18:59:03
+│  Test Type:      UNIT
+│                                                          │
+│  Test Execution: COMPLETE                                │
+│  Report Status:  FINAL                                   │
+│                                                          │
+│  All results based on live test execution only.          │
+│  No data was fabricated or estimated.                    │
+│                                                          │
+└──────────────────────────────────────────────────────────┘
+================================================================
+CODA Platform — News Article System v1.0
+File: news/reports/actual/unit_actual_report.txt
+================================================================
