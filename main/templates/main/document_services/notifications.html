@@ -1,0 +1,115 @@
+{% extends "main/document_services/base_document_services.html" %}
+
+{% block page_title %}Notifications{% endblock %}
+
+{% block content %}
+<div id="notifications-view" class="page-view p-8">
+    <div class="max-w-4xl mx-auto">
+        <div class="flex items-center justify-between mb-6">
+            <h2 class="text-xl font-bold text-gray-900">Notifications</h2>
+            <div class="flex items-center space-x-3">
+                <a href="{% url 'main:document_services_notification_preferences' %}" class="text-sm text-gray-600 font-semibold hover:underline">Preferences</a>
+                <button onclick="showToast('All notifications marked as read'); document.querySelectorAll('.notif-unread').forEach(el => el.classList.remove('notif-unread', 'bg-blue-50', 'border-l-4', 'border-l-blue-500'));" class="text-sm text-blue-600 font-semibold hover:underline">Mark all as read</button>
+            </div>
+        </div>
+
+        <div class="space-y-3">
+            <div class="notif-unread bg-blue-50 border-l-4 border-l-blue-500 border border-gray-200 rounded-lg p-4 hover:shadow-sm transition">
+                <div class="flex items-start justify-between">
+                    <div class="flex items-start space-x-3">
+                        <div class="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center flex-shrink-0">
+                            <svg width="20" height="20" fill="none" stroke="currentColor" class="text-green-600" stroke-width="2" viewBox="0 0 24 24"><path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                        </div>
+                        <div>
+                            <h3 class="font-bold text-gray-900">Application Approved</h3>
+                            <p class="text-sm text-gray-600 mt-1">Your application <span class="font-semibold">B260204145532O4JL</span> for Driving Test has been approved. You can now download your document.</p>
+                            <p class="text-xs text-gray-400 mt-2">2 hours ago</p>
+                        </div>
+                    </div>
+                    <button onclick="this.parentElement.parentElement.remove(); showToast('Notification dismissed')" class="text-gray-400 hover:text-gray-600">
+                        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M6 18L18 6M6 6l12 12"/></svg>
+                    </button>
+                </div>
+            </div>
+
+            <div class="notif-unread bg-blue-50 border-l-4 border-l-blue-500 border border-gray-200 rounded-lg p-4 hover:shadow-sm transition">
+                <div class="flex items-start justify-between">
+                    <div class="flex items-start space-x-3">
+                        <div class="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0">
+                            <svg width="20" height="20" fill="none" stroke="currentColor" class="text-blue-600" stroke-width="2" viewBox="0 0 24 24"><path d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                        </div>
+                        <div>
+                            <h3 class="font-bold text-gray-900">Payment Received</h3>
+                            <p class="text-sm text-gray-600 mt-1">Payment of <span class="font-semibold">KES 1,500.00</span> has been received for application B260115092341XZPL. Your request is now being processed.</p>
+                            <p class="text-xs text-gray-400 mt-2">5 hours ago</p>
+                        </div>
+                    </div>
+                    <button onclick="this.parentElement.parentElement.remove(); showToast('Notification dismissed')" class="text-gray-400 hover:text-gray-600">
+                        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M6 18L18 6M6 6l12 12"/></svg>
+                    </button>
+                </div>
+            </div>
+
+            <div class="notif-unread bg-blue-50 border-l-4 border-l-blue-500 border border-gray-200 rounded-lg p-4 hover:shadow-sm transition">
+                <div class="flex items-start justify-between">
+                    <div class="flex items-start space-x-3">
+                        <div class="w-10 h-10 bg-yellow-100 rounded-full flex items-center justify-center flex-shrink-0">
+                            <svg width="20" height="20" fill="none" stroke="currentColor" class="text-yellow-600" stroke-width="2" viewBox="0 0 24 24"><path d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                        </div>
+                        <div>
+                            <h3 class="font-bold text-gray-900">Document Expiring Soon</h3>
+                            <p class="text-sm text-gray-600 mt-1">Your National ID will expire in 30 days. Please submit a renewal application to avoid service interruption.</p>
+                            <p class="text-xs text-gray-400 mt-2">1 day ago</p>
+                        </div>
+                    </div>
+                    <button onclick="this.parentElement.parentElement.remove(); showToast('Notification dismissed')" class="text-gray-400 hover:text-gray-600">
+                        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M6 18L18 6M6 6l12 12"/></svg>
+                    </button>
+                </div>
+            </div>
+
+            <div class="bg-white border border-gray-200 rounded-lg p-4 hover:shadow-sm transition">
+                <div class="flex items-start justify-between">
+                    <div class="flex items-start space-x-3">
+                        <div class="w-10 h-10 bg-purple-100 rounded-full flex items-center justify-center flex-shrink-0">
+                            <svg width="20" height="20" fill="none" stroke="currentColor" class="text-purple-600" stroke-width="2" viewBox="0 0 24 24"><path d="M12 6v6m0 0v6m0-6h6m-6 0H6"/></svg>
+                        </div>
+                        <div>
+                            <h3 class="font-bold text-gray-900">New Feature Available</h3>
+                            <p class="text-sm text-gray-600 mt-1">You can now track your application status in real-time. Check the Applications page for live updates.</p>
+                            <p class="text-xs text-gray-400 mt-2">3 days ago</p>
+                        </div>
+                    </div>
+                    <button onclick="this.parentElement.parentElement.remove(); showToast('Notification dismissed')" class="text-gray-400 hover:text-gray-600">
+                        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M6 18L18 6M6 6l12 12"/></svg>
+                    </button>
+                </div>
+            </div>
+
+            <div class="bg-white border border-gray-200 rounded-lg p-4 hover:shadow-sm transition">
+                <div class="flex items-start justify-between">
+                    <div class="flex items-start space-x-3">
+                        <div class="w-10 h-10 bg-gray-100 rounded-full flex items-center justify-center flex-shrink-0">
+                            <svg width="20" height="20" fill="none" stroke="currentColor" class="text-gray-600" stroke-width="2" viewBox="0 0 24 24"><path d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                        </div>
+                        <div>
+                            <h3 class="font-bold text-gray-900">Draft Saved</h3>
+                            <p class="text-sm text-gray-600 mt-1">Your draft for Marriage Certificate application has been saved. You can continue editing anytime.</p>
+                            <p class="text-xs text-gray-400 mt-2">5 days ago</p>
+                        </div>
+                    </div>
+                    <button onclick="this.parentElement.parentElement.remove(); showToast('Notification dismissed')" class="text-gray-400 hover:text-gray-600">
+                        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M6 18L18 6M6 6l12 12"/></svg>
+                    </button>
+                </div>
+            </div>
+
+            <div class="mt-6 bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-lg p-6">
+                <h4 class="font-bold text-gray-900 mb-2">🔔 Customize Your Notifications</h4>
+                <p class="text-sm text-gray-600 mb-4">Control what notifications you receive and how you receive them.</p>
+                <a href="{% url 'main:document_services_notification_preferences' %}" class="inline-block bg-blue-600 text-white px-4 py-2 rounded text-sm font-semibold hover:bg-blue-700">Manage Notification Preferences →</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

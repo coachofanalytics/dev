@@ -1,0 +1,85 @@
+{% extends "main/document_services/base_document_services.html" %}
+
+{% block page_title %}Payment Summary{% endblock %}
+
+{% block content %}
+<div id="payment-summary-view" class="page-view p-8">
+    <h1 class="text-3xl font-bold text-gray-800 mb-8">Payment Summary</h1>
+
+    <div class="bg-white rounded-lg shadow-sm border border-gray-100 p-8 mb-8">
+        <div class="flex justify-between items-center mb-8">
+            <div class="flex items-center flex-1">
+                <div class="progress-step completed">
+                    <div class="progress-step-icon">✓</div>
+                    <span>Application</span>
+                </div>
+                <div class="progress-line filled"></div>
+            </div>
+            <div class="flex items-center flex-1">
+                <div class="progress-step completed">
+                    <div class="progress-step-icon">✓</div>
+                    <span>Review</span>
+                </div>
+                <div class="progress-line filled"></div>
+            </div>
+            <div class="flex items-center flex-1">
+                <div class="progress-step active">
+                    <div class="progress-step-icon">3</div>
+                    <span>Payment</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+        <div class="bg-white rounded-lg shadow-sm border border-gray-100 p-6">
+            <p class="text-sm text-gray-500 font-medium">Service Fee</p>
+            <p class="text-3xl font-bold text-gray-800 mt-2">1,500 KES</p>
+        </div>
+        <div class="bg-white rounded-lg shadow-sm border border-gray-100 p-6">
+            <p class="text-sm text-gray-500 font-medium">Processing Fee</p>
+            <p class="text-3xl font-bold text-gray-800 mt-2">0 KES</p>
+        </div>
+        <div class="bg-white rounded-lg shadow-sm border border-gray-100 p-6 bg-blue-50 border-blue-200">
+            <p class="text-sm text-gray-500 font-medium">Total Amount</p>
+            <p class="text-3xl font-bold text-blue-600 mt-2">1,500 KES</p>
+        </div>
+    </div>
+
+    <div class="bg-white rounded-lg shadow-sm border border-gray-100 p-8 mb-8">
+        <h2 class="text-xl font-bold text-gray-800 mb-4">Payment Method</h2>
+        <div class="space-y-3">
+            <label class="pay-option-radio">
+                <input type="radio" name="payment_method" value="mtn" checked>
+                <div class="flex items-center">
+                    <span class="pay-option-label">Mobile Money - MTN (Recommended)</span>
+                    <span class="ml-auto text-xs text-gray-500">Instant payment</span>
+                </div>
+            </label>
+            <label class="pay-option-radio">
+                <input type="radio" name="payment_method" value="airtel">
+                <div class="flex items-center">
+                    <span class="pay-option-label">Mobile Money - Airtel Money</span>
+                    <span class="ml-auto text-xs text-gray-500">2-5 minutes</span>
+                </div>
+            </label>
+            <label class="pay-option-radio">
+                <input type="radio" name="payment_method" value="bank">
+                <div class="flex items-center">
+                    <span class="pay-option-label">Bank Transfer</span>
+                    <span class="ml-auto text-xs text-gray-500">1-2 hours</span>
+                </div>
+            </label>
+        </div>
+    </div>
+
+    <div class="flex justify-between">
+        <button onclick="window.location.hash='#summary'" class="bg-gray-100 text-gray-700 px-6 py-3 rounded font-bold hover:bg-gray-200 transition">
+            ← Back
+        </button>
+        <button onclick="goToPaymentOptions()" class="bg-blue-600 text-white px-6 py-3 rounded font-bold hover:bg-blue-700 transition">
+            Proceed to Payment →
+        </button>
+    </div>
+</div>
+{% endblock %}
