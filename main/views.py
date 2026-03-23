@@ -299,4 +299,10 @@ def wcag_update(request, pk):
 
     return render(request, "main/wcag_update.html", {"form": form})
 
+def wcag_detail(request, pk):
+    website = get_object_or_404(WCAGStandardWebsite, pk=pk)
+    return render(request, "main/wcag_detail.html", {"website": website})
+
+
+
 

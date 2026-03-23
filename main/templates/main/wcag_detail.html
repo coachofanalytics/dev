@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>WCAG Detail</title>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f4f6f9;
+            margin: 0;
+            padding: 0;
+        }
+
+        .container {
+            width: 700px;
+            margin: 50px auto;
+            background: #fff;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0px 3px 12px rgba(0,0,0,0.1);
+        }
+
+        h2 {
+            text-align: center;
+            margin-bottom: 25px;
+        }
+
+        .detail-row {
+            margin-bottom: 15px;
+        }
+
+        .label {
+            font-weight: bold;
+            color: #333;
+        }
+
+        .value {
+            margin-top: 5px;
+            color: #555;
+        }
+
+        .file-link {
+            margin-top: 10px;
+        }
+
+        .buttons {
+            margin-top: 25px;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .btn {
+            padding: 10px 15px;
+            text-decoration: none;
+            border-radius: 5px;
+            color: white;
+            font-weight: bold;
+        }
+
+        .btn-edit {
+            background: #0984e3;
+        }
+
+        .btn-back {
+            background: #636e72;
+        }
+
+        .btn-delete {
+            background: #d63031;
+        }
+
+        .btn:hover {
+            opacity: 0.9;
+        }
+
+    </style>
+</head>
+
+<body>
+
+<div class="container">
+    <h2>WCAG Website Details</h2>
+
+    <!-- Company -->
+    <div class="detail-row">
+        <div class="label">Company:</div>
+        <div class="value">{{ object.company }}</div>
+    </div>
+
+    <!-- App Name -->
+    <div class="detail-row">
+        <div class="label">App Name:</div>
+        <div class="value">{{ object.app_name }}</div>
+    </div>
+
+    <!-- Page Name -->
+    <div class="detail-row">
+        <div class="label">Page Name:</div>
+        <div class="value">{{ object.page_name }}</div>
+    </div>
+
+    <!-- Website File -->
+    <div class="detail-row">
+        <div class="label">Uploaded File:</div>
+        <div class="value file-link">
+            {% if object.website_url %}
+                <a href="{{ object.website_url.url }}" target="_blank">View File</a>
+            {% else %}
+                <span>No file uploaded</span>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Buttons -->
+    <div class="buttons">
+        <a href="{% url 'main:wcag_list' %}" class="btn btn-back">⬅ Back</a>
+
+        <a href="#" class="btn btn-edit">Edit</a>
+
+        <a href="#" class="btn btn-delete">Delete</a>
+    </div>
+
+</div>
+
+</body>
+</html>
