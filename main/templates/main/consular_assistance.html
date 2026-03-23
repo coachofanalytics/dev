@@ -6,7 +6,7 @@
 
         <!-- HERO SECTION -->
         <header class="relative text-white shadow-xl overflow-hidden mb-12 mt-3 bg-blue-800"
-                style="min-height: 370px;">
+                style="min-height: 370px; background-image: url('{% static 'main/img/consular/hero.png' %}'); background-size: cover; background-position: center;">
             <!-- Dark overlay -->
             <div class="absolute inset-0" style="background: rgba(0,0,0,0.55);"></div>
             <!-- Centered content -->
@@ -46,9 +46,7 @@
             <!-- 1. Information and Updates (Image Left) -->
             <div id="information-updates" class="service-block grid grid-cols-1 lg:grid-cols-2 gap-8 items-start mb-16">
                 <div class="lg:order-1">
-                    <div class="w-full h-64 bg-gray-200 rounded-xl shadow-lg flex items-center justify-center text-gray-500 text-xl">
-                        <span>📄 Information & Updates</span>
-                    </div>
+                    <img src="{% static 'main/img/consular/information-updates.png' %}" alt="Information and Updates" class="w-full h-64 object-cover rounded-xl shadow-lg">
                 </div>
                 <div class="lg:order-2">
                     <h3 class="text-3xl font-extrabold text-brand-blue mb-4">1. Information and Updates</h3>
@@ -89,9 +87,7 @@
                     </div>
                 </div>
                 <div class="lg:order-2">
-                    <div class="w-full h-64 bg-gray-200 rounded-xl shadow-lg flex items-center justify-center text-gray-500 text-xl">
-                        <span>⚖️ Legal & Immigration</span>
-                    </div>
+                    <img src="{% static 'main/img/consular/legal-migration.png' %}" alt="Legal and Immigration Guidance" class="w-full h-64 object-cover rounded-xl shadow-lg">
                 </div>
             </div>
 
