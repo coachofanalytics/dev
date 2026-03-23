@@ -10,7 +10,7 @@
 <style>
     body { font-family: 'Inter', sans-serif; background-color: #f0f4f8; color: #1f2937; }
     .text-brand-blue { color: #1e40af; }
-    .bg-brand-blue { background-color: #1e40af; }
+    .bg-brand-blue { background-color: #041858; }
     .text-brand-green { color: #0a926d; }
     .bg-brand-green { background-color: #0a926d; }
     .text-brand-red { color: #cc0000; }
@@ -43,78 +43,72 @@
                 </div>
             </div>
         </div>
-        <header class="bg-brand-green text-white shadow-xl overflow-hidden mb-12 mt-0">
-            <div class="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-2 items-center">
-                <div class="p-8 md:p-12 lg:p-16">
-                    <h1 class="text-5xl main-heading mb-4">EDUCATION & TRAINING</h1>
-                    <h2 class="text-xl font-medium text-gray-200 mb-8">Empower your future with access to scholarships, professional development, and skills training tailored for global success.</h2>
-                    <a href="{% url 'main:scholarship_search' %}" class="inline-block bg-brand-red text-white font-bold py-3 px-6 rounded-lg uppercase text-sm tracking-wider hover:bg-red-700 transition duration-300">FIND YOUR SCHOLARSHIP</a>
-                </div>
-                <div class="w-full h-full hero-image-container">
-                    <img id="image-hero" src="{% static 'main/img/education/education-hero.jpg' %}" alt="Education Hero" class="w-full h-full object-cover loading-placeholder" style="max-height:400px; min-height:400px;">
-                </div>
-            </div>
+        
+
+        <header class="bg-brand-blue text-white shadow-xl overflow-hidden mb-12">
+           <div class="max-w-6xl mx-auto text-center py-24 px-6">
+                <h1 class="text-5xl md:text-6xl lg:text-7xl font-extrabold tracking-wide mb-6">
+                    EDUCATION & <br> TRAINING
+                </h1>
+                <p class="text-lg md:text-xl text-gray-200 max-w-3xl mx-auto mb-10">
+                    Connecting you to global opportunities and real-time AI-powered<br> scholarship discovery.
+                </p>
+                <a href="{% url 'main:scholarship_search' %}"
+                class="inline-block bg-brand-red text-white font-bold py-4 px-8 rounded-lg uppercase text-sm tracking-wider
+                hover:no-underline  hover:bg-red-700 transform hover:scale-105 transition duration-300
+                "
+                >
+                    FIND SCHOLARSHIPS
+                </a>
+           </div>
         </header>
 
-        <section class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 mb-16 text-center">
-            <h3 class="text-4xl main-heading text-gray-800 mb-4">Invest in Your Skills and Knowledge</h3>
-            <p class="text-xl text-gray-600 max-w-4xl mx-auto">Whether you are seeking advanced degrees, vocational training, or resources for your children, we bridge the gap by connecting you to vetted educational opportunities and funding.</p>
+
+        <section class="max-w-6xl mx-auto px-6 py-16">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-12">
+                <div class="group">
+                 <img src="{% static 'main/img/education/scholarships.jpg' %}" 
+                 class="w-full h-64 object-cover rounded-xl shadow-lg transition duration-300 
+                        group-hover:scale-[1.02]"
+                 alt="Scholarships">
+
+                 <h3 class="text-3xl font-bold text-brand-blue mt-3 mb-3">
+                  Scholarships & Aid
+                 </h3>
+                 <p class="text-gray-600 mb-4">
+                    Discover curated financial support and real-time opportunities found by our AI scholarship engine.
+                 </p>
+
+                 <a href="{% url 'main:scholarship_search' %}"
+                 class="text-brand-green font-semibold underline hover:text-green-600"
+                 >
+                Explore Database
+                </a>
+                </div>
+
+                <div class="group">
+                 <img src="{% static 'main/img/education/training.jpg' %}" 
+                 class="w-full h-64 object-cover rounded-xl shadow-lg transition duration-300 
+                        group-hover:scale-[1.02]"
+                 alt="Scholarships">
+
+                 <h3 class="text-3xl font-bold text-brand-blue mt-3 mb-3">
+                  Skills & Training
+                 </h3>
+                 <p class="text-gray-600 mb-4">
+                    Future-proof your career with professional development tailored for the modern global economy.
+                 </p>
+
+                 <a href="{% url 'main:education_training' %}"
+                 class="text-brand-red font-semibold underline hover:text-red-600"
+                 >
+                Browse Courses
+                </a>
+                </div>
+
+            </div>
+
         </section>
-
-        <section class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div id="scholarships-landing" class="service-block grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
-                <div class="lg:order-1">
-                    <img id="image-scholarships" src="{% static 'main/img/education/scholarships.jpg' %}" alt="Scholarships and Financial Aid Image" class="w-full rounded-xl shadow-lg object-cover loading-placeholder">
-                </div>
-                <div class="lg:order-2">
-                    <h3 class="text-3xl font-extrabold text-brand-blue mb-4">1. Scholarships and Financial Aid</h3>
-                    <p class="text-gray-700 mb-6">We maintain a comprehensive, verified database of scholarships, grants, and financial aid specifically available to diaspora students globally and those studying in Kenya.</p>
-                    <ul class="service-list text-gray-600">
-                        <li>Database of international and Kenyan university scholarships</li>
-                        <li>Guidance on application processes and essay writing for aid</li>
-                        <li>Resources for student loans and financial literacy for students</li>
-                        <li>Assistance with foreign credential recognition and equivalency</li>
-                    </ul>
-                    <div class="mt-6">
-                        <a href="{% url 'main:scholarship_search' %}" class="inline-block bg-brand-green text-white font-bold py-3 px-6 rounded-md uppercase text-sm tracking-wider hover:bg-[#086a4f] transition duration-300">View Scholarship Database</a>
-                    </div>
-                </div>
-            </div>
-
-            <div id="training-sessions" class="service-block grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
-                <div class="lg:order-1">
-                    <h3 class="text-3xl font-extrabold text-brand-blue mb-4">2. Professional Training and Skills</h3>
-                    <p class="text-gray-700 mb-6">Access continuous professional development programs, vocational training, and mentorship to enhance career prospects and facilitate re-entry into the Kenyan job market.</p>
-                    <ul class="service-list text-gray-600">
-                        <li>Exclusive webinars and workshops on digital skills and entrepreneurship</li>
-                        <li>Mentorship programs connecting diaspora professionals</li>
-                        <li>Information on vocational certifications and skill upgrading courses</li>
-                        <li>Career advisory and job placement assistance networks</li>
-                    </ul>
-                    <div class="mt-6">
-                        <a id="register-courses-btn" href="{% url 'main:course_register' %}" class="inline-block bg-brand-red text-white font-bold py-3 px-6 rounded-md uppercase text-sm tracking-wider hover:bg-red-800 transition duration-300">Register for Upcoming Courses</a>
-                    </div>
-                </div>
-                <div class="lg:order-2">
-                    <img id="image-training" src="{% static 'main/img/education/training.jpg' %}" alt="Professional Training Image" class="w-full rounded-xl shadow-lg object-cover loading-placeholder">
-                </div>
-            </div>
-
-            <!-- Placeholder where course register fragment will be injected when user clicks Register -->
-            <div id="course-register-container" class="mt-8"></div>
-
-            <div class="bg-brand-blue text-white p-8 md:p-12 rounded-xl shadow-2xl mt-16 text-center">
-                <h3 class="text-4xl font-extrabold mb-3">SEEKING CAREER GUIDANCE?</h3>
-                <p class="text-xl text-gray-200 mb-6">Connect with a Diaspora County 48 career mentor for personalized advice on global career transitions and opportunities back home.</p>
-                <a href="{% url 'main:request_mentorship' %}" class="inline-block bg-brand-red text-white font-bold py-3 px-8 rounded-full uppercase tracking-wider text-lg hover:bg-red-800 transition duration-300 shadow-lg">Request Mentorship Session</a>
-            </div>
-        </section>
-    </main>
-
-    <!-- Scholarship and Training dynamic sections: they are injected into the page via JS and the same template; we expose an initial_view context variable to control which tab opens first -->
-    <div id="app-view-scholarship" style="display:none;">
-        <!-- The scholarship app markup will be generated/inserted by client JS below -->
-    </div>
 
     <div id="app-view-training" style="display:none;">
         <!-- The training app markup will be generated/inserted by client JS below -->

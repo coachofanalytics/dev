@@ -9,7 +9,9 @@ from django.template.loader import render_to_string
 from django.utils.html import strip_tags
 from django.db.models import Count
 from datetime import timedelta
-
+from django.utils.text import slugify
+import random
+import string
 
 User = get_user_model()
 
@@ -274,74 +276,235 @@ class MedicalResourceInquiry(models.Model):
 
 # Scholarship model with filters
 class Scholarship(models.Model):
-    LEVEL_CHOICES = [
-        ("Undergraduate", "Undergraduate"),
-        ("Masters", "Masters"),
-        ("PhD", "PhD"),
-        ("Vocational", "Vocational"),
-    ]
 
-    FIELD_CHOICES = [
-        ("STEM", "STEM"),
-        ("Humanities", "Humanities"),
-        ("Business", "Business"),
-        ("Arts", "Arts"),
-    ]
+    class Level(models.TextChoices):
+        UNDERGRADUATE = "Undergraduate", "Undergraduate"
+        MASTERS = "Masters", "Masters"
+        PHD = "PhD", "PhD"
+        VOCATIONAL = "Vocational", "Vocational"
 
-    LOCATION_CHOICES = [
-        ("Kenya", "Kenya"),
-        ("Global", "Global"),
-        ("UK", "UK"),
-        ("USA", "USA"),
-    ]
+    class Field(models.TextChoices):
+        STEM = "STEM", "STEM"
+        HUMANITIES = "Humanities", "Humanities"
+        BUSINESS = "Business", "Business"
+        ARTS = "Arts", "Arts"
 
-    STATUS_CHOICES = [
-        ("Open", "Open"),
-        ("Closing Soon", "Closing Soon"),
-        ("Closed", "Closed"),
-    ]
+    class Location(models.TextChoices):
+        KENYA = "Kenya", "Kenya"
+        GLOBAL = "Global", "Global"
+        UK = "UK", "UK"
+        USA = "USA", "USA"
+
+    class Status(models.TextChoices):
+        OPEN = "Open", "Open"
+        CLOSING_SOON = "Closing Soon", "Closing Soon"
+        CLOSED = "Closed", "Closed"
+
+    class Currency(models.TextChoices):
+        USD = "USD", "US Dollar ($)"
+        KES = "KES", "Kenyan Shilling (Ksh)"
+        EUR = "EUR", "Euro (€)"
+        GBP = "GBP", "British Pound (£)"
+
+    amount_value = models.DecimalField(max_digits = 12, decimal_places=2, null=True, blank=True)
+    amount_currency = models.CharField(
+        max_length=3,
+        choices=Currency.choices,
+        default=Currency.USD
+    )
+
+    amount_description = models.CharField(max_length=100, blank=True, 
+                                         help_text="E.g., 'Full tuition', 'Partial funding', etc.")
 
     title = models.CharField(max_length=255)
-    provider = models.CharField(max_length=255, blank=True, null=True)
-    level = models.CharField(
-        max_length=100, choices=LEVEL_CHOICES, blank=True, null=True
-    )
-    field = models.CharField(
-        max_length=100, choices=FIELD_CHOICES, blank=True, null=True
-    )
-    location = models.CharField(
-        max_length=200, choices=LOCATION_CHOICES, blank=True, null=True
-    )
-    deadline = models.DateField(blank=True, null=True)
-    amount = models.CharField(max_length=100, blank=True, null=True)
+    slug = models.SlugField(unique=True, blank=True)
+
+    provider = models.CharField(max_length=255, default='')
+    level = models.CharField(max_length=100, choices=Level.choices, default=Level.UNDERGRADUATE)
+    field = models.CharField(max_length=100, choices=Field.choices, default=Field.STEM)
+    location = models.CharField(max_length=200, choices=Location.choices, default=Location.GLOBAL)
+
+    deadline = models.DateField(default=timezone.now)
+    amount = models.CharField(max_length=100, default='0')
+
     status = models.CharField(
-        max_length=50, choices=STATUS_CHOICES, blank=True, null=True
+        max_length=50,
+        choices=Status.choices,
+        default=Status.OPEN
     )
 
+    created_at = models.DateTimeField(auto_now_add=True)
+
     class Meta:
-        verbose_name = "Scholarship"
-        verbose_name_plural = "Scholarships"
         ordering = ["deadline"]
+    
+    @property
+    def amount(self):
+        """Return formatted amount for display"""
+        if self.amount_description:
+            return self.amount_description
+        
+        if self.amount_value and self.amount_currency:
+            # Format based on currency
+            if self.amount_currency == 'USD':
+                return f"${self.amount_value:,.2f}"
+            elif self.amount_currency == 'KES':
+                return f"KSh {self.amount_value:,.2f}"
+            elif self.amount_currency == 'EUR':
+                return f"€{self.amount_value:,.2f}"
+            elif self.amount_currency == 'GBP':
+                return f"£{self.amount_value:,.2f}"
+            else:
+                return f"{self.amount_currency} {self.amount_value:,.2f}"
+        return "Varies"
+
+    def generate_unique_slug(self):
+        """Generates a unique slug for the scholarship"""
+        base_slug = slugify(self.title)
+        slug = base_slug
+        while Scholarship.objects.filter(slug=slug).exists():
+            slug = f"{base_slug}-{''.join(random.choices(string.digits, k=4))}"
+        return slug
+
+    def save(self, *args, **kwargs):
+        # auto create unique slug
+        if not self.slug:
+            self.slug = self.generate_unique_slug()
+
+        # auto update status based on deadline
+        if self.deadline:
+            today = timezone.now().date()
+            days_left = (self.deadline - today).days
+
+            if days_left < 0:
+                self.status = self.Status.CLOSED
+            elif days_left <= 7:
+                self.status = self.Status.CLOSING_SOON
+            else:
+                self.status = self.Status.OPEN
+
+        super().save(*args, **kwargs)
 
     def __str__(self):
         return self.title
 
 
 class TrainingCourse(models.Model):
+    class Category(models.TextChoices):
+        TECH = "Tech", "Tech"
+        BUSINESS = "Business", "Business"
+        ART = "Art", "Art"
+        HEALTH = "Health", "Health"
+
+    class Format(models.TextChoices):
+        ONLINE = "Online", "Online"
+        OFFLINE = "Offline", "Offline"
+        HYBRID = "Hybrid", "Hybrid"
+
+    class Enrollment(models.TextChoices):
+        OPEN = "Open", "Open"
+        CLOSED = "Closed", "Closed"
+        CLOSING_SOON = "Closing Soon", "Closing Soon"  
+
+    class Status(models.TextChoices):
+        UPCOMING = "Upcoming", "Upcoming"
+        ONGOING = "Ongoing", "Ongoing"
+        COMPLETED = "Completed", "Completed"
+
+
     title = models.CharField(max_length=255)
-    category = models.CharField(max_length=150, blank=True, null=True)
-    duration = models.CharField(max_length=100, blank=True, null=True)
-    format = models.CharField(max_length=100, blank=True, null=True)
-    enrollment = models.CharField(max_length=100, blank=True, null=True)
-    start_date = models.DateField(blank=True, null=True)
+    slug = models.SlugField(unique=True, blank=True)
+    course_code = models.CharField(max_length=20, blank=True, help_text="e.g., CS101")
+    category = models.CharField(max_length=50, choices=Category.choices, default=Category.TECH)
+    description = models.TextField(blank=True, help_text="Brief course description")
+    duration = models.CharField(max_length=100, default="Self-paced", help_text="e.g., '6 weeks', '3 months', 'Self-paced'")
+    format = models.CharField(max_length=50, choices=Format.choices, default=Format.ONLINE)
+    enrollment = models.CharField(max_length=50, choices=Enrollment.choices, default=Enrollment.OPEN)
+    max_students = models.PositiveIntegerField(null=True, blank=True, help_text="Maximum capacity")
+    enrolled_students = models.PositiveIntegerField(default=0, editable=False)
+    start_date = models.DateField(default=timezone.now)
+    end_date = models.DateField(null=True, blank=True, help_text="Optional: Course end date")
+    status = models.CharField(max_length=20, choices=Status.choices, default=Status.UPCOMING, editable=False)
+    instructor = models.CharField(max_length=255, blank=True)
+    price = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+    certificate_offered = models.BooleanField(default=False)
+
+    syllabus = models.TextField(blank=True, help_text="Course outline/syllabus")
+    prerequisites = models.TextField(blank=True, help_text="Required knowledge or courses")
+    image = models.ImageField(upload_to='courses/', null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True) 
 
     class Meta:
         verbose_name = "Training Course"
         verbose_name_plural = "Training Courses"
+        ordering = ["start_date"]
+        indexes = [
+            models.Index(fields=['status']),
+            models.Index(fields=['category']),
+            models.Index(fields=['start_date']),
+        ]
 
+
+    def generate_unique_slug(self):
+        base_slug = slugify(self.title)
+        if self.course_code:
+            base_slug = f"{base_slug}-{self.course_code.lower()}"
+        slug = base_slug
+        counter = 1
+        while TrainingCourse.objects.filter(slug=slug).exists():
+            slug = f"{base_slug}-{counter}"
+            counter += 1
+        return slug
+    
+    def save(self, *args, **kwargs):
+        if not self.slug:
+            self.slug = self.generate_unique_slug()
+
+        if self.start_date:
+            today = timezone.now().date()
+            end = self.end_date if self.end_date else self.start_date
+
+            if today < self.start_date:
+                self.status = self.Status.UPCOMING
+
+            elif self.start_date <= today <= end:
+                self.status = self.Status.ONGOING
+
+            else:
+                self.status = self.Status.COMPLETED
+
+
+        if self.max_students and self.enrolled_students >= self.max_students:
+            self.enrollment = self.Enrollment.CLOSED 
+            
+        elif self.enrollment == self.Enrollment.CLOSED and self.enrolled_students < self.max_students:
+            pass
+
+        super().save(*args, **kwargs)
+
+    @property
+    def spots_available(self):
+        if self.max_students:
+            return max(0, self.max_students - self.enrolled_students)
+        return None
+    
+    @property
+    def is_null(self):
+        return self.max_students and self.enrolled_students >= self.max_students
+    
+    @property
+    def progress_percentage(self):
+        if self.status != self.Status.ONGOING or not self.end_date:
+            return None
+        total_duration = (self.end_date - self.start_date).days
+        days_passed = (timezone.now().date() - self.start_date).days
+
+        if total_duration > 0:
+            return min(100, int((days_passed / total_duration)*100))
+        return None
     def __str__(self):
-        return self.title
+        return f"{self.course_code} - {self.title}" if self.course_code else  self.title
 
 
 

@@ -1,0 +1,805 @@
+﻿python : C:\Users\PC\Desktop\dc48k_train\dev\news\ai_services.py:1: 
+FutureWarning: 
+At line:1 char:1
++ python manage.py test news.tests -v 2 2>&1 | Out-File -FilePath test_ ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (C:\Users\PC\Des...FutureWarning:  
+   :String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+
+All support for the `google.generativeai` package has ended. It will no longer 
+be receiving 
+updates or bug fixes. Please switch to the `google.genai` package as soon as 
+possible.
+See README for more details:
+
+https://github.com/google-gemini/deprecated-generative-ai-python/blob/main/READ
+ME.md
+
+  import google.generativeai as genai
+Creating test database for alias 'default' 
+('file:memorydb_default?mode=memory&cache=shared')...
+
+Found 95 test(s).
+Operations to perform:
+  Synchronize unmigrated apps: allauth, crispy_forms, django_countries, django_crontab, django_filters, facebook, google, mathfilters, messages, mptt, staticfiles, storages
+  Apply all migrations: account, accounts, admin, auth, communities, contenttypes, django_celery_beat, django_celery_results, finance, main, memberjoin, news, sessions, sites, socialaccount
+Synchronizing apps without migrations:
+  Creating tables...
+    Running deferred SQL...
+Running migrations:
+  Applying contenttypes.0001_initial... OK
+  Applying contenttypes.0002_remove_content_type_name... OK
+  Applying auth.0001_initial... OK
+  Applying auth.0002_alter_permission_name_max_length... OK
+  Applying auth.0003_alter_user_email_max_length... OK
+  Applying auth.0004_alter_user_username_opts... OK
+  Applying auth.0005_alter_user_last_login_null... OK
+  Applying auth.0006_require_contenttypes_0002... OK
+  Applying auth.0007_alter_validators_add_error_messages... OK
+  Applying auth.0008_alter_user_username_max_length... OK
+  Applying auth.0009_alter_user_last_name_max_length... OK
+  Applying auth.0010_alter_group_name_max_length... OK
+  Applying auth.0011_update_proxy_permissions... OK
+  Applying auth.0012_alter_user_first_name_max_length... OK
+  Applying accounts.0001_initial... OK
+  Applying account.0001_initial... OK
+  Applying account.0002_email_max_length... OK
+  Applying account.0003_alter_emailaddress_create_unique_verified_email... OK
+  Applying account.0004_alter_emailaddress_drop_unique_email... OK
+  Applying account.0005_emailaddress_idx_upper_email... OK
+  Applying admin.0001_initial... OK
+  Applying admin.0002_logentry_remove_auto_add... OK
+  Applying admin.0003_logentry_add_action_flag_choices... OK
+  Applying communities.0001_initial... OK
+  Applying django_celery_beat.0001_initial... OK
+  Applying django_celery_beat.0002_auto_20161118_0346... OK
+  Applying django_celery_beat.0003_auto_20161209_0049... OK
+  Applying django_celery_beat.0004_auto_20170221_0000... OK
+  Applying django_celery_beat.0005_add_solarschedule_events_choices... OK
+  Applying django_celery_beat.0006_auto_20180322_0932... OK
+  Applying django_celery_beat.0007_auto_20180521_0826... OK
+  Applying django_celery_beat.0008_auto_20180914_1922... OK
+  Applying django_celery_beat.0006_auto_20180210_1226... OK
+  Applying django_celery_beat.0006_periodictask_priority... OK
+  Applying django_celery_beat.0009_periodictask_headers... OK
+  Applying django_celery_beat.0010_auto_20190429_0326... OK
+  Applying django_celery_beat.0011_auto_20190508_0153... OK
+  Applying django_celery_beat.0012_periodictask_expire_seconds... OK
+  Applying django_celery_beat.0013_auto_20200609_0727... OK
+  Applying django_celery_beat.0014_remove_clockedschedule_enabled... OK
+  Applying django_celery_beat.0015_edit_solarschedule_events_choices... OK
+  Applying django_celery_beat.0016_alter_crontabschedule_timezone... OK
+  Applying django_celery_beat.0017_alter_crontabschedule_month_of_year... OK
+  Applying django_celery_beat.0018_improve_crontab_helptext... OK
+  Applying django_celery_beat.0019_alter_periodictasks_options... OK
+  Applying django_celery_results.0001_initial... OK
+  Applying django_celery_results.0002_add_task_name_args_kwargs... OK
+  Applying django_celery_results.0003_auto_20181106_1101... OK
+  Applying django_celery_results.0004_auto_20190516_0412... OK
+  Applying django_celery_results.0005_taskresult_worker... OK
+  Applying django_celery_results.0006_taskresult_date_created... OK
+  Applying django_celery_results.0007_remove_taskresult_hidden... OK
+  Applying django_celery_results.0008_chordcounter... OK
+  Applying django_celery_results.0009_groupresult... OK
+  Applying django_celery_results.0010_remove_duplicate_indices... OK
+  Applying django_celery_results.0011_taskresult_periodic_task_name... OK
+  Applying finance.0001_initial... OK
+  Applying finance.0002_auto_20260304_1529... OK
+  Applying finance.0003_auto_20260304_1655... OK
+  Applying finance.0004_auto_20260304_1710... OK
+  Applying main.0001_initial... OK
+  Applying memberjoin.0001_initial... OK
+  Applying news.0001_initial... OK
+  Applying news.0002_newsarticle... OK
+  Applying news.0003_rename_category_newsarticle_category_and_more... OK
+  Applying news.0004_alter_newsarticle_updated_at... OK
+  Applying news.0005_subscriber... OK
+  Applying sessions.0001_initial... OK
+  Applying sites.0001_initial... OK
+  Applying sites.0002_alter_domain_unique... OK
+  Applying socialaccount.0001_initial... OK
+  Applying socialaccount.0002_token_max_lengths... OK
+  Applying socialaccount.0003_extra_data_default_dict... OK
+  Applying socialaccount.0004_app_provider_id_settings... OK
+  Applying socialaccount.0005_socialtoken_nullable_app... OK
+test_article_create_form_submission (news.tests.integration.test_views.ArticleC
+RUDTest.test_article_create_form_submission)
+Test article can be created via form submission ... ERROR
+test_article_create_redirects_to_dashboard (news.tests.integration.test_views.A
+rticleCRUDTest.test_article_create_redirects_to_dashboard)
+Test article create redirects to dashboard after success ... ERROR
+test_article_delete_removes_article (news.tests.integration.test_views.ArticleC
+RUDTest.test_article_delete_removes_article)
+Test article can be deleted ... ERROR
+test_article_edit_updates_content (news.tests.integration.test_views.ArticleCRU
+DTest.test_article_edit_updates_content)
+Test article can be edited ... ERROR
+test_admin_dashboard_accessible_to_authenticated (news.tests.integration.test_v
+iews.AuthenticationRequiredViewsTest.test_admin_dashboard_accessible_to_authent
+icated)
+Test dashboard is accessible to authenticated users ... ERROR
+test_admin_dashboard_redirects_unauthenticated (news.tests.integration.test_vie
+ws.AuthenticationRequiredViewsTest.test_admin_dashboard_redirects_unauthenticat
+ed)
+Test dashboard redirects unauthenticated users to login ... ERROR
+test_article_create_accessible_to_authenticated (news.tests.integration.test_vi
+ews.AuthenticationRequiredViewsTest.test_article_create_accessible_to_authentic
+ated)
+Test article create is accessible to authenticated users ... ERROR
+test_article_create_redirects_unauthenticated (news.tests.integration.test_view
+s.AuthenticationRequiredViewsTest.test_article_create_redirects_unauthenticated
+)
+Test article create view redirects unauthenticated users ... ERROR
+test_article_delete_redirects_unauthenticated (news.tests.integration.test_view
+s.AuthenticationRequiredViewsTest.test_article_delete_redirects_unauthenticated
+)
+Test article delete redirects unauthenticated users ... ERROR
+test_article_edit_redirects_unauthenticated (news.tests.integration.test_views.
+AuthenticationRequiredViewsTest.test_article_edit_redirects_unauthenticated)
+Test article edit redirects unauthenticated users ... ERROR
+test_category_create_accessible_to_authenticated (news.tests.integration.test_v
+iews.AuthenticationRequiredViewsTest.test_category_create_accessible_to_authent
+icated)
+Test category create is accessible to authenticated users ... ERROR
+test_category_create_redirects_unauthenticated (news.tests.integration.test_vie
+ws.AuthenticationRequiredViewsTest.test_category_create_redirects_unauthenticat
+ed)
+Test category create view redirects unauthenticated users ... ERROR
+test_dashboard_context_has_statistics (news.tests.integration.test_views.Authen
+ticationRequiredViewsTest.test_dashboard_context_has_statistics)
+Test dashboard context has all required statistics ... ERROR
+test_article_detail_shows_related_articles (news.tests.integration.test_views.P
+ublicViewsTest.test_article_detail_shows_related_articles)
+Test article detail shows related articles from same category ... ERROR
+test_article_detail_view_has_correct_article (news.tests.integration.test_views
+.PublicViewsTest.test_article_detail_view_has_correct_article)
+Test article detail view shows correct article ... ERROR
+test_article_detail_view_returns_200 (news.tests.integration.test_views.PublicV
+iewsTest.test_article_detail_view_returns_200)
+Test article detail view returns status 200 ... ERROR
+test_article_detail_view_uses_correct_template (news.tests.integration.test_vie
+ws.PublicViewsTest.test_article_detail_view_uses_correct_template)
+Test article detail uses correct template ... ERROR
+test_article_home_pagination (news.tests.integration.test_views.PublicViewsTest
+.test_article_home_pagination)
+Test article listing pagination works ... ok
+test_article_home_view_returns_200 (news.tests.integration.test_views.PublicVie
+wsTest.test_article_home_view_returns_200)
+Test article listing view returns status 200 ... ok
+test_article_home_view_shows_published_articles (news.tests.integration.test_vi
+ews.PublicViewsTest.test_article_home_view_shows_published_articles)
+Test article listing shows only published articles ... ok
+test_article_home_view_uses_correct_template (news.tests.integration.test_views
+.PublicViewsTest.test_article_home_view_uses_correct_template)
+Test article listing uses correct template ... ok
+test_category_article_list_returns_200 (news.tests.integration.test_views.Publi
+cViewsTest.test_category_article_list_returns_200)
+Test category article list view returns status 200 ... ok
+test_category_article_list_template (news.tests.integration.test_views.PublicVi
+ewsTest.test_category_article_list_template)
+Test category article list uses correct template ... ok
+test_landing_page_context_contains_categories (news.tests.integration.test_view
+s.PublicViewsTest.test_landing_page_context_contains_categories)
+Test landing page context has categories ... ok
+test_landing_page_context_contains_latest_news (news.tests.integration.test_vie
+ws.PublicViewsTest.test_landing_page_context_contains_latest_news)
+Test landing page context has latest_news ... ok
+test_landing_page_view_returns_200 (news.tests.integration.test_views.PublicVie
+wsTest.test_landing_page_view_returns_200)
+Test landing page view returns status 200 ... ok
+test_landing_page_view_uses_correct_template (news.tests.integration.test_views
+.PublicViewsTest.test_landing_page_view_uses_correct_template)
+Test landing page uses correct template ... ok
+test_confirm_email_endpoint_sets_confirmed_true (news.tests.integration.test_vi
+ews.SubscriptionEndpointTest.test_confirm_email_endpoint_sets_confirmed_true)
+Test email confirmation sets confirmed to True ... ok
+test_subscribe_creates_conf_token (news.tests.integration.test_views.Subscripti
+onEndpointTest.test_subscribe_creates_conf_token)
+Test subscribe creates confirmation token ... ok
+test_subscribe_creates_subscriber (news.tests.integration.test_views.Subscripti
+onEndpointTest.test_subscribe_creates_subscriber)
+Test subscribe creates new Subscriber ... ok
+test_subscribe_duplicate_email_response (news.tests.integration.test_views.Subs
+criptionEndpointTest.test_subscribe_duplicate_email_response)
+Test POST to subscribe with existing email returns exists ... ok
+test_subscribe_get_request_returns_405 (news.tests.integration.test_views.Subsc
+riptionEndpointTest.test_subscribe_get_request_returns_405)
+Test GET request to subscribe returns 405 ... ok
+test_subscribe_missing_email (news.tests.integration.test_views.SubscriptionEnd
+pointTest.test_subscribe_missing_email)
+Test POST to subscribe without email returns error ... ok
+test_subscribe_with_valid_email_success (news.tests.integration.test_views.Subs
+criptionEndpointTest.test_subscribe_with_valid_email_success)
+Test POST to subscribe with valid email returns success ... ok
+test_article_detail_performance (news.tests.performance.test_performance.Perfor
+manceTest.test_article_detail_performance)
+Performance test: Article detail page response time < 600ms ... ok
+test_article_list_page_performance (news.tests.performance.test_performance.Per
+formanceTest.test_article_list_page_performance)
+Performance test: Article listing page response time < 800ms ... ok
+test_article_list_with_pagination_performance (news.tests.performance.test_perf
+ormance.PerformanceTest.test_article_list_with_pagination_performance)
+Performance test: Article listing page 2 response time < 800ms ... ok
+test_category_list_performance (news.tests.performance.test_performance.Perform
+anceTest.test_category_list_performance)
+Performance test: Category articles page response time < 700ms ... FAIL
+test_confirm_email_endpoint_performance (news.tests.performance.test_performanc
+e.PerformanceTest.test_confirm_email_endpoint_performance)
+Performance test: Email confirmation endpoint response time < 400ms ... ERROR
+test_database_query_efficiency (news.tests.performance.test_performance.Perform
+anceTest.test_database_query_efficiency)
+Performance test: Article list doesn't cause N+1 queries ... ok
+test_landing_page_performance (news.tests.performance.test_performance.Performa
+nceTest.test_landing_page_performance)
+Performance test: Landing page response time < 500ms ... ok
+test_search_performance (news.tests.performance.test_performance.PerformanceTes
+t.test_search_performance)
+Performance test: Search response time < 900ms ... ok
+test_subscribe_endpoint_performance (news.tests.performance.test_performance.Pe
+rformanceTest.test_subscribe_endpoint_performance)
+Performance test: Subscribe endpoint response time < 1000ms ... ok
+test_article_slug_remains_unchanged_on_update (news.tests.regression.test_regre
+ssions.RegressionTest.test_article_slug_remains_unchanged_on_update)
+Regression: Verify slug does not change when article is updated ... ok
+test_article_update_modifies_updated_at (news.tests.regression.test_regressions
+.RegressionTest.test_article_update_modifies_updated_at)
+Regression: Article updated_at should change on update ... ok
+test_article_update_preserves_created_at (news.tests.regression.test_regression
+s.RegressionTest.test_article_update_preserves_created_at)
+Regression: Article created_at should not change on update ... ok
+test_article_views_counter_increments (news.tests.regression.test_regressions.R
+egressionTest.test_article_views_counter_increments)
+Regression: Article views counter should increment ... ok
+test_breaking_news_filter_works (news.tests.regression.test_regressions.Regress
+ionTest.test_breaking_news_filter_works)
+Regression: Breaking news flag should filter correctly ... ok
+test_category_slug_persists_on_article_operations (news.tests.regression.test_r
+egressions.RegressionTest.test_category_slug_persists_on_article_operations)
+Regression: Category slug should not change when articles are added ... ok
+test_draft_articles_do_not_appear_in_public_list (news.tests.regression.test_re
+gressions.RegressionTest.test_draft_articles_do_not_appear_in_public_list)
+Regression: Draft articles should not be in public listing ... ok
+test_duplicate_subscriber_email_raises_integrity_error (news.tests.regression.t
+est_regressions.RegressionTest.test_duplicate_subscriber_email_raises_integrity
+_error)
+Regression: Duplicate email should raise IntegrityError ... ok
+test_multiple_articles_same_category_relationship (news.tests.regression.test_r
+egressions.RegressionTest.test_multiple_articles_same_category_relationship)
+Regression: Multiple articles can belong to same category ... ok
+test_pagination_returns_correct_count (news.tests.regression.test_regressions.R
+egressionTest.test_pagination_returns_correct_count)
+Regression: Pagination should return correct article counts ... ok
+test_published_filter_excludes_drafts (news.tests.regression.test_regressions.R
+egressionTest.test_published_filter_excludes_drafts)
+Regression: Published filter should exclude drafts ... ok
+test_subscriber_confirmed_status_can_be_toggled (news.tests.regression.test_reg
+ressions.RegressionTest.test_subscriber_confirmed_status_can_be_toggled)
+Regression: Subscriber confirmed status should be updatable ... ok
+test_full_article_lifecycle (news.tests.system.test_workflows.ArticleLifecycleT
+est.test_full_article_lifecycle)
+System test: Article creation \u2192 publication \u2192 homepage appearance 
+... ERROR
+test_category_listing_and_filtering (news.tests.system.test_workflows.CategoryB
+rowsingTest.test_category_listing_and_filtering)
+System test: Browse categories and view filtered articles ... ok
+test_dashboard_full_workflow (news.tests.system.test_workflows.DashboardWorkflo
+wTest.test_dashboard_full_workflow)
+System test: Login \u2192 create category \u2192 create article \u2192 
+dashboard ... ERROR
+test_dashboard_search_functionality (news.tests.system.test_workflows.SearchFun
+ctionalityTest.test_dashboard_search_functionality)
+System test: Dashboard search by article title ... ERROR
+test_search_by_content (news.tests.system.test_workflows.SearchFunctionalityTes
+t.test_search_by_content)
+System test: Search articles by content ... ok
+test_search_by_title 
+(news.tests.system.test_workflows.SearchFunctionalityTest.test_search_by_title)
+System test: Search articles by title ... ok
+test_search_no_matches_returns_empty (news.tests.system.test_workflows.SearchFu
+nctionalityTest.test_search_no_matches_returns_empty)
+System test: Search with no matches returns empty ... ok
+test_search_returns_multiple_matches (news.tests.system.test_workflows.SearchFu
+nctionalityTest.test_search_returns_multiple_matches)
+System test: Search returns multiple matching articles ... ok
+test_full_subscription_flow (news.tests.system.test_workflows.SubscriptionLifec
+ycleTest.test_full_subscription_flow)
+System test: Subscribe \u2192 token generated \u2192 confirm \u2192 status 
+updated ... ok
+test_article_form_ai_summary_widget_is_textarea (news.tests.unit.test_forms.Art
+icleFormTest.test_article_form_ai_summary_widget_is_textarea)
+Test that ai_summary field uses textarea widget ... ok
+test_article_form_content_widget_is_textarea (news.tests.unit.test_forms.Articl
+eFormTest.test_article_form_content_widget_is_textarea)
+Test that content field uses textarea widget ... ok
+test_article_form_includes_all_required_fields (news.tests.unit.test_forms.Arti
+cleFormTest.test_article_form_includes_all_required_fields)
+Test that form includes all required fields ... ok
+test_article_form_missing_category 
+(news.tests.unit.test_forms.ArticleFormTest.test_article_form_missing_category)
+Test form validation with missing category ... ok
+test_article_form_missing_required_title (news.tests.unit.test_forms.ArticleFor
+mTest.test_article_form_missing_required_title)
+Test form validation with missing title ... ok
+test_article_form_status_choices 
+(news.tests.unit.test_forms.ArticleFormTest.test_article_form_status_choices)
+Test that status field has correct choices ... ok
+test_article_form_valid_data 
+(news.tests.unit.test_forms.ArticleFormTest.test_article_form_valid_data)
+Test form with valid data ... ok
+test_category_cascade_deletion 
+(news.tests.unit.test_models.CategoryModelTest.test_category_cascade_deletion)
+Test that articles are deleted when category is deleted ... ok
+test_category_description_blank 
+(news.tests.unit.test_models.CategoryModelTest.test_category_description_blank)
+Test that description can be blank ... ok
+test_category_slug_auto_generation (news.tests.unit.test_models.CategoryModelTe
+st.test_category_slug_auto_generation)
+Test slug auto-generation from name ... ok
+test_category_slug_blank_auto_filled (news.tests.unit.test_models.CategoryModel
+Test.test_category_slug_blank_auto_filled)
+Test that slug field is auto-filled even when blank provided ... ok
+test_category_slug_uniqueness 
+(news.tests.unit.test_models.CategoryModelTest.test_category_slug_uniqueness)
+Test slug uniqueness constraint ... ok
+test_category_str_method 
+(news.tests.unit.test_models.CategoryModelTest.test_category_str_method)
+Test Category __str__ method returns name ... ok
+test_category_verbose_name_plural (news.tests.unit.test_models.CategoryModelTes
+t.test_category_verbose_name_plural)
+Test verbose_name_plural is correctly set ... ok
+test_article_ai_summary_fallback_on_error (news.tests.unit.test_models.NewsArti
+cleModelTest.test_article_ai_summary_fallback_on_error)
+Test fallback when AI summary generation fails ... ok
+test_article_ai_summary_generation (news.tests.unit.test_models.NewsArticleMode
+lTest.test_article_ai_summary_generation)
+Test ai_summary is generated when article is created ... ok
+test_article_ai_summary_not_regenerated (news.tests.unit.test_models.NewsArticl
+eModelTest.test_article_ai_summary_not_regenerated)
+Test that ai_summary is not regenerated if already present ... ok
+test_article_is_breaking_default_false (news.tests.unit.test_models.NewsArticle
+ModelTest.test_article_is_breaking_default_false)
+Test that is_breaking defaults to False ... ok
+test_article_slug_auto_generation (news.tests.unit.test_models.NewsArticleModel
+Test.test_article_slug_auto_generation)
+Test article slug auto-generation from title ... ok
+test_article_slug_uniqueness 
+(news.tests.unit.test_models.NewsArticleModelTest.test_article_slug_uniqueness)
+Test article slug uniqueness constraint ... ok
+test_article_status_default_draft (news.tests.unit.test_models.NewsArticleModel
+Test.test_article_status_default_draft)
+Test that status defaults to DRAFT ... ok
+test_article_str_method 
+(news.tests.unit.test_models.NewsArticleModelTest.test_article_str_method)
+Test NewsArticle __str__ method returns title ... ok
+test_article_views_default_zero (news.tests.unit.test_models.NewsArticleModelTe
+st.test_article_views_default_zero)
+Test that views defaults to 0 ... ok
+test_article_with_fk_to_category (news.tests.unit.test_models.NewsArticleModelT
+est.test_article_with_fk_to_category)
+Test article has correct foreign key to category ... ok
+test_subscriber_conf_token_auto_generated (news.tests.unit.test_models.Subscrib
+erModelTest.test_subscriber_conf_token_auto_generated)
+Test that conf_token is auto-generated with UUID ... ok
+test_subscriber_conf_token_unique (news.tests.unit.test_models.SubscriberModelT
+est.test_subscriber_conf_token_unique)
+Test that each subscriber has unique conf_token ... ok
+test_subscriber_confirmed_default_false (news.tests.unit.test_models.Subscriber
+ModelTest.test_subscriber_confirmed_default_false)
+Test that confirmed defaults to False ... ok
+test_subscriber_created_at_auto_set (news.tests.unit.test_models.SubscriberMode
+lTest.test_subscriber_created_at_auto_set)
+Test that subscribed_at is auto-set ... ok
+test_subscriber_email_unique_constraint (news.tests.unit.test_models.Subscriber
+ModelTest.test_subscriber_email_unique_constraint)
+Test email uniqueness constraint ... ok
+test_subscriber_is_active_default_true (news.tests.unit.test_models.SubscriberM
+odelTest.test_subscriber_is_active_default_true)
+Test that is_active defaults to True ... ok
+test_subscriber_str_method 
+(news.tests.unit.test_models.SubscriberModelTest.test_subscriber_str_method)
+Test Subscriber __str__ method returns email ... ok
+
+======================================================================
+ERROR: test_article_create_form_submission (news.tests.integration.test_views.A
+rticleCRUDTest.test_article_create_form_submission)
+Test article can be created via form submission
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File 
+"C:\Users\PC\Desktop\dc48k_train\dev\news\tests\integration\test_views.py", 
+line 308, in setUp
+    self.user = User.objects.create_user(
+                ^^^^^^^^^^^^
+  File "C:\Users\PC\Desktop\dc48k_train\dc_venv\Lib\site-packages\django\db\mod
+els\manager.py", line 196, in __get__
+    raise AttributeError(
+AttributeError: Manager isn't available; 'auth.User' has been swapped for 
+'accounts.CustomerUser'
+
+======================================================================
+ERROR: test_article_create_redirects_to_dashboard (news.tests.integration.test_
+views.ArticleCRUDTest.test_article_create_redirects_to_dashboard)
+Test article create redirects to dashboard after success
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File 
+"C:\Users\PC\Desktop\dc48k_train\dev\news\tests\integration\test_views.py", 
+line 308, in setUp
+    self.user = User.objects.create_user(
+                ^^^^^^^^^^^^
+  File "C:\Users\PC\Desktop\dc48k_train\dc_venv\Lib\site-packages\django\db\mod
+els\manager.py", line 196, in __get__
+    raise AttributeError(
+AttributeError: Manager isn't available; 'auth.User' has been swapped for 
+'accounts.CustomerUser'
+
+======================================================================
+ERROR: test_article_delete_removes_article (news.tests.integration.test_views.A
+rticleCRUDTest.test_article_delete_removes_article)
+Test article can be deleted
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File 
+"C:\Users\PC\Desktop\dc48k_train\dev\news\tests\integration\test_views.py", 
+line 308, in setUp
+    self.user = User.objects.create_user(
+                ^^^^^^^^^^^^
+  File "C:\Users\PC\Desktop\dc48k_train\dc_venv\Lib\site-packages\django\db\mod
+els\manager.py", line 196, in __get__
+    raise AttributeError(
+AttributeError: Manager isn't available; 'auth.User' has been swapped for 
+'accounts.CustomerUser'
+
+======================================================================
+ERROR: test_article_edit_updates_content (news.tests.integration.test_views.Art
+icleCRUDTest.test_article_edit_updates_content)
+Test article can be edited
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File 
+"C:\Users\PC\Desktop\dc48k_train\dev\news\tests\integration\test_views.py", 
+line 308, in setUp
+    self.user = User.objects.create_user(
+                ^^^^^^^^^^^^
+  File "C:\Users\PC\Desktop\dc48k_train\dc_venv\Lib\site-packages\django\db\mod
+els\manager.py", line 196, in __get__
+    raise AttributeError(
+AttributeError: Manager isn't available; 'auth.User' has been swapped for 
+'accounts.CustomerUser'
+
+======================================================================
+ERROR: test_admin_dashboard_accessible_to_authenticated (news.tests.integration
+.test_views.AuthenticationRequiredViewsTest.test_admin_dashboard_accessible_to_
+authenticated)
+Test dashboard is accessible to authenticated users
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File 
+"C:\Users\PC\Desktop\dc48k_train\dev\news\tests\integration\test_views.py", 
+line 131, in setUp
+    self.user = User.objects.create_user(
+                ^^^^^^^^^^^^
+  File "C:\Users\PC\Desktop\dc48k_train\dc_venv\Lib\site-packages\django\db\mod
+els\manager.py", line 196, in __get__
+    raise AttributeError(
+AttributeError: Manager isn't available; 'auth.User' has been swapped for 
+'accounts.CustomerUser'
+
+======================================================================
+ERROR: test_admin_dashboard_redirects_unauthenticated (news.tests.integration.t
+est_views.AuthenticationRequiredViewsTest.test_admin_dashboard_redirects_unauth
+enticated)
+Test dashboard redirects unauthenticated users to login
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File 
+"C:\Users\PC\Desktop\dc48k_train\dev\news\tests\integration\test_views.py", 
+line 131, in setUp
+    self.user = User.objects.create_user(
+                ^^^^^^^^^^^^
+  File "C:\Users\PC\Desktop\dc48k_train\dc_venv\Lib\site-packages\django\db\mod
+els\manager.py", line 196, in __get__
+    raise AttributeError(
+AttributeError: Manager isn't available; 'auth.User' has been swapped for 
+'accounts.CustomerUser'
+
+======================================================================
+ERROR: test_article_create_accessible_to_authenticated (news.tests.integration.
+test_views.AuthenticationRequiredViewsTest.test_article_create_accessible_to_au
+thenticated)
+Test article create is accessible to authenticated users
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File 
+"C:\Users\PC\Desktop\dc48k_train\dev\news\tests\integration\test_views.py", 
+line 131, in setUp
+    self.user = User.objects.create_user(
+                ^^^^^^^^^^^^
+  File "C:\Users\PC\Desktop\dc48k_train\dc_venv\Lib\site-packages\django\db\mod
+els\manager.py", line 196, in __get__
+    raise AttributeError(
+AttributeError: Manager isn't available; 'auth.User' has been swapped for 
+'accounts.CustomerUser'
+
+======================================================================
+ERROR: test_article_create_redirects_unauthenticated (news.tests.integration.te
+st_views.AuthenticationRequiredViewsTest.test_article_create_redirects_unauthen
+ticated)
+Test article create view redirects unauthenticated users
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File 
+"C:\Users\PC\Desktop\dc48k_train\dev\news\tests\integration\test_views.py", 
+line 131, in setUp
+    self.user = User.objects.create_user(
+                ^^^^^^^^^^^^
+  File "C:\Users\PC\Desktop\dc48k_train\dc_venv\Lib\site-packages\django\db\mod
+els\manager.py", line 196, in __get__
+    raise AttributeError(
+AttributeError: Manager isn't available; 'auth.User' has been swapped for 
+'accounts.CustomerUser'
+
+======================================================================
+ERROR: test_article_delete_redirects_unauthenticated (news.tests.integration.te
+st_views.AuthenticationRequiredViewsTest.test_article_delete_redirects_unauthen
+ticated)
+Test article delete redirects unauthenticated users
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File 
+"C:\Users\PC\Desktop\dc48k_train\dev\news\tests\integration\test_views.py", 
+line 131, in setUp
+    self.user = User.objects.create_user(
+                ^^^^^^^^^^^^
+  File "C:\Users\PC\Desktop\dc48k_train\dc_venv\Lib\site-packages\django\db\mod
+els\manager.py", line 196, in __get__
+    raise AttributeError(
+AttributeError: Manager isn't available; 'auth.User' has been swapped for 
+'accounts.CustomerUser'
+
+======================================================================
+ERROR: test_article_edit_redirects_unauthenticated (news.tests.integration.test
+_views.AuthenticationRequiredViewsTest.test_article_edit_redirects_unauthentica
+ted)
+Test article edit redirects unauthenticated users
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File 
+"C:\Users\PC\Desktop\dc48k_train\dev\news\tests\integration\test_views.py", 
+line 131, in setUp
+    self.user = User.objects.create_user(
+                ^^^^^^^^^^^^
+  File "C:\Users\PC\Desktop\dc48k_train\dc_venv\Lib\site-packages\django\db\mod
+els\manager.py", line 196, in __get__
+    raise AttributeError(
+AttributeError: Manager isn't available; 'auth.User' has been swapped for 
+'accounts.CustomerUser'
+
+======================================================================
+ERROR: test_category_create_accessible_to_authenticated (news.tests.integration
+.test_views.AuthenticationRequiredViewsTest.test_category_create_accessible_to_
+authenticated)
+Test category create is accessible to authenticated users
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File 
+"C:\Users\PC\Desktop\dc48k_train\dev\news\tests\integration\test_views.py", 
+line 131, in setUp
+    self.user = User.objects.create_user(
+                ^^^^^^^^^^^^
+  File "C:\Users\PC\Desktop\dc48k_train\dc_venv\Lib\site-packages\django\db\mod
+els\manager.py", line 196, in __get__
+    raise AttributeError(
+AttributeError: Manager isn't available; 'auth.User' has been swapped for 
+'accounts.CustomerUser'
+
+======================================================================
+ERROR: test_category_create_redirects_unauthenticated (news.tests.integration.t
+est_views.AuthenticationRequiredViewsTest.test_category_create_redirects_unauth
+enticated)
+Test category create view redirects unauthenticated users
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File 
+"C:\Users\PC\Desktop\dc48k_train\dev\news\tests\integration\test_views.py", 
+line 131, in setUp
+    self.user = User.objects.create_user(
+                ^^^^^^^^^^^^
+  File "C:\Users\PC\Desktop\dc48k_train\dc_venv\Lib\site-packages\django\db\mod
+els\manager.py", line 196, in __get__
+    raise AttributeError(
+AttributeError: Manager isn't available; 'auth.User' has been swapped for 
+'accounts.CustomerUser'
+
+======================================================================
+ERROR: test_dashboard_context_has_statistics (news.tests.integration.test_views
+.AuthenticationRequiredViewsTest.test_dashboard_context_has_statistics)
+Test dashboard context has all required statistics
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File 
+"C:\Users\PC\Desktop\dc48k_train\dev\news\tests\integration\test_views.py", 
+line 131, in setUp
+    self.user = User.objects.create_user(
+                ^^^^^^^^^^^^
+  File "C:\Users\PC\Desktop\dc48k_train\dc_venv\Lib\site-packages\django\db\mod
+els\manager.py", line 196, in __get__
+    raise AttributeError(
+AttributeError: Manager isn't available; 'auth.User' has been swapped for 
+'accounts.CustomerUser'
+
+======================================================================
+ERROR: test_article_detail_shows_related_articles (news.tests.integration.test_
+views.PublicViewsTest.test_article_detail_shows_related_articles)
+Test article detail shows related articles from same category
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File 
+"C:\Users\PC\Desktop\dc48k_train\dev\news\tests\integration\test_views.py", 
+line 107, in test_article_detail_shows_related_articles
+    reverse('news:article-detail', kwargs={'slug': self.article.slug})
+  File "C:\Users\PC\Desktop\dc48k_train\dc_venv\Lib\site-packages\django\urls\b
+ase.py", line 98, in reverse
+    resolved_url = resolver._reverse_with_prefix(view, prefix, *args, **kwargs)
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\PC\Desktop\dc48k_train\dc_venv\Lib\site-packages\django\urls\r
+esolvers.py", line 831, in _reverse_with_prefix
+    raise NoReverseMatch(msg)
+django.urls.exceptions.NoReverseMatch: Reverse for 'article-detail' not found. 
+'article-detail' is not a valid view function or pattern name.
+
+======================================================================
+ERROR: test_article_detail_view_has_correct_article (news.tests.integration.tes
+t_views.PublicViewsTest.test_article_detail_view_has_correct_article)
+Test article detail view shows correct article
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File 
+"C:\Users\PC\Desktop\dc48k_train\dev\news\tests\integration\test_views.py", 
+line 100, in test_article_detail_view_has_correct_article
+    reverse('news:article-detail', kwargs={'slug': self.article.slug})
+  File "C:\Users\PC\Desktop\dc48k_train\dc_venv\Lib\site-packages\django\urls\b
+ase.py", line 98, in reverse
+    resolved_url = resolver._reverse_with_prefix(view, prefix, *args, **kwargs)
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\PC\Desktop\dc48k_train\dc_venv\Lib\site-packages\django\urls\r
+esolvers.py", line 831, in _reverse_with_prefix
+    raise NoReverseMatch(msg)
+django.urls.exceptions.NoReverseMatch: Reverse for 'article-detail' not found. 
+'article-detail' is not a valid view function or pattern name.
+
+======================================================================
+ERROR: test_article_detail_view_returns_200 (news.tests.integration.test_views.
+PublicViewsTest.test_article_detail_view_returns_200)
+Test article detail view returns status 200
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File 
+"C:\Users\PC\Desktop\dc48k_train\dev\news\tests\integration\test_views.py", 
+line 86, in test_article_detail_view_returns_200
+    reverse('news:article-detail', kwargs={'slug': self.article.slug})
+  File "C:\Users\PC\Desktop\dc48k_train\dc_venv\Lib\site-packages\django\urls\b
+ase.py", line 98, in reverse
+    resolved_url = resolver._reverse_with_prefix(view, prefix, *args, **kwargs)
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\PC\Desktop\dc48k_train\dc_venv\Lib\site-packages\django\urls\r
+esolvers.py", line 831, in _reverse_with_prefix
+    raise NoReverseMatch(msg)
+django.urls.exceptions.NoReverseMatch: Reverse for 'article-detail' not found. 
+'article-detail' is not a valid view function or pattern name.
+
+======================================================================
+ERROR: test_article_detail_view_uses_correct_template (news.tests.integration.t
+est_views.PublicViewsTest.test_article_detail_view_uses_correct_template)
+Test article detail uses correct template
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File 
+"C:\Users\PC\Desktop\dc48k_train\dev\news\tests\integration\test_views.py", 
+line 93, in test_article_detail_view_uses_correct_template
+    reverse('news:article-detail', kwargs={'slug': self.article.slug})
+  File "C:\Users\PC\Desktop\dc48k_train\dc_venv\Lib\site-packages\django\urls\b
+ase.py", line 98, in reverse
+    resolved_url = resolver._reverse_with_prefix(view, prefix, *args, **kwargs)
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\PC\Desktop\dc48k_train\dc_venv\Lib\site-packages\django\urls\r
+esolvers.py", line 831, in _reverse_with_prefix
+    raise NoReverseMatch(msg)
+django.urls.exceptions.NoReverseMatch: Reverse for 'article-detail' not found. 
+'article-detail' is not a valid view function or pattern name.
+
+======================================================================
+ERROR: test_confirm_email_endpoint_performance (news.tests.performance.test_per
+formance.PerformanceTest.test_confirm_email_endpoint_performance)
+  Applying socialaccount.0006_alter_socialaccount_extra_data... OK
+System check identified no issues (0 silenced).
+Performance test: Email confirmation endpoint response time < 400ms
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Users\PC\Desktop\dc48k_train\dev\news\tests\performance\test_perform
+ance.py", line 109, in test_confirm_email_endpoint_performance
+    reverse('news:confirm-email', kwargs={'token': subscriber.conf_token})
+  File "C:\Users\PC\Desktop\dc48k_train\dc_venv\Lib\site-packages\django\urls\b
+ase.py", line 98, in reverse
+    resolved_url = resolver._reverse_with_prefix(view, prefix, *args, **kwargs)
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\PC\Desktop\dc48k_train\dc_venv\Lib\site-packages\django\urls\r
+esolvers.py", line 831, in _reverse_with_prefix
+    raise NoReverseMatch(msg)
+django.urls.exceptions.NoReverseMatch: Reverse for 'confirm-email' not found. 
+'confirm-email' is not a valid view function or pattern name.
+
+======================================================================
+ERROR: test_full_article_lifecycle (news.tests.system.test_workflows.ArticleLif
+ecycleTest.test_full_article_lifecycle)
+System test: Article creation \u2192 publication \u2192 homepage appearance
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File 
+"C:\Users\PC\Desktop\dc48k_train\dev\news\tests\system\test_workflows.py", 
+line 20, in setUp
+    self.user = User.objects.create_user(
+                ^^^^^^^^^^^^
+  File "C:\Users\PC\Desktop\dc48k_train\dc_venv\Lib\site-packages\django\db\mod
+els\manager.py", line 196, in __get__
+    raise AttributeError(
+AttributeError: Manager isn't available; 'auth.User' has been swapped for 
+'accounts.CustomerUser'
+
+======================================================================
+ERROR: test_dashboard_full_workflow (news.tests.system.test_workflows.Dashboard
+WorkflowTest.test_dashboard_full_workflow)
+System test: Login \u2192 create category \u2192 create article \u2192 
+dashboard
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File 
+"C:\Users\PC\Desktop\dc48k_train\dev\news\tests\system\test_workflows.py", 
+line 119, in setUp
+    self.admin = User.objects.create_user(
+                 ^^^^^^^^^^^^
+  File "C:\Users\PC\Desktop\dc48k_train\dc_venv\Lib\site-packages\django\db\mod
+els\manager.py", line 196, in __get__
+    raise AttributeError(
+AttributeError: Manager isn't available; 'auth.User' has been swapped for 
+'accounts.CustomerUser'
+
+======================================================================
+ERROR: test_dashboard_search_functionality (news.tests.system.test_workflows.Se
+archFunctionalityTest.test_dashboard_search_functionality)
+System test: Dashboard search by article title
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File 
+"C:\Users\PC\Desktop\dc48k_train\dev\news\tests\system\test_workflows.py", 
+line 236, in test_dashboard_search_functionality
+    admin = User.objects.create_user(username='admin', password='admin123')
+            ^^^^^^^^^^^^
+  File "C:\Users\PC\Desktop\dc48k_train\dc_venv\Lib\site-packages\django\db\mod
+els\manager.py", line 196, in __get__
+    raise AttributeError(
+AttributeError: Manager isn't available; 'auth.User' has been swapped for 
+'accounts.CustomerUser'
+
+======================================================================
+FAIL: test_category_list_performance (news.tests.performance.test_performance.P
+erformanceTest.test_category_list_performance)
+Performance test: Category articles page response time < 700ms
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "C:\Users\PC\Desktop\dc48k_train\dev\news\tests\performance\test_perform
+ance.py", line 77, in test_category_list_performance
+    self.assertLess(execution_time, 700, f"Category list took 
+{execution_time}ms (threshold: 700ms)")
+AssertionError: 726.6151905059814 not less than 700 : Category list took 
+726.6151905059814ms (threshold: 700ms)
+
+----------------------------------------------------------------------
+Ran 95 tests in 20.991s
+
+FAILED (failures=1, errors=21)
+Destroying test database for alias 'default' 
+('file:memorydb_default?mode=memory&cache=shared')...
+

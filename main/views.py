@@ -18,7 +18,7 @@ from .models import Assets,Description, News, Page, Service, SubService,Team, Sa
 #=======
 from django.db.models import Q
 #<<<<<<< HEAD
-from .models import Scholarship, Donation_organisation, ContactMessage, Testimonial
+from .models import Scholarship, Donation_organisation, ContactMessage, Testimonial, TrainingCourse
 #>>>>>>> origin/25.11_DC48K_UAT_FN
 from accounts.models import CustomerUser
 ##=======
@@ -37,12 +37,16 @@ from django.views.decorators.csrf import csrf_protect
 from django.http import JsonResponse, HttpResponse
 from django.core.mail import send_mail
 from django.utils.html import strip_tags
+from django.utils import timezone
 #=======
 
 from django.urls import reverse_lazy
 from django.views.generic.edit import CreateView, UpdateView, DeleteView
 from django.views.generic.detail import DetailView
 import csv
+import feedparser
+import random
+
 
 # Details Donation View
 class DonationDetailView(DetailView):
@@ -685,42 +689,169 @@ def scholarship_search(request):
     scholarships = Scholarship.objects.all()
     form = ScholarshipSearchForm(request.GET or None)
 
-    # Direct GET filters (used by integration tests)
-    level = request.GET.get('level')
-    field = request.GET.get('field')
-
-    if level and level != 'All':
-        scholarships = scholarships.filter(level=level)
-
-    if field and field != 'All':
-        scholarships = scholarships.filter(field=field)
 
     if form.is_valid():
         data = form.cleaned_data
         # apply filter
-        if data['search_keyword']:
+        keyword = data.get("search_keyword")
+        if keyword:
             scholarships = scholarships.filter(
-                Q(title__icontains=data['search_keyword']) |
-                Q(provider__icontains=data['search_keyword']) 
+                Q(title__icontains=keyword) |
+                Q(provider__icontains=keyword) 
             )
-        if data['filter_level'] and data['filter_level'] != 'All':
-            scholarships = scholarships.filter(level=data['filter_level'])
 
-        if data['filter_field'] and data['filter_field'] != 'All':
-            scholarships = scholarships.filter(field=data['filter_field'])
+        currency = data.get("filter_currency")
+        if currency:
+            scholarships = scholarships.filter(
+                amount_value__isnull=False, 
+                amount_currency = currency
+            )
+        else:
+            pass
 
-        if data['filter_location'] and data['filter_location'] != 'All':
-            scholarships = scholarships.filter(location=data['filter_location'])
+        level = data.get("filter_level")
+        if level:
+            scholarships = scholarships.filter(level=level)
 
-        if data['filter_status']:
-            scholarships = scholarships.filter(status='Closing soon')
+        field = data.get("filter_field")
+        if field:
+            scholarships = scholarships.filter(field=field)
+
+        location = data.get("filter_location")
+        if location:
+            scholarships = scholarships.filter(location=location)
+
+        if  data.get("filter_status"):
+            scholarships = scholarships.filter(status=Scholarship.Status.CLOSING_SOON)
+        
     context = {
         'scholarships': scholarships,
         'form': form,
         'result_count': scholarships.count(),
     }
     return render(request, 'scholarship_app/scholarship_search.html',context)
-#>>>>>>> 25.10_DC48_UAT_ND
+
+def ai_refresh_scholarships(request):
+    today = timezone.now().date()
+    scholarships = Scholarship.objects.all()
+    scored = []
+
+    for s in scholarships:
+        score = 0
+
+        if not s.deadline:
+            continue
+
+        days_left = (s.deadline - today).days
+
+        if days_left < 0:
+            continue
+
+        if days_left <= 7:
+            score += 5
+        elif days_left <= 30:
+            score += 3
+
+        if s.status and s.status.lower() == "open":
+            score += 3
+
+        if isinstance(s.amount, str) and "full" in s.amount.lower():
+            score += 4
+
+        scored.append((score, s))
+
+    scored.sort(reverse=True, key=lambda x: x[0])
+    best = [s for score, s in scored[:6]]
+
+    data = []
+    for s in best:
+        data.append({
+            "title": s.title,
+            "provider": s.provider,
+            "level": s.level,
+            "field": s.field,
+            "location": s.location,
+            "amount": s.amount,
+            "deadline": s.deadline.strftime("%Y-%m-%d") if s.deadline else None,
+            "status": s.status
+        })
+
+    return JsonResponse({
+        "scholarships": data,
+        "count": len(data)
+    })
+
+def education_training(request):
+    courses = TrainingCourse.objects.all()
+
+    context ={
+        "courses": courses
+    }
+    
+    return render(request, "main/education/training_skills.html", context)
+
+
+
+def ai_course_discovery(request):
+
+    feeds = [
+        "https://ocw.mit.edu/courses/rss.xml",
+        "https://ocw.mit.edu/courses/new-courses/feed",
+    ]
+
+    courses = []
+
+    for url in feeds:
+        feed = feedparser.parse(url)
+
+        for entry in feed.entries[:10]:
+
+            courses.append({
+                "title": entry.title,
+                "university": "MIT",
+                "platform": "MIT OpenCourseWare",
+                "duration": "Self-paced",
+                "url": entry.link
+            })
+
+    # Harvard / edX courses
+    harvard_courses = [
+        {
+            "title": "CS50: Introduction to Computer Science",
+            "university": "Harvard University",
+            "platform": "edX",
+            "duration": "12 Weeks",
+            "url": "https://www.edx.org/cs50"
+        },
+        {
+            "title": "Data Science: Machine Learning",
+            "university": "Harvard University",
+            "platform": "edX",
+            "duration": "8 Weeks",
+            "url": "https://www.edx.org/course/data-science-machine-learning"
+        }
+    ]
+
+    stanford_courses = [
+        {
+            "title": "Machine Learning",
+            "university": "Stanford University",
+            "platform": "Coursera",
+            "duration": "10 Weeks",
+            "url": "https://www.coursera.org/learn/machine-learning"
+        }
+    ]
+
+    courses.extend(harvard_courses)
+    courses.extend(stanford_courses)
+
+    random.shuffle(courses)
+
+    return JsonResponse({
+        "courses": courses[:10]
+    })
+
+
 
 def testimonial_list(request):
     testimonial = Testimonial.objects.all() 

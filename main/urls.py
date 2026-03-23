@@ -80,20 +80,19 @@ urlpatterns = [
     path('api/doctor/<int:pk>/book/', views.book_appointment, name='book_appointment'),
     # Scholarship search (root-level /scholarship)
     path('scholarship', views.scholarship_search, name='scholarship_search'),
+   
 
-#<<<<<<< 25.11_DC48K_UAT_FN
-    # Education and training views
-#=======
-    # Education pages removed — keep navbar buttons but links point to placeholders
-    # scholaship url
-    path('scholarship', views.scholarship_search, name='scholarship_search'),
+
 #>>>>>>> 25.10_DC48_UAT_ND
 
     path('education/', views.education_landing, name = 'education_landing'),
     path('education/scholarship/',views.education_landing, name = 'education_scholarship'),
-    path('education/training/',views.education_landing, name = 'education_training'),
+    path('education/training/',views.education_training, name = 'education_training'),
+    path('ai-courses/', views.ai_course_discovery, name='ai_course_discovery'),
     path('education/courses/register/', views.course_register, name='course_register'),
     path('education/request-mentorship/', views.request_mentorship, name='request_mentorship'),
+
+    path('ai_refresh_scholarships', views.ai_refresh_scholarships, name='ai_refresh_scholarships'),
 
     path('Testimonial/', views.testimonial_list, name = 'testimonial_list'),
     path('governance/', views.governance_list, name='governance_list'),
