@@ -25,6 +25,10 @@ urlpatterns = [
     path('display_usecases/', views.display_usecases, name='display_usecases'),
     path('wcag_list/', views.wcag_list, name='wcag_list'),
     path("wcag_create/", views.wcag_create, name="wcag_create"),
+    path("wcag_update/<int:pk>/", views.wcag_update, name="wcag_update"),
+
+    # path("<int:pk>/wcag_update/", views.wcag_update, name="wcag_update"),
+
 
 
    #==============ERRORS==============================================

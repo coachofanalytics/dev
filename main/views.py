@@ -284,3 +284,19 @@ def wcag_create(request):
         form = WCAGStandardWebsiteForm()
 
     return render(request, "main/wcag_create.html", {"form": form})
+
+    
+def wcag_update(request, pk):
+    website = get_object_or_404(WCAGStandardWebsite, pk=pk)
+
+    if request.method == "POST":
+        form = WCAGStandardWebsiteForm(request.POST, request.FILES, instance=website)
+        if form.is_valid():
+            form.save()
+            return redirect("main:wcag_list")
+    else:
+        form = WCAGStandardWebsiteForm(instance=website)
+
+    return render(request, "main/wcag_update.html", {"form": form})
+
+
