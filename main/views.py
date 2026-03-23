@@ -273,3 +273,14 @@ def general_errors(request):
 def wcag_list(request):
     websites = WCAGStandardWebsite.objects.all()
     return render(request, "main/wcag_list.html", {"websites": websites})
+
+def wcag_create(request):
+    if request.method == "POST":
+        form = WCAGStandardWebsiteForm(request.POST, request.FILES)
+        if form.is_valid():
+            form.save()
+            return redirect("main:wcag_list")
+    else:
+        form = WCAGStandardWebsiteForm()
+
+    return render(request, "main/wcag_create.html", {"form": form})

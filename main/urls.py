@@ -24,6 +24,8 @@ urlpatterns = [
     path('newusecase/', views.UseCaseCreateView.as_view(template_name='main/form.html'), name='newusecase'),
     path('display_usecases/', views.display_usecases, name='display_usecases'),
     path('wcag_list/', views.wcag_list, name='wcag_list'),
+    path("wcag_create/", views.wcag_create, name="wcag_create"),
+
 
    #==============ERRORS==============================================
     path('400Error/', views.error400, name='400error'),
