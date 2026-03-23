@@ -132,7 +132,7 @@ def display_service(request, *args, **kwargs):
         return redirect('main:display_service')
 
     (service_category_slug, service_category_title, service_description,service_sub_titles, service_id) = service_instances(service_shown, sub_title)
-    service_categories = ServiceCategory.objects.filter(is_active=True,service=service_id)
+    # service_categories = ServiceCategory.objects.filter(is_active=True,service=service_id)
     try:
         asset = Assets.objects.get(name=service_category_title)
         asset_image_url = asset.service_image.url
@@ -159,7 +159,7 @@ def display_service(request, *args, **kwargs):
     #Description for IT Integrated Solutions & Consultancy 
     # descriptions = InvestmentContent.objects.filter(title='IT Integrated Solutions & Consultancy')
     context = {
-        'service_categories': service_categories,
+        # 'service_categories': service_categories,
         "title": service_category_title,
         "service_desc": service_description,
         # 'content': description,
@@ -178,44 +178,44 @@ def display_service(request, *args, **kwargs):
     return render(request, "main/services/show_services.html", context)
 
 
-def service_plans(request, *args, **kwargs):
-    path_list, sub_title, pre_sub_title = path_values(request)
-    try:
-        if pre_sub_title == 'bigdata':
-            service_shown = ServiceCategory.objects.get(slug=sub_title).service
+# def service_plans(request, *args, **kwargs):
+#     path_list, sub_title, pre_sub_title = path_values(request)
+#     try:
+#         if pre_sub_title == 'bigdata':
+#             service_shown = ServiceCategory.objects.get(slug=sub_title).service
 
-        elif pre_sub_title:
-            try:
-                service_shown = Service.objects.get(slug=pre_sub_title)
-                # print("service_shown====>",service_shown)
-            except Service.DoesNotExist:
-                service_shown = ServiceCategory.objects.get(slug=sub_title).service
+#         elif pre_sub_title:
+#             try:
+#                 service_shown = Service.objects.get(slug=pre_sub_title)
+#                 # print("service_shown====>",service_shown)
+#             except Service.DoesNotExist:
+#                 service_shown = ServiceCategory.objects.get(slug=sub_title).service
 
-        elif sub_title.lower() in ["job-support","interview","full-course"]:
-            # service_shown = Data Analysis
-            service_shown = Service.objects.get(slug="data_analysis")
-            # print("service_shown====>",service_shown)
-        else:
-            return redirect('main:layout')
+    #     elif sub_title.lower() in ["job-support","interview","full-course"]:
+    #         # service_shown = Data Analysis
+    #         service_shown = Service.objects.get(slug="data_analysis")
+    #         # print("service_shown====>",service_shown)
+    #     else:
+    #         return redirect('main:layout')
         
-    except Service.DoesNotExist:
-        return redirect('main:display_service', slug ='data_analysis')
-    except Exception:
-        return redirect('main:layout')
-    service_categories = ServiceCategory.objects.filter(service=service_shown.id)
-    (category_slug,category_name,category_id)=service_plan_instances(service_categories,sub_title)
-    plans =None
+    # except Service.DoesNotExist:
+    #     return redirect('main:display_service', slug ='data_analysis')
+    # except Exception:
+    #     return redirect('main:layout')
+    # service_categories = ServiceCategory.objects.filter(service=service_shown.id)
+    # (category_slug,category_name,category_id)=service_plan_instances(service_categories,sub_title)
+    # plans =None
 
-    context = {}
-    context = {
-        "SITEURL": settings.SITEURL,
-        "title": category_name,
-        "packages": packages,
-        "category_slug": category_slug,
-        "courses": courses,
-        "services_plans": plans
-    }
-    return render(request, "main/services/service_plan.html", context)
+    # context = {}
+    # context = {
+    #     "SITEURL": settings.SITEURL,
+    #     "title": category_name,
+    #     "packages": packages,
+    #     "category_slug": category_slug,
+    #     "courses": courses,
+    #     "services_plans": plans
+    # }
+    # return render(request, "main/services/service_plan.html", context)
 
 
 # =====================README VIEWS=======================================
@@ -269,3 +269,7 @@ def general_errors(request):
     # return render(request, "main/errors/noresult.html")
     context={'message':'message'}
     return render(request,'main/errors/generalerrors.html',context)
+
+def wcag_list(request):
+    websites = WCAGStandardWebsite.objects.all()
+    return render(request, "main/wcag_list.html", {"websites": websites})

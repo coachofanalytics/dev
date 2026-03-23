@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>WCAG Dashboard</title>
+
+    <style>
+        body {
+            font-family: Arial;
+            background: hsl(108, 33%, 97%);
+            margin: 0;
+        }
+
+        .navbar {
+            background: #2f3640;
+            color: #1bb945;
+            padding: 15px;
+            font-size: 18px;
+        }
+
+        .container {
+            padding: 20px;
+        }
+
+        .cards {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .card {
+            background: #05f611;
+            padding: 20px;
+            flex: 1;
+            border-radius: 10px;
+            box-shadow: 0px 2px 5px lab(78.74% -74.85 72.15 / 0.1);
+        }
+
+        table {
+            width: 100%;
+            background: #f6b1b1;
+            border-collapse: collapse;
+            box-shadow: 0px 2px 5px rgba(0,0,0,0.1);
+        }
+
+        th, td {
+            padding: 10px;
+            border-bottom: 1px solid hsl(0, 83%, 45%);
+        }
+
+        th {
+            background: hsl(122, 76%, 70%);
+        }
+
+        a.button {
+            padding: 5px 10px;
+            background: lab(50.2% 75.6 61.46);
+            color: rgb(49, 211, 24);
+            text-decoration: none;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="navbar">
+    WCAG Dashboard
+</div>
+
+<div class="container">
+
+    <!-- Summary Cards -->
+    <div class="cards">
+        <div class="card">
+            <h3>Total Websites</h3>
+            <p>{{ total }}</p>
+        </div>
+
+        <div class="card">
+            <h3>Uploaded Files</h3>
+            <p>{{ files_count }}</p>
+        </div>
+    </div>
+
+    <!-- Add Button -->
+    <a href="#" class="button">+ Add New</a>
+
+    <br><br>
+
+    <!-- Table -->
+    <table>
+        <thead>
+            <tr>
+                <th>#</th>
+                <th>Company</th>
+                <th>App</th>
+                <th>Page</th>
+                <th>File</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+
+        <tbody>
+            {% for obj in websites %}
+            <tr>
+                <td>{{ forloop.counter }}</td>
+                <td>{{ obj.company }}</td>
+                <td>{{ obj.app_name }}</td>
+                <td>{{ obj.page_name }}</td>
+
+                <td>
+                    {% if obj.website_url %}
+                        <a href="{{ obj.website_url.url }}">Download</a>
+                    {% else %}
+                        No file
+                    {% endif %}
+                </td>
+
+                <td>
+                    <a href="#">View</a> |
+                    <a href="#">Edit</a> |
+                    <a href="#">Delete</a>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+</div>
+
+</body>
+</html>

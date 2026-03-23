@@ -10,7 +10,7 @@ urlpatterns = [
     path('newservice/', views.ServiceCreateView.as_view(template_name='main/form.html'), name='newservice'),
     path('services/', views.services, name='services'),
     path("display_service/<str:slug>/", views.display_service, name="display_service"),
-    path("display_plans/<str:slug>/", views.service_plans, name="service_plans"),
+    # path("display_plans/<str:slug>/", views.service_plans, name="service_plans"),
     #==============DEPARTMENTS==============================================
     #==============DEPARTMENTS==============================================
     #---------------HUMAN RESOURCE--------------------#
@@ -23,6 +23,7 @@ urlpatterns = [
     #-----------------------README-------------------------#
     path('newusecase/', views.UseCaseCreateView.as_view(template_name='main/form.html'), name='newusecase'),
     path('display_usecases/', views.display_usecases, name='display_usecases'),
+    path('wcag_list/', views.wcag_list, name='wcag_list'),
 
    #==============ERRORS==============================================
     path('400Error/', views.error400, name='400error'),
