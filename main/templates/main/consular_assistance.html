@@ -2,13 +2,27 @@
 {% load static %}
 {% block content %}
 
+<style>
+    .hero-overlay {
+        min-height: 370px;
+        background-image: url('{% static "main/img/consular/hero.png" %}');
+        background-size: cover;
+        background-position: center;
+    }
+    .hero-overlay::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.55);
+    }
+</style>
+
     <main class="mx-auto pb-16">
 
         <!-- HERO SECTION -->
-        <header class="relative text-white shadow-xl overflow-hidden mb-12 mt-0 bg-blue-800"
-                style="min-height: 370px; background-image: url('{% static 'main/img/consular/hero.png' %}'); background-size: cover; background-position: center;">
+        <header class="relative text-white shadow-xl overflow-hidden mb-12 mt-0 bg-blue-800 hero-overlay">
             <!-- Dark overlay -->
-            <div class="absolute inset-0" style="background: rgba(0,0,0,0.55);"></div>
+            <div class="absolute inset-0 bg-dark-overlay"></div>
             <!-- Centered content -->
             <div class="relative z-10 flex flex-col items-center justify-center text-center px-4"
                  style="min-height: 370px;">
