@@ -1,0 +1,73 @@
+{% extends "main/document_services/base_document_services.html" %}
+
+{% block page_title %}Data Access History{% endblock %}
+
+{% block content %}
+<div id="history-view" class="page-view p-8">
+    <h1 class="text-3xl font-bold text-gray-800 mb-8">Data Access History</h1>
+
+    <div class="bg-white rounded-lg shadow-sm border border-gray-100 overflow-hidden">
+        <table class="w-full text-sm">
+            <thead>
+                <tr class="border-b border-gray-200 bg-gray-50">
+                    <th class="text-left py-3 px-4 font-bold text-gray-700">Institution</th>
+                    <th class="text-left py-3 px-4 font-bold text-gray-700">Access Type</th>
+                    <th class="text-left py-3 px-4 font-bold text-gray-700">Date & Time</th>
+                    <th class="text-left py-3 px-4 font-bold text-gray-700">Purpose</th>
+                    <th class="text-left py-3 px-4 font-bold text-gray-700">Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr class="border-b border-gray-100 hover:bg-blue-50 transition">
+                    <td class="py-4 px-4">
+                        <div class="flex items-center">
+                            <div class="w-8 h-8 bg-purple-100 rounded-full flex items-center justify-center mr-3">
+                                <span class="text-xs font-bold text-purple-600">KRA</span>
+                            </div>
+                            <span class="font-bold">Kenya Revenue Authority</span>
+                        </div>
+                    </td>
+                    <td class="py-4 px-4">Read</td>
+                    <td class="py-4 px-4">Feb 5, 2026 - 10:30 AM</td>
+                    <td class="py-4 px-4">Tax Filing</td>
+                    <td class="py-4 px-4"><span class="status-badge status-approved"><span class="status-dot" style="background-color: #10b981;"></span>Approved</span></td>
+                </tr>
+                <tr class="border-b border-gray-100 hover:bg-blue-50 transition">
+                    <td class="py-4 px-4">
+                        <div class="flex items-center">
+                            <div class="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center mr-3">
+                                <span class="text-xs font-bold text-blue-600">ICTA</span>
+                            </div>
+                            <span class="font-bold">Immigration, Citizenship & Travel Agency</span>
+                        </div>
+                    </td>
+                    <td class="py-4 px-4">Read</td>
+                    <td class="py-4 px-4">Feb 3, 2026 - 3:15 PM</td>
+                    <td class="py-4 px-4">Passport Renewal</td>
+                    <td class="py-4 px-4"><span class="status-badge status-approved"><span class="status-dot" style="background-color: #10b981;"></span>Approved</span></td>
+                </tr>
+                <tr class="border-b border-gray-100 hover:bg-blue-50 transition">
+                    <td class="py-4 px-4">
+                        <div class="flex items-center">
+                            <div class="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center mr-3">
+                                <span class="text-xs font-bold text-green-600">CBK</span>
+                            </div>
+                            <span class="font-bold">Central Bank of Kenya</span>
+                        </div>
+                    </td>
+                    <td class="py-4 px-4">Read-Write</td>
+                    <td class="py-4 px-4">Jan 28, 2026 - 9:00 AM</td>
+                    <td class="py-4 px-4">Account Verification</td>
+                    <td class="py-4 px-4"><span class="status-badge status-approved"><span class="status-dot" style="background-color: #10b981;"></span>Approved</span></td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="mt-8 bg-blue-50 border border-blue-200 rounded-lg p-4">
+        <p class="text-sm text-blue-800">
+            <strong>ℹ️ Privacy Notice:</strong> All access to your personal data is logged and monitored. You can revoke access at any time from your settings.
+        </p>
+    </div>
+</div>
+{% endblock %}

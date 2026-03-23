@@ -1558,3 +1558,68 @@ def download_comparison_csv(request):
         ])
     
     return response
+
+
+# -----------------------------
+# Document Services (frontend-only views)
+# -----------------------------
+def document_services_dashboard(request):
+    """Render the Document Services dashboard (frontend-only)."""
+    return render(request, 'main/document_services/dashboard.html')
+
+
+def document_services_drafts(request):
+    """Render the Drafts list (frontend-only)."""
+    return render(request, 'main/document_services/drafts.html')
+
+
+def document_services_documents(request):
+    """Render the Documents listing (frontend-only)."""
+    return render(request, 'main/document_services/documents.html')
+
+
+def document_services_history(request):
+    """Render the Document history (frontend-only)."""
+    return render(request, 'main/document_services/history.html')
+
+
+def document_services_application_form(request):
+    """Render the application form (frontend-only)."""
+    return render(request, 'main/document_services/application.html')
+
+
+def document_services_summary(request):
+    """Render the summary page (frontend-only)."""
+    return render(request, 'main/document_services/summary.html')
+
+
+def document_services_payment_summary(request):
+    """Render the payment summary placeholder (frontend-only)."""
+    return render(request, 'main/document_services/payment_summary.html')
+
+
+def document_services_notifications(request):
+    """Render the notifications page (frontend-only)."""
+    return render(request, 'main/document_services/notifications.html')
+
+
+def document_services_notification_preferences(request):
+    """Render the notification preferences page (frontend-only)."""
+    return render(request, 'main/document_services/notification_preferences.html')
+
+
+def document_services_profile(request):
+    """Render the profile page (frontend-only)."""
+    return render(request, 'main/document_services/profile.html')
+
+
+def document_services_settings(request):
+    """Render the settings page (frontend-only)."""
+    return render(request, 'main/document_services/settings.html')
+
+
+def document_services_support_help(request):
+    """Render the support and help page (frontend-only)."""
+    return render(request, 'main/document_services/support_help.html')
+
+

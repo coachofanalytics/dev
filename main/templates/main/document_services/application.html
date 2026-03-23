@@ -1,0 +1,101 @@
+{% extends "main/document_services/base_document_services.html" %}
+
+{% block page_title %}New Application{% endblock %}
+
+{% block content %}
+<div id="application-view" class="page-view p-8">
+    <h1 class="text-3xl font-bold text-gray-800 mb-8">New Document Service Application</h1>
+
+    <form id="app-form" onsubmit="goToSummary(event)" class="bg-white rounded-lg shadow-sm border border-gray-100 p-8">
+        <div class="mb-8">
+            <h2 class="text-xl font-bold text-gray-800 mb-6">Application Details</h2>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Service Type *</label>
+                    <select id="service-dropdown" name="service" class="form-input" required>
+                        <option value="">Please select a service</option>
+                        <option value="National ID Replacement">National ID Replacement</option>
+                        <option value="Birth Certificate">Birth Certificate</option>
+                        <option value="Death Certificate">Death Certificate</option>
+                        <option value="Marriage Services">Marriage Services</option>
+                        <option value="Employment Verification">Employment Verification</option>
+                        <option value="Passport Services">Passport Services</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Reason for Application *</label>
+                    <select name="reason" class="form-input" required>
+                        <option value="">Select reason</option>
+                        <option value="Replacement of lost document">Replacement of lost document</option>
+                        <option value="Correction of error in previous record">Correction of error in previous record</option>
+                        <option value="New registration / First time application">New registration / First time application</option>
+                        <option value="Renewal of expired document">Renewal of expired document</option>
+                        <option value="Education">Education</option>
+                        <option value="Employment">Employment</option>
+                    </select>
+                </div>
+            </div>
+
+            <h2 class="text-xl font-bold text-gray-800 mb-6 mt-8">Personal Information</h2>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">First Name *</label>
+                    <input type="text" name="firstName" class="form-input" placeholder="Enter first name" value="George" required>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Last Name *</label>
+                    <input type="text" name="lastName" class="form-input" placeholder="Enter last name" value="Ndahiro" required>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">National ID Number *</label>
+                    <input type="text" name="idNo" class="form-input" placeholder="Enter your ID number" value="1198280021732013" required>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Email Address *</label>
+                    <input type="email" name="email" class="form-input" placeholder="your.email@example.com" value="george.ndahiro@example.com" required>
+                </div>
+            </div>
+
+            <h2 class="text-xl font-bold text-gray-800 mb-6 mt-8">Location Details</h2>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">County/District *</label>
+                    <select name="district" class="form-input" onchange="handleDistrictChange(this.value)" required>
+                        <option value="">Select county/district</option>
+                        <option value="Nairobi City">Nairobi City</option>
+                        <option value="Mombasa">Mombasa</option>
+                        <option value="Kisumu">Kisumu</option>
+                        <option value="Kiambu">Kiambu</option>
+                    </select>
+                </div>
+                <div id="sector-container" class="hidden">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Sub-County/Sector</label>
+                    <select id="sector-dropdown" name="sector" class="form-input">
+                        <option value="">Select sub-county</option>
+                    </select>
+                </div>
+            </div>
+
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Remarks / Additional Information</label>
+                <textarea name="remarks" class="form-input" rows="4" placeholder="Any additional information you'd like to provide..."></textarea>
+            </div>
+        </div>
+
+        <div class="flex justify-between pt-6 border-t">
+            <button type="button" onclick="window.location.hash='#dashboard'" class="bg-gray-100 text-gray-700 px-6 py-2 rounded font-bold hover:bg-gray-200 transition">
+                Cancel
+            </button>
+            <button type="submit" class="bg-blue-600 text-white px-6 py-2 rounded font-bold hover:bg-blue-700 transition">
+                Review & Continue
+            </button>
+        </div>
+    </form>
+</div>
+{% endblock %}

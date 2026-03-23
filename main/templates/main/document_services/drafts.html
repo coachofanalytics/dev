@@ -1,0 +1,63 @@
+{% extends "main/document_services/base_document_services.html" %}
+
+{% block page_title %}My Drafts{% endblock %}
+
+{% block content %}
+<div id="drafts-view" class="page-view p-8">
+    <h1 class="text-3xl font-bold text-gray-800 mb-8">Saved Drafts</h1>
+
+    <div class="space-y-4">
+        <div class="bg-white rounded-lg shadow-sm border border-gray-100 p-6 hover:shadow-md transition">
+            <div class="flex justify-between items-start mb-4">
+                <div>
+                    <p class="text-sm text-gray-500">Draft ID: DRAFT-2026-001</p>
+                    <h3 class="text-lg font-bold text-gray-800">National ID Replacement Application</h3>
+                    <p class="text-sm text-gray-600 mt-1">Last modified: <strong>Today, 2:45 PM</strong></p>
+                </div>
+                <span class="bg-yellow-100 text-yellow-800 text-xs font-bold px-3 py-1 rounded">IN PROGRESS</span>
+            </div>
+            <div class="mb-4">
+                <p class="text-xs text-gray-500 mb-1">Progress</p>
+                <div class="w-full h-2 bg-gray-200 rounded-full overflow-hidden">
+                    <div class="h-full bg-yellow-500 rounded-full" style="width: 65%;"></div>
+                </div>
+                <p class="text-xs text-gray-500 mt-1">65% complete</p>
+            </div>
+            <div class="flex gap-3">
+                <button onclick="continueDraft('National ID')" class="bg-blue-600 text-white px-6 py-2 rounded font-bold hover:bg-blue-700 transition">
+                    Continue
+                </button>
+                <button onclick="showToast('Draft deleted successfully.')" class="bg-red-100 text-red-600 px-6 py-2 rounded font-bold hover:bg-red-200 transition">
+                    Delete
+                </button>
+            </div>
+        </div>
+
+        <div class="bg-white rounded-lg shadow-sm border border-gray-100 p-6 hover:shadow-md transition">
+            <div class="flex justify-between items-start mb-4">
+                <div>
+                    <p class="text-sm text-gray-500">Draft ID: DRAFT-2026-002</p>
+                    <h3 class="text-lg font-bold text-gray-800">Marriage Services Registration</h3>
+                    <p class="text-sm text-gray-600 mt-1">Last modified: <strong>Yesterday, 11:30 AM</strong></p>
+                </div>
+                <span class="bg-blue-100 text-blue-800 text-xs font-bold px-3 py-1 rounded">NOT STARTED</span>
+            </div>
+            <div class="mb-4">
+                <p class="text-xs text-gray-500 mb-1">Progress</p>
+                <div class="w-full h-2 bg-gray-200 rounded-full overflow-hidden">
+                    <div class="h-full bg-blue-500 rounded-full" style="width: 30%;"></div>
+                </div>
+                <p class="text-xs text-gray-500 mt-1">30% complete</p>
+            </div>
+            <div class="flex gap-3">
+                <button onclick="continueDraft('Marriage Services')" class="bg-blue-600 text-white px-6 py-2 rounded font-bold hover:bg-blue-700 transition">
+                    Continue
+                </button>
+                <button onclick="showToast('Draft deleted successfully.')" class="bg-red-100 text-red-600 px-6 py-2 rounded font-bold hover:bg-red-200 transition">
+                    Delete
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

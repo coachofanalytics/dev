@@ -1,0 +1,108 @@
+{% extends "main/document_services/base_document_services.html" %}
+
+{% block page_title %}My Profile{% endblock %}
+
+{% block content %}
+<div id="profile-view" class="page-view p-8">
+    <div class="max-w-5xl mx-auto">
+        <h2 class="text-xl font-bold text-gray-900 mb-6">My Profile</h2>
+        
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div class="bg-white border border-gray-200 rounded-lg p-6 shadow-sm text-center">
+                <div class="w-24 h-24 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <svg width="48" height="48" fill="currentColor" class="text-blue-600" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd"></path></svg>
+                </div>
+                <h3 class="text-lg font-bold text-gray-900">NDAHIRO George</h3>
+                <p class="text-sm text-gray-500 mb-4">george.ndahiro@example.com</p>
+                <button onclick="showToast('Profile photo upload coming soon!')" class="bg-blue-600 text-white px-4 py-2 rounded text-sm font-semibold hover:bg-blue-700">Change Photo</button>
+            </div>
+
+            <div class="lg:col-span-2 bg-white border border-gray-200 rounded-lg shadow-sm">
+                <div class="border-b border-gray-200 px-6 py-4">
+                    <h3 class="font-bold text-gray-900">Personal Information</h3>
+                </div>
+                <form class="p-6 space-y-4">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-xs font-bold text-gray-500 uppercase mb-2">First Name</label>
+                            <input type="text" value="George" class="form-input">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-gray-500 uppercase mb-2">Last Name</label>
+                            <input type="text" value="Ndahiro" class="form-input">
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-gray-500 uppercase mb-2">National ID Number</label>
+                        <input type="text" value="1198280021732013" class="form-input bg-gray-100" readonly>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-xs font-bold text-gray-500 uppercase mb-2">Email Address</label>
+                            <input type="email" value="george.ndahiro@example.com" class="form-input">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-gray-500 uppercase mb-2">Phone Number</label>
+                            <input type="tel" value="0785072120" class="form-input">
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-xs font-bold text-gray-500 uppercase mb-2">Date of Birth</label>
+                            <input type="date" value="1998-02-28" class="form-input">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-gray-500 uppercase mb-2">Gender</label>
+                            <select class="form-input">
+                                <option selected>Male</option>
+                                <option>Female</option>
+                                <option>Other</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-gray-500 uppercase mb-2">Residential Address</label>
+                        <textarea class="form-input" rows="2">Kigali, Gasabo District, Remera Sector</textarea>
+                    </div>
+                    <div class="flex justify-end space-x-3 pt-4">
+                        <button type="button" onclick="showToast('Changes discarded')" class="bg-gray-100 text-gray-700 px-6 py-2 rounded font-semibold hover:bg-gray-200">Cancel</button>
+                        <button type="button" onclick="showToast('Profile updated successfully!')" class="bg-blue-600 text-white px-6 py-2 rounded font-semibold hover:bg-blue-700">Save & Continue</button>
+                    </div>
+                    <div class="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                        <p class="text-sm text-blue-800"><strong>Next Step:</strong> Complete your profile verification to unlock premium features and faster application processing.</p>
+                        <a href="{% url 'main:document_services_settings' %}" class="mt-2 text-sm text-blue-600 font-semibold hover:underline inline-block">Configure Your Settings →</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <div class="mt-6 bg-white border border-gray-200 rounded-lg shadow-sm">
+            <div class="border-b border-gray-200 px-6 py-4">
+                <h3 class="font-bold text-gray-900">Security Settings</h3>
+            </div>
+            <div class="p-6 space-y-4">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="font-semibold text-gray-900">Password</p>
+                        <p class="text-sm text-gray-500">Last changed 3 months ago</p>
+                    </div>
+                    <button onclick="showToast('Password change form coming soon!')" class="bg-blue-600 text-white px-4 py-2 rounded text-sm font-semibold hover:bg-blue-700">Change Password</button>
+                </div>
+                <div class="flex items-center justify-between pt-4 border-t">
+                    <div>
+                        <p class="font-semibold text-gray-900">Two-Factor Authentication</p>
+                        <p class="text-sm text-gray-500">Add extra security to your account</p>
+                    </div>
+                    <a href="{% url 'main:document_services_settings' %}" class="bg-blue-600 text-white px-4 py-2 rounded text-sm font-semibold hover:bg-blue-700">Enable 2FA</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="mt-6 bg-gradient-to-r from-blue-50 to-purple-50 border border-blue-200 rounded-lg p-6">
+            <h4 class="font-bold text-gray-900 mb-2">🔐 Enhanced Security Available</h4>
+            <p class="text-sm text-gray-600 mb-4">Set up advanced security features to protect your account and sensitive documents.</p>
+            <a href="{% url 'main:document_services_settings' %}" class="inline-block bg-blue-600 text-white px-4 py-2 rounded text-sm font-semibold hover:bg-blue-700">Configure Security Settings →</a>
+        </div>
+    </div>
+</div>
+{% endblock %}
