@@ -317,3 +317,6 @@ def find_attorney(request):
 def attorney_success(request):
 
     return render(request, 'consultations/attorney_success.html')
+
+def contacts(request):
+    return render(request, 'consultations/contacts.html')

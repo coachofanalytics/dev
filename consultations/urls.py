@@ -18,4 +18,5 @@ urlpatterns = [
     path('eligibility/form/', views.eligibility_form, name='eligibility_form'),
     path('find-attorney/', views.find_attorney, name='find_attorney'),
     path('attorney_success/',views.attorney_success, name='attorney_success'),
+    path('contacts/', views.contacts, name='contacts'),
     ]
