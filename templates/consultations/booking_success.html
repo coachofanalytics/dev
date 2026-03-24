@@ -1,0 +1,11 @@
+{% extends "main/base_templates/base.html" %}
+
+{% block content %}
+<div class="container my-5">
+    <div class="alert alert-success text-center">
+        Your consultation appointment has been successfully booked!
+    
+    </div>
+    <a href="{% url 'consultations:book_consultation' %}" class="btn btn-primary">Book Another</a>
+</div>
+{% endblock %}

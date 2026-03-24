@@ -772,7 +772,7 @@ import io
 
 
 @login_required
-def book_consultation(request):
+def book_consultations(request):
 
     consultation, created = Consultation.objects.get_or_create(
         user=request.user,
@@ -828,32 +828,10 @@ def home(request):
 def home(request):
     return render(request, "main/index.html")
 
-from django.shortcuts import render, redirect
-from django.contrib.auth.models import User
-from django.contrib.auth import login
-from django.contrib import messages
-
-
+def start_application(request):
+    return render(request, "main/start_application.html")
 def signup(request):
-
-    if request.method == "POST":
-
-        username = request.POST.get("username")
-        email = request.POST.get("email")
-        password = request.POST.get("password")
-
-        user = User.objects.create_user(
-            username=username,
-            email=email,
-            password=password
-        )
-
-        user.save()
-
-        # automation login
-        login(request, user)
-
-        # redirect to visa application
-        return redirect('visa_applicationform')
-
-    return render(request, "sign_up.html")
+    # your signup logic here
+    return render(request, 'main/signup.html')
+def visa_applicationform(request):
+    return render(request, 'main/visa_applicationform.html')

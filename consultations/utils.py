@@ -49,8 +49,8 @@ def generate_application_pdf(application):
 
     barcode = code128.Code128(
         barcode_value,
-        barHeight=45,
-        barWidth=1.3
+        barHeight=30,
+        barWidth=0.8
     )
     barcode.hAlign = "CENTER"
     elements.append(barcode)
@@ -163,3 +163,29 @@ def generate_application_pdf(application):
     pdf.build(elements)
 
     return file_path
+
+
+#new code for consultations
+# utils.py
+
+from .models import EligibilityRule, CitizenshipPath
+
+def check_eligibility(applicant):
+    try:
+        rule = EligibilityRule.objects.get(country=applicant.country)
+    except EligibilityRule.DoesNotExist:
+        return {"status": "No rules defined for this country", "paths": []}
+
+    if applicant.age < rule.min_age:
+        return {"status": "Not Eligible: Age requirement not met", "paths": []}
+
+    if applicant.years_in_country < rule.min_years_residence:
+        return {"status": "Not Eligible: Not enough years of residence", "paths": []}
+
+    if rule.requires_clean_record and applicant.has_criminal_record:
+        return {"status": "Not Eligible: Criminal record issue", "paths": []}
+
+    # Fetch paths for this country
+    paths = CitizenshipPath.objects.filter(country=applicant.country)
+
+    return {"status": "Eligible", "paths": paths}

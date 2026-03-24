@@ -1,0 +1,51 @@
+{% extends "main/base_templates/base.html" %}
+{% load static %}
+
+{% block content %}
+
+<div class="container mt-5">
+    <div class="col-md-6 mx-auto">
+
+        <h3 class="mb-4 text-center">Request an Attorney</h3>
+
+        {% if messages %}
+            {% for message in messages %}
+                <div class="alert alert-success">{{ message }}</div>
+            {% endfor %}
+        {% endif %}
+
+        <form method="POST">
+            {% csrf_token %}
+
+            <input type="text" name="full_name" placeholder="Full Name"
+                   class="form-control mb-3" required>
+
+            <input type="email" name="email" placeholder="Email"
+                   class="form-control mb-3" required>
+
+            <input type="text" name="phone" placeholder="Phone Number"
+                   class="form-control mb-3">
+
+            <input type="text" name="country" placeholder="Country / Destination"
+                   class="form-control mb-3">
+
+            <select name="issue_type" class="form-control mb-3">
+                <option value="">Select Legal Issue</option>
+                <option value="Immigration">Immigration</option>
+                <option value="Family Law">Family Law</option>
+                <option value="Business Law">Business Law</option>
+            </select>
+
+            <textarea name="description" rows="4"
+                      class="form-control mb-3"
+                      placeholder="Describe your issue..."></textarea>
+
+            <button type="submit" class="btn btn-success w-100">
+                Submit Request
+            </button>
+        </form>
+
+    </div>
+</div>
+
+{% endblock %}

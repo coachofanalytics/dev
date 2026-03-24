@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Consultation Booking PDF</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        h2 { text-align: center; color: #007bff; }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        th, td { border: 1px solid #333; padding: 8px; text-align: left; }
+        th { background-color: #f0f0f0; }
+    </style>
+</head>
+<body>
+    <h2>Consultation Booking Confirmation</h2>
+    <p>Dear {{ consultation.user.first_name }},</p>
+    <p>Your consultation has been successfully booked. Here are the details:</p>
+
+    <table>
+        <tr>
+            <th>Application Number</th>
+            <td>{{ consultation.application_number }}</td>
+        </tr>
+        <tr>
+            <th>Service</th>
+            <td>{{ consultation.service }}</td>
+        </tr>
+        <tr>
+            <th>Mode</th>
+            <td>{{ consultation.mode }}</td>
+        </tr>
+        <tr>
+            <th>Date & Time</th>
+            <td>{{ consultation.date }} {{ consultation.time }}</td>
+        </tr>
+        <tr>
+            <th>Pre-Assessment Country</th>
+            <td>
+                {% if consultation.pre_assessment %}
+                    {{ consultation.pre_assessment.country }}
+                {% else %}
+                    N/A
+                {% endif %}
+            </td>
+        </tr>
+        <tr>
+            <th>Purpose</th>
+            <td>
+                {% if consultation.pre_assessment %}
+                    {{ consultation.pre_assessment.purpose }}
+                {% else %}
+                    N/A
+                {% endif %}
+            </td>
+        </tr>
+    </table>
+    <p>Thank you for choosing our services.</p>
+</body>
+</html>

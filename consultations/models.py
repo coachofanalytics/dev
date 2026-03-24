@@ -10,6 +10,8 @@ from django.shortcuts import render, redirect
 
 
 
+
+
 class consultations(models.Model):
 
     STATUS_CHOICES = [
@@ -150,3 +152,126 @@ class VisaApplication(models.Model):
     travel_doc = models.FileField(upload_to='documents/travel/', null=True, blank=True)
 
     created_at = models.DateTimeField(auto_now_add=True)
+
+
+    #////bookings
+from django.db import models
+from django.conf import settings
+
+
+from django.db import models
+from django.conf import settings
+
+
+from django.db import models
+from django.conf import settings
+
+class Consultation(models.Model):
+    SERVICE_CHOICES = [
+        ('visa', 'Visa Application'),
+        ('work', 'Work Permit'),
+        ('residency', 'Residency'),
+        ('legal', 'Legal Advice'),
+    ]
+
+    MODE_CHOICES = [
+        ('online', 'Online'),
+        ('physical', 'In-person'),
+    ]
+
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name='user_consultations'
+    )
+
+    application_number = models.CharField(max_length=50, unique=True)
+
+    service_type = models.CharField(max_length=20, choices=SERVICE_CHOICES)
+    consultation_mode = models.CharField(max_length=20, choices=MODE_CHOICES)
+    date = models.DateField()
+    time = models.TimeField()
+    status = models.CharField(max_length=20, default='pending')
+
+    def __str__(self):
+        return f"{self.application_number} - {self.service_type}"
+
+from django.db import models
+
+class PreAssessment(models.Model):
+    COUNTRY_CHOICES = [
+        ('canada', 'Canada'),
+        ('usa', 'USA'),
+        ('uk', 'UK'),
+    ]
+
+    PURPOSE_CHOICES = [
+        ('study', 'Study'),
+        ('work', 'Work'),
+        ('tourism', 'Tourism'),
+    ]
+
+    country = models.CharField(max_length=50, choices=COUNTRY_CHOICES)
+    purpose = models.CharField(max_length=20, choices=PURPOSE_CHOICES)
+    rejected_before = models.BooleanField()
+    details = models.TextField(blank=True, null=True)
+
+    created_at = models.DateTimeField(auto_now_add=True)
+    
+
+    def __str__(self):
+        return f"{self.country} - {self.purpose}"
+
+
+
+        #ahaa
+from django.db import models
+
+# Eligibility rules
+class EligibilityRule(models.Model):
+    country = models.CharField(max_length=100)
+    min_age = models.IntegerField(default=18)
+    min_years_residence = models.IntegerField(default=5)
+    requires_clean_record = models.BooleanField(default=True)
+
+    def __str__(self):
+        return self.country
+
+# Applicants
+class Applicant(models.Model):
+    name = models.CharField(max_length=100)
+    age = models.IntegerField()
+    years_in_country = models.IntegerField()
+    has_criminal_record = models.BooleanField(default=False)
+    country = models.CharField(max_length=100)
+
+    def __str__(self):
+        return self.name
+
+# Citizenship paths
+class CitizenshipPath(models.Model):
+    name = models.CharField(max_length=100)
+    description = models.TextField()
+    min_years = models.IntegerField(default=0)
+    requires_investment = models.BooleanField(default=False)
+    country = models.CharField(max_length=100)
+
+    def __str__(self):
+        return f"{self.name} - {self.country}"
+
+        #newcode
+from django.db import models
+from django.conf import settings
+
+class AttorneyRequest(models.Model):
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, null=True, blank=True)
+    full_name = models.CharField(max_length=100)
+    email = models.EmailField()
+    phone = models.CharField(max_length=20)
+    country = models.CharField(max_length=100)
+    issue_type = models.CharField(max_length=100)
+    description = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.full_name} - {self.issue_type}"

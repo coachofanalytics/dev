@@ -1,0 +1,71 @@
+{% extends "main/base_templates/base.html" %}
+
+{% block content %}
+
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+
+            <div class="card shadow-lg border-0 rounded-4">
+                <div class="card-body p-4">
+
+                    <h2 class="text-center text-primary mb-4">
+                        Check Your Citizenship Eligibility
+                    </h2>
+
+                    <form method="POST">
+                        {% csrf_token %}
+
+                        <!-- Styled Form -->
+                        <div class="row">
+                            {% for field in form %}
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label fw-bold">
+                                        {{ field.label }}
+                                    </label>
+                                    {{ field }}
+                                    {% if field.errors %}
+                                        <div class="text-danger small">
+                                            {{ field.errors }}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            {% endfor %}
+                        </div>
+
+                        <!-- Button -->
+                        <div class="text-center mt-3">
+                            <button class="btn btn-primary px-5 py-2 rounded-pill">
+                                🔍 Check Eligibility
+                            </button>
+                        </div>
+
+                    </form>
+
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+<style>
+    .form-control {
+        background-color: #f8f9fa;   /* light gray */
+        border: 1px solid #ced4da;
+        border-radius: 10px;
+        padding: 10px;
+    }
+
+    .form-control:focus {
+        background-color: #ffffff;
+        border-color: #0d6efd;
+        box-shadow: 0 0 6px rgba(13,110,253,0.3);
+    }
+
+    label {
+        color: #333;
+    }
+</style>

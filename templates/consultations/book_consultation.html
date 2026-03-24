@@ -1,0 +1,104 @@
+{% extends "main/base_templates/base.html" %}
+{% load static %}
+
+{% block content %}
+
+<div class="container my-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+
+            <h2 class="mb-4 text-center" style="color: #007bff; font-weight: bold; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; font-size: 2rem;">Book a Consultation</h2>
+
+            <!-- Display messages -->
+            {% if messages %}
+                {% for message in messages %}
+                    <div class="alert alert-success alert-dismissible fade show" role="alert">
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                {% endfor %}
+            {% endif %}
+
+            <div class="card shadow-sm">
+                <div class="card-body">
+
+                    <form method="POST" class="needs-validation" novalidate>
+                        {% csrf_token %}
+                         <div class="mb-3">
+             <label for="application_number" class="form-label">Application Number</label>
+             <input type="text" id="application_number" name="application_number" class="form-control" placeholder="Enter application number" required>
+          <div class="invalid-feedback">
+        Please enter the application number.
+          </div>
+         </div>
+
+                        <div class="mb-3">
+                            <label for="service" class="form-label">Select Service</label>
+                            <select name="service" id="service" class="form-select" required>
+                                <option value="" disabled selected>Select a service</option>
+                                <option value="visa">Visa Application</option>
+                                <option value="work">Work Permit</option>
+                                <option value="residency">Residency</option>
+                                <option value="legal">Legal Advice</option>
+                            </select>
+                            <div class="invalid-feedback">
+                                Please choose a service.
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="mode" class="form-label">Consultation Mode</label>
+                            <select name="mode" id="mode" class="form-select" required>
+                                <option value="" disabled selected>Select a mode</option>
+                                <option value="online">Online</option>
+                                <option value="physical">In-person</option>
+                            </select>
+                            <div class="invalid-feedback">
+                                Please select a mode.
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="date" class="form-label">Date</label>
+                            <input type="date" name="date" id="date" class="form-control" required>
+                            <div class="invalid-feedback">
+                                Please select a date.
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="time" class="form-label">Time</label>
+                            <input type="time" name="time" id="time" class="form-control" required>
+                            <div class="invalid-feedback">
+                                Please select a time.
+                            </div>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary w-100">Book Now</button>
+                    </form>
+
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<script>
+// Example starter JavaScript for disabling form submissions if there are invalid fields
+(function () {
+  'use strict'
+  var forms = document.querySelectorAll('.needs-validation')
+  Array.prototype.slice.call(forms).forEach(function (form) {
+    form.addEventListener('submit', function (event) {
+      if (!form.checkValidity()) {
+        event.preventDefault()
+        event.stopPropagation()
+      }
+      form.classList.add('was-validated')
+    }, false)
+  })
+})();
+</script>
+
+{% endblock %}

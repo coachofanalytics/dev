@@ -1,0 +1,23 @@
+{% extends "main/base_templates/base.html" %}
+
+{% block content %}
+
+<div class="container mt-5">
+    <h2>{{ path_name }}</h2>
+
+    {% if path_name == "Naturalization" %}
+        <p>Requires 5+ years of residence...</p>
+    {% elif path_name == "Citizenship by Marriage" %}
+        <p>Available if married to a citizen...</p>
+    {% elif path_name == "Citizenship by Descent" %}
+        <p>Based on family lineage...</p>
+    {% elif path_name == "Citizenship by Investment" %}
+        <p>Requires financial investment...</p>
+    {% endif %}
+
+    <a href="/contact/" class="btn btn-primary mt-3">
+        Apply / Get Help
+    </a>
+</div>
+
+{% endblock %}

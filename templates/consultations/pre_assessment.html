@@ -1,0 +1,67 @@
+{% extends "main/base_templates/base.html" %}
+{% block content %}
+
+<div class="container my-5">
+    <div class="row justify-content-center">
+        <div class="col-md-7 col-lg-6">
+
+            <!-- Form Heading -->
+            <h2 class="text-center mb-4 fw-bold text-primary">Pre-Assessment Form</h2>
+
+            <!-- Messages -->
+            {% if messages %}
+                {% for message in messages %}
+                    <div class="alert alert-success alert-dismissible fade show" role="alert">
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                {% endfor %}
+            {% endif %}
+
+            <!-- Card Container -->
+            <div class="card shadow-sm border-0 rounded-4">
+                <div class="card-body p-4">
+
+                    <!-- Form -->
+                    <form method="POST" novalidate>
+                        {% csrf_token %}
+
+                        <!-- Country -->
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">Country</label>
+                            {{ form.country }}
+                        </div>
+
+                        <!-- Purpose -->
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">Purpose</label>
+                            {{ form.purpose }}
+                        </div>
+
+                        <!-- Rejected Before -->
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">Rejected Before?</label>
+                            {{ form.rejected_before }}
+                        </div>
+
+                        <!-- Additional Details -->
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold" style="color: #4bc6ff;shadow: 2px 1px 5px rgb(0, 18, 26);">Additional Details</label>
+                            {{ form.details }}
+                        </div>
+
+                        <!-- Submit Button -->
+                        <button type="submit" class="btn btn-primary w-100 py-2 fw-semibold">
+                            Submit Assessment
+                        </button>
+
+                    </form>
+
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+{% endblock %}

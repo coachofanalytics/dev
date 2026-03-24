@@ -1,0 +1,28 @@
+{% extends "main/base_templates/base.html" %}
+{% load static %}
+
+{% block content %}
+<div class="container mt-5">
+    <h2>Your Suggested Citizenship Paths</h2>
+
+    {% if suggestions %}
+        <ul class="list-group">
+            {% for s in suggestions %}
+                <li class="list-group-item">
+                    {{ s }}
+                    <a href="{% url 'consultations:path_detail' s %}" class="btn btn-sm btn-success float-end">
+                        View Details
+                    </a>
+                </li>
+            {% endfor %}
+        </ul>
+    {% else %}
+        <p>No clear path found. Please consult an expert.</p>
+    {% endif %}
+
+    <a href="/contact/" class="btn btn-danger mt-3">
+        Talk to an Expert
+    </a>
+</div>
+
+{% endblock %}

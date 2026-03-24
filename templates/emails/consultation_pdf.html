@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Consultation Booking Confirmation</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            font-size: 14px;
+            line-height: 1.6;
+            margin: 20px;
+        }
+        h2 {
+            text-align: center;
+            color: #007bff;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        th, td {
+            border: 1px solid #333;
+            padding: 8px 12px;
+            text-align: left;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+        .header, .footer {
+            text-align: center;
+            margin-top: 20px;
+            font-size: 12px;
+            color: #555;
+        }
+    </style>
+</head>
+<body>
+
+    <h2>Consultation Booking Confirmation</h2>
+
+    <p>Hello {{ user.first_name }},</p>
+    <p>Your consultation has been successfully booked. Below are the details:</p>
+
+    <table>
+        <tr>
+            <th>Application Number</th>
+            <td>{{ consultation.application_number }}</td>
+        </tr>
+        <tr>
+            <th>Service</th>
+            <td>{{ consultation.service_type }}</td>
+        </tr>
+        <tr>
+            <th>Mode</th>
+            <td>{{ consultation.consultation_mode }}</td>
+        </tr>
+        <tr>
+            <th>Date</th>
+            <td>{{ consultation.date }}</td>
+        </tr>
+        <tr>
+            <th>Time</th>
+            <td>{{ consultation.time }}</td>
+        </tr>
+        {% if consultation.pre_assessment %}
+        <tr>
+            <th>Pre-Assessment Country</th>
+            <td>{{ consultation.pre_assessment.country }}</td>
+        </tr>
+        <tr>
+            <th>Pre-Assessment Purpose</th>
+            <td>{{ consultation.pre_assessment.purpose }}</td>
+        </tr>
+        <tr>
+            <th>Previously Rejected</th>
+            <td>{{ consultation.pre_assessment.rejected_before|yesno:"Yes,No" }}</td>
+        </tr>
+        <tr>
+            <th>Details</th>
+            <td>{{ consultation.pre_assessment.details|default:"N/A" }}</td>
+        </tr>
+        {% else %}
+        <tr>
+            <th colspan="2">No Pre-Assessment Data</th>
+        </tr>
+        {% endif %}
+    </table>
+
+    <div class="footer">
+        <p>Thank you for choosing our services.</p>
+        <p>Visa Assistance Team</p>
+    </div>
+
+</body>
+</html>

@@ -16,7 +16,7 @@ def login(request):
 
 
 from django.shortcuts import render, redirect
-from .models import Signup
+from .models import Consultation, Signup
 from django.contrib import messages
 
     
@@ -164,3 +164,156 @@ def login_view(request):
             })
 
     return render(request, "consultations/login.html")
+
+
+    #new code
+
+from django.shortcuts import render, redirect
+from django.contrib import messages
+from .models import Consultation
+
+from django.shortcuts import render, redirect
+from django.contrib import messages
+from django.contrib.auth.decorators import login_required
+from django.core.mail import EmailMessage
+from django.template.loader import render_to_string
+from io import BytesIO
+from weasyprint import HTML
+
+from .models import Consultation
+
+@login_required
+def book_consultation(request):
+    if request.method == 'POST':
+        application_number = request.POST.get('application_number')
+        service = request.POST.get('service')
+        mode = request.POST.get('mode')
+        date = request.POST.get('date')
+        time = request.POST.get('time')
+
+        # === Save Consultation Booking ===
+        consultation = Consultation.objects.create(
+            user=request.user,
+            application_number=application_number,
+            service_type=service,
+            consultation_mode=mode,
+            date=date,
+            time=time,
+            status='pending'
+        )
+
+        # === Generate PDF Confirmation ===
+        html_string = render_to_string('emails/consultation_pdf.html', {
+            'consultation': consultation,
+            'user': request.user
+        })
+        pdf_file = BytesIO()
+        HTML(string=html_string).write_pdf(pdf_file)
+        pdf_file.seek(0)
+
+        # === Send Email with PDF Attachment ===
+        subject = 'Consultation Booking Confirmation'
+        email = EmailMessage(
+            subject,
+            f"Hello {request.user.first_name},\n\nYour consultation booking details are attached as a PDF.\n\nThank you!",
+            None,  # uses DEFAULT_FROM_EMAIL
+            [request.user.email]
+        )
+        email.attach(f'Consultation_{consultation.application_number}.pdf', pdf_file.read(), 'application/pdf')
+        email.send()
+
+        # === Show success message ===
+        messages.success(request, "Your consultation has been booked successfully! A confirmation email with PDF has been sent.")
+        return redirect('consultations:booking_success')
+
+    return render(request, 'consultations/book_consultation.html')
+def booking_success(request):
+    return render(request, 'consultations/booking_success.html')
+from django.shortcuts import render, redirect
+from .forms import PreAssessmentForm
+
+from django.shortcuts import render, redirect
+from django.contrib import messages
+from .forms import PreAssessmentForm
+
+def pre_assessment(request):
+    if request.method == 'POST':
+        form = PreAssessmentForm(request.POST)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Pre-assessment submitted successfully!")
+            return redirect('consultations:book_consultation')  # FIXED
+    else:
+        form = PreAssessmentForm()
+
+    return render(request, 'consultations/pre_assessment.html', {'form': form})
+
+#new code
+from django.shortcuts import render
+from .forms import EligibilityForm
+
+def eligibility_check(request):
+    if request.method == 'POST':
+        form = EligibilityForm(request.POST)
+        if form.is_valid():
+            data = form.cleaned_data
+
+            suggestions = []
+
+            # LOGIC RULES
+            if data['years_of_residence'] >= 5:
+                suggestions.append("Naturalization")
+
+            if data['married_to_citizen'] == 'yes':
+                suggestions.append("Citizenship by Marriage")
+
+            if data['has_ancestry'] == 'yes':
+                suggestions.append("Citizenship by Descent")
+
+            if data.get('investment_budget') and data['investment_budget'] >= 100000:
+                suggestions.append("Citizenship by Investment")
+
+            return render(request, 'consultations/results.html', {
+                'suggestions': suggestions,
+                'data': data
+            })
+
+    else:
+        form = EligibilityForm()
+
+    return render(request, 'consultations/eligibility_form.html', {'form': form})
+
+
+def path_detail(request, path_name):
+    return render(request, 'consultations/path_detail.html', {
+        'path_name': path_name
+    })
+def eligibility_form(request):
+    form = EligibilityForm()
+    return render(request, 'consultations/eligibility_form.html', {'form': form})
+
+#newcode
+from django.shortcuts import render, redirect
+from django.contrib import messages
+from .models import AttorneyRequest
+
+def find_attorney(request):
+    if request.method == 'POST':
+        AttorneyRequest.objects.create(
+            user=request.user if request.user.is_authenticated else None,
+            full_name=request.POST.get('full_name'),
+            email=request.POST.get('email'),
+            phone=request.POST.get('phone'),
+            country=request.POST.get('country'),
+            issue_type=request.POST.get('issue_type'),
+            description=request.POST.get('description'),
+        )
+
+        messages.success(request, "Your request has been submitted successfully!")
+        return redirect('consultations:attorney_success')
+
+    return render(request, 'consultations/find_attorney.html')
+
+def attorney_success(request):
+
+    return render(request, 'consultations/attorney_success.html')
