@@ -48,6 +48,12 @@ def finance_report(request):
     return render(request, "finance/reports/finance.html", {"title": "Finance"})
 
 
+# ===================== SOLUTIONS PAGE =====================
+def solutions(request):
+    """Display detailed banking and investment solutions"""
+    return render(request, "finance/solutions.html", {"title": "Solutions"})
+
+
 # ===================== CONTRACT FORM SUBMISSION =====================
 def contract_form_submission(request):
     try:

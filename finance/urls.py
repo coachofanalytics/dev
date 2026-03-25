@@ -13,6 +13,7 @@ app_name = 'finance'
 urlpatterns = [
     #=============================FINANCES=====================================
     path('', views.homepage, name='homepage'),
+    path('solutions/', views.solutions, name='solutions'),
     path('directory/', views.finance_directory, name='directory'),
     path('moderation/', views.moderation_queue, name='moderation_queue'),
     path('approve/<int:pk>/', views.approve_opportunity, name ='approve_opportunity'),
