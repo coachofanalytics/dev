@@ -74,7 +74,7 @@ urlpatterns = [
     path('find-doctors/', main_views.find_doctors, name='find_doctors'),
 
 
-    path('', include("news.urls", namespace ="news")),
+    path('', include('main.news_urls', namespace='news')),
     path('', include("main.urls", namespace="main")),
     path('member/', include('memberjoin.urls')),
     path("accounts/", include("accounts.urls", namespace="accounts")),
