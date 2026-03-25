@@ -1,1 +1,0 @@
-"""memberjoin.views test package"""

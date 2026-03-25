@@ -16,11 +16,15 @@ urlpatterns = [
     path('healthcare/insurance-support/download-csv/', views.download_comparison_csv, name='download_comparison_csv'),
 
     path('consular-assistance/', views.consular_assistance, name='consular_assistance'),
+    path('consular-assistance/book-consultation/', views.book_consular_consultation, name='book_consular_consultation'),
 
     path('data/consular/information-updates/', views.consular_information_updates, name='consular_information_updates'),
     # path('gallery/', views.gallery_list, name='gallery_list'),
-    path('news/', views.news_list, name='news_list'),
+    path('news/add/', views.news_create, name='news_create'),
+    path('news/<int:id>/edit/', views.news_edit, name='news_edit'),
+    path('news/<int:id>/delete/', views.news_delete, name='news_delete'),
     path('news/<int:id>/', views.news_detail, name='news_detail'),
+    path('news/', views.news_list, name='news_list'),
     # Document Services - frontend-only routes
     path('document-services/', views.document_services_dashboard, name='document_services_dashboard'),
     path('document-services/drafts/', views.document_services_drafts, name='document_services_drafts'),

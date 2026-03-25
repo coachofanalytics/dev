@@ -331,21 +331,22 @@ def consular_information_updates(request):
     return render(request, 'main/consular/information_updates.html', context)
 
 
-def consular_information_updates(request):
+def book_consular_consultation(request):
     """
-    Render the Consular Assistance → Information and Updates page.
-    Follows the project's page/description pattern if available.
+    Render the Book a Consultation page for consular assistance.
+    Allows users to request a consultation on legal matters, documentation, property issues, etc.
+    Reuses the ExpertInquiry model for storing consultation requests.
     """
     # Ensure a Page exists for this content (keeps behavior consistent with other pages)
-    page_instance, _ = Page.objects.get_or_create(page_name='Consular - Information and Updates')
+    page_instance, _ = Page.objects.get_or_create(page_name='Consular - Book Consultation')
     description = Description.objects.filter(page=page_instance)
 
     context = {
         'description': description,
-        'title': 'Information and Updates',
+        'title': 'Book a Consultation',
     }
 
-    return render(request, 'main/consular/information_updates.html', context)
+    return render(request, 'main/consular/book_consultation.html', context)
 
 
 def healthcare_info(request):
@@ -417,14 +418,192 @@ def healthcare_info(request):
 
 
 def news_list(request):
-    news_list = News.objects.all()
-    print('info=============',news_list)
-    return render(request, 'main/snippets_templates/table/news.html', {'news_list': news_list})
+    """Display news items with category filtering"""
+    category = request.GET.get('category', '')
+    
+    # Get all active news
+    news_queryset = News.objects.filter(is_active=True)
+    
+    # Filter by category if provided
+    if category and category in dict(News.CATEGORY_CHOICES):
+        news_queryset = news_queryset.filter(category=category)
+    
+    # Featured news first, then by date
+    featured_news = news_queryset.filter(is_featured=True)
+    other_news = news_queryset.filter(is_featured=False)
+    
+    context = {
+        'featured_news': featured_news,
+        'news_list': other_news,
+        'all_news': list(featured_news) + list(other_news),
+        'category': category,
+        'category_name': dict(News.CATEGORY_CHOICES).get(category, 'All News'),
+        'categories': News.CATEGORY_CHOICES,
+        'title': dict(News.CATEGORY_CHOICES).get(category, 'All News'),
+    }
+    return render(request, 'main/news/news_list.html', context)
 
 
 def news_detail(request, id):
+    """Display full news article"""
+    news = get_object_or_404(News, id=id, is_active=True)
+    
+    # Get related news from same category
+    related_news = News.objects.filter(
+        category=news.category, 
+        is_active=True
+    ).exclude(id=id)[:3]
+    
+    context = {
+        'news': news,
+        'related_news': related_news,
+        'title': news.title,
+    }
+    return render(request, 'main/news/news_detail.html', context)
+
+
+def news_create(request):
+    """Create a new news item"""
+    if request.method == 'POST':
+        form_data = {
+            'title': request.POST.get('title'),
+            'content': request.POST.get('content'),
+            'category': request.POST.get('category'),
+            'excerpt': request.POST.get('excerpt'),
+            'author': request.POST.get('author', 'DC48K News Team'),
+            'link': request.POST.get('link'),
+            'is_event': request.POST.get('is_event') == 'on',
+            'is_featured': request.POST.get('is_featured') == 'on',
+        }
+        
+        # Validation
+        errors = {}
+        if not form_data['title']:
+            errors['title'] = 'Title is required'
+        if not form_data['content']:
+            errors['content'] = 'Content is required'
+        if not form_data['category']:
+            errors['category'] = 'Category is required'
+        
+        if errors:
+            context = {
+                'form_data': form_data,
+                'errors': errors,
+                'categories': News.CATEGORY_CHOICES,
+                'title': 'Add News',
+            }
+            return render(request, 'main/news/news_form.html', context, status=400)
+        
+        # Create news item
+        news = News.objects.create(**form_data)
+        
+        # Handle image upload
+        if request.FILES.get('image'):
+            news.image = request.FILES['image']
+            news.save()
+        
+        return redirect('main:news_detail', id=news.id)
+    
+    context = {
+        'form_data': {
+            'title': '',
+            'content': '',
+            'category': '',
+            'excerpt': '',
+            'author': 'DC48K News Team',
+            'link': '',
+            'is_event': False,
+            'is_featured': False,
+        },
+        'categories': News.CATEGORY_CHOICES,
+        'title': 'Add News',
+        'action': 'Create',
+    }
+    return render(request, 'main/news/news_form.html', context)
+
+
+def news_edit(request, id):
+    """Edit a news item"""
     news = get_object_or_404(News, id=id)
-    return render(request, 'main/snippets_templates/table/news_detail.html', {'news': news})
+    
+    if request.method == 'POST':
+        form_data = {
+            'title': request.POST.get('title'),
+            'content': request.POST.get('content'),
+            'category': request.POST.get('category'),
+            'excerpt': request.POST.get('excerpt'),
+            'author': request.POST.get('author'),
+            'link': request.POST.get('link'),
+            'is_event': request.POST.get('is_event') == 'on',
+            'is_featured': request.POST.get('is_featured') == 'on',
+        }
+        
+        # Validation
+        errors = {}
+        if not form_data['title']:
+            errors['title'] = 'Title is required'
+        if not form_data['content']:
+            errors['content'] = 'Content is required'
+        if not form_data['category']:
+            errors['category'] = 'Category is required'
+        
+        if errors:
+            context = {
+                'news': news,
+                'form_data': form_data,
+                'errors': errors,
+                'categories': News.CATEGORY_CHOICES,
+                'title': f'Edit: {news.title}',
+                'action': 'Edit',
+            }
+            return render(request, 'main/news/news_form.html', context, status=400)
+        
+        # Update news item
+        for key, value in form_data.items():
+            setattr(news, key, value)
+        
+        # Handle image upload
+        if request.FILES.get('image'):
+            news.image = request.FILES['image']
+        
+        news.save()
+        
+        return redirect('main:news_detail', id=news.id)
+    
+    context = {
+        'news': news,
+        'form_data': {
+            'title': news.title,
+            'content': news.content,
+            'category': news.category,
+            'excerpt': news.excerpt,
+            'author': news.author,
+            'link': news.link,
+            'is_event': news.is_event,
+            'is_featured': news.is_featured,
+        },
+        'categories': News.CATEGORY_CHOICES,
+        'title': f'Edit: {news.title}',
+        'action': 'Edit',
+    }
+    return render(request, 'main/news/news_form.html', context)
+
+
+def news_delete(request, id):
+    """Delete a news item (soft delete by marking inactive)"""
+    news = get_object_or_404(News, id=id)
+    
+    if request.method == 'POST':
+        news.is_active = False
+        news.save()
+        category = request.POST.get('category', news.category)
+        return redirect('main:news_list', category=category)
+    
+    context = {
+        'news': news,
+        'title': 'Delete News',
+    }
+    return render(request, 'main/news/news_delete_confirm.html', context)
 
 
 def contact_us_list(request):
@@ -1498,16 +1677,31 @@ def generate_recommendation_text(age, residence, priority, plan):
 @require_POST
 def submit_expert_inquiry(request):
     """Handle expert consultation form submissions"""
+    if request.method != 'POST':
+        return JsonResponse({'success': False, 'error': 'Only POST requests are allowed'}, status=405)
+    
     try:
         data = json.loads(request.body)
         
+        # Validate required fields
+        required_fields = ['full_name', 'email', 'phone', 'question']
+        for field in required_fields:
+            if not data.get(field):
+                return JsonResponse({'success': False, 'error': f'{field} is required'}, status=400)
+        
         # Create new inquiry
         inquiry = ExpertInquiry.objects.create(
-            full_name=data.get('full_name'),
-            email=data.get('email'),
-            phone=data.get('phone', ''),
-            question=data.get('question'),
-            interested_plan_id=data.get('plan_id') if data.get('plan_id') else None
+            full_name=data.get('full_name').strip() if data.get('full_name') else '',
+            email=data.get('email').strip() if data.get('email') else '',
+            phone=str(data.get('phone', '')).strip()[:20],  # Limit to 20 chars
+            question=data.get('question').strip() if data.get('question') else '',
+            interested_plan_id=data.get('plan_id') if data.get('plan_id') else None,
+            # Consultation-specific fields
+            consultation_type=data.get('consultation_type'),
+            preferred_language=data.get('preferred_language'),
+            location=data.get('location'),
+            urgency=data.get('urgency'),
+            additional_notes=data.get('additional_notes')
         )
         
         # TODO: Send email notification to admin
@@ -1518,10 +1712,12 @@ def submit_expert_inquiry(request):
             'message': 'Your request has been submitted successfully. An expert will contact you within 24 hours.'
         })
         
-    except json.JSONDecodeError:
-        return JsonResponse({'success': False, 'error': 'Invalid JSON'}, status=400)
+    except json.JSONDecodeError as e:
+        return JsonResponse({'success': False, 'error': f'Invalid JSON: {str(e)}'}, status=400)
     except Exception as e:
-        return JsonResponse({'success': False, 'error': str(e)}, status=500)
+        import traceback
+        traceback.print_exc()  # Print to server logs
+        return JsonResponse({'success': False, 'error': f'Server error: {str(e)}'}, status=500)
 
 
 def download_comparison_csv(request):

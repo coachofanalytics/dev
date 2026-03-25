@@ -101,15 +101,37 @@ class SubService(models.Model):
 
 
 class News(models.Model):
+    CATEGORY_CHOICES = [
+        ('press', 'Press Release'),
+        ('embassy', 'Embassy & Government News'),
+        ('community', 'Community Update'),
+        ('other', 'Other News'),
+    ]
+    
     title = models.CharField(max_length=200)
     content = models.TextField()
+    category = models.CharField(max_length=50, choices=CATEGORY_CHOICES, default='other')
     link = models.URLField(null=True, blank=True)
-    published_date = models.DateField()
+    published_date = models.DateField(auto_now_add=True)
+    updated_date = models.DateField(auto_now=True)
     is_event = models.BooleanField(default=False)
     image = models.ImageField(upload_to="news_images/", blank=True, null=True)
+    author = models.CharField(max_length=150, default='DC48K News Team')
+    excerpt = models.TextField(max_length=500, blank=True, null=True, help_text="Short summary for news lists")
+    is_featured = models.BooleanField(default=False, help_text="Show at top of news list")
+    is_active = models.BooleanField(default=True)
+
+    class Meta:
+        ordering = ['-published_date']
+        verbose_name = 'News Item'
+        verbose_name_plural = 'News Items'
 
     def __str__(self):
-        return self.title
+        return f"{self.title} ({self.get_category_display()})"
+    
+    def get_excerpt(self):
+        """Return excerpt or first 150 chars of content"""
+        return self.excerpt or self.content[:150] + '...'
 
 
 class Team(models.Model):
@@ -727,6 +749,28 @@ class AIRecommendationRule(models.Model):
 
 class ExpertInquiry(models.Model):
     """Store expert consultation requests from the modal form"""
+    CONSULTATION_TYPES = [
+        ('Legal & Immigration', 'Legal & Immigration'),
+        ('Documentation', 'Documentation'),
+        ('Property & Estate', 'Property & Estate'),
+        ('Other', 'Other'),
+    ]
+    
+    LANGUAGE_CHOICES = [
+        ('English', 'English'),
+        ('Swahili', 'Swahili'),
+        ('French', 'French'),
+        ('Spanish', 'Spanish'),
+        ('Other', 'Other'),
+    ]
+    
+    URGENCY_CHOICES = [
+        ('Not Urgent', 'Not Urgent'),
+        ('Moderately Urgent', 'Moderately Urgent (within 3-5 days)'),
+        ('Very Urgent', 'Very Urgent (within 24-48 hours)'),
+        ('Emergency', 'Emergency (immediate assistance needed)'),
+    ]
+    
     full_name = models.CharField(max_length=200)
     email = models.EmailField()
     phone = models.CharField(max_length=20, blank=True, null=True)
@@ -736,7 +780,13 @@ class ExpertInquiry(models.Model):
     notes = models.TextField(blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-
+    
+    # Consultation-specific fields
+    consultation_type = models.CharField(max_length=50, choices=CONSULTATION_TYPES, blank=True, null=True)
+    preferred_language = models.CharField(max_length=50, choices=LANGUAGE_CHOICES, blank=True, null=True)
+    location = models.CharField(max_length=200, blank=True, null=True, help_text="Client's location/country")
+    urgency = models.CharField(max_length=50, choices=URGENCY_CHOICES, blank=True, null=True)
+    additional_notes = models.TextField(blank=True, null=True)
 
      # ============= NEW FIELDS FOR SLA TRACKING =============
     first_response_time = models.DateTimeField(null=True, blank=True, help_text="When this inquiry was first responded to")

@@ -1,1 +1,0 @@
-"""memberjoin forms tests package"""

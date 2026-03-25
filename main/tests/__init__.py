@@ -1,1 +1,1 @@
-"""Test package for main app tests."""
+# Test module for main app
