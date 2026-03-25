@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Create Training</title>
+
+    <style>
+        body {
+            font-family: "Segoe UI", Arial;
+            background: #f4f6f9;
+            margin: 0;
+        }
+
+        /* 🔷 NAVBAR */
+        .navbar {
+            background: #1f2937;
+            color: white;
+            padding: 15px 25px;
+            font-size: 20px;
+            font-weight: 600;
+        }
+
+        .container {
+            padding: 30px;
+            max-width: 700px;
+            margin: auto;
+        }
+
+        /* 📦 FORM CARD */
+        .card {
+            background: white;
+            padding: 25px;
+            border-radius: 10px;
+            box-shadow: 0px 4px 12px rgba(0,0,0,0.08);
+        }
+
+        h2 {
+            margin-bottom: 20px;
+        }
+
+        /* INPUTS */
+        input, select, textarea {
+            width: 100%;
+            padding: 10px;
+            margin-top: 5px;
+            margin-bottom: 15px;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            font-size: 14px;
+        }
+
+        label {
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        /* BUTTONS */
+        .btn {
+            padding: 10px 15px;
+            border: none;
+            border-radius: 6px;
+            font-size: 14px;
+            cursor: pointer;
+        }
+
+        .btn-primary {
+            background: #2563eb;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #1d4ed8;
+        }
+
+        .btn-secondary {
+            background: #e5e7eb;
+            color: #111827;
+            text-decoration: none;
+            padding: 10px 15px;
+            border-radius: 6px;
+        }
+
+        .actions {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="navbar">
+    Create Training
+</div>
+
+<div class="container">
+
+    <div class="card">
+        <h2>Add New Training</h2>
+
+        <form method="post">
+            {% csrf_token %}
+
+            {{ form.as_p }}
+
+            <div class="actions">
+                <a href="{% url 'main:training_list' %}" class="btn-secondary">Cancel</a>
+                <button type="submit" class="btn btn-primary">Save Training</button>
+            </div>
+        </form>
+
+    </div>
+
+</div>
+
+</body>
+</html>

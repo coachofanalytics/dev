@@ -316,6 +316,15 @@ def training_list(request):
     trainings = Training.objects.all().order_by('-created_date')
     return render(request, 'main/training_list.html', {'trainings': trainings})
 
+def training_create(request):
+    form = TrainingForm(request.POST or None)
+    
+    if form.is_valid():
+        form.save()
+        return redirect('main:training_list')
+    
+    return render(request, 'main/training_create.html', {'form': form})
+
 
 
 
