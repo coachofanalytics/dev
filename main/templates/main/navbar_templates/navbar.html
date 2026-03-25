@@ -128,12 +128,12 @@
                             </div>
                         </div>
                 
-                        <!-- Document Services -->
+                        <!-- Document Services (integrated frontend routes) -->
                         <div class="sub-dropdown">
-                            <a href="https://dc48k.org/">Document Services</a>
+                            <a href="{% url 'main:document_services_dashboard' %}">Document Services</a>
                             <div class="sub-dropdown-content">
-                                <a href="#">Issuance of Certificates</a>
-                                <a href="#">Document Legalization and Authentication</a>
+                                <a href="{% url 'main:document_services_documents' %}">Issuance of Certificates</a>
+                                <a href="{% url 'main:document_services_documents' %}">Document Legalization and Authentication</a>
                             </div>
                         </div>
                 

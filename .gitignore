@@ -138,6 +138,7 @@ env.bak/
 venv.bak/
 node_modules/
 
+
 # Spyder project settings
 .spyderproject
 .spyproject
@@ -173,3 +174,6 @@ token.json
 *.secret
 .env
 credentials*.json
+
+#reports
+main/BackendTests/reports/
