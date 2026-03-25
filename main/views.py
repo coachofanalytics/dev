@@ -325,6 +325,17 @@ def training_create(request):
     
     return render(request, 'main/training_create.html', {'form': form})
 
+def training_update(request, pk):
+    training = get_object_or_404(Training, pk=pk)
+    form = TrainingForm(request.POST or None, instance=training)
+
+    if form.is_valid():
+        form.save()
+        return redirect('main:training_list')
+
+    return render(request, 'main/training_update.html', {'form': form})
+
+
 
 
 
