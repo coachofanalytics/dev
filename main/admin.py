@@ -232,3 +232,19 @@ class AIRecommendationRuleAdmin(admin.ModelAdmin):
     list_display = ['age_bracket', 'residence', 'priority', 'recommended_plan', 'is_active']
     list_filter = ['age_bracket', 'residence', 'priority', 'is_active']
     search_fields = ['recommendation_text']
+
+@admin.register(Category)
+class CategoryAdmin(admin.ModelAdmin):
+    list_display = ('name', 'slug', 'created_at')
+
+@admin.register(NewsArticle)
+class NewsArticleAdmin(admin.ModelAdmin):
+    list_display = ('title', 'category', 'status', 'created_at')
+    list_filter = ('status', 'category')
+    search_fields = ('title', 'content')
+
+@admin.register(Subscriber)
+class SubscriberAdmin(admin.ModelAdmin):
+    list_display = ('email', 'confirmed', 'subscribed_at')
+    list_filter = ('confirmed',)
+    search_fields = ('email',)

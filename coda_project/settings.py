@@ -63,7 +63,6 @@ INSTALLED_APPS = [
     "allauth.socialaccount.providers.facebook",
     "django_crontab",
     'memberjoin',
-    'news',
     'cloudinary',
     'cloudinary_storage',
     'communities',

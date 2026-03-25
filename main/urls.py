@@ -1,4 +1,4 @@
-from django.urls import path
+from django.urls import path, include
 from main.views import AboutView
 from . import views
 # from .utils import convert_html_to_pdf
@@ -93,4 +93,6 @@ urlpatterns = [
     path('quick-add-user/', views.quick_add_user, name='quick_add_user'),
     # In your app's urls.py
     path('test-user-endpoint/', views.test_user_endpoint, name='test_user_endpoint'),
-]    
+]
+
+    

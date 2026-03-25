@@ -4,10 +4,8 @@ from django.utils import timezone
 from .models import AppointmentRequest
 # Feedback / Contact Form
 
-from django.contrib.auth.models import User
 from .models import (
-    Feedback, Donation_organisation, Donation_organization, 
-    ContactMessage, Scholarship, Governance  # ← Add Governance here
+    ContactMessage, Scholarship, Governance, NewsArticle  # ← Add Governance here
 )
 
 class GovernanceForm(forms.ModelForm):
@@ -265,3 +263,16 @@ class AppointmentRequestForm(forms.ModelForm):
 
 
 
+
+class ArticleForm(forms.ModelForm):
+    class Meta:
+        model = NewsArticle
+        fields = [
+            'category', 'title', 'slug', 'author',
+            'featured_image', 'content', 'ai_summary',
+            'is_breaking', 'status', 'views'
+        ]
+        widgets = {
+            'content': forms.Textarea(attrs={'rows': 10}),
+            'ai_summary': forms.Textarea(attrs={'rows': 3}),
+        }
