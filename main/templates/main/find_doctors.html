@@ -67,6 +67,22 @@
     .page-btn.disabled { opacity: .4; cursor: not-allowed; pointer-events: none; }
     .page-ellipsis { color: #94a3b8; padding: .45rem .3rem; }
 
+    /* ============ BREADCRUMB ============ */
+    .breadcrumb-nav { background: #f0f9ff; border-bottom: 1px solid #bfdbfe; padding: 1.25rem 0; margin: 2rem 0; position: relative; z-index: 5; }
+    .breadcrumb-container { max-width: 1200px; margin: 0 auto; padding: 0 1.5rem; }
+    .breadcrumb-list { display: flex; align-items: center; gap: 1rem; list-style: none; margin: 0; padding: 0.5rem 0; flex-wrap: wrap; justify-content: flex-start; }
+    .breadcrumb-item { display: flex; align-items: center; gap: 0.5rem; }
+    .breadcrumb-item a { color: #2563eb; text-decoration: none; font-weight: 600; font-size: .95rem; transition: color .2s; display: flex; align-items: center; gap: 0.35rem; }
+    .breadcrumb-item a:hover { color: #1e40af; text-decoration: underline; }
+    .breadcrumb-item.active { color: #1a3a2a; font-weight: 700; font-size: .95rem; display: flex; align-items: center; gap: 0.35rem; }
+    .breadcrumb-item.completed a { color: #16a34a; }
+    .breadcrumb-item.completed a:hover { color: #15803d; }
+    .breadcrumb-separator { color: #94a3b8; font-weight: 600; margin: 0 0.25rem; }
+    .breadcrumb-badge { display: inline-flex; align-items: center; justify-content: center; width: 24px; height: 24px; border-radius: 50%; font-size: .75rem; font-weight: 700; flex-shrink: 0; min-width: 24px; }
+    .breadcrumb-item.active .breadcrumb-badge { background: #2563eb; color: #fff; }
+    .breadcrumb-item.completed .breadcrumb-badge { background: #16a34a; color: #fff; }
+    @media (max-width: 768px) { .breadcrumb-list { gap: 0.5rem; font-size: 0.85rem; } .breadcrumb-badge { width: 20px; height: 20px; font-size: 0.7rem; } .breadcrumb-item a, .breadcrumb-item.active { font-size: 0.85rem; } }
+    
     /* ============ EMPTY STATE ============ */
     .empty-state { text-align: center; padding: 3rem 1rem; color: #64748b; grid-column: 1/-1; }
     .empty-state h3 { font-size: 1.2rem; margin-bottom: .5rem; color: #374151; }
@@ -147,6 +163,27 @@
         <button type="submit" class="btn-search">Search Now</button>
     </form>
 </section>
+
+<!-- ===== BREADCRUMB NAVIGATION ===== -->
+<nav class="breadcrumb-nav" aria-label="Healthcare progress steps">
+    <div class="breadcrumb-container">
+        <ul class="breadcrumb-list">
+            <li class="breadcrumb-item active">
+                <span class="breadcrumb-badge">1</span>
+                <span>Find Doctors</span>
+            </li>
+            <li class="breadcrumb-item">
+                <span class="breadcrumb-separator">→</span>
+            </li>
+            <li class="breadcrumb-item">
+                <a href="{% url 'main:insurance_support' %}">
+                    <span class="breadcrumb-badge">2</span>
+                    <span>Insurance Support</span>
+                </a>
+            </li>
+        </ul>
+    </div>
+</nav>
 
 <!-- ===== MAIN CONTENT ===== -->
 <div class="main">

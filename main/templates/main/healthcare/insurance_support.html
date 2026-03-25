@@ -14,7 +14,28 @@
     </div>
 </header>
 
-<main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 -mt-10 pb-20">
+<!-- ===== BREADCRUMB NAVIGATION ===== -->
+<nav class="breadcrumb-nav" aria-label="Healthcare progress steps">
+    <div class="breadcrumb-container">
+        <ul class="breadcrumb-list">
+            <li class="breadcrumb-item completed">
+                <a href="{% url 'main:find_doctors' %}">
+                    <span class="breadcrumb-badge">✓</span>
+                    <span>Find Doctors</span>
+                </a>
+            </li>
+            <li class="breadcrumb-item">
+                <span class="breadcrumb-separator">→</span>
+            </li>
+            <li class="breadcrumb-item active">
+                <span class="breadcrumb-badge">2</span>
+                <span>Insurance Support</span>
+            </li>
+        </ul>
+    </div>
+</nav>
+
+<main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-20">
     
     <!-- AI Analyzer Section -->
     <section class="bg-white rounded-3xl shadow-2xl overflow-hidden mb-12 border border-gray-100 relative">

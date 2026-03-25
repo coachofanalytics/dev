@@ -104,11 +104,62 @@ def medical_resource_form(request):
     if request.method == 'POST':
         name = request.POST.get('name')
         email = request.POST.get('email')
+        phone = request.POST.get('phone', '')
+        location = request.POST.get('location', '')
+        service_type = request.POST.get('service_type', '')
         message = request.POST.get('message')
-        MedicalResourceInquiry.objects.create(name=name, email=email, message=message)
+        
+        # Validation
+        errors = {}
+        if not name:
+            errors['name'] = 'Name is required'
+        if not email:
+            errors['email'] = 'Email is required'
+        if not message:
+            errors['message'] = 'Inquiry details are required'
+        
+        if errors:
+            context = {
+                'form_data': {
+                    'name': name,
+                    'email': email,
+                    'phone': phone,
+                    'location': location,
+                    'service_type': service_type,
+                    'message': message,
+                },
+                'errors': errors,
+                'title': 'Medical Resource Inquiry',
+            }
+            return render(request, 'main/data/medical_resource_form.html', context, status=400)
+        
+        # Build message with additional info
+        full_message = f"Service Type: {service_type}\nLocation: {location}\nPhone: {phone}\n\n{message}"
+        if phone or location or service_type:
+            full_message = f"Service Type: {service_type}\nLocation: {location}\nPhone: {phone}\n\n{message}"
+        else:
+            full_message = message
+        
+        MedicalResourceInquiry.objects.create(
+            name=name, 
+            email=email, 
+            message=full_message
+        )
         # Redirect using the named URL so it works regardless of include path
         return redirect('main:healthcare_info')
-    return render(request, 'main/data/medical_resource_form.html')
+    
+    context = {
+        'form_data': {
+            'name': '',
+            'email': '',
+            'phone': '',
+            'location': '',
+            'service_type': '',
+            'message': '',
+        },
+        'title': 'Medical Resource Inquiry',
+    }
+    return render(request, 'main/data/medical_resource_form.html', context)
 
 
 def general_errors(request):
