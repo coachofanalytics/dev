@@ -31,6 +31,7 @@ urlpatterns = [
     path('training_list/', views.training_list, name='training_list'),
     path("training_create/", views.training_create, name="training_create"),
     path("training_update/<int:pk>/", views.training_update, name="training_update"),
+    path("training_detail/<int:pk>/", views.training_detail, name="training_detail"),
 
     # path("<int:pk>/wcag_delete/", views.wcag_update, name="wcag_update"),
 

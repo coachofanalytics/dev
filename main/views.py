@@ -332,8 +332,15 @@ def training_update(request, pk):
     if form.is_valid():
         form.save()
         return redirect('main:training_list')
+    
 
     return render(request, 'main/training_update.html', {'form': form})
+
+    
+def training_detail(request, pk):
+    training = get_object_or_404(Training, pk=pk)
+    return render(request, 'main/training_detail.html', {'training': training})
+
 
 
 
