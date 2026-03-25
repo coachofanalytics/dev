@@ -27,8 +27,9 @@ urlpatterns = [
     path("wcag_create/", views.wcag_create, name="wcag_create"),
     path("wcag_update/<int:pk>/", views.wcag_update, name="wcag_update"),
     path("wcag_detail/<int:pk>/", views.wcag_detail, name="wcag_detail"),
+    path("wcag_delete/<int:pk>/", views.wcag_delete, name="wcag_delete"),
 
-    # path("<int:pk>/wcag_update/", views.wcag_update, name="wcag_update"),
+    # path("<int:pk>/wcag_delete/", views.wcag_update, name="wcag_update"),
 
 
 

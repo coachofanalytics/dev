@@ -303,6 +303,15 @@ def wcag_detail(request, pk):
     website = get_object_or_404(WCAGStandardWebsite, pk=pk)
     return render(request, "main/wcag_detail.html", {"website": website})
 
+def wcag_delete(request, pk):
+    website = get_object_or_404(WCAGStandardWebsite, pk=pk)
+
+    if request.method == "POST":
+        website.delete()
+        return redirect("main:wcag_list")
+
+    return render(request, "main/wcag_delete.html", {"website": website})
+
 
 
 

@@ -106,3 +106,44 @@ class WCAGStandardWebsite(models.Model):
     def __str__(self):
         return f"{self.company} - {self.app_name}"
 
+        from django.db import models
+
+class Training(models.Model):
+    presenter = models.ForeignKey("Presenter", on_delete=models.SET_NULL, null=True)
+    department = models.ForeignKey("Department", on_delete=models.CASCADE)
+    category = models.ForeignKey("Category", on_delete=models.CASCADE)
+    subcategory = models.CharField(max_length=100, null=True, blank=True)
+    topic = models.CharField(max_length=100, null=True, blank=True)
+    level = models.IntegerField(null=True, blank=True)
+    session = models.PositiveIntegerField(null=True, blank=True)
+    session_link = models.CharField(max_length=100, null=True, blank=True)
+    created_date = models.DateTimeField(auto_now_add=True)
+    expiration_date = models.DateTimeField(null=True, blank=True)
+    description = models.TextField(null=True, blank=True)
+    is_active = models.BooleanField(default=True)
+    featured = models.BooleanField(default=False)
+    is_mock = models.BooleanField(default=False)
+
+    def __str__(self):
+        return self.topic or "Training"
+
+class Presenter(models.Model):
+    name = models.CharField(max_length=100)
+
+    def __str__(self):
+        return self.name
+
+
+class Department(models.Model):
+    name = models.CharField(max_length=100)
+
+    def __str__(self):
+        return self.name
+
+
+class Category(models.Model):
+    name = models.CharField(max_length=100)
+
+    def __str__(self):
+        return self.name
+

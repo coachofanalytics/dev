@@ -83,7 +83,7 @@
     </div>
 
     <!-- Add Button -->
-    <a href="#" class="button">+ Add New</a>
+    <a href="{% url 'main:wcag_create' %}" class="button">+ Add New</a>
 
     <br><br>
 
@@ -117,9 +117,9 @@
                 </td>
 
                 <td>
-                    <a href="#">View</a> |
-                    <a href="#">Edit</a> |
-                    <a href="#">Delete</a>
+                    <a href="{% url 'main:wcag_detail' obj.id %}">View</a> |
+                    <a href="{% url 'main:wcag_update' obj.id %}">Update</a>
+                    <a href="{% url 'main:wcag_delete' obj.id %}">Delete</a>
                 </td>
             </tr>
             {% endfor %}
