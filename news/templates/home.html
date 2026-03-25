@@ -82,7 +82,103 @@
     transition: opacity 0.2s;
 }
 
+.hero-slider{
+    position: relative;
+    width: 100%;
+    height: 500px;
+    overflow: hidden;
+    background: #0f172a;
+}
+
+.slide-container{
+    display: flex;
+    width: 200%;
+    height:100%;
+    animation: slideTransition 12s infinite;
+}
+
+.slide{
+    width: 50%;
+    height: 100%;
+    position: relative;
+    background-size: cover;
+    background-position: center;
+}
+
+.slide-overlay{
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(to-top, rgba(15,23,42,0.9) transparent);
+    display: flex;
+    align-items: flex-end;
+    padding: 60px;
+}
+
+.slide-content{
+    max-width: 800px;
+    color: white;
+}
+
+.slide-tag{
+    background: #2563eb;
+    padding: 5px 12px;
+    border-radius: 5px;
+    font-size: 0.8rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    margin-bottom: 15px;
+    display: inline-block;
+}
+@keyframes slideTransition {
+    0%, 45% { transform: translateX(0); }
+    50%, 95% { transform: translateX(-50%); }
+    100% { transform: translateX(0); }
+}
+
+.admin-quick-link{
+    position: fixed;
+    bottom: 30px;
+    right: 30px;
+    background: #0f172a;
+    color: white;
+    padding: 15px 25px;
+    border-radius: 50px;
+    text-decoration: none;
+    font-weight: 700;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    transition: transform 0.3s;
+}
+
+.admin-quick-link:hover{
+    transform: scale(1.05);
+    background: #12aa70;
+    color: black;
+    text-decoration: none;
+}
+
 </style>
+
+
+<section class="hero-slider">
+    <div class="slide-container">
+        {% for article in latest_news|slice:":2" %}
+        <div class="slide" style="background-image: url('{{ article.featured_image.url }}');">
+            <div class=" slide-overlay">
+                <div class="slide-content">
+                    <span class="slide-tag">{{ article.category.name }}</span>
+                    <h1 style="font-size: 3rem; margin-bottom: 20px; font-weight: 900;">{{ article.title }}</h1>
+                    <p style="font-size: 1.1rem; opacity: 0.9; margin-bottom: 30px;">{{ article.ai_summary|truncatechars:150 }}</p>
+                    <a href="{% url 'news:article_detail' article.slug %}" class="btn-view-all">Read Full Story</a>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</section>
 
 <section class="news-section-wrapper">
     <div class="section-header">
@@ -112,5 +208,10 @@
     </div>
 </section>
 
+{% if user.is_staff %}
+<a href="{% url 'news:dashboard' %}" class="admin-quick-link">
+    <span>Admin Dashboard</span>
+</a>
+{% endif %}
 
 {% endblock %}
