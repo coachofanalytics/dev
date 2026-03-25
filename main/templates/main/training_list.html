@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Training Dashboard</title>
+
+    <style>
+        body {
+            font-family: "Segoe UI", Arial;
+            background: #f4f6f9;
+            margin: 0;
+        }
+
+        /* 🔷 NAVBAR */
+        .navbar {
+            background: #1f2937;
+            color: white;
+            padding: 15px 25px;
+            font-size: 20px;
+            font-weight: 600;
+        }
+
+        .container {
+            padding: 20px 30px;
+        }
+
+        /* 📊 CARDS */
+        .cards {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 25px;
+        }
+
+        .card {
+            background: white;
+            padding: 20px;
+            flex: 1;
+            border-radius: 10px;
+            box-shadow: 0px 4px 12px rgba(0,0,0,0.08);
+        }
+
+        .card h3 {
+            margin: 0;
+            color: #6b7280;
+            font-size: 14px;
+        }
+
+        .card p {
+            font-size: 24px;
+            font-weight: bold;
+            margin-top: 10px;
+            color: #111827;
+        }
+
+        /* ➕ BUTTON */
+        .button {
+            padding: 8px 15px;
+            background: #2563eb;
+            color: white;
+            text-decoration: none;
+            border-radius: 6px;
+            font-size: 14px;
+        }
+
+        .button:hover {
+            background: #1d4ed8;
+        }
+
+        /* 📋 TABLE */
+        table {
+            width: 100%;
+            background: white;
+            border-collapse: collapse;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0px 4px 12px rgba(0,0,0,0.08);
+        }
+
+        th, td {
+            padding: 12px;
+            text-align: left;
+        }
+
+        th {
+            background: #f9fafb;
+            font-size: 13px;
+            text-transform: uppercase;
+            color: #6b7280;
+        }
+
+        tr {
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        tr:hover {
+            background: #f3f4f6;
+        }
+
+        /* 🎯 STATUS BADGES */
+        .badge {
+            padding: 4px 8px;
+            border-radius: 6px;
+            font-size: 12px;
+            margin-right: 5px;
+        }
+
+        .active { background: #d1fae5; color: #065f46; }
+        .inactive { background: #e5e7eb; color: #374151; }
+        .featured { background: #fef3c7; color: #92400e; }
+        .mock { background: #dbeafe; color: #1e40af; }
+
+        /* ACTION LINKS */
+        .actions a {
+            margin-right: 8px;
+            font-size: 13px;
+            text-decoration: none;
+        }
+
+        .view { color: #2563eb; }
+        .edit { color: #059669; }
+        .delete { color: #dc2626; }
+    </style>
+</head>
+
+<body>
+
+<div class="navbar">
+    Training Management
+</div>
+
+<div class="container">
+
+    <!-- 📊 CARDS -->
+    <div class="cards">
+        <div class="card">
+            <h3>Total Trainings</h3>
+            <p>{{ total }}</p>
+        </div>
+
+        <div class="card">
+            <h3>Active Trainings</h3>
+            <p>{{ active_count }}</p>
+        </div>
+
+        <div class="card">
+            <h3>Featured</h3>
+            <p>{{ featured_count }}</p>
+        </div>
+    </div>
+
+    <!-- ➕ BUTTON -->
+    <a href="#" class="button">+ Add Training</a>
+
+    <br><br>
+
+    <!-- 📋 TABLE -->
+    <table>
+        <thead>
+            <tr>
+                <th>#</th>
+                <th>Topic</th>
+                <th>Presenter</th>
+                <th>Department</th>
+                <th>Category</th>
+                <th>Level</th>
+                <th>Status</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+
+        <tbody>
+            {% for t in trainings %}
+            <tr>
+                <td>{{ forloop.counter }}</td>
+                <td>{{ t.topic }}</td>
+                <td>{{ t.presenter }}</td>
+                <td>{{ t.department }}</td>
+                <td>{{ t.category }}</td>
+                <td>{{ t.level }}</td>
+
+                <td>
+                    {% if t.is_active %}
+                        <span class="badge active">Active</span>
+                    {% else %}
+                        <span class="badge inactive">Inactive</span>
+                    {% endif %}
+
+                    {% if t.is_featured %}
+                        <span class="badge featured">Featured</span>
+                    {% endif %}
+
+                    {% if t.is_mock %}
+                        <span class="badge mock">Mock</span>
+                    {% endif %}
+                </td>
+
+                <td class="actions">
+                    <a href="#" class="view">View</a>
+                    <a href="#" class="edit">Edit</a>
+                    <a href="#" class="delete">Delete</a>
+                </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="8">No training records found</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+</div>
+
+</body>
+</html>

@@ -312,6 +312,11 @@ def wcag_delete(request, pk):
 
     return render(request, "main/wcag_delete.html", {"website": website})
 
+def training_list(request):
+    trainings = Training.objects.all().order_by('-created_date')
+    return render(request, 'main/training_list.html', {'trainings': trainings})
+
+
 
 
 
