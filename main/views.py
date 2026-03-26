@@ -15,36 +15,30 @@ from django.views.generic import (
     ListView,
     DetailView,
 )
-#<<<<<<< 25.10_DC48_UAT_UO
-from .models import Assets,Description, News, Page, Service, SubService,Team, SafetyAlertSubscription, EmergencyHotline, StaffContact, InsurancePlan, AIRecommendationRule, ExpertInquiry, ConsularAssistancePage, NewsArticle, Category, Subscriber
-#=======
 from django.db.models import Q
-#<<<<<<< HEAD
-from .models import Scholarship, Donation_organisation, ContactMessage, Testimonial, TrainingCourse
-#>>>>>>> origin/25.11_DC48K_UAT_FN
-from accounts.models import CustomerUser
-##=======
-from .models import Assets,Description, News, Page, Service, SubService,Team, Donation_organization, MedicalResourceInquiry,Governance, NewsArticle, Category, Subscriber
-from accounts.models import CustomerUser
-from .utils import image_view,path_values
-from .forms import ContactForm, DonorForm, MessageForm,ScholarshipSearchForm
-##=======
-from django.views.decorators.csrf import csrf_exempt
-from main.forms import ContactForm, GovernanceForm, ArticleForm
-#>>>>>>> origin/25.10_DC48K_UAT_FN
-from django.contrib.auth import get_user_model
-#<<<<<<< 25.10_DC48_UAT_UO
+from django.urls import reverse_lazy
+from django.views.generic.edit import CreateView, UpdateView, DeleteView
+from django.views.decorators.csrf import csrf_exempt, csrf_protect
 from django.views.decorators.http import require_POST
-from django.views.decorators.csrf import csrf_protect
 from django.http import JsonResponse, HttpResponse
 from django.core.mail import send_mail
 from django.utils.html import strip_tags
 from django.utils import timezone
-#=======
+from django.contrib.auth import get_user_model
 
-from django.urls import reverse_lazy
-from django.views.generic.edit import CreateView, UpdateView, DeleteView
-from django.views.generic.detail import DetailView
+# Models imports
+from .models import (
+    Assets, Description, News, Page, Service, SubService, Team,
+    SafetyAlertSubscription, EmergencyHotline, StaffContact,
+    InsurancePlan, AIRecommendationRule, ExpertInquiry,
+    ConsularAssistancePage, NewsArticle, Category, Subscriber,
+    Scholarship, ContactMessage, Testimonial, TrainingCourse,
+    Donation_organization, MedicalResourceInquiry, Governance
+)
+from accounts.models import CustomerUser
+from .utils import image_view, path_values
+from .forms import ContactForm, DonorForm, MessageForm, ScholarshipSearchForm, GovernanceForm, ArticleForm
+
 import csv
 import feedparser
 import random
@@ -61,8 +55,7 @@ class DonationCreateView(CreateView):
     template_name = 'main/snippets_templates/table/donation_create.html'
     success_url = reverse_lazy('main:donation')
 
-#>>>>>>> 25.10_DC48_UAT_ND
-User=get_user_model()
+User = get_user_model()
 
 
 def error400(request):
