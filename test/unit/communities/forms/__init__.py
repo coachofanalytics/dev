@@ -1,1 +1,0 @@
-"""communities forms tests package"""

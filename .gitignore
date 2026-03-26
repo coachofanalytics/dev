@@ -4,11 +4,11 @@
 
 ### Django ###
 *.log
+logs.log
 *.pot
 *.pyc
 __pycache__/
 local_settings.py
-db.sqlite3
 db.sqlite3-journal
 
 .idea/
@@ -20,7 +20,29 @@ db.sqlite3-journal
  
 
 ### Apps ###
-#testing
+# Node.js packages (not used - Python/Django only)
+package.json
+package-lock.json
+node_modules/
+
+# Build/utility tools (not part of project)
+*.jar
+bfg-*.jar
+
+# Test files and directories
+test/
+tests/
+test_*.py
+*_test.py
+*/test/
+*/tests/
+
+# Report files and directories
+report/
+reports/
+*.report
+test_results_*.xml
+*_test_report.html
 
 # If your build process includes running collectstatic, then you probably don't need or want to include staticfiles/
 # in your Git repository. Update and uncomment the following line accordingly.

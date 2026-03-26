@@ -16,11 +16,18 @@ urlpatterns = [
     path('healthcare/insurance-support/download-csv/', views.download_comparison_csv, name='download_comparison_csv'),
 
     path('consular-assistance/', views.consular_assistance, name='consular_assistance'),
+    path('consular-assistance/book-consultation/', views.book_consular_consultation, name='book_consular_consultation'),
 
     path('data/consular/information-updates/', views.consular_information_updates, name='consular_information_updates'),
+    
+    # Communities App Integration - now handled at project level (coda_project/urls.py)
+    # path('communities/', include('main.urls_communities')),
     # path('gallery/', views.gallery_list, name='gallery_list'),
-    path('news/', views.news_list, name='news_list'),
+    path('news/add/', views.news_create, name='news_create'),
+    path('news/<int:id>/edit/', views.news_edit, name='news_edit'),
+    path('news/<int:id>/delete/', views.news_delete, name='news_delete'),
     path('news/<int:id>/', views.news_detail, name='news_detail'),
+    path('news/', views.news_list, name='news_list'),
     # Document Services - frontend-only routes
     path('document-services/', views.document_services_dashboard, name='document_services_dashboard'),
     path('document-services/drafts/', views.document_services_drafts, name='document_services_drafts'),
@@ -93,8 +100,11 @@ urlpatterns = [
     path('education/request-mentorship/', views.request_mentorship, name='request_mentorship'),
 
     path('ai_refresh_scholarships', views.ai_refresh_scholarships, name='ai_refresh_scholarships'),
-
-    path('Testimonial/', views.testimonial_list, name = 'testimonial_list'),
+    
+    # ============================================
+    # MEMBERJOIN APP URLS (INTEGRATED)
+    # ============================================
+    path('membership', views.member_home, name='member_home'),
     path('governance/', views.governance_list, name='governance_list'),
     path('governance/create/', views.governance_create, name='governance_create'),
     path('governance/<int:pk>/', views.governance_detail, name='governance_detail'),

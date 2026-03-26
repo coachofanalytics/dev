@@ -4,6 +4,15 @@
 
 {% include 'main/snippets_templates/styles/styles.html' %}
 
+<!-- Breadcrumb Navigation -->
+<nav class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 mb-6 mt-4 text-sm text-gray-500">
+    <a href="{% url 'main:layout' %}" class="text-brand-blue hover:underline">Home</a>
+    <span class="mx-2">/</span>
+    <a href="{% url 'main:consular_assistance' %}" class="text-brand-blue hover:underline">Consular Assistance</a>
+    <span class="mx-2">/</span>
+    <span class="text-brand-green font-semibold">Information & Updates</span>
+</nav>
+
 <section class="hero-section">
  <div class="hero-content">
     <h1>Information and Updates</h1>
@@ -29,7 +38,7 @@
           Official announcements regarding new services, key partnerships,
           and operational changes within Diaspora County 48.
         </p>
-        <a href="#">Read All Releases →</a>
+        <a href="{% url 'main:news_list' %}?category=press">Read All Releases →</a>
       </div>
     </div>
 
@@ -41,7 +50,7 @@
           Critical updates on passport renewals, visa policy changes,
           consular services, and major legislative changes.
         </p>
-        <a href="#">View Official Notices →</a>
+        <a href="{% url 'main:news_list' %}?category=embassy">View Official Notices →</a>
       </div>
     </div>
 
@@ -53,7 +62,7 @@
           Community alerts, event listings, local resource sharing,
           and general information relevant to daily life abroad.
         </p>
-        <a href="#">Explore Community Board →</a>
+        <a href="{% url 'main:news_list' %}?category=community">Explore Community Board →</a>
       </div>
     </div>
 
@@ -84,7 +93,9 @@
   </div>
 
   <div class="load-more-container">
-    <button class="load-more-btn">LOAD MORE UPDATES</button>
+    <a href="{% url 'main:news_list' %}" class="load-more-btn">
+      VIEW ALL UPDATES
+    </a>
   </div>
 
 </section>

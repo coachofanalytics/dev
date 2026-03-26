@@ -197,7 +197,7 @@
         </p>
 
         <div class="hero-buttons">
-            <a href="#" class="btn primary">Explore Banking <br>Solutions</a>
+            <a href="{% url 'finance:homepage' %}#banking-section" class="btn primary">Explore Banking <br>Solutions</a>
             <a href="{% url 'finance:directory' %}" class="btn secondary">View Investment <br>Directory</a>
         </div>
     </div>
@@ -209,9 +209,9 @@
 
 <section class="financial-info">
     <nav class="financial-nav">
-        <a href="/">Home</a>
+        <a href="{% url 'main:home' %}">Home</a>
         <span>/</span>
-        <a href="/">Services</a>
+        <a href="{% url 'main:home' %}">Services</a>
         <span>/</span>
         <span class="info-span">Financial Information</span>
     </nav>
@@ -226,9 +226,9 @@
    
 
     <div class="financial-grids">
-        <div class="financial-card">
+        <div class="financial-card" id="banking-section">
         <div class="financial-image">
-            <img src="{% static 'main/img/finance/opportunities.png' %}" alt="" srcset="">
+            <img src="{% static 'main/img/finance/opportunities.png' %}" alt="Banking and Investing Solutions" srcset="">
         </div>
         <div class="financial-content">
             <h3 class="">1. Banking and Investing</h3>
@@ -237,7 +237,7 @@
             from setting up bank accounts to strategic investments in <br>real estate, stocks, and bonds across borders.
         </p>
         <div class="financial-button">
-            <a href="/" class="btn secondary">VIEW DETAILED SOLUTION</a>
+            <a href="{% url 'finance:solutions' %}" class="btn secondary">VIEW DETAILED SOLUTION</a>
         </div>
 
         </div>
@@ -247,7 +247,7 @@
         <!-- grid 2 -->
         <div class="financial-card reverse">
         <div class="financial-image">
-            <img src="{% static 'main/img/finance/investment.png' %}" alt="" srcset="">
+            <img src="{% static 'main/img/finance/investment.png' %}" alt="Investment Opportunities Directory" srcset="">
         </div>
         
         <div class="financial-content">
@@ -257,7 +257,7 @@
             Our real-<br>time directory is updated daily with chances in Real Estate,<br>Saccos, Bonds, and private equity projects.
         </p>
         <div class="financial-button">
-            <a href="/" class="btn primary">BROWSER OPPORTUNITIES</a>
+            <a href="{% url 'finance:directory' %}" class="btn primary">BROWSE OPPORTUNITIES</a>
         </div>
         
         </div>
@@ -273,7 +273,7 @@
                 and<br> investment diversification tailored for the diaspora.
             </p>
             <div class="legacy-button">
-                <a href="/">SCHEDULE ADVISORY SESSION</a>
+                <a href="{% url 'main:contact_us_list' %}">SCHEDULE ADVISORY SESSION</a>
             </div>
     </div>
             

@@ -1,0 +1,524 @@
+{% extends "main/base_templates/base.html" %}
+{% load static %}
+{% block content %}
+
+<style>
+    .hero-overlay {
+        min-height: 370px;
+        background: linear-gradient(135deg, #1a3a2a 0%, #2563eb 100%);
+        background-size: cover;
+        background-position: center;
+    }
+    .form-container {
+        max-width: 700px;
+        margin: 0 auto;
+        padding: 2rem;
+        background: #fff;
+        border-radius: 12px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+    }
+    .form-section {
+        margin-bottom: 2rem;
+    }
+    .form-section h3 {
+        font-size: 1.2rem;
+        font-weight: 700;
+        color: #1a202c;
+        margin-bottom: 1rem;
+        padding-bottom: 0.75rem;
+        border-bottom: 2px solid #e2e8f0;
+    }
+    .form-group {
+        margin-bottom: 1.5rem;
+    }
+    .form-group label {
+        display: block;
+        font-weight: 600;
+        color: #374151;
+        margin-bottom: 0.5rem;
+        font-size: 0.95rem;
+    }
+    .form-group label .required {
+        color: #dc2626;
+        margin-left: 4px;
+    }
+    .form-group input,
+    .form-group select,
+    .form-group textarea {
+        width: 100%;
+        padding: 0.75rem 1rem;
+        border: 1px solid #d1d5db;
+        border-radius: 6px;
+        font-size: 1rem;
+        font-family: inherit;
+        transition: border-color 0.2s, box-shadow 0.2s;
+    }
+    .form-group input:focus,
+    .form-group select:focus,
+    .form-group textarea:focus {
+        outline: none;
+        border-color: #2563eb;
+        box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+    }
+    .form-group textarea {
+        resize: vertical;
+        min-height: 120px;
+    }
+    .form-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1.5rem;
+    }
+    @media (max-width: 640px) {
+        .form-row {
+            grid-template-columns: 1fr;
+        }
+    }
+    .form-group.full {
+        grid-column: 1 / -1;
+    }
+    .error-message {
+        color: #dc2626;
+        font-size: 0.875rem;
+        margin-top: 0.25rem;
+        display: none;
+    }
+    .form-group.error input,
+    .form-group.error select,
+    .form-group.error textarea {
+        border-color: #dc2626;
+    }
+    .form-group.error .error-message {
+        display: block;
+    }
+    .consultation-types {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+        gap: 1rem;
+        margin-bottom: 1rem;
+    }
+    .type-option {
+        position: relative;
+    }
+    .type-option input[type="radio"] {
+        position: absolute;
+        opacity: 0;
+        cursor: pointer;
+    }
+    .type-label {
+        display: block;
+        padding: 1rem;
+        border: 2px solid #e2e8f0;
+        border-radius: 8px;
+        text-align: center;
+        cursor: pointer;
+        transition: all 0.2s;
+        background: #f9fafb;
+    }
+    .type-option input[type="radio"]:checked + .type-label {
+        border-color: #2563eb;
+        background: #eff6ff;
+        font-weight: 600;
+    }
+    .btn-submit {
+        background: #2563eb;
+        color: #fff;
+        border: none;
+        padding: 0.875rem 2rem;
+        border-radius: 6px;
+        font-size: 1rem;
+        font-weight: 700;
+        cursor: pointer;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        transition: background 0.2s;
+        width: 100%;
+    }
+    .btn-submit:hover {
+        background: #1d4ed8;
+    }
+    .btn-submit:disabled {
+        background: #94a3b8;
+        cursor: not-allowed;
+    }
+    .success-message {
+        display: none;
+        padding: 1.5rem;
+        background: #dcfce7;
+        border: 2px solid #16a34a;
+        border-radius: 8px;
+        color: #15803d;
+        margin-bottom: 1.5rem;
+    }
+    .success-message.show {
+        display: block;
+    }
+    .privacy-note {
+        font-size: 0.875rem;
+        color: #6b7280;
+        margin-top: 1rem;
+        text-align: center;
+    }
+</style>
+
+<main class="mx-auto pb-16">
+
+    <!-- HERO SECTION -->
+    <header class="relative text-white shadow-xl overflow-hidden mb-12 mt-0 bg-blue-800 hero-overlay">
+        <div class="relative z-10 flex flex-col items-center justify-center text-center px-4"
+             style="min-height: 250px;">
+            <h1 class="text-5xl main-heading mb-4">BOOK A CONSULTATION</h1>
+            <h2 class="text-xl font-medium text-gray-100 mb-2" style="max-width: 600px;">
+                Connect with Our Consular Assistance Team
+            </h2>
+            <p class="text-lg text-gray-200" style="max-width: 600px;">
+                Get expert guidance on legal matters, documentation, and diaspora support
+            </p>
+        </div>
+    </header>
+
+    <!-- Breadcrumb -->
+    <nav class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 mb-6 text-sm text-gray-500">
+        <a href="{% url 'main:layout' %}" class="text-brand-blue hover:underline">Home</a>
+        <span class="mx-2">/</span>
+        <a href="{% url 'main:consular_assistance' %}" class="text-brand-blue hover:underline">Consular Assistance</a>
+        <span class="mx-2">/</span>
+        <span class="text-brand-green font-semibold">Book a Consultation</span>
+    </nav>
+
+    <!-- Main Content -->
+    <section class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+
+        <!-- Info Box -->
+        <div class="bg-blue-50 border-l-4 border-brand-blue p-6 rounded mb-8 max-w-2xl mx-auto">
+            <h3 class="text-lg font-semibold text-brand-blue mb-2">About Our Consultation Service</h3>
+            <p class="text-gray-700">
+                Our consular assistance team is ready to help with legal guidance, documentation support, and diaspora-related matters. 
+                Fill out the form below and we'll connect you with the right expert within 24 hours.
+            </p>
+        </div>
+
+        <!-- Form Container -->
+        <div class="form-container">
+            <div class="success-message" id="success-message">
+                <strong>✅ Success!</strong> Your consultation request has been submitted. Our team will contact you within 24 hours.
+            </div>
+
+            <form id="consultation-form" method="POST" novalidate>
+                {% csrf_token %}
+
+                <!-- Consultation Type -->
+                <div class="form-section">
+                    <h3>What do you need help with?</h3>
+                    <div class="consultation-types">
+                        <div class="type-option">
+                            <input type="radio" id="type-legal" name="consultation_type" value="Legal & Immigration" required>
+                            <label for="type-legal" class="type-label">
+                                <div style="font-size: 1.5rem; margin-bottom: 0.5rem;">⚖️</div>
+                                Legal & Immigration
+                            </label>
+                        </div>
+                        <div class="type-option">
+                            <input type="radio" id="type-documents" name="consultation_type" value="Documentation" required>
+                            <label for="type-documents" class="type-label">
+                                <div style="font-size: 1.5rem; margin-bottom: 0.5rem;">📄</div>
+                                Documentation
+                            </label>
+                        </div>
+                        <div class="type-option">
+                            <input type="radio" id="type-property" name="consultation_type" value="Property & Estate" required>
+                            <label for="type-property" class="type-label">
+                                <div style="font-size: 1.5rem; margin-bottom: 0.5rem;">🏠</div>
+                                Property & Estate
+                            </label>
+                        </div>
+                        <div class="type-option">
+                            <input type="radio" id="type-other" name="consultation_type" value="Other" required>
+                            <label for="type-other" class="type-label">
+                                <div style="font-size: 1.5rem; margin-bottom: 0.5rem;">❓</div>
+                                Other
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Personal Information -->
+                <div class="form-section">
+                    <h3>Your Information</h3>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="full_name">
+                                Full Name
+                                <span class="required">*</span>
+                            </label>
+                            <input type="text" id="full_name" name="full_name" required 
+                                   placeholder="John Doe">
+                            <span class="error-message">Please enter your full name</span>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="email">
+                                Email Address
+                                <span class="required">*</span>
+                            </label>
+                            <input type="email" id="email" name="email" required
+                                   placeholder="your@email.com">
+                            <span class="error-message">Please enter a valid email address</span>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="phone">
+                            Phone Number
+                            <span class="required">*</span>
+                        </label>
+                        <input type="tel" id="phone" name="phone" required
+                               placeholder="+1 (555) 123-4567">
+                        <span class="error-message">Please enter a valid phone number</span>
+                    </div>
+                </div>
+
+                <!-- Consultation Details -->
+                <div class="form-section">
+                    <h3>Consultation Details</h3>
+                    
+                    <div class="form-group">
+                        <label for="preferred_language">
+                            Preferred Communication Language
+                            <span class="required">*</span>
+                        </label>
+                        <select id="preferred_language" name="preferred_language" required>
+                            <option value="">-- Select Language --</option>
+                            <option value="English">English</option>
+                            <option value="Swahili">Swahili</option>
+                            <option value="French">French</option>
+                            <option value="Spanish">Spanish</option>
+                            <option value="Other">Other</option>
+                        </select>
+                        <span class="error-message">Please select a preferred language</span>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="location">
+                            Your Location / Country
+                            <span class="required">*</span>
+                        </label>
+                        <input type="text" id="location" name="location" required
+                               placeholder="e.g., United States, Canada, UK">
+                        <span class="error-message">Please enter your location</span>
+                    </div>
+
+                    <div class="form-group full">
+                        <label for="question">
+                            Describe Your Consultation Needs
+                            <span class="required">*</span>
+                        </label>
+                        <textarea id="question" name="question" required
+                                  placeholder="Please provide details about what you need help with. The more information you provide, the better we can assist you."></textarea>
+                        <span class="error-message">Please describe your consultation needs</span>
+                    </div>
+
+                    <div class="form-group full">
+                        <label for="urgency">
+                            How Urgent is Your Matter?
+                            <span class="required">*</span>
+                        </label>
+                        <select id="urgency" name="urgency" required>
+                            <option value="">-- Select Urgency Level --</option>
+                            <option value="Not Urgent">Not Urgent</option>
+                            <option value="Moderately Urgent">Moderately Urgent (within 3-5 days)</option>
+                            <option value="Very Urgent">Very Urgent (within 24-48 hours)</option>
+                            <option value="Emergency">Emergency (immediate assistance needed)</option>
+                        </select>
+                        <span class="error-message">Please select an urgency level</span>
+                    </div>
+                </div>
+
+                <!-- Additional Information -->
+                <div class="form-section">
+                    <h3>Additional Information (Optional)</h3>
+                    
+                    <div class="form-group full">
+                        <label for="additional_notes">
+                            Any Additional Details?
+                        </label>
+                        <textarea id="additional_notes" name="additional_notes"
+                                  placeholder="Share any other relevant information that might help us better assist you..."></textarea>
+                    </div>
+                </div>
+
+                <!-- Submit -->
+                <button type="submit" class="btn-submit" id="submit-btn">Submit Consultation Request</button>
+
+                <p class="privacy-note">
+                    ✓ Your information is secure and will only be used to provide consular assistance services.
+                    <a href="{% url 'main:layout' %}" style="color: #2563eb;">Learn about our privacy practices</a>
+                </p>
+            </form>
+        </div>
+
+    </section>
+
+</main>
+
+<script>
+    const form = document.getElementById('consultation-form');
+    const successMessage = document.getElementById('success-message');
+    const submitBtn = document.getElementById('submit-btn');
+
+    form.addEventListener('submit', function(e) {
+        e.preventDefault();
+        console.log('Form submitted');
+
+        // Clear previous error states
+        document.querySelectorAll('.form-group.error').forEach(el => el.classList.remove('error'));
+
+        // Validate form
+        if (!validateForm()) {
+            console.log('Form validation failed');
+            return;
+        }
+
+        console.log('Form validation passed');
+
+        // Disable button during submission
+        submitBtn.disabled = true;
+        submitBtn.textContent = 'Submitting...';
+
+        // Collect form data
+        const formData = new FormData(form);
+        const data = {
+            full_name: formData.get('full_name'),
+            email: formData.get('email'),
+            phone: formData.get('phone'),
+            question: formData.get('question'),
+            consultation_type: formData.get('consultation_type'),
+            location: formData.get('location'),
+            preferred_language: formData.get('preferred_language'),
+            urgency: formData.get('urgency'),
+            additional_notes: formData.get('additional_notes')
+        };
+
+        console.log('Data to submit:', data);
+        const submitUrl = '{% url "main:submit_expert_inquiry" %}';
+        console.log('Submission URL:', submitUrl);
+
+        // Send request via AJAX
+        fetch(submitUrl, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': formData.get('csrfmiddlewaretoken')
+            },
+            body: JSON.stringify(data)
+        })
+        .then(response => {
+            console.log('Response status:', response.status);
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            return response.json();
+        })
+        .then(result => {
+            console.log('Response result:', result);
+            if (result.success) {
+                // Show success message
+                successMessage.classList.add('show');
+                form.reset();
+                
+                // Scroll to success message
+                successMessage.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                
+                // Reset button
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Submit Consultation Request';
+            } else {
+                alert('Error: ' + result.error);
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Submit Consultation Request';
+            }
+        })
+        .catch(error => {
+            console.error('Fetch error:', error);
+            alert('An error occurred: ' + error.message + '. Please check the browser console for more details.');
+            submitBtn.disabled = false;
+            submitBtn.textContent = 'Submit Consultation Request';
+        });
+    });
+
+    function validateForm() {
+        const requiredFields = [
+            'full_name',
+            'email',
+            'phone',
+            'question',
+            'consultation_type',
+            'location',
+            'preferred_language',
+            'urgency'
+        ];
+
+        let isValid = true;
+
+        requiredFields.forEach(fieldName => {
+            const field = document.querySelector(`[name="${fieldName}"]`);
+            if (!field) {
+                console.warn(`Field not found: ${fieldName}`);
+                return;
+            }
+            
+            let isFieldValid = false;
+            
+            // Handle radio buttons
+            if (field.type === 'radio') {
+                const radioGroup = document.querySelectorAll(`[name="${fieldName}"]`);
+                isFieldValid = Array.from(radioGroup).some(radio => radio.checked);
+                if (!isFieldValid) {
+                    // Find the form-section containing this radio group
+                    const formSection = field.closest('.form-section');
+                    if (formSection) {
+                        const errorBox = document.createElement('div');
+                        errorBox.className = 'error-message';
+                        errorBox.textContent = `Please select a ${fieldName.replace(/_/g, ' ')}`;
+                        errorBox.style.display = 'block';
+                        errorBox.style.color = '#dc2626';
+                        errorBox.style.marginTop = '0.5rem';
+                    }
+                }
+            } else {
+                // Handle regular input/select/textarea
+                const fieldGroup = field.closest('.form-group');
+                if (!field.value.trim()) {
+                    fieldGroup.classList.add('error');
+                    isFieldValid = false;
+                } else {
+                    fieldGroup.classList.remove('error');
+                    isFieldValid = true;
+                }
+            }
+            
+            isValid = isValid && isFieldValid;
+        });
+
+        // Special validation for email
+        const emailField = document.getElementById('email');
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (emailField && emailField.value && !emailRegex.test(emailField.value)) {
+            emailField.closest('.form-group').classList.add('error');
+            isValid = false;
+        }
+
+        if (!isValid) {
+            // Scroll to first error
+            const firstError = document.querySelector('.form-group.error');
+            if (firstError) {
+                firstError.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+        }
+
+        return isValid;
+    }
+</script>
+
+{% endblock content %}
