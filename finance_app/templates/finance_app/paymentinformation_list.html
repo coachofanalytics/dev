@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Finance Dashboard</title>
+    <style>
+        body { font-family: Arial; background: hwb(84 2% 4%); margin: 0; }
+        .container { padding: 20px; }
+        .cards { display: flex; gap: 20px; margin-bottom: 20px; }
+        .card {
+            flex: 1;
+            padding: 20px;
+            background: #05f801;
+            border-radius: 10px;
+            box-shadow: 0px 2px 5px #edebeb1a;
+        }
+        .card h3 { margin: 0; }
+        .table-container {
+            background: hwb(49 2% 12%);
+            padding: 20px;
+            border-radius: 10px;
+        }
+        table { width: 100%; border-collapse: collapse; }
+        th, td { padding: 10px; border-bottom: 1px solid hsl(51, 95%, 48%); }
+        th { background: hsl(97, 95%, 48%); }
+        .actions a { margin-right: 10px; }
+        .btn {
+            padding: 8px 12px;
+            background: hsl(19, 100%, 50%);
+            color: hsl(30, 99%, 51%);
+            text-decoration: none;
+            border-radius: 5px;
+        }
+        .btn-danger { background: red; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+
+    <h2>💰 Finance Dashboard</h2>
+
+    <!-- SUMMARY CARDS -->
+    <div class="cards">
+        <div class="card">
+            <h3>Total Fees</h3>
+            <p>{{ total_fees }}</p>
+        </div>
+
+        <div class="card">
+            <h3>Total Paid</h3>
+            <p>{{ total_paid }}</p>
+        </div>
+
+        <div class="card">
+            <h3>Total Balance</h3>
+            <p>{{ total_balance }}</p>
+        </div>
+
+        <div class="card">
+            <h3>Total Records</h3>
+            <p>{{ total_records }}</p>
+        </div>
+    </div>
+
+    <!-- ACTION -->
+    <a href="#" class="btn">➕ Add Payment</a>
+
+    <br><br>
+
+    <!-- TABLE -->
+    <div class="table-container">
+        <table>
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>User</th>
+                    <th>Fees</th>
+                    <th>Paid</th>
+                    <th>Balance</th>
+                    <th>Method</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                {% for payment in payments %}
+                <tr>
+                    <td>{{ payment.id }}</td>
+                    <td>{{ payment.user }}</td>
+                    <td>{{ payment.payment_fees }}</td>
+                    <td>{{ payment.down_payment }}</td>
+                    <td><strong>{{ payment.fee_balance }}</strong></td>
+                    <td>{{ payment.payment_method }}</td>
+                    <td class="actions">
+                        <a href="#">View</a>
+                        <a href="#">Edit</a>
+                        <a href="#" class="btn-danger">Delete</a>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="7">No data available</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+</div>
+
+</body>
+</html>
