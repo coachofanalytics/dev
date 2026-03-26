@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Delete Training</title>
+
+    <style>
+        body {
+            font-family: "Segoe UI", Arial;
+            background: #f4f6f9;
+            margin: 0;
+        }
+
+        /* 🔷 NAVBAR */
+        .navbar {
+            background: #1f2937;
+            color: white;
+            padding: 15px 25px;
+            font-size: 20px;
+            font-weight: 600;
+        }
+
+        .container {
+            padding: 30px;
+            max-width: 600px;
+            margin: auto;
+        }
+
+        /* 📦 CARD */
+        .card {
+            background: white;
+            padding: 25px;
+            border-radius: 10px;
+            box-shadow: 0px 4px 12px rgba(0,0,0,0.08);
+            text-align: center;
+        }
+
+        h2 {
+            margin-bottom: 15px;
+        }
+
+        p {
+            color: #374151;
+            margin-bottom: 20px;
+        }
+
+        /* BUTTONS */
+        .btn {
+            padding: 10px 15px;
+            border-radius: 6px;
+            text-decoration: none;
+            font-size: 14px;
+            border: none;
+            cursor: pointer;
+            margin: 5px;
+        }
+
+        .delete {
+            background: #dc2626;
+            color: white;
+        }
+
+        .delete:hover {
+            background: #b91c1c;
+        }
+
+        .cancel {
+            background: #e5e7eb;
+            color: #111827;
+        }
+
+        .cancel:hover {
+            background: #d1d5db;
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="navbar">
+    Delete Training
+</div>
+
+<div class="container">
+
+    <div class="card">
+        <h2>Are you sure?</h2>
+
+        <p>
+            You are about to delete:  
+            <strong>{{ training.topic }}</strong>
+        </p>
+
+        <form method="post">
+            {% csrf_token %}
+            <button type="submit" class="btn delete">Yes, Delete</button>
+            <a href="{% url 'main:training_list' %}" class="btn cancel">Cancel</a>
+        </form>
+    </div>
+
+</div>
+
+</body>
+</html>

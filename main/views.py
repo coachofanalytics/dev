@@ -341,6 +341,16 @@ def training_detail(request, pk):
     training = get_object_or_404(Training, pk=pk)
     return render(request, 'main/training_detail.html', {'training': training})
 
+    
+def training_delete(request, pk):
+    training = get_object_or_404(Training, pk=pk)
+
+    if request.method == 'POST':
+        training.delete()
+        return redirect('main:training_list')
+
+    return render(request, 'main/training_delete.html', {'training': training})
+
 
 
 
