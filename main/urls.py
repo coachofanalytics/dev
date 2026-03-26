@@ -1,4 +1,4 @@
-from django.urls import path
+from django.urls import path, include
 from main.views import AboutView
 from . import views
 # from .utils import convert_html_to_pdf
@@ -19,6 +19,9 @@ urlpatterns = [
     path('consular-assistance/book-consultation/', views.book_consular_consultation, name='book_consular_consultation'),
 
     path('data/consular/information-updates/', views.consular_information_updates, name='consular_information_updates'),
+    
+    # Communities App Integration - now handled at project level (coda_project/urls.py)
+    # path('communities/', include('main.urls_communities')),
     # path('gallery/', views.gallery_list, name='gallery_list'),
     path('news/add/', views.news_create, name='news_create'),
     path('news/<int:id>/edit/', views.news_edit, name='news_edit'),
@@ -97,8 +100,11 @@ urlpatterns = [
     path('education/request-mentorship/', views.request_mentorship, name='request_mentorship'),
 
     path('ai_refresh_scholarships', views.ai_refresh_scholarships, name='ai_refresh_scholarships'),
-
-    path('Testimonial/', views.testimonial_list, name = 'testimonial_list'),
+    
+    # ============================================
+    # MEMBERJOIN APP URLS (INTEGRATED)
+    # ============================================
+    path('membership', views.member_home, name='member_home'),
     path('governance/', views.governance_list, name='governance_list'),
     path('governance/create/', views.governance_create, name='governance_create'),
     path('governance/<int:pk>/', views.governance_detail, name='governance_detail'),

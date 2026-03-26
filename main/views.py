@@ -62,6 +62,27 @@ class DonationCreateView(CreateView):
 #>>>>>>> 25.10_DC48_UAT_ND
 User=get_user_model()
 
+# Import communities models and forms
+from .models import (
+    CommunityMember,
+    DirectoryProfile,
+    ForumCategory,
+    Post,
+    CommentP,
+    EventCalendar,
+    UserProfile as CommunitiesUserProfile,
+    UserSettings as CommunitiesUserSettings,
+    UserPreferences as CommunitiesUserPreferences,
+)
+from .forms import (
+    CommunitiesJoinForm,
+    CommunitiesDirectoryProfileForm,
+    CommunitiesPostForm,
+    CommunitiesCommentForm,
+    CommunitiesEventForm,
+)
+from .utils import send_email
+
 
 def error400(request):
     return render(request, "main/errors/400.html", {"title": "400Error"})
@@ -1870,3 +1891,311 @@ def document_services_support_help(request):
     return render(request, 'main/document_services/support_help.html')
 
 
+# ============================================
+# COMMUNITIES APP VIEWS
+# ============================================
+
+def communities_home(request):
+    """Communities hub home page"""
+    return render(request, 'main/communities/home.html')
+
+
+def communities_join(request):
+    """Allow users to join the community with basic info"""
+    if request.method == 'POST':
+        form = CommunitiesJoinForm(request.POST, request.FILES)
+        if form.is_valid():
+            member = form.save()
+            context = {
+                'name': member.name,
+                'email': member.email
+            }
+            try:
+                send_email(
+                    subject='Welcome to GCI Community!',
+                    recipient_list=[member.email],
+                    context=context,
+                    html_template='main/communities/welcome_email.html',
+                    plain_template='main/communities/welcome_email.txt'
+                )
+            except Exception as e:
+                print(f'Email send error: {e}')
+            
+            messages.success(request, f'Welcome {member.name}! You have joined the community.')
+            return redirect('communities:member_directory')
+    else:
+        form = CommunitiesJoinForm()
+    return render(request, 'main/communities/join.html', {'form': form})
+
+
+def communities_member_directory(request):
+    """List all public member directory profiles"""
+    profiles = DirectoryProfile.objects.filter(is_published=True)
+    
+    # Search and filter
+    search_query = request.GET.get('search', '')
+    category = request.GET.get('category', '')
+    
+    if search_query:
+        profiles = profiles.filter(
+            Q(full_name__icontains=search_query) |
+            Q(profession__icontains=search_query) |
+            Q(expertise_summary__icontains=search_query)
+        )
+    
+    if category:
+        profiles = profiles.filter(category=category)
+    
+    context = {
+        'profiles': profiles,
+        'categories': DirectoryProfile.CATEGORY_CHOICES if hasattr(DirectoryProfile, 'CATEGORY_CHOICES') else []
+    }
+    return render(request, 'main/communities/member_directory.html', context)
+
+
+def communities_join_directory(request, member_id):
+    """Create or update directory profile for a member"""
+    member = get_object_or_404(CommunityMember, id=member_id)
+    profile, created = DirectoryProfile.objects.get_or_create(member=member)
+    
+    if request.method == 'POST':
+        form = CommunitiesDirectoryProfileForm(request.POST, request.FILES, instance=profile)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Your directory profile has been updated.')
+            return redirect('communities:member_directory')
+    else:
+        form = CommunitiesDirectoryProfileForm(instance=profile)
+    
+    return render(request, 'main/communities/join_directory.html', {'form': form, 'member': member})
+
+
+def communities_join_directory_form(request):
+    """Display the join directory form page"""
+    return render(request, 'main/communities/join_directory_form.html')
+
+
+def communities_forum_home(request):
+    """Forum home page with categories"""
+    categories = ForumCategory.objects.all()
+    recent_posts = Post.objects.all().order_by('-created_at')[:5]
+    
+    context = {
+        'categories': categories,
+        'recent_posts': recent_posts
+    }
+    return render(request, 'main/communities/forum_home.html', context)
+
+
+def communities_category_detail(request, slug):
+    """Display all posts in a category"""
+    category = get_object_or_404(ForumCategory, slug=slug)
+    posts = Post.objects.filter(category=category).order_by('-created_at')
+    
+    context = {
+        'category': category,
+        'posts': posts
+    }
+    return render(request, 'main/communities/category_detail.html', context)
+
+
+def communities_view_post(request, post_id):
+    """Display a single forum post with comments"""
+    post = get_object_or_404(Post, id=post_id)
+    comments = CommentP.objects.filter(post=post).order_by('created_at')
+    
+    if request.method == 'POST':
+        form = CommunitiesCommentForm(request.POST)
+        if form.is_valid():
+            comment = form.save(commit=False)
+            comment.post = post
+            comment.author = request.user
+            comment.save()
+            messages.success(request, 'Your comment has been posted.')
+            return redirect('communities:view_post', post_id=post.id)
+    else:
+        form = CommunitiesCommentForm()
+    
+    context = {
+        'post': post,
+        'comments': comments,
+        'form': form
+    }
+    return render(request, 'main/communities/view_post.html', context)
+
+
+def communities_create_post(request, slug):
+    """Create a new forum post in a category"""
+    category = get_object_or_404(ForumCategory, slug=slug)
+    
+    if request.method == 'POST':
+        form = CommunitiesPostForm(request.POST)
+        if form.is_valid():
+            post = form.save(commit=False)
+            post.category = category
+            post.save()
+            messages.success(request, 'Your post has been created.')
+            return redirect('communities:view_post', post_id=post.id)
+    else:
+        form = CommunitiesPostForm(initial={'category': category})
+    
+    context = {
+        'form': form,
+        'category': category
+    }
+    return render(request, 'main/communities/create_post.html', context)
+
+
+def communities_add_comment(request, post_id):
+    """Handle comment addition via POST"""
+    post = get_object_or_404(Post, id=post_id)
+    
+    if request.method == 'POST':
+        form = CommunitiesCommentForm(request.POST)
+        if form.is_valid():
+            comment = form.save(commit=False)
+            comment.post = post
+            comment.author = request.user
+            comment.save()
+            messages.success(request, 'Your comment has been posted.')
+    
+    return redirect('communities:view_post', post_id=post.id)
+
+
+def communities_event_calendar(request):
+    """Display community events calendar"""
+    events = EventCalendar.objects.all().order_by('start_date')
+    
+    context = {
+        'events': events
+    }
+    return render(request, 'main/communities/event_calendar.html', context)
+
+
+def communities_create_event(request):
+    """Create a new community event"""
+    if request.method == 'POST':
+        form = CommunitiesEventForm(request.POST)
+        if form.is_valid():
+            event = form.save()
+            messages.success(request, 'Event has been created.')
+            return redirect('communities:event_detail', id=event.id)
+    else:
+        form = CommunitiesEventForm()
+    
+    return render(request, 'main/communities/create_event.html', {'form': form})
+
+
+def communities_event_detail(request, id):
+    """Display event details"""
+    event = get_object_or_404(EventCalendar, id=id)
+    
+    context = {
+        'event': event
+    }
+    return render(request, 'main/communities/event_detail.html', context)
+
+
+def communities_edit_event(request, id):
+    """Edit an existing event"""
+    event = get_object_or_404(EventCalendar, id=id)
+    
+    if request.method == 'POST':
+        form = CommunitiesEventForm(request.POST, instance=event)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Event has been updated.')
+            return redirect('communities:event_detail', id=event.id)
+    else:
+        form = CommunitiesEventForm(instance=event)
+    
+    return render(request, 'main/communities/edit_event.html', {'form': form, 'event': event})
+
+
+def communities_delete_event(request, id):
+    """Delete an event"""
+    event = get_object_or_404(EventCalendar, id=id)
+    
+    if request.method == 'POST':
+        event.delete()
+        messages.success(request, 'Event deleted successfully!')
+        return redirect('communities:event_calendar')
+    
+    return render(request, 'main/communities/delete_event.html', {'event': event})
+
+
+def communities_contact_view(request):
+    """Handle community contact form submissions"""
+    if request.method == 'POST':
+        form = ContactForm(request.POST)
+        if form.is_valid():
+            contact = form.save()
+            context = {
+                'name': contact.name,
+                'email': contact.email,
+                'message': contact.message
+            }
+            
+            # Send confirmation email to user
+            try:
+                send_email(
+                    subject=f'Hello {contact.name}, thank you for contacting us!',
+                    recipient_list=[contact.email],
+                    context=context,
+                    html_template='main/communities/contact_response.html',
+                    plain_template='main/communities/contact_response.txt'
+                )
+            except Exception as e:
+                print(f'Error sending user email: {e}')
+            
+            # Send notification to admin
+            try:
+                send_email(
+                    subject=f'New Contact Message from {contact.name}',
+                    recipient_list=['info@gcicrwanda.com'],
+                    context=context,
+                    html_template='main/communities/emails/admin_contact_notification.html',
+                    plain_template='main/communities/emails/admin_contact_notification.txt'
+                )
+            except Exception as e:
+                print(f'Error sending admin email: {e}')
+            
+            messages.success(request, 'Thank you for your message. We will get back to you soon.')
+            return redirect('communities:home')
+    else:
+        form = ContactForm()
+    
+    return render(request, 'main/communities/contact_form.html', {'form': form})
+
+
+# ============================================
+# MEMBERJOIN APP VIEWS
+# ============================================
+
+def member_home(request):
+    """Handle member registration and contact message submission"""
+    if request.method == 'POST':
+        if 'register_submit' in request.POST:
+            # Import here to avoid duplicate ContactMessage form import
+            from .forms import MembershipRegistrationForm
+            member_form = MembershipRegistrationForm(request.POST)
+            if member_form.is_valid():
+                member_form.save()
+                messages.success(request, 'Membership registration successful! Welcome to DC48.')
+                return redirect('main:member_home')
+        elif 'contact_submit' in request.POST:
+            from .forms import ContactMessageForm
+            contact_form = ContactMessageForm(request.POST)
+            if contact_form.is_valid():
+                contact_form.save()
+                messages.success(request, 'Your message has been sent successfully!')
+                return redirect('main:member_home')
+    else:
+        from .forms import MembershipRegistrationForm, ContactMessageForm
+        member_form = MembershipRegistrationForm()
+        contact_form = ContactMessageForm()
+        context = {
+            'form': member_form,
+            'contact_form': contact_form
+        }
+        return render(request, 'main/memberjoin/member_home.html', context)

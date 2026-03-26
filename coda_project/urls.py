@@ -74,7 +74,6 @@ urlpatterns = [
     path('find-doctors/', main_views.find_doctors, name='find_doctors'),
 
     path('', include("main.urls", namespace="main")),
-    path('member/', include('memberjoin.urls')),
     path("accounts/", include("accounts.urls", namespace="accounts")),
     path("finance/", include("finance.urls", namespace="finance")),
     path('accounts/social/custom_login/', account_views.custom_social_login, name='custom_social_login'),
@@ -82,7 +81,8 @@ urlpatterns = [
     path('social_accounts/login/', account_views.login_view),
     path('social_accounts/social/signup/', account_views.login_view),
     path('social_accounts/', include('allauth.urls')),
-    path('communities/', include('communities.urls', namespace='communities')),
+    # Communities app now integrated into main app
+    path('communities/', include('main.urls_communities', namespace='communities')),
 ]
 
 if settings.DEBUG:

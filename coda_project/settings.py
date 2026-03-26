@@ -62,10 +62,10 @@ INSTALLED_APPS = [
     "allauth.socialaccount.providers.google",
     "allauth.socialaccount.providers.facebook",
     "django_crontab",
-    'memberjoin',
     'cloudinary',
     'cloudinary_storage',
-    'communities',
+    # 'communities',  # Integrated into main app
+    # 'memberjoin',  # Integrated into main app
     #'debug_toolbar',
 
 ]
