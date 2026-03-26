@@ -201,3 +201,16 @@ credentials*.json
 
 #reports
 main/BackendTests/reports/
+EducationReports/
+
+# Temporary files created during merge and cleanup
+check_views.ps1
+current_views.txt
+temp_views.txt
+url_views.txt
+main/migrations/0010_merge_20260326_1652.py
+
+# Guidance files for newTest
+main/IMPLEMENTATION_GUID.md
+COMPREHENSIVE_TEST_SUITE_COMPLETE.md
+NEWS_APP_COMPREHENSIVE_TESTS_SUMMARY.md
