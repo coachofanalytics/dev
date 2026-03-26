@@ -25,6 +25,10 @@ package.json
 package-lock.json
 node_modules/
 
+# Build/utility tools (not part of project)
+*.jar
+bfg-*.jar
+
 # Test files and directories
 test/
 tests/
