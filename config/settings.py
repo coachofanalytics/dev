@@ -458,14 +458,24 @@ CSRF_COOKIE_NAME = 'biashara_csrftoken'
 # Production Security Settings
 # Only enforce in production (when DEBUG is False)
 if not DEBUG:
-    # HTTPS/SSL Settings
-    SECURE_SSL_REDIRECT = True
-    SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+    # # HTTPS/SSL Settings
+    # SECURE_SSL_REDIRECT = True
+    # SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 
-    # HSTS (HTTP Strict Transport Security) Settings
-    SECURE_HSTS_SECONDS = 31536000  # 1 year
-    SECURE_HSTS_INCLUDE_SUBDOMAINS = True
-    SECURE_HSTS_PRELOAD = True
+    # # HSTS (HTTP Strict Transport Security) Settings
+    # SECURE_HSTS_SECONDS = 31536000  # 1 year
+    # SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+    # SECURE_HSTS_PRELOAD = True
+
+    # Local HTTPS/SSL Settings
+    SECURE_SSL_REDIRECT = False
+    SECURE_PROXY_SSL_HEADER = None
+
+    # Local HSTS (HTTP Strict Transport Security) Settings
+    SECURE_HSTS_SECONDS = 0  # 1 year
+    SECURE_HSTS_INCLUDE_SUBDOMAINS = False
+    SECURE_HSTS_PRELOAD = False
+
 
     # Cookie Security
     SESSION_COOKIE_SECURE = True
