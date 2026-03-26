@@ -74,36 +74,56 @@ def custom_login_view(request):
         username = request.POST.get('username')
         password = request.POST.get('password')
         
-        print("="*50)
-        print(f"Login attempt with username/email: {username}")
+        # Check if fields are empty
+        if not username or not password:
+            messages.error(request, "Please enter both username/email and password.")
+            return render(request, 'accounts/registration/DC48K/logins.html')
         
-        # Try to authenticate
-        user = authenticate(request, username=username, password=password)
+        # Find user by username or email
+        user_obj = None
+        try:
+            # Try to find by username first
+            user_obj = CustomerUser.objects.filter(username=username).first()
+            if not user_obj:
+                # If not found, try email
+                user_obj = CustomerUser.objects.filter(email__iexact=username).first()
+        except Exception:
+            pass
         
-        if user is not None:
-            print(f"Authentication successful for user: {user.username}")
-            login(request, user)
-            
-            # Check membership
-            try:
-                membership = Membership.objects.get(member=user)
-                print(f"Membership status: {membership.status}")
-                if membership.status == 'NOT_PAID':
-                    return redirect('finance:pay')
-                else:
-                    return redirect('main:layout')
-            except Membership.DoesNotExist:
-                print("No membership found")
+        if not user_obj:
+            messages.error(request, "No account found with this username/email. Please register first.")
+            return render(request, 'accounts/registration/DC48K/logins.html')
+        
+        # Authenticate user
+        user = authenticate(request, username=user_obj.username, password=password)
+        
+        if user is None:
+            messages.error(request, "Invalid password. Please try again.")
+            return render(request, 'accounts/registration/DC48K/logins.html')
+        
+        # Check if user is active
+        if not user.is_active:
+            messages.error(request, "Your account is not activated.")
+            return render(request, 'accounts/registration/DC48K/logins.html')
+        
+        # Login the user
+        login(request, user)
+        
+        # Check membership status
+        try:
+            membership = Membership.objects.get(member=user)
+            if membership.status == 'NOT_PAID':
+                messages.info(request, "Please complete your payment to access all features.")
+                return redirect('finance:pay')
+            else:
+                messages.success(request, f"Welcome back, {user.first_name or user.username}!")
                 return redirect('main:layout')
-        else:
-            print("Authentication failed")
-            messages.error(request, "Invalid email or password.")
-        
-        print("="*50)
+        except Membership.DoesNotExist:
+            messages.warning(request, "Welcome! Please complete your membership registration.")
+            return redirect('finance:pay')
     
     # For GET requests, show empty form
-    form = CustomAuthenticationForm()
-    return render(request, 'accounts/registration/DC48K/logins.html', {'form': form})
+    return render(request, 'accounts/registration/DC48K/logins.html')
 # Function to generate a random password
 def generate_random_password(length=12):
     characters = string.ascii_letters + string.digits + "!@#$%&"
@@ -111,62 +131,55 @@ def generate_random_password(length=12):
     return password
 
 def join(request):
-    form = UserForm()
     if request.method == "POST":
-        previous_user = CustomerUser.objects.filter(email=request.POST.get("email"))
-        if previous_user.exists():
-            messages.success(request, "User already exists with this email")
-            return redirect("/password-reset")
+        # Check if user already exists
+        email = request.POST.get("email")
+        if CustomerUser.objects.filter(email=email).exists():
+            messages.error(request, "User already exists with this email. Please login instead.")
+            return redirect("accounts:account-login")
+        
+        # Create form with POST data
+        form = UserForm(request.POST)
+        if form.is_valid():
+            category = form.cleaned_data.get("category")
+            
+            # Set category flags
+            user = form.save(commit=False)
+            if category == CategoryChoices.ORDINARY_MEMBER:
+                user.is_ordinary_member = True
+            elif category == CategoryChoices.ACTIVE_MEMBER:
+                user.is_active_member = True
+            elif category == CategoryChoices.EXECUTIVE_MEMBER:
+                user.is_executive_member = True
+            elif category == CategoryChoices.FBO_ORDINARY:
+                user.is_fbo_ordinary = True
+            elif category == CategoryChoices.ACTIVE_ORGANIZATION:
+                user.is_active_organization = True
+            elif category == CategoryChoices.ROYAL_ORGANIZATION:
+                user.is_royal_organization = True
+            
+            # Save user (password is already handled by form.save)
+            user.is_active = True
+            user.save()
+            
+            # Create membership
+            fee_kes = CATEGORY_FEES.get(category, 0.0)
+            fee_usd = fee_kes / get_exchange_rate('USD', 'KES')
+            Membership.objects.create(
+                member=user,
+                fee=fee_usd,
+                currency="USD",
+                status='NOT_PAID',
+            )
+            
+            messages.success(request, "Registration successful! Please login.")
+            return redirect('accounts:account-login')
         else:
-            form = UserForm(request.POST)
-            if form.is_valid():
-                category = form.cleaned_data.get("category")
-                if category == CategoryChoices.ORDINARY_MEMBER:
-                    form.instance.is_ordinary_member = True
-                elif category == CategoryChoices.ACTIVE_MEMBER:
-                    form.instance.is_active_member = True
-                elif category == CategoryChoices.EXECUTIVE_MEMBER:
-                    form.instance.is_executive_member = True
-                elif category == CategoryChoices.FBO_ORDINARY:
-                    form.instance.is_fbo_ordinary = True
-                elif category == CategoryChoices.ACTIVE_ORGANIZATION:
-                    form.instance.is_active_organization = True
-                elif category == CategoryChoices.ROYAL_ORGANIZATION:
-                    form.instance.is_royal_organization = True
-
-                # Get password from form instead of generating random one
-                password = form.cleaned_data.get("password1")
-                
-                # Generate token for email verification
-                token = str(uuid.uuid4())
-
-                user = form.save(commit=False)
-                user.verification_token = token
-                # Password is already set in form.save() via set_password()
-                user.is_active = False
-                user.save()
-                
-                print(category)
-                fee_kes = CATEGORY_FEES.get(category, 0.0)
-                fee_usd = fee_kes / get_exchange_rate('USD', 'KES')
-                Membership.objects.create(
-                    member=user,
-                    fee=fee_usd,
-                    currency="USD",
-                    status='NOT_PAID',
-                )
-                print(f"Membership created for user {user.username} with fee {fee_usd} USD")
-                print(f"User {user.username} created and saved. Account is inactive until verification.")
-                
-                # Send verification email with the user's chosen password
-                send_verification_email(user, password=password)
-                
-                messages.success(request, "Registration successful! Please check your email for verification.")
-                return redirect('accounts:member-list')
-            else:
-                msg = "Error validating form"
-                print(msg)
-                print(form.errors)  # This will help debug form errors
+            # Keep the form with errors to display in template
+            messages.error(request, "Please correct the errors below.")
+    else:
+        form = UserForm()
+    
     return render(request, "accounts/registration/DC48K/joins.html", {"form": form})
 
 def email_verification_notice(request, user_id):
