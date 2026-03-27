@@ -4,14 +4,8 @@ from django.utils import timezone
 from .models import AppointmentRequest
 # Feedback / Contact Form
 
-from django.contrib.auth.models import User
 from .models import (
-    Feedback, Donation_organisation, Donation_organization, 
-    ContactMessage, Scholarship, Governance,  # ← Add Governance here
-    # Communities models
-    CommunityMember, DirectoryProfile, ForumCategory, Post, CommentP, EventCalendar,
-    # Memberjoin models
-    MembershipRegistration
+    ContactMessage, Scholarship, Governance, NewsArticle,TrainingCourse
 )
 
 class GovernanceForm(forms.ModelForm):
@@ -190,6 +184,76 @@ class ScholarshipSearchForm(forms.Form):
     
     
     
+class ScholarshipForm(forms.ModelForm):
+    class Meta:
+        model = Scholarship
+        fields =  [
+            'title',
+            'provider',
+            'level',
+            'field',
+            'location',
+            'amount_value',
+            'amount_description',
+            'amount_currency',
+            'deadline',
+            'status'
+        ]
+
+        widgets = {
+            'title':forms.TextInput(attrs={'class':'w-full border rounded-lg p-2'}),
+            'provider':forms.TextInput(attrs={'class':'w-full border rounded-lg p-2'}),
+            'level':forms.Select(attrs={'class':'w-full border rounded-lg p-2'}),
+            'field':forms.Select(attrs={'class':'w-full border rounded-lg p-2'}),
+            'location':forms.Select(attrs={'class':'w-full border rounded-lg p-2'}),
+            'amount_value':forms.NumberInput(attrs={'class':'w-full border rounded-lg p-2'}),
+            'amount_description':forms.TextInput(attrs={'class':'w-full border rounded-lg p-2'}),
+            'amount_currency':forms.Select(attrs={'class':'w-full border rounded-lg p-2'}),
+            'deadline':forms.DateInput(attrs={'type':'date'  ,'class':'w-full border rounded-lg p-2'}),
+            'status':forms.Select(attrs={'class':'w-full border rounded-lg p-2'}),
+        }
+
+
+
+class TrainingCourseForm(forms.ModelForm):
+    class Meta:
+        model = TrainingCourse
+        fields = [
+            "title",
+            "course_code",
+            "category",
+            "description",
+            "duration",
+            "format",
+            "enrollment",
+            "max_students",
+            "start_date",
+            "end_date",
+            "instructor",
+            "price",
+            "certificate_offered",
+            "syllabus",
+            "prerequisites",
+            "image",
+        ]
+
+        widgets = {
+            "start_date": forms.DateInput(attrs={"type": "date"}),
+            "end_date": forms.DateInput(attrs={"type": "date"}),
+            "description": forms.Textarea(attrs={"rows": 3}),
+            "syllabus": forms.Textarea(attrs={"rows": 3}),
+            "prerequisites": forms.Textarea(attrs={"rows": 2}),
+        }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+    
+        for field in self.fields.values():
+            field.widget.attrs.update({
+                "class": "w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            })
+
+
     
     
 
@@ -252,153 +316,31 @@ class AppointmentRequestForm(forms.ModelForm):
             'honeypot': forms.HiddenInput(),
         }
 
+    def clean_honeypot(self):
+        value = self.cleaned_data.get('honeypot', '')
+        if value:
+            raise forms.ValidationError('Spam detected.')
+        return value
 
-
-
-
-
-
-# ============================================
-# COMMUNITIES APP FORMS
-# ============================================
-
-
-class CommunitiesJoinForm(forms.ModelForm):
-    """Form for basic community membership"""
-    agree_to_directory = forms.BooleanField(
-        required=False,
-        label='I want to appear in the public member directory'
-    )
-    email_updates = forms.BooleanField(
-        required=False,
-        label='I would like to receive email updates'
-    )
-    agree_terms = forms.BooleanField(
-        required=True,
-        label='I agree to the community terms and conditions'
-    )
+    def clean_preferred_date(self):
+        date = self.cleaned_data.get('preferred_date')
+        if date and date < timezone.now().date():
+            raise forms.ValidationError('Please select a future date.')
+        return date
     
+
+
+
+
+class ArticleForm(forms.ModelForm):
     class Meta:
-        model = CommunityMember
-        fields = ['name', 'email', 'phone', 'profession', 'region', 'specialization', 'bio', 'website']
-        widgets = {
-            'name': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Full Name'}),
-            'email': forms.EmailInput(attrs={'class': 'form-control', 'placeholder': 'Email Address'}),
-            'phone': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Phone Number'}),
-            'profession': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Your Profession'}),
-            'region': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Region/Country'}),
-            'specialization': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Area of Specialization'}),
-            'bio': forms.Textarea(attrs={'class': 'form-control', 'rows': 4, 'placeholder': 'Tell us about yourself'}),
-            'website': forms.URLInput(attrs={'class': 'form-control', 'placeholder': 'Website URL (optional)'}),
-        }
-    
-    def clean_email(self):
-        email = self.cleaned_data.get('email')
-        if CommunityMember.objects.filter(email=email).exists():
-            raise forms.ValidationError('This email is already registered.')
-        return email
-
-
-class CommunitiesDirectoryProfileForm(forms.ModelForm):
-    """Form for detailed member directory profile"""
-    
-    class Meta:
-        model = DirectoryProfile
-        fields = ['full_name', 'profession', 'region_city', 'category', 'membership_type', 'expertise_summary', 'profile_photo']
-        widgets = {
-            'full_name': forms.TextInput(attrs={'class': 'form-control'}),
-            'profession': forms.TextInput(attrs={'class': 'form-control'}),
-            'region_city': forms.TextInput(attrs={'class': 'form-control'}),
-            'category': forms.Select(attrs={'class': 'form-control'}),
-            'membership_type': forms.Select(attrs={'class': 'form-control'}),
-            'expertise_summary': forms.Textarea(attrs={'class': 'form-control', 'rows': 4}),
-            'profile_photo': forms.FileInput(attrs={'class': 'form-control'}),
-        }
-
-
-class CommunitiesPostForm(forms.ModelForm):
-    """Form for creating forum posts"""
-    
-    class Meta:
-        model = Post
-        fields = ['title', 'content', 'category']
-        widgets = {
-            'title': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Post Title'}),
-            'content': forms.Textarea(attrs={'class': 'form-control', 'rows': 6, 'placeholder': 'Post Content'}),
-            'category': forms.Select(attrs={'class': 'form-control'}),
-        }
-
-
-class CommunitiesCommentForm(forms.ModelForm):
-    """Form for posting comments on forum posts"""
-    
-    class Meta:
-        model = CommentP
-        fields = ['content']
-        widgets = {
-            'content': forms.Textarea(attrs={'class': 'form-control', 'rows': 3, 'placeholder': 'Write your comment...'}),
-        }
-
-
-class CommunitiesEventForm(forms.ModelForm):
-    """Form for creating and editing community events"""
-    
-    class Meta:
-        model = EventCalendar
-        fields = ['name', 'start_date', 'end_date', 'location', 'description']
-        widgets = {
-            'name': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Event Name'}),
-            'start_date': forms.DateTimeInput(attrs={'class': 'form-control', 'type': 'datetime-local'}),
-            'end_date': forms.DateTimeInput(attrs={'class': 'form-control', 'type': 'datetime-local'}),
-            'location': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Event Location'}),
-            'description': forms.Textarea(attrs={'class': 'form-control', 'rows': 4, 'placeholder': 'Event Description'}),
-        }
-    
-    def clean(self):
-        cleaned_data = super().clean()
-        start_date = cleaned_data.get('start_date')
-        end_date = cleaned_data.get('end_date')
-        
-        if start_date and end_date and end_date <= start_date:
-            raise forms.ValidationError('End date must be after start date.')
-        
-        return cleaned_data
-
-# ============================================
-# MEMBERJOIN APP FORMS
-# ============================================
-
-class MembershipRegistrationForm(forms.ModelForm):
-    """Form for membership registration"""
-    
-    class Meta:
-        model = MembershipRegistration
+        model = NewsArticle
         fields = [
-            'first_name', 'last_name', 'email', 'phone_number', 'country',
-            'city', 'address', 'membership_type', 'organization_name', 'date_of_birth'
+            'category', 'title', 'slug', 'author',
+            'featured_image', 'content', 'ai_summary',
+            'is_breaking', 'status', 'views'
         ]
         widgets = {
-            'first_name': forms.TextInput(attrs={'class': 'w-full border rounded-lg p-2', 'placeholder': 'First Name'}),
-            'last_name': forms.TextInput(attrs={'class': 'w-full border rounded-lg p-2', 'placeholder': 'Last Name'}),
-            'email': forms.EmailInput(attrs={'class': 'w-full border rounded-lg p-2', 'placeholder': 'Email'}),
-            'phone_number': forms.TextInput(attrs={'class': 'w-full border rounded-lg p-2', 'placeholder': 'Phone Number'}),
-            'country': forms.TextInput(attrs={'class': 'w-full border rounded-lg p-2', 'placeholder': 'Country'}),
-            'city': forms.TextInput(attrs={'class': 'w-full border rounded-lg p-2', 'placeholder': 'City'}),
-            'address': forms.TextInput(attrs={'class': 'w-full border rounded-lg p-2', 'placeholder': 'Address'}),
-            'membership_type': forms.Select(attrs={'class': 'w-full border rounded-lg p-2'}),
-            'organization_name': forms.TextInput(attrs={'class': 'w-full border rounded-lg p-2', 'placeholder': 'Organization Name'}),
-            'date_of_birth': forms.DateInput(attrs={'class': 'w-full border rounded-lg p-2', 'type': 'date'}),
-        }
-
-
-class ContactMessageForm(forms.ModelForm):
-    """Form for contact messages"""
-    
-    class Meta:
-        model = ContactMessage
-        fields = ['name', 'email', 'message']
-        widgets = {
-            'name': forms.TextInput(attrs={'class': 'w-full border rounded-lg p-2', 'placeholder': 'Your Name'}),
-            'email': forms.EmailInput(attrs={'class': 'w-full border rounded-lg p-2', 'placeholder': 'Your Email'}),
-            'message': forms.Textarea(attrs={'class': 'w-full border rounded-lg p-2', 'placeholder': 'Your Message', 'rows': 5}),
+            'content': forms.Textarea(attrs={'rows': 10}),
+            'ai_summary': forms.Textarea(attrs={'rows': 3}),
         }

@@ -24,22 +24,51 @@
     .hero-image-container { overflow: hidden; display:flex; align-items:center; justify-content:center; }
     .hero-image-container img { width:100%; height:100%; object-fit:cover; }
 
-
     .course-card { transition: all 0.3s ease; }
     .course-card:hover { transform: translateY(-4px); box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);}
     .enrollment-badge { font-size: 0.75rem; font-weight: 600; padding: 0.25rem 0.75rem; border-radius: 9999px; }
     .badge-open { background-color: #0a926d; color: white; }
     .badge-closed { background-color: #6b7280; color: white;}
     .badge-closing-soon { background-color: #cc0000; color: white;}
+    
+    /* Pagination styles */
+    .pagination {
+        display: flex;
+        justify-content: center;
+        gap: 0.5rem;
+        margin-top: 2rem;
+    }
+    .pagination a, .pagination span {
+        padding: 0.5rem 1rem;
+        border-radius: 0.5rem;
+        text-decoration: none;
+        transition: all 0.2s;
+    }
+    .pagination a {
+        background-color: white;
+        color: #1e40af;
+        border: 1px solid #e5e7eb;
+    }
+    .pagination a:hover {
+        background-color: #1e40af;
+        color: white;
+        border-color: #1e40af;
+    }
+    .pagination .current {
+        background-color: #1e40af;
+        color: white;
+        border: 1px solid #1e40af;
+    }
+    .pagination .disabled {
+        color: #9ca3af;
+        background-color: #f3f4f6;
+        cursor: not-allowed;
+    }
 </style>
 
-
-
 <div id="education-app" class="antialiased">
-    <!-- Navigation is provided by base template's navbar include -->
-
     <main class="mx-auto pb-16">
-        <!-- Mentorship success modal (shows after successful form submission) -->
+        <!-- Mentorship success modal -->
         <div id="mentorship-success-modal" role="dialog" aria-modal="true" aria-labelledby="mentorship-success-title" style="display:none;">
             <div class="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
                 <div class="bg-white rounded-lg shadow-lg max-w-lg w-full p-6 mx-4">
@@ -52,129 +81,214 @@
             </div>
         </div>
 
-           <header class="relative h-64 bg-gray-900">
-        <img src="{% static 'main/img/education/training.jpg' %}"
-             class="absolute inset-0 w-full h-full object-cover opacity-60">
-    
-        <div class="relative flex flex-col items-center justify-center h-full text-center text-white">
-            <h1 class="text-4xl md:text-5xl font-extrabold tracking-wide">
-                
-                         
-                 Skills & Professional Development
-            </h1>
-            <p class="mt-2 text-lg text-white">
-                Certified courses for the global workforce.
-            </p>
-            <br>
-        </div>
-    </header>
-
-    <div class="max-w-6xl mx-auto px-6 mt-6">
-        <a href="{% url 'main:education_landing' %}"
-        class="text-brand-blue font-semibold no-underline hover:no-underline"
-        >
-           ← Back to Previous Page
-        </a>
-    </div>
-
-    <section class="max-w-6xl mx-auto px-6 py-10">
-    <h2 class="text-3xl font-bold text-brand-blue">
-     Internal Training Programs
-    </h2>
-    <p class="text-gray-600 mt-1 mb-8">
-        Specially curated tracks for the Diaspora County 48 community.
-    </p>
-
-    {% if courses %}
-     
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-     
-        {% for course in courses %}
-        <div class="course-card bg-white rounded-xl shadow-md p-6 hover:shadow-lg transition">
-            <div class="flex justify-between items-start mb-3">
-                <h3 class="font-bold text-lg">
-                   {{course.title}}
-                </h3>
-
-                {% if course.enrollment == "Open" %}
-                    <span class="enrollment-badge badge-open">OPEN</span>
-                {% elif course.enrollment == "Closed" %}
-                   <span class="enrollment-badge badge-closed">CLOSED</span>
-                 {% else %}
-                <span class="enrollment-badge badge-closing-soon">CLOSING SOON</span>
+        <header class="relative h-64 bg-gray-900">
+            <img src="{% static 'main/img/education/training.jpg' %}"
+                 class="absolute inset-0 w-full h-full object-cover opacity-60">
+        
+            <div class="relative flex flex-col items-center justify-center h-full text-center text-white">
+                <h1 class="text-4xl md:text-5xl font-extrabold tracking-wide">
+                    Skills & Professional Development
+                </h1>
+                <p class="mt-2 text-lg text-white">
+                    Certified courses for the global workforce.
+                </p>
+                <br>
+                {% if user.is_authenticated %}
+                    <a href="{% url 'main:course_crud' %}"
+                       class="bg-green-600 text-white px-6 py-3 rounded-full font-semibold hover:bg-green-700 transition">
+                        + Add Course
+                    </a>
+                {% else %}
+                    <a href="{% url 'login' %}?next={{ request.path }}"
+                       class="bg-green-600 text-white px-6 py-3 rounded-full font-semibold hover:bg-green-700 transition">
+                        Login to Add Course
+                    </a>
                 {% endif %}
             </div>
+        </header>
 
-            <p class="text-sm text-gray-500 mb-4">
-            {{ course.get_category_display }}
-            </p>
+        <div class="max-w-6xl mx-auto px-6 mt-6">
+            <a href="{% url 'main:education_landing' %}"
+               class="text-brand-blue font-semibold no-underline hover:no-underline">
+                ← Back to Previous Page
+            </a>
+        </div>
+
+        <section class="max-w-6xl mx-auto px-6 py-10">
+            <div class="flex justify-between items-center mb-4">
+                <div>
+                    <h2 class="text-3xl font-bold text-brand-blue">
+                        Internal Training Programs
+                    </h2>
+                    <p class="text-gray-600 mt-1">
+                        Specially curated tracks for the Diaspora County 48 community.
+                    </p>
+                </div>
+                <div class="text-sm text-gray-500">
+                    Showing {{ page_obj.start_index }} - {{ page_obj.end_index }} of {{ paginator.count }} courses
+                </div>
+            </div>
             
-            <div class="grid grid-cols-3 text-sm text-gray-600">
-                <div>
-                  <p class="text-xs text-gray-400">DURATION</p>
-                  <p class="font-medium">{{ course.duration|default:"TBD" }}</p>
-                </div>
-                <div>
-                    <p class="text-xs text-gray-400">FORMAT</p>
-                    <p class="font-medium">{{ course.get_format_display }}</p>
-                </div>
-                <div>
-                    <p class="text-xs text-gray-400" >STARTS</p>
-                    <p class="font-medium text-brand-green">{{ course.start_date|date:"M d, Y" }}</p>
-                </div>
+            <!-- Search and Filter Section -->
+            <div class="bg-white rounded-xl shadow-md p-4 mb-8">
+                <form method="GET" action="" class="flex flex-col md:flex-row gap-4">
+                    <div class="flex-1">
+                        <input type="text" 
+                               name="search" 
+                               value="{{ search_query }}"
+                               placeholder="Search by title, category, or instructor..." 
+                               class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-brand-blue">
+                    </div>
+                    
+                    <div class="w-full md:w-48">
+                        <select name="category" class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-brand-blue">
+                            <option value="">All Categories</option>
+                            <option value="Tech" {% if category_filter == 'Tech' %}selected{% endif %}>Tech</option>
+                            <option value="Business" {% if category_filter == 'Business' %}selected{% endif %}>Business</option>
+                            <option value="Art" {% if category_filter == 'Art' %}selected{% endif %}>Art</option>
+                            <option value="Health" {% if category_filter == 'Health' %}selected{% endif %}>Health</option>
+                        </select>
+                    </div>
+                    
+                    <div class="w-full md:w-48">
+                        <select name="format" class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-brand-blue">
+                            <option value="">All Formats</option>
+                            <option value="Online" {% if format_filter == 'Online' %}selected{% endif %}>Online</option>
+                            <option value="Offline" {% if format_filter == 'Offline' %}selected{% endif %}>Offline</option>
+                            <option value="Hybrid" {% if format_filter == 'Hybrid' %}selected{% endif %}>Hybrid</option>
+                        </select>
+                    </div>
+                    
+                    <div class="w-full md:w-48">
+                        <select name="status" class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-brand-blue">
+                            <option value="">All Status</option>
+                            <option value="Upcoming" {% if status_filter == 'Upcoming' %}selected{% endif %}>Upcoming</option>
+                            <option value="Ongoing" {% if status_filter == 'Ongoing' %}selected{% endif %}>Ongoing</option>
+                            <option value="Completed" {% if status_filter == 'Completed' %}selected{% endif %}>Completed</option>
+                        </select>
+                    </div>
+                    
+                    <button type="submit" class="bg-brand-blue text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition">
+                        Filter
+                    </button>
+                    
+                    {% if search_query or category_filter or format_filter or status_filter %}
+                        <a href="{% url 'main:education_training' %}" class="bg-gray-500 text-white px-6 py-2 rounded-lg hover:bg-gray-600 transition">
+                            Clear
+                        </a>
+                    {% endif %}
+                </form>
             </div>
 
-            <div class="flex justify-between items-center">
-              <span class="text-sm text-gray-500"> 
-                <strong>{{ course.enrolled_students }}</strong> enrolled
-                {% if course.max_students %}  {{ course.max_students }} {% endif %}
-              </span>
-              <a href="{% url 'main:course_register' %}"
-              class="bg-brand-blue text-white px-4 py-2 rounded-md text-sm font-semibold hover:bg-blue-700 transition"
-              >
-                Register Now
-              </a>
-            </div>
+            {% if page_obj %}
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                    {% for course in page_obj %}
+                    <div class="course-card bg-white rounded-xl shadow-md p-6 hover:shadow-lg transition">
+                        <div class="flex justify-between items-start mb-3">
+                            <h3 class="font-bold text-lg">
+                                {{ course.title }}
+                            </h3>
 
-        </div>
-        {% endfor %}
+                            {% if course.enrollment == "Open" %}
+                                <span class="enrollment-badge badge-open">OPEN</span>
+                            {% elif course.enrollment == "Closed" %}
+                                <span class="enrollment-badge badge-closed">CLOSED</span>
+                            {% else %}
+                                <span class="enrollment-badge badge-closing-soon">CLOSING SOON</span>
+                            {% endif %}
+                        </div>
 
-    </div>
-    {% else %}
+                        <p class="text-sm text-gray-500 mb-4">
+                            {{ course.get_category_display }}
+                        </p>
+                        
+                        <div class="grid grid-cols-3 text-sm text-gray-600">
+                            <div>
+                                <p class="text-xs text-gray-400">DURATION</p>
+                                <p class="font-medium">{{ course.duration|default:"TBD" }}</p>
+                            </div>
+                            <div>
+                                <p class="text-xs text-gray-400">FORMAT</p>
+                                <p class="font-medium">{{ course.get_format_display }}</p>
+                            </div>
+                            <div>
+                                <p class="text-xs text-gray-400">STARTS</p>
+                                <p class="font-medium text-brand-green">{{ course.start_date|date:"M d, Y" }}</p>
+                            </div>
+                        </div>
 
-    <div class="bg-white rounded-xl shadow p-8 text-center">
-      <p class="text-gray-500">
-      No training courses available at the moment.
-      </p>
-    </div>
-    {% endif %}
+                        <div class="flex justify-between items-center mt-4">
+                            <span class="text-sm text-gray-500"> 
+                                <strong>{{ course.enrolled_students }}</strong> enrolled
+                                {% if course.max_students %} / {{ course.max_students }} {% endif %}
+                            </span>
+                            <a href="{% url 'main:course_register' %}?course_id={{ course.id }}"
+                               class="bg-brand-blue text-white px-4 py-2 rounded-md text-sm font-semibold hover:bg-blue-700 transition">
+                                Register Now
+                            </a>
+                        </div>
+                        
+                    </div>
+                    {% endfor %}
+                </div>
 
-    </section>
+                <!-- Pagination -->
+                {% if page_obj.has_other_pages %}
+                <div class="pagination">
+                    {% if page_obj.has_previous %}
+                        <a href="?page=1{% if search_query %}&search={{ search_query }}{% endif %}{% if category_filter %}&category={{ category_filter }}{% endif %}{% if format_filter %}&format={{ format_filter }}{% endif %}{% if status_filter %}&status={{ status_filter }}{% endif %}">&laquo; First</a>
+                        <a href="?page={{ page_obj.previous_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}{% if category_filter %}&category={{ category_filter }}{% endif %}{% if format_filter %}&format={{ format_filter }}{% endif %}{% if status_filter %}&status={{ status_filter }}{% endif %}">Previous</a>
+                    {% else %}
+                        <span class="disabled">&laquo; First</span>
+                        <span class="disabled">Previous</span>
+                    {% endif %}
 
-    <section class="max-w-6xl mx-auto px-6 py-16">
-        <div class="bg-white rounded-2xl shadow-xl p-8">
-            <div class="flex flex-col md:flex-row md:items-center md:justify-between mb-8">
-               <div>
-                       <h2 class="text-3xl font-extrabold text-brand-green">
-                        AI Course Discovery
-                       </h2>
-                       <p class="text-gray-600">
-                       Free online courses from MIT, Harvard, and Stanford populated in real-time.
-                       </p>
-               </div>
+                    {% for num in page_obj.paginator.page_range %}
+                        {% if page_obj.number == num %}
+                            <span class="current">{{ num }}</span>
+                        {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                            <a href="?page={{ num }}{% if search_query %}&search={{ search_query }}{% endif %}{% if category_filter %}&category={{ category_filter }}{% endif %}{% if format_filter %}&format={{ format_filter }}{% endif %}{% if status_filter %}&status={{ status_filter }}{% endif %}">{{ num }}</a>
+                        {% endif %}
+                    {% endfor %}
+
+                    {% if page_obj.has_next %}
+                        <a href="?page={{ page_obj.next_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}{% if category_filter %}&category={{ category_filter }}{% endif %}{% if format_filter %}&format={{ format_filter }}{% endif %}{% if status_filter %}&status={{ status_filter }}{% endif %}">Next</a>
+                        <a href="?page={{ page_obj.paginator.num_pages }}{% if search_query %}&search={{ search_query }}{% endif %}{% if category_filter %}&category={{ category_filter }}{% endif %}{% if format_filter %}&format={{ format_filter }}{% endif %}{% if status_filter %}&status={{ status_filter }}{% endif %}">Last &raquo;</a>
+                    {% else %}
+                        <span class="disabled">Next</span>
+                        <span class="disabled">Last &raquo;</span>
+                    {% endif %}
+                </div>
+                {% endif %}
+            {% else %}
+                <div class="bg-white rounded-xl shadow p-8 text-center">
+                    <p class="text-gray-500">
+                        No training courses available at the moment.
+                    </p>
+                </div>
+            {% endif %}
+        </section>
+
+        <section class="max-w-6xl mx-auto px-6 py-16">
+            <div class="bg-white rounded-2xl shadow-xl p-8">
+                <div class="flex flex-col md:flex-row md:items-center md:justify-between mb-8">
+                    <div>
+                        <h2 class="text-3xl font-extrabold text-brand-green">
+                            AI Course Discovery
+                        </h2>
+                        <p class="text-gray-600">
+                            Free online courses from MIT, Harvard, and Stanford populated in real-time.
+                        </p>
+                    </div>
                     <button id="refresh-ai-courses" class="mt-4 md:mt-0 bg-brand-blue text-white px-6 py-3 rounded-full font-semibold hover:bg-blue-700 transition">
-                  Refresh AI List
-               </button>
+                        Refresh AI List
+                    </button>
+                </div>
+
+                <div id="ai-course-container" class="grid grid-cols-1 md:grid-cols-2 gap-8 min-h-[300px]">
+                </div>
             </div>
-
-            <div id="ai-course-container" class="grid grid-cols-1 md:grid-cols-2 gap-8 min-h-[300px]">
-
-            </div>
-
-        </div>
-
-    </section>
-
+        </section>
     </main>
 </div>   
 
@@ -182,7 +296,6 @@
     async function loadAICourses(){
         const container = document.getElementById('ai-course-container');
 
-       
         const steps = [
             "Scanning MIT OpenCourseWare...",
             "Checking Harvard course catalog...",
@@ -203,14 +316,12 @@
 
         const status = document.getElementById("ai-status");
 
-
         for (let step of steps){
             if (status) status.textContent = step;
             await new Promise(resolve => setTimeout(resolve, 900));
         }
 
         try{
-            // to fetch backend courses
             const response = await fetch("{% url 'main:ai_course_discovery' %}");
 
             if(!response.ok){
@@ -229,7 +340,6 @@
                     card.innerHTML = `
                     <div class="flex items-start gap-4 mb-4">
                         <div class="bg-gray-200 rounded-lg p-3 text-2xl"></div>
-
                         <div>
                             <h3 class="font-bold text-lg">
                             ${escapeHtml(course.title || 'Untitled Course')}
@@ -239,7 +349,6 @@
                             </p>
                         </div>
                     </div>
-
                     <div class="flex flex-wrap justify-between text-sm text-gray-600 mb-4">
                         <span>Platform:
                           <strong>
@@ -255,7 +364,7 @@
                     <a href="${escapeHtml(course.url || '#')}" target="_blank" rel="noopener noreferrer"
                     class="block text-center bg-white border rounded-lg py-2 font-semibold text-brand-blue hover:bg-gray-100 transition"
                     >
-                     Visit Course title
+                     Visit Course
                     </a>
                     `;
                     container.appendChild(card);
@@ -282,9 +391,7 @@
             </div>
             `;
         }
-
     }
-
 
     function escapeHtml(unsafe){
         if(!unsafe) return '';
@@ -294,7 +401,6 @@
            .replace(/>/g, "&gt;")
            .replace(/"/g, "&quot;")
            .replace(/'/g, "&#039;")
-
     }
 
     document.addEventListener('DOMContentLoaded', function(){
@@ -306,7 +412,6 @@
                 modal.style.display = 'none';
             });
         }
-
 
         if (modal){
             modal.addEventListener('click', function(e){
@@ -323,8 +428,12 @@
     }
 
     window.addEventListener("DOMContentLoaded", loadAICourses);
-
 </script>
 
-
 {% endblock %}
+
+
+
+
+
+

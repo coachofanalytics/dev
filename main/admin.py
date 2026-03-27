@@ -234,166 +234,18 @@ class AIRecommendationRuleAdmin(admin.ModelAdmin):
     list_filter = ['age_bracket', 'residence', 'priority', 'is_active']
     search_fields = ['recommendation_text']
 
+@admin.register(Category)
+class CategoryAdmin(admin.ModelAdmin):
+    list_display = ('name', 'slug', 'created_at')
 
-# ============================================
-# COMMUNITIES APP MODELS ADMIN REGISTRATION
-# ============================================
-from .models import (
-    CommunityMember,
-    DirectoryProfile,
-    ForumCategory,
-    Post,
-    CommentP,
-    EventCalendar,
-    UserProfile,
-    UserSettings,
-    UserPreferences,
-)
+@admin.register(NewsArticle)
+class NewsArticleAdmin(admin.ModelAdmin):
+    list_display = ('title', 'category', 'status', 'created_at')
+    list_filter = ('status', 'category')
+    search_fields = ('title', 'content')
 
-
-@admin.register(CommunityMember)
-class CommunityMemberAdmin(admin.ModelAdmin):
-    list_display = ['name', 'email', 'profession', 'region', 'is_verified', 'is_public_directory', 'date_joined']
-    list_filter = ['is_verified', 'is_public_directory', 'region', 'date_joined']
-    search_fields = ['name', 'email', 'profession', 'specialization', 'region']
-    readonly_fields = ['date_joined', 'last_updated']
-    fieldsets = (
-        ('Personal Information', {
-            'fields': ('name', 'email', 'phone', 'profession')
-        }),
-        ('Profile Details', {
-            'fields': ('region', 'specialization', 'bio', 'website', 'profile_picture')
-        }),
-        ('Status', {
-            'fields': ('is_verified', 'is_public_directory')
-        }),
-        ('Timestamps', {
-            'fields': ('date_joined', 'last_updated'),
-            'classes': ('collapse',)
-        }),
-    )
-
-
-@admin.register(DirectoryProfile)
-class DirectoryProfileAdmin(admin.ModelAdmin):
-    list_display = ['full_name', 'profession', 'region_city', 'category', 'membership_type', 'is_approved', 'is_published']
-    list_filter = ['is_approved', 'is_published', 'category', 'membership_type', 'region_city']
-    search_fields = ['full_name', 'profession', 'category', 'expertise_summary']
-    fieldsets = (
-        ('Profile Information', {
-            'fields': ('member', 'full_name', 'profession', 'region_city')
-        }),
-        ('Expertise', {
-            'fields': ('category', 'membership_type', 'expertise_summary', 'profile_photo')
-        }),
-        ('Publishing', {
-            'fields': ('is_approved', 'is_published')
-        }),
-    )
-
-
-@admin.register(ForumCategory)
-class ForumCategoryAdmin(admin.ModelAdmin):
-    list_display = ['name', 'slug', 'description']
-    prepopulated_fields = {'slug': ('name',)}
-    search_fields = ['name', 'description']
-
-
-@admin.register(Post)
-class PostAdmin(admin.ModelAdmin):
-    list_display = ['title', 'category', 'created_at']
-    list_filter = ['category', 'created_at']
-    search_fields = ['title', 'content']
-    readonly_fields = ['created_at']
-    fieldsets = (
-        ('Content', {
-            'fields': ('title', 'content', 'category')
-        }),
-        ('Metadata', {
-            'fields': ('created_at',),
-            'classes': ('collapse',)
-        }),
-    )
-
-
-@admin.register(CommentP)
-class CommentPAdmin(admin.ModelAdmin):
-    list_display = ['post', 'author', 'created_at']
-    list_filter = ['post', 'author', 'created_at']
-    search_fields = ['content', 'post__title', 'author__username']
-    readonly_fields = ['created_at']
-    fieldsets = (
-        ('Comment', {
-            'fields': ('post', 'author', 'content')
-        }),
-        ('Metadata', {
-            'fields': ('created_at',),
-            'classes': ('collapse',)
-        }),
-    )
-
-
-@admin.register(EventCalendar)
-class EventCalendarAdmin(admin.ModelAdmin):
-    list_display = ['name', 'start_date', 'end_date', 'location']
-    list_filter = ['start_date', 'end_date', 'location']
-    search_fields = ['name', 'description', 'location']
-    fieldsets = (
-        ('Event Information', {
-            'fields': ('name', 'location', 'description')
-        }),
-        ('Duration', {
-            'fields': ('start_date', 'end_date')
-        }),
-    )
-
-
-@admin.register(UserProfile)
-class UserProfileAdmin(admin.ModelAdmin):
-    list_display = ['user', 'get_bio']
-    search_fields = ['user__username', 'user__email']
-    
-    def get_bio(self, obj):
-        return 'View on site' if obj.user else 'No user'
-    get_bio.short_description = 'Bio'
-
-
-@admin.register(UserSettings)
-class UserSettingsAdmin(admin.ModelAdmin):
-    list_display = ['user', 'enable_notifications']
-    list_filter = ['enable_notifications']
-    search_fields = ['user__username', 'user__email']
-
-
-@admin.register(UserPreferences)
-class UserPreferencesAdmin(admin.ModelAdmin):
-    list_display = ['user']
-    search_fields = ['user__username', 'user__email']
-
-
-# ============================================
-# MEMBERJOIN APP ADMIN
-# ============================================
-
-@admin.register(MembershipRegistration)
-class MembershipRegistrationAdmin(admin.ModelAdmin):
-    list_display = ['first_name', 'last_name', 'email', 'membership_type', 'registration_date']
-    list_filter = ['membership_type', 'registration_date', 'country']
-    search_fields = ['first_name', 'last_name', 'email', 'organization_name']
-    readonly_fields = ['registration_date']
-    fieldsets = (
-        ('Personal Information', {
-            'fields': ('first_name', 'last_name', 'email', 'phone_number', 'date_of_birth')
-        }),
-        ('Location', {
-            'fields': ('country', 'city', 'address')
-        }),
-        ('Membership', {
-            'fields': ('membership_type', 'organization_name')
-        }),
-        ('Metadata', {
-            'fields': ('registration_date',),
-            'classes': ('collapse',)
-        }),
-    )
-
+@admin.register(Subscriber)
+class SubscriberAdmin(admin.ModelAdmin):
+    list_display = ('email', 'confirmed', 'subscribed_at')
+    list_filter = ('confirmed',)
+    search_fields = ('email',)
