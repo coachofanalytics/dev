@@ -103,6 +103,11 @@ urlpatterns = [
     path('scholarship/add/', views.add_scholarship, name ='add_scholarship'),
     path('scholarship/edit/<int:pk>', views.scholarship_edit, name ='scholarship_edit'),
     path('scholarship/delete/<int:pk>', views.scholarship_delete, name ='scholarship_delete'),
+
+    path('course/', views.course_crud, name ='course_crud'),
+    path('course/add/', views.add_course, name='add_course'),
+    path('course/edit/<int:pk>', views.edit_course, name='edit_course'),
+    path('course/delete/<int:pk>',views.delete_course, name='delete_course'),
     
     # ============================================
     # MEMBERJOIN APP URLS (INTEGRATED)

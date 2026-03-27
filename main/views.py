@@ -37,7 +37,7 @@ from .models import (
 )
 from accounts.models import CustomerUser
 from .utils import image_view, path_values
-from .forms import ContactForm, DonorForm, MessageForm, ScholarshipSearchForm, GovernanceForm, ArticleForm, ScholarshipForm
+from .forms import ContactForm, DonorForm, MessageForm, ScholarshipSearchForm, GovernanceForm, ArticleForm, ScholarshipForm,TrainingCourseForm
 
 import csv
 import feedparser
@@ -651,10 +651,27 @@ def course_register(request):
             'price': 95.00,
         },
     ]
+    
+    # Get course_id if provided (for pre-selection)
+    course_id = request.GET.get('course_id', None)
+    selected_course = None
+    
+    if course_id:
+        try:
+            selected_course = TrainingCourse.objects.get(id=int(course_id))
+        except (TrainingCourse.DoesNotExist, ValueError):
+            selected_course = None
+    
     # If requested as a partial (AJAX in-page load), return only the fragment
     if request.GET.get('partial') == '1':
-        return render(request, 'main/education/course_register_fragment.html', {'courses': courses})
-    return render(request, 'main/education/course_register.html', {'courses': courses})
+        return render(request, 'main/education/course_register_fragment.html', {
+            'courses': courses,
+            'selected_course': selected_course,
+        })
+    return render(request, 'main/education/course_register.html', {
+        'courses': courses,
+        'selected_course': selected_course,
+    })
 
 
 def donation_list(request):
@@ -819,14 +836,140 @@ def ai_refresh_scholarships(request):
     })
 
 def education_training(request):
-    courses = TrainingCourse.objects.all()
+    courses = TrainingCourse.objects.all()  # Changed from filter(created_by=request.user)
+    
+    search_query = request.GET.get('search', '')
+    if search_query:
+        courses = courses.filter(
+            Q(title__icontains=search_query) |
+            Q(course_code__icontains=search_query) |
+            Q(description__icontains=search_query) |
+            Q(instructor__icontains=search_query)
+        )
+    
+    category_filter = request.GET.get('category', '')
+    if category_filter:
+        courses = courses.filter(category=category_filter)
+    
+    format_filter = request.GET.get('format', '')
+    if format_filter:
+        courses = courses.filter(format=format_filter)
+    
+    status_filter = request.GET.get('status', '')
+    if status_filter:
+        courses = courses.filter(status=status_filter)
 
-    context ={
-        "courses": courses
+    paginator = Paginator(courses, 6)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+    
+    context = {
+        'page_obj': page_obj,
+        'paginator': paginator,
+        'search_query': search_query,
+        'category_filter': category_filter,
+        'format_filter': format_filter,
+        'status_filter': status_filter,
     }
     
-    return render(request, "main/education/training_skills.html", context)
+    return render(request, 'main/education/training_skills.html', context)
 
+
+@login_required
+def course_crud(request):
+    from django.contrib import messages
+    
+    courses = TrainingCourse.objects.filter(created_by=request.user)
+    editing_course = False
+    course_id = request.GET.get('edit', None)
+    course_to_edit = None
+    
+    # Check if editing an existing course
+    if course_id:
+        try:
+            course_to_edit = get_object_or_404(TrainingCourse, id=int(course_id), created_by=request.user)
+            editing_course = True
+        except (ValueError, TrainingCourse.DoesNotExist):
+            pass
+    
+    if request.method == 'POST':
+        if course_to_edit:
+            # Updating existing course
+            form = TrainingCourseForm(request.POST, request.FILES, instance=course_to_edit)
+        else:
+            # Creating new course
+            form = TrainingCourseForm(request.POST, request.FILES)
+        
+        if form.is_valid():
+            course = form.save(commit=False)
+            if not course_to_edit:
+                course.created_by = request.user
+            course.save()
+            if course_to_edit:
+                messages.success(request, f'Course "{course.title}" updated successfully!')
+            else:
+                messages.success(request, f'Course "{course.title}" created successfully!')
+            return redirect('main:course_crud')
+    else:
+        if course_to_edit:
+            form = TrainingCourseForm(instance=course_to_edit)
+        else:
+            form = TrainingCourseForm()
+    
+    return render(request, 'main/education/course_crud.html', {
+        'courses': courses,
+        'form': form,
+        'editing_course': editing_course,
+        'course_to_edit': course_to_edit,
+    })
+
+
+
+@login_required
+def add_course(request):
+    form = TrainingCourseForm(request.POST or None, request.FILES or None)
+
+    if form.is_valid():
+        course = form.save(commit=False)
+        course.created_by = request.user
+        course.save()
+        return redirect('main:education_training')
+
+    return render(request, 'main/education/add_course.html', {'form': form})
+
+
+@login_required
+def edit_course(request, pk):
+    course = get_object_or_404(TrainingCourse, id=pk, created_by=request.user)
+    
+    if request.method == 'POST':
+        form = TrainingCourseForm(request.POST, request.FILES, instance=course)
+        if form.is_valid():
+            form.save()
+            return redirect('main:course_crud') 
+    else:
+        form = TrainingCourseForm(instance=course)
+    
+    courses = TrainingCourse.objects.filter(created_by=request.user)
+    return render(request, 'main/education/course_crud.html', {
+        'courses': courses,
+        'form': form,
+        'editing_course': True,
+    })
+
+@login_required
+def delete_course(request, pk):
+    from django.contrib import messages
+    
+    course = get_object_or_404(TrainingCourse, id=pk, created_by=request.user)
+    
+    if request.method == "POST":
+        course_title = course.title
+        course.delete()
+        messages.success(request, f'Course "{course_title}" deleted successfully!')
+        return redirect('main:course_crud')  
+    
+    return redirect('main:course_crud')
 
 
 

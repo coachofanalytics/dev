@@ -5,7 +5,7 @@ from .models import AppointmentRequest
 # Feedback / Contact Form
 
 from .models import (
-    ContactMessage, Scholarship, Governance, NewsArticle  # ← Add Governance here
+    ContactMessage, Scholarship, Governance, NewsArticle,TrainingCourse
 )
 
 class GovernanceForm(forms.ModelForm):
@@ -212,6 +212,46 @@ class ScholarshipForm(forms.ModelForm):
             'deadline':forms.DateInput(attrs={'type':'date'  ,'class':'w-full border rounded-lg p-2'}),
             'status':forms.Select(attrs={'class':'w-full border rounded-lg p-2'}),
         }
+
+
+
+class TrainingCourseForm(forms.ModelForm):
+    class Meta:
+        model = TrainingCourse
+        fields = [
+            "title",
+            "course_code",
+            "category",
+            "description",
+            "duration",
+            "format",
+            "enrollment",
+            "max_students",
+            "start_date",
+            "end_date",
+            "instructor",
+            "price",
+            "certificate_offered",
+            "syllabus",
+            "prerequisites",
+            "image",
+        ]
+
+        widgets = {
+            "start_date": forms.DateInput(attrs={"type": "date"}),
+            "end_date": forms.DateInput(attrs={"type": "date"}),
+            "description": forms.Textarea(attrs={"rows": 3}),
+            "syllabus": forms.Textarea(attrs={"rows": 3}),
+            "prerequisites": forms.Textarea(attrs={"rows": 2}),
+        }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+    
+        for field in self.fields.values():
+            field.widget.attrs.update({
+                "class": "w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            })
 
 
     
