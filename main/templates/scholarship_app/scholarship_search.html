@@ -287,7 +287,8 @@
                             <p class="text-sm font-semibold text-gray-600">
                                 Deadline: <span class="text-brand-red">{{ scholarship.deadline|date:"m/d/Y" }}</span>
                             </p>
-                            <a href="{% url 'main:course_register' %}" onclick="console.log('Applying for {{ scholarship.title }}')" class="bg-brand-blue text-white font-bold py-2 px-4 rounded-md text-sm hover:bg-[#183693] transition duration-300 shadow-md">
+                            <a href="{% url 'main:course_register' %}?scholarship_id={{ scholarship.id }}" 
+                               class="bg-brand-blue text-white font-bold py-2 px-4 rounded-md text-sm hover:bg-[#183693] transition duration-300 shadow-md">
                                 Apply Now
                             </a>
                         </div>
@@ -504,9 +505,10 @@ async function refreshAIResearch() {
     }
 }
 
-// 🎯 TRACK USER CLICK (feeds AI)
+// 🎯 APPLY FOR SCHOLARSHIP (redirect to registration)
 async function trackClick(id) {
     try {
+        // Track the click for analytics
         await fetch(`/track-click/${id}/`, {
             method: "POST",
             headers: {
@@ -517,6 +519,9 @@ async function trackClick(id) {
     } catch (e) {
         console.error("Tracking failed", e);
     }
+    
+    // Redirect to course registration with scholarship_id
+    window.location.href = `/education/courses/register/?scholarship_id=${id}`;
 }
 
 // 🔐 CSRF TOKEN HELPER

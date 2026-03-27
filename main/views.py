@@ -621,9 +621,12 @@ def request_mentorship(request):
 
 
 def course_register(request):
-    """Render a mock course registration page where users can view course types,
-    see prices, and interact with a demo PayPal-style button. The page also
-    includes a client-side form to add course types dynamically (no server save).
+    """
+    Render course/scholarship registration page.
+    Supports:
+    - Browse available courses
+    - Pre-select a course via course_id parameter
+    - Pre-select a scholarship via scholarship_id parameter
     """
     courses = [
         {
@@ -652,25 +655,40 @@ def course_register(request):
         },
     ]
     
-    # Get course_id if provided (for pre-selection)
-    course_id = request.GET.get('course_id', None)
-    selected_course = None
+    # Get selected object if provided
+    selected_object = None
+    selected_type = None
     
+    # Check for course_id (TrainingCourse)
+    course_id = request.GET.get('course_id', None)
     if course_id:
         try:
-            selected_course = TrainingCourse.objects.get(id=int(course_id))
+            selected_object = TrainingCourse.objects.get(id=int(course_id))
+            selected_type = 'course'
         except (TrainingCourse.DoesNotExist, ValueError):
-            selected_course = None
+            selected_object = None
+    
+    # Check for scholarship_id (Scholarship)
+    scholarship_id = request.GET.get('scholarship_id', None)
+    if scholarship_id and not selected_object:
+        try:
+            selected_object = Scholarship.objects.get(id=int(scholarship_id))
+            selected_type = 'scholarship'
+        except (Scholarship.DoesNotExist, ValueError):
+            selected_object = None
     
     # If requested as a partial (AJAX in-page load), return only the fragment
     if request.GET.get('partial') == '1':
         return render(request, 'main/education/course_register_fragment.html', {
             'courses': courses,
-            'selected_course': selected_course,
+            'selected_object': selected_object,
+            'selected_type': selected_type,
         })
+    
     return render(request, 'main/education/course_register.html', {
         'courses': courses,
-        'selected_course': selected_course,
+        'selected_object': selected_object,
+        'selected_type': selected_type,
     })
 
 
