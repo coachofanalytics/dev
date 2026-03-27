@@ -334,7 +334,7 @@ class Scholarship(models.Model):
         choices=Status.choices,
         default=Status.OPEN
     )
-
+    created_by = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
@@ -434,6 +434,7 @@ class TrainingCourse(models.Model):
     syllabus = models.TextField(blank=True, help_text="Course outline/syllabus")
     prerequisites = models.TextField(blank=True, help_text="Required knowledge or courses")
     image = models.ImageField(upload_to='courses/', null=True, blank=True)
+    created_by = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True) 
 
@@ -1338,4 +1339,4 @@ class Subscriber(models.Model):
     subscribed_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        return self.email
+        return self.email
