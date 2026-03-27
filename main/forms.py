@@ -184,6 +184,36 @@ class ScholarshipSearchForm(forms.Form):
     
     
     
+class ScholarshipForm(forms.ModelForm):
+    class Meta:
+        model = Scholarship
+        fields =  [
+            'title',
+            'provider',
+            'level',
+            'field',
+            'location',
+            'amount_value',
+            'amount_description',
+            'amount_currency',
+            'deadline',
+            'status'
+        ]
+
+        widgets = {
+            'title':forms.TextInput(attrs={'class':'w-full border rounded-lg p-2'}),
+            'provider':forms.TextInput(attrs={'class':'w-full border rounded-lg p-2'}),
+            'level':forms.Select(attrs={'class':'w-full border rounded-lg p-2'}),
+            'field':forms.Select(attrs={'class':'w-full border rounded-lg p-2'}),
+            'location':forms.Select(attrs={'class':'w-full border rounded-lg p-2'}),
+            'amount_value':forms.NumberInput(attrs={'class':'w-full border rounded-lg p-2'}),
+            'amount_description':forms.TextInput(attrs={'class':'w-full border rounded-lg p-2'}),
+            'amount_currency':forms.Select(attrs={'class':'w-full border rounded-lg p-2'}),
+            'deadline':forms.DateInput(attrs={'type':'date'  ,'class':'w-full border rounded-lg p-2'}),
+            'status':forms.Select(attrs={'class':'w-full border rounded-lg p-2'}),
+        }
+
+
     
     
 

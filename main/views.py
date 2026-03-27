@@ -37,7 +37,7 @@ from .models import (
 )
 from accounts.models import CustomerUser
 from .utils import image_view, path_values
-from .forms import ContactForm, DonorForm, MessageForm, ScholarshipSearchForm, GovernanceForm, ArticleForm
+from .forms import ContactForm, DonorForm, MessageForm, ScholarshipSearchForm, GovernanceForm, ArticleForm, ScholarshipForm
 
 import csv
 import feedparser
@@ -726,6 +726,46 @@ def scholarship_search(request):
     }
     return render(request, 'scholarship_app/scholarship_search.html',context)
 
+@login_required
+def add_scholarship(request):
+    if request.method == "POST":
+        form  = ScholarshipForm(request.POST)
+        if form.is_valid():
+            obj = form.save(commit=False)
+            obj.created_by = request.user
+            obj.save()
+            return redirect('main:scholarship_search')
+    
+    else:
+        form = ScholarshipForm()
+
+    return render(request, "scholarship_app/add_scholarship.html", {"form": form})
+
+@login_required
+def scholarship_edit(request, pk):
+    scholarship = get_object_or_404(Scholarship, pk=pk, created_by=request.user)
+    if request.method == "POST":
+        form = ScholarshipForm(request.POST, instance=scholarship)
+        if form.is_valid():
+            form.save()
+            return redirect('main:add_scholarship')
+    
+    else:
+        form  = ScholarshipForm(instance=scholarship)
+
+    return render(request,'scholarship_app/scholarship_edit.html', {'form': form})
+
+
+@login_required
+def scholarship_delete(request, pk):
+    scholarship = get_object_or_404(Scholarship, pk=pk, created_by=request.user)
+    if request.method == "POST":
+        scholarship.delete()
+        return redirect('main:add_scholarship')
+
+    return render(request,'scholarship_app/scholarship_delete.html', {'form': form})
+
+
 def ai_refresh_scholarships(request):
     today = timezone.now().date()
     scholarships = Scholarship.objects.all()
@@ -786,6 +826,7 @@ def education_training(request):
     }
     
     return render(request, "main/education/training_skills.html", context)
+
 
 
 
