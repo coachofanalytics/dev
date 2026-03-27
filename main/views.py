@@ -791,24 +791,33 @@ def education_training(request):
 
 def ai_course_discovery(request):
 
-    feeds = [
+    courses = []
+    seen = set()
+
+    mit_feeds = [
         "https://ocw.mit.edu/courses/rss.xml",
         "https://ocw.mit.edu/courses/new-courses/feed",
     ]
 
     courses = []
 
-    for url in feeds:
+    for url in mit_feeds:
         feed = feedparser.parse(url)
 
-        for entry in feed.entries[:10]:
+        for entry in feed.entries:
+            title = entry.title.strip()
+
+            if title in seen:
+                continue
+            seen.add(title)
 
             courses.append({
-                "title": entry.title,
+                "title": title,
                 "university": "MIT",
                 "platform": "MIT OpenCourseWare",
                 "duration": "Self-paced",
-                "url": entry.link
+                "url": entry.link,
+                "is_free": True
             })
 
     # Harvard / edX courses
@@ -818,17 +827,56 @@ def ai_course_discovery(request):
             "university": "Harvard University",
             "platform": "edX",
             "duration": "12 Weeks",
-            "url": "https://www.edx.org/cs50"
+            "url": "https://www.edx.org/cs50",
+            "is_free": True
         },
         {
             "title": "Data Science: Machine Learning",
             "university": "Harvard University",
             "platform": "edX",
             "duration": "8 Weeks",
-            "url": "https://www.edx.org/course/data-science-machine-learning"
+            "url": "https://www.edx.org/course/data-science-machine-learning",
+            "is_free": True
+        },
+        {
+            "title": "CS50's AI with Python",
+            "university": "Harvard University",
+            "platform": "edX",
+            "duration": "7 Weeks",
+            "url": "https://www.edx.org/course/cs50s-introducation-to-artificial-intelligence-with-python",
+            "is_free": True
         }
     ]
 
+    # Youtube Courses
+
+    youtube_courses = [
+        {
+            "title": "Python Full Course for Beginners",
+            "university": "FreeCodeCamp",
+            "platform": "Youtube",
+            "duration": "Self-paced",
+            "url": "https://www.youtube.com/watch?v=rfscVS0vtbw",
+            "is_free": True
+        },
+        {
+            "title": "JavaScript Full Course",
+            "university": "FreeCodeCamp",
+            "platform": "Youtube",
+            "duration": "Self-paced",
+            "url": "https://www.youtube.com/watch?v=jS4aFq5-91M",
+            "is_free": True
+        },
+        {
+            "title": "Machine Learning Full Course",
+            "university": "Stanford (Andrew Ng)",
+            "platform": "Youtube",
+            "duration": "Self-paced",
+            "url": "https://www.youtube.com/watch?v=jGwoUgTS7I",
+            "is_free": True
+        },
+    ]
+  
     stanford_courses = [
         {
             "title": "Machine Learning",
@@ -839,15 +887,37 @@ def ai_course_discovery(request):
         }
     ]
 
+    futurelearn_courses = [
+        {
+            "title": "Digital Skills: Web Analytics",
+            "university": "Accenture",
+            "platform": "FutureLearn",
+            "duration": "4 Weeks",
+            "url": "https://www.futurelearn.com/courses/digital-skills-web-analytics",
+            "is_free": True
+        },
+    ]
+
     courses.extend(harvard_courses)
     courses.extend(stanford_courses)
+    courses.extend(youtube_courses)
+    courses.extend(futurelearn_courses)
 
+    if len(courses) < 6:
+        return JsonResponse({
+            "courses": courses,
+            "count": len(courses)
+        })
+    
     random.shuffle(courses)
+    pool = courses[:20]
+    selected = random.sample(pool, min(6,len(pool)))
 
     return JsonResponse({
-        "courses": courses[:10]
+        "courses": selected,
+        "count": len(selected)
     })
-
+    
 
 
 def testimonial_list(request):
