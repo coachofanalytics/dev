@@ -756,7 +756,9 @@ def ai_refresh_scholarships(request):
         scored.append((score, s))
 
     scored.sort(reverse=True, key=lambda x: x[0])
-    best = [s for score, s in scored[:6]]
+    top_pool = scored[:25]
+    selected = random.sample(top_pool, min(6, len(top_pool)))
+    best = [s for score, s in selected]
 
     data = []
     for s in best:
