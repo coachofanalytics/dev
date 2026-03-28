@@ -3,7 +3,7 @@ from datetime import datetime,date,timedelta
 from dateutil.relativedelta import relativedelta
 from django.contrib.auth.decorators import login_required
 from django.conf import settings
-from django.urls import reverse
+from django.urls import reverse, reverse_lazy
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.forms import UserCreationForm
@@ -14,6 +14,7 @@ from django.views.generic import (
     UpdateView,
     ListView,
     DetailView,
+    DeleteView,
 )
 #<<<<<<< 25.10_DC48_UAT_UO
 from .models import Assets,Description, News, Page, Service, SubService,Team, SafetyAlertSubscription, EmergencyHotline, StaffContact, InsurancePlan, AIRecommendationRule, ExpertInquiry, ConsularAssistancePage, NewsArticle, Category, Subscriber
@@ -29,7 +30,7 @@ from accounts.models import CustomerUser
 from .utils import image_view,path_values
 from .forms import ContactForm, DonorForm, MessageForm,ScholarshipSearchForm
 ##=======
-from django.views.decorators.csrf import csrf_exempt
+from django.views.decorators.csrf import csrf_exempt, csrf_protect
 from main.forms import ContactForm, GovernanceForm, ArticleForm
 #>>>>>>> origin/25.10_DC48K_UAT_FN
 from django.contrib.auth import get_user_model
