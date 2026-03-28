@@ -1,182 +1,157 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Find Diaspora-Friendly Doctors – Diaspora County 48</title>
-    <style>
-        /* ============ RESET & BASE ============ */
-        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-        html { font-size: 16px; scroll-behavior: smooth; }
-        body { font-family: 'Segoe UI', Arial, sans-serif; color: #1a202c; background: #f5f7fa; min-height: 100vh; display: flex; flex-direction: column; }
+{% extends "main/base_templates/base.html" %}
+{% load static %}
 
-        /* ============ NAV ============ */
-        .nav { background: #1a3a2a; padding: 0 2rem; display: flex; align-items: center; justify-content: space-between; height: 56px; position: sticky; top: 0; z-index: 100; }
-        .nav-brand { color: #fff; font-weight: 700; font-size: 1.1rem; letter-spacing: .5px; text-decoration: none; }
-        .nav-links { display: flex; gap: 1.5rem; list-style: none; }
-        .nav-links a { color: rgba(255,255,255,.8); text-decoration: none; font-size: .9rem; transition: color .2s; padding: 4px 0; }
-        .nav-links a:hover, .nav-links a.active { color: #fff; }
-        .nav-links a.active { border-bottom: 2px solid #4CAF50; font-weight: 600; }
-        .nav-toggle { display: none; background: none; border: none; color: #fff; font-size: 1.5rem; cursor: pointer; }
+{% block content %}
 
-        /* ============ HERO ============ */
-        .hero { background: linear-gradient(135deg, #1a3a2a 0%, #2563eb 100%); padding: 3.5rem 2rem; text-align: center; }
-        .hero h1 { color: #fff; font-size: 2.4rem; font-weight: 800; letter-spacing: 1px; text-transform: uppercase; margin-bottom: .75rem; }
-        .hero p { color: rgba(255,255,255,.85); font-size: 1.05rem; margin-bottom: 2rem; }
-        .search-form { display: flex; gap: .75rem; max-width: 720px; margin: 0 auto; flex-wrap: wrap; }
-        .search-form input { flex: 1; min-width: 200px; padding: .75rem 1rem; border: none; border-radius: 4px; font-size: 1rem; outline: none; }
-        .search-form input:focus { box-shadow: 0 0 0 3px rgba(255,255,255,.4); }
-        .btn-search { background: #dc2626; color: #fff; border: none; padding: .75rem 1.75rem; border-radius: 4px; font-weight: 700; font-size: .95rem; letter-spacing: .5px; cursor: pointer; text-transform: uppercase; transition: background .2s; white-space: nowrap; }
-        .btn-search:hover { background: #b91c1c; }
+<style>
+    /* ============ RESET & BASE (page-specific) ============ */
+    main { background: #f5f7fa; }
 
-        /* ============ MAIN LAYOUT ============ */
-        .main { max-width: 1200px; margin: 2rem auto; padding: 0 1.5rem; display: grid; grid-template-columns: 240px 1fr; gap: 1.5rem; flex: 1; width: 100%; }
+    /* ============ HERO ============ */
+    .hero { background: linear-gradient(135deg, #1a3a2a 0%, #2563eb 100%); padding: 3.5rem 2rem; text-align: center; }
+    .hero h1 { color: #fff; font-size: 2.4rem; font-weight: 800; letter-spacing: 1px; text-transform: uppercase; margin-bottom: .75rem; }
+    .hero p { color: rgba(255,255,255,.85); font-size: 1.05rem; margin-bottom: 2rem; }
+    .search-form { display: flex; gap: .75rem; max-width: 720px; margin: 0 auto; flex-wrap: wrap; }
+    .search-form input { flex: 1; min-width: 200px; padding: .75rem 1rem; border: none; border-radius: 4px; font-size: 1rem; outline: none; }
+    .search-form input:focus { box-shadow: 0 0 0 3px rgba(255,255,255,.4); }
+    .btn-search { background: #dc2626; color: #fff; border: none; padding: .75rem 1.75rem; border-radius: 4px; font-weight: 700; font-size: .95rem; letter-spacing: .5px; cursor: pointer; text-transform: uppercase; transition: background .2s; white-space: nowrap; }
+    .btn-search:hover { background: #b91c1c; }
 
-        /* ============ FILTERS ============ */
-        .filters { background: #fff; border-radius: 8px; padding: 1.25rem; height: fit-content; box-shadow: 0 1px 4px rgba(0,0,0,.08); }
-        .filter-group { margin-bottom: 1.5rem; }
-        .filter-group:last-child { margin-bottom: 0; }
-        .filter-title { font-size: .7rem; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: #64748b; margin-bottom: .75rem; }
-        .filter-item { display: flex; align-items: center; gap: .5rem; margin-bottom: .5rem; cursor: pointer; }
-        .filter-item input[type=checkbox] { width: 16px; height: 16px; accent-color: #2563eb; cursor: pointer; }
-        .filter-item label { font-size: .9rem; color: #374151; cursor: pointer; }
+    /* ============ MAIN LAYOUT ============ */
+    .main { max-width: 1200px; margin: 2rem auto; padding: 0 1.5rem; display: grid; grid-template-columns: 240px 1fr; gap: 1.5rem; flex: 1; width: 100%; }
 
-        /* ============ RESULTS ============ */
-        .results-area {}
-        .results-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1rem; gap: 1rem; flex-wrap: wrap; }
-        .results-count { font-size: 1.1rem; font-weight: 600; color: #1a202c; }
-        .sort-wrap { display: flex; align-items: center; gap: .5rem; }
-        .sort-wrap label { font-size: .9rem; color: #64748b; white-space: nowrap; }
-        .sort-select { padding: .45rem .75rem; border: 1px solid #d1d5db; border-radius: 4px; font-size: .9rem; color: #374151; background: #fff; cursor: pointer; outline: none; }
-        .sort-select:focus { border-color: #2563eb; }
+    /* ============ FILTERS ============ */
+    .filters { background: #fff; border-radius: 8px; padding: 1.25rem; height: fit-content; box-shadow: 0 1px 4px rgba(0,0,0,.08); }
+    .filter-group { margin-bottom: 1.5rem; }
+    .filter-group:last-child { margin-bottom: 0; }
+    .filter-title { font-size: .7rem; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: #64748b; margin-bottom: .75rem; }
+    .filter-item { display: flex; align-items: center; gap: .5rem; margin-bottom: .5rem; cursor: pointer; }
+    .filter-item input[type=checkbox] { width: 16px; height: 16px; accent-color: #2563eb; cursor: pointer; }
+    .filter-item label { font-size: .9rem; color: #374151; cursor: pointer; }
 
-        /* ============ DOCTOR CARDS ============ */
-        .cards-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1rem; }
-        .doctor-card { background: #fff; border-radius: 10px; padding: 1.25rem; box-shadow: 0 1px 4px rgba(0,0,0,.08); transition: box-shadow .2s, transform .15s; cursor: pointer; display: flex; flex-direction: column; gap: .75rem; position: relative; }
-        .doctor-card:hover { box-shadow: 0 4px 16px rgba(0,0,0,.12); transform: translateY(-2px); }
-        .card-top { display: flex; align-items: flex-start; gap: .85rem; }
-        .avatar { width: 52px; height: 52px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 1.1rem; color: #fff; flex-shrink: 0; }
-        .card-info { flex: 1; min-width: 0; }
-        .card-name { font-weight: 700; font-size: 1rem; color: #1a202c; margin-bottom: .1rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        .card-specialty { font-size: .85rem; color: #64748b; }
-        .badge { font-size: .7rem; font-weight: 600; padding: .2rem .55rem; border-radius: 20px; white-space: nowrap; }
-        .badge-available { background: #d1fae5; color: #065f46; }
-        .badge-telehealth { background: #dbeafe; color: #1e40af; }
-        .badge-unavailable { background: #f3f4f6; color: #6b7280; }
-        .card-badges { display: flex; gap: .4rem; flex-wrap: wrap; }
-        .card-detail { display: flex; align-items: flex-start; gap: .4rem; font-size: .85rem; color: #475569; }
-        .card-detail .icon { font-size: .9rem; flex-shrink: 0; margin-top: 1px; }
-        .card-rating { display: flex; align-items: center; gap: .35rem; font-size: .85rem; color: #374151; }
-        .stars { color: #f59e0b; font-size: .9rem; }
-        .btn-book { background: #2563eb; color: #fff; border: none; border-radius: 5px; padding: .6rem 1rem; font-weight: 700; font-size: .85rem; cursor: pointer; text-transform: uppercase; letter-spacing: .5px; transition: background .2s; width: 100%; margin-top: auto; }
-        .btn-book:hover { background: #1d4ed8; }
+    /* ============ RESULTS ============ */
+    .results-area {}
+    .results-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1rem; gap: 1rem; flex-wrap: wrap; }
+    .results-count { font-size: 1.1rem; font-weight: 600; color: #1a202c; }
+    .sort-wrap { display: flex; align-items: center; gap: .5rem; }
+    .sort-wrap label { font-size: .9rem; color: #64748b; white-space: nowrap; }
+    .sort-select { padding: .45rem .75rem; border: 1px solid #d1d5db; border-radius: 4px; font-size: .9rem; color: #374151; background: #fff; cursor: pointer; outline: none; }
+    .sort-select:focus { border-color: #2563eb; }
 
-        /* ============ PAGINATION ============ */
-        .pagination { display: flex; justify-content: center; align-items: center; gap: .4rem; margin-top: 2rem; flex-wrap: wrap; }
-        .page-btn { padding: .45rem .75rem; border: 1px solid #d1d5db; background: #fff; border-radius: 4px; font-size: .9rem; cursor: pointer; color: #374151; text-decoration: none; transition: all .15s; }
-        .page-btn:hover { background: #f1f5f9; border-color: #94a3b8; }
-        .page-btn.active { background: #2563eb; color: #fff; border-color: #2563eb; font-weight: 700; }
-        .page-btn.disabled { opacity: .4; cursor: not-allowed; pointer-events: none; }
-        .page-ellipsis { color: #94a3b8; padding: .45rem .3rem; }
+    /* ============ DOCTOR CARDS ============ */
+    .cards-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1rem; }
+    .doctor-card { background: #fff; border-radius: 10px; padding: 1.25rem; box-shadow: 0 1px 4px rgba(0,0,0,.08); transition: box-shadow .2s, transform .15s; cursor: pointer; display: flex; flex-direction: column; gap: .75rem; position: relative; }
+    .doctor-card:hover { box-shadow: 0 4px 16px rgba(0,0,0,.12); transform: translateY(-2px); }
+    .card-top { display: flex; align-items: flex-start; gap: .85rem; }
+    .avatar { width: 52px; height: 52px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 1.1rem; color: #fff; flex-shrink: 0; }
+    .card-info { flex: 1; min-width: 0; }
+    .card-name { font-weight: 700; font-size: 1rem; color: #1a202c; margin-bottom: .1rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .card-specialty { font-size: .85rem; color: #64748b; }
+    .badge { font-size: .7rem; font-weight: 600; padding: .2rem .55rem; border-radius: 20px; white-space: nowrap; }
+    .badge-available { background: #d1fae5; color: #065f46; }
+    .badge-telehealth { background: #dbeafe; color: #1e40af; }
+    .badge-unavailable { background: #f3f4f6; color: #6b7280; }
+    .card-badges { display: flex; gap: .4rem; flex-wrap: wrap; }
+    .card-detail { display: flex; align-items: flex-start; gap: .4rem; font-size: .85rem; color: #475569; }
+    .card-detail .icon { font-size: .9rem; flex-shrink: 0; margin-top: 1px; }
+    .card-rating { display: flex; align-items: center; gap: .35rem; font-size: .85rem; color: #374151; }
+    .stars { color: #f59e0b; font-size: .9rem; }
+    .btn-book { background: #2563eb; color: #fff; border: none; border-radius: 5px; padding: .6rem 1rem; font-weight: 700; font-size: .85rem; cursor: pointer; text-transform: uppercase; letter-spacing: .5px; transition: background .2s; width: 100%; margin-top: auto; }
+    .btn-book:hover { background: #1d4ed8; }
 
-        /* ============ EMPTY STATE ============ */
-        .empty-state { text-align: center; padding: 3rem 1rem; color: #64748b; grid-column: 1/-1; }
-        .empty-state h3 { font-size: 1.2rem; margin-bottom: .5rem; color: #374151; }
+    /* ============ PAGINATION ============ */
+    .pagination { display: flex; justify-content: center; align-items: center; gap: .4rem; margin-top: 2rem; flex-wrap: wrap; }
+    .page-btn { padding: .45rem .75rem; border: 1px solid #d1d5db; background: #fff; border-radius: 4px; font-size: .9rem; cursor: pointer; color: #374151; text-decoration: none; transition: all .15s; }
+    .page-btn:hover { background: #f1f5f9; border-color: #94a3b8; }
+    .page-btn.active { background: #2563eb; color: #fff; border-color: #2563eb; font-weight: 700; }
+    .page-btn.disabled { opacity: .4; cursor: not-allowed; pointer-events: none; }
+    .page-ellipsis { color: #94a3b8; padding: .45rem .3rem; }
 
-        /* ============ FOOTER ============ */
-        footer { background: #0f2418; color: rgba(255,255,255,.7); padding: 2.5rem 2rem 1.5rem; margin-top: auto; }
-        .footer-inner { max-width: 1200px; margin: 0 auto; display: grid; grid-template-columns: 1fr auto auto; gap: 2rem; }
-        .footer-brand h3 { color: #fff; font-size: 1.1rem; margin-bottom: .5rem; }
-        .footer-brand p { font-size: .85rem; max-width: 240px; line-height: 1.6; }
-        .footer-col h4 { color: #fff; font-size: .8rem; text-transform: uppercase; letter-spacing: 1px; margin-bottom: .75rem; }
-        .footer-col ul { list-style: none; }
-        .footer-col li { margin-bottom: .4rem; }
-        .footer-col a { color: rgba(255,255,255,.65); text-decoration: none; font-size: .875rem; transition: color .2s; }
-        .footer-col a:hover { color: #fff; }
-        .footer-bottom { max-width: 1200px; margin: 1.5rem auto 0; padding-top: 1rem; border-top: 1px solid rgba(255,255,255,.1); text-align: center; font-size: .8rem; }
+    /* ============ BREADCRUMB ============ */
+    .breadcrumb-nav { background: #f0f9ff; border-bottom: 1px solid #bfdbfe; padding: 1.25rem 0; margin: 2rem 0; position: relative; z-index: 5; }
+    .breadcrumb-container { max-width: 1200px; margin: 0 auto; padding: 0 1.5rem; }
+    .breadcrumb-list { display: flex; align-items: center; gap: 1rem; list-style: none; margin: 0; padding: 0.5rem 0; flex-wrap: wrap; justify-content: flex-start; }
+    .breadcrumb-item { display: flex; align-items: center; gap: 0.5rem; }
+    .breadcrumb-item a { color: #2563eb; text-decoration: none; font-weight: 600; font-size: .95rem; transition: color .2s; display: flex; align-items: center; gap: 0.35rem; }
+    .breadcrumb-item a:hover { color: #1e40af; text-decoration: underline; }
+    .breadcrumb-item.active { color: #1a3a2a; font-weight: 700; font-size: .95rem; display: flex; align-items: center; gap: 0.35rem; }
+    .breadcrumb-item.completed a { color: #16a34a; }
+    .breadcrumb-item.completed a:hover { color: #15803d; }
+    .breadcrumb-separator { color: #94a3b8; font-weight: 600; margin: 0 0.25rem; }
+    .breadcrumb-badge { display: inline-flex; align-items: center; justify-content: center; width: 24px; height: 24px; border-radius: 50%; font-size: .75rem; font-weight: 700; flex-shrink: 0; min-width: 24px; }
+    .breadcrumb-item.active .breadcrumb-badge { background: #2563eb; color: #fff; }
+    .breadcrumb-item.completed .breadcrumb-badge { background: #16a34a; color: #fff; }
+    @media (max-width: 768px) { .breadcrumb-list { gap: 0.5rem; font-size: 0.85rem; } .breadcrumb-badge { width: 20px; height: 20px; font-size: 0.7rem; } .breadcrumb-item a, .breadcrumb-item.active { font-size: 0.85rem; } }
+    
+    /* ============ EMPTY STATE ============ */
+    .empty-state { text-align: center; padding: 3rem 1rem; color: #64748b; grid-column: 1/-1; }
+    .empty-state h3 { font-size: 1.2rem; margin-bottom: .5rem; color: #374151; }
 
-        /* ============ MODAL BASE ============ */
-        .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.55); z-index: 1000; align-items: center; justify-content: center; padding: 1rem; }
-        .modal-overlay.open { display: flex; }
-        .modal { background: #fff; border-radius: 12px; max-width: 600px; width: 100%; max-height: 90vh; overflow-y: auto; position: relative; box-shadow: 0 20px 60px rgba(0,0,0,.3); animation: modalIn .2s ease; }
-        @keyframes modalIn { from { opacity: 0; transform: translateY(-20px) scale(.97); } to { opacity: 1; transform: none; } }
-        .modal-close { position: absolute; top: 1rem; right: 1rem; background: rgba(0,0,0,.08); border: none; border-radius: 50%; width: 32px; height: 32px; font-size: 1.2rem; cursor: pointer; display: flex; align-items: center; justify-content: center; line-height: 1; color: #374151; transition: background .2s; z-index: 2; }
-        .modal-close:hover { background: rgba(0,0,0,.15); }
+    /* ============ MODAL BASE ============ */
+    .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.55); z-index: 1000; align-items: center; justify-content: center; padding: 1rem; }
+    .modal-overlay.open { display: flex; }
+    .modal { background: #fff; border-radius: 12px; max-width: 600px; width: 100%; max-height: 90vh; overflow-y: auto; position: relative; box-shadow: 0 20px 60px rgba(0,0,0,.3); animation: modalIn .2s ease; }
+    @keyframes modalIn { from { opacity: 0; transform: translateY(-20px) scale(.97); } to { opacity: 1; transform: none; } }
+    .modal-close { position: absolute; top: 1rem; right: 1rem; background: rgba(0,0,0,.08); border: none; border-radius: 50%; width: 32px; height: 32px; font-size: 1.2rem; cursor: pointer; display: flex; align-items: center; justify-content: center; line-height: 1; color: #374151; transition: background .2s; z-index: 2; }
+    .modal-close:hover { background: rgba(0,0,0,.15); }
 
-        /* ============ PROFILE MODAL ============ */
-        .profile-header { background: linear-gradient(135deg, #1a3a2a, #2563eb); padding: 2rem; display: flex; align-items: flex-start; gap: 1.25rem; border-radius: 12px 12px 0 0; }
-        .profile-avatar { width: 80px; height: 80px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.8rem; font-weight: 700; color: #fff; flex-shrink: 0; border: 3px solid rgba(255,255,255,.3); }
-        .profile-title h2 { color: #fff; font-size: 1.4rem; margin-bottom: .25rem; }
-        .profile-title p { color: rgba(255,255,255,.8); font-size: 1rem; }
-        .profile-body { padding: 1.5rem 2rem; }
-        .profile-row { display: flex; align-items: flex-start; gap: .75rem; margin-bottom: .75rem; font-size: .9rem; }
-        .profile-row .icon { font-size: 1rem; color: #2563eb; flex-shrink: 0; margin-top: 2px; }
-        .profile-row strong { display: block; font-size: .75rem; color: #64748b; text-transform: uppercase; letter-spacing: .5px; margin-bottom: .1rem; }
-        .section-title { font-size: .75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: #64748b; margin-bottom: .75rem; padding-bottom: .4rem; border-bottom: 1px solid #e2e8f0; }
-        .profile-section { margin-bottom: 1.5rem; }
-        .profile-bio { font-size: .9rem; color: #374151; line-height: 1.7; }
-        .edu-list { list-style: none; }
-        .edu-list li { font-size: .875rem; color: #374151; padding: .35rem 0; padding-left: 1.25rem; position: relative; }
-        .edu-list li::before { content: '🎓'; position: absolute; left: 0; font-size: .8rem; }
-        .profile-footer { padding: 1rem 2rem 1.5rem; border-top: 1px solid #e2e8f0; }
-        .btn-request { background: #2563eb; color: #fff; border: none; padding: .8rem 2rem; border-radius: 6px; font-size: 1rem; font-weight: 700; cursor: pointer; width: 100%; text-transform: uppercase; letter-spacing: .5px; transition: background .2s; }
-        .btn-request:hover { background: #1d4ed8; }
+    /* ============ PROFILE MODAL ============ */
+    .profile-header { background: linear-gradient(135deg, #1a3a2a, #2563eb); padding: 2rem; display: flex; align-items: flex-start; gap: 1.25rem; border-radius: 12px 12px 0 0; }
+    .profile-avatar { width: 80px; height: 80px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.8rem; font-weight: 700; color: #fff; flex-shrink: 0; border: 3px solid rgba(255,255,255,.3); }
+    .profile-title h2 { color: #fff; font-size: 1.4rem; margin-bottom: .25rem; }
+    .profile-title p { color: rgba(255,255,255,.8); font-size: 1rem; }
+    .profile-body { padding: 1.5rem 2rem; }
+    .profile-row { display: flex; align-items: flex-start; gap: .75rem; margin-bottom: .75rem; font-size: .9rem; }
+    .profile-row .icon { font-size: 1rem; color: #2563eb; flex-shrink: 0; margin-top: 2px; }
+    .profile-row strong { display: block; font-size: .75rem; color: #64748b; text-transform: uppercase; letter-spacing: .5px; margin-bottom: .1rem; }
+    .section-title { font-size: .75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: #64748b; margin-bottom: .75rem; padding-bottom: .4rem; border-bottom: 1px solid #e2e8f0; }
+    .profile-section { margin-bottom: 1.5rem; }
+    .profile-bio { font-size: .9rem; color: #374151; line-height: 1.7; }
+    .edu-list { list-style: none; }
+    .edu-list li { font-size: .875rem; color: #374151; padding: .35rem 0; padding-left: 1.25rem; position: relative; }
+    .edu-list li::before { content: '🎓'; position: absolute; left: 0; font-size: .8rem; }
+    .profile-footer { padding: 1rem 2rem 1.5rem; border-top: 1px solid #e2e8f0; }
+    .btn-request { background: #2563eb; color: #fff; border: none; padding: .8rem 2rem; border-radius: 6px; font-size: 1rem; font-weight: 700; cursor: pointer; width: 100%; text-transform: uppercase; letter-spacing: .5px; transition: background .2s; }
+    .btn-request:hover { background: #1d4ed8; }
 
-        /* ============ BOOKING MODAL ============ */
-        .booking-header { background: #1a3a2a; padding: 1.5rem 2rem; border-radius: 12px 12px 0 0; }
-        .booking-header h2 { color: #fff; font-size: 1.2rem; font-weight: 700; letter-spacing: .5px; text-transform: uppercase; }
-        .booking-header p { color: rgba(255,255,255,.75); font-size: .9rem; margin-top: .25rem; }
-        .booking-header p span { color: #60a5fa; font-weight: 600; }
-        .booking-body { padding: 1.5rem 2rem; }
-        .form-group { margin-bottom: 1.25rem; }
-        .form-group label { display: block; font-size: .85rem; font-weight: 600; color: #374151; margin-bottom: .4rem; }
-        .form-group label .req { color: #dc2626; margin-left: 2px; }
-        .form-control { width: 100%; padding: .65rem .9rem; border: 1px solid #d1d5db; border-radius: 5px; font-size: .95rem; color: #1a202c; outline: none; transition: border-color .2s; font-family: inherit; }
-        .form-control:focus { border-color: #2563eb; box-shadow: 0 0 0 3px rgba(37,99,235,.12); }
-        .form-control.error { border-color: #dc2626; }
-        .error-msg { color: #dc2626; font-size: .8rem; margin-top: .3rem; }
-        .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
-        .privacy-note { font-size: .78rem; color: #64748b; margin-top: 1rem; text-align: center; }
-        .privacy-note a { color: #2563eb; }
-        .btn-confirm { background: #16a34a; color: #fff; border: none; padding: .8rem; border-radius: 6px; font-size: 1rem; font-weight: 700; cursor: pointer; width: 100%; text-transform: uppercase; letter-spacing: .5px; margin-top: 1rem; transition: background .2s; }
-        .btn-confirm:hover { background: #15803d; }
-        .btn-confirm:disabled { background: #94a3b8; cursor: not-allowed; }
+    /* ============ BOOKING MODAL ============ */
+    .booking-header { background: #1a3a2a; padding: 1.5rem 2rem; border-radius: 12px 12px 0 0; }
+    .booking-header h2 { color: #fff; font-size: 1.2rem; font-weight: 700; letter-spacing: .5px; text-transform: uppercase; }
+    .booking-header p { color: rgba(255,255,255,.75); font-size: .9rem; margin-top: .25rem; }
+    .booking-header p span { color: #60a5fa; font-weight: 600; }
+    .booking-body { padding: 1.5rem 2rem; }
+    .form-group { margin-bottom: 1.25rem; }
+    .form-group label { display: block; font-size: .85rem; font-weight: 600; color: #374151; margin-bottom: .4rem; }
+    .form-group label .req { color: #dc2626; margin-left: 2px; }
+    .form-control { width: 100%; padding: .65rem .9rem; border: 1px solid #d1d5db; border-radius: 5px; font-size: .95rem; color: #1a202c; outline: none; transition: border-color .2s; font-family: inherit; }
+    .form-control:focus { border-color: #2563eb; box-shadow: 0 0 0 3px rgba(37,99,235,.12); }
+    .form-control.error { border-color: #dc2626; }
+    .error-msg { color: #dc2626; font-size: .8rem; margin-top: .3rem; }
+    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+    .privacy-note { font-size: .78rem; color: #64748b; margin-top: 1rem; text-align: center; }
+    .privacy-note a { color: #2563eb; }
+    .btn-confirm { background: #16a34a; color: #fff; border: none; padding: .8rem; border-radius: 6px; font-size: 1rem; font-weight: 700; cursor: pointer; width: 100%; text-transform: uppercase; letter-spacing: .5px; margin-top: 1rem; transition: background .2s; }
+    .btn-confirm:hover { background: #15803d; }
+    .btn-confirm:disabled { background: #94a3b8; cursor: not-allowed; }
 
-        /* ============ SUCCESS STATE ============ */
-        .success-state { text-align: center; padding: 2.5rem 2rem; }
-        .success-icon { font-size: 3.5rem; margin-bottom: 1rem; }
-        .success-state h3 { font-size: 1.3rem; color: #065f46; margin-bottom: .75rem; }
-        .success-state p { font-size: .95rem; color: #374151; line-height: 1.6; }
-        .btn-done { background: #16a34a; color: #fff; border: none; padding: .75rem 2rem; border-radius: 6px; font-weight: 700; cursor: pointer; margin-top: 1.5rem; font-size: .95rem; transition: background .2s; }
-        .btn-done:hover { background: #15803d; }
+    /* ============ SUCCESS STATE ============ */
+    .success-state { text-align: center; padding: 2.5rem 2rem; }
+    .success-icon { font-size: 3.5rem; margin-bottom: 1rem; }
+    .success-state h3 { font-size: 1.3rem; color: #065f46; margin-bottom: .75rem; }
+    .success-state p { font-size: .95rem; color: #374151; line-height: 1.6; }
+    .btn-done { background: #16a34a; color: #fff; border: none; padding: .75rem 2rem; border-radius: 6px; font-weight: 700; cursor: pointer; margin-top: 1.5rem; font-size: .95rem; transition: background .2s; }
+    .btn-done:hover { background: #15803d; }
 
-        /* ============ RESPONSIVE ============ */
-        @media (max-width: 768px) {
-            .nav-links { display: none; flex-direction: column; position: absolute; top: 56px; left: 0; right: 0; background: #1a3a2a; padding: 1rem; gap: .75rem; }
-            .nav-links.open { display: flex; }
-            .nav-toggle { display: block; }
-            .main { grid-template-columns: 1fr; }
-            .filters { display: none; }
-            .filters.open { display: block; }
-            .hero h1 { font-size: 1.6rem; }
-            .footer-inner { grid-template-columns: 1fr; }
-            .form-row { grid-template-columns: 1fr; }
-        }
-    </style>
-</head>
-<body>
+    /* ============ RESPONSIVE ============ */
+    @media (max-width: 768px) {
+        .main { grid-template-columns: 1fr; }
+        .filters { display: none; }
+        .filters.open { display: block; }
+        .hero h1 { font-size: 1.6rem; }
+        .form-row { grid-template-columns: 1fr; }
+    }
+</style>
 
-<!-- ===== NAVIGATION ===== -->
-<nav class="nav" role="navigation" aria-label="Main navigation">
-    <a href="/" class="nav-brand">Diaspora County 48</a>
-    <button class="nav-toggle" aria-label="Toggle menu" aria-expanded="false" onclick="toggleNav(this)">☰</button>
-    <ul class="nav-links" id="nav-links">
-        <li><a href="/">Home</a></li>
-        <li><a href="{% url 'find_doctors' %}" class="active" aria-current="page">Find Doctors</a></li>
-        <li><a href="#">Healthcare</a></li>
-        <li><a href="#">Contact</a></li>
-    </ul>
-</nav>
 
 <!-- ===== HERO SEARCH ===== -->
 <section class="hero" aria-label="Search for doctors">
@@ -188,6 +163,27 @@
         <button type="submit" class="btn-search">Search Now</button>
     </form>
 </section>
+
+<!-- ===== BREADCRUMB NAVIGATION ===== -->
+<nav class="breadcrumb-nav" aria-label="Healthcare progress steps">
+    <div class="breadcrumb-container">
+        <ul class="breadcrumb-list">
+            <li class="breadcrumb-item active">
+                <span class="breadcrumb-badge">1</span>
+                <span>Find Doctors</span>
+            </li>
+            <li class="breadcrumb-item">
+                <span class="breadcrumb-separator">→</span>
+            </li>
+            <li class="breadcrumb-item">
+                <a href="{% url 'main:insurance_support' %}">
+                    <span class="breadcrumb-badge">2</span>
+                    <span>Insurance Support</span>
+                </a>
+            </li>
+        </ul>
+    </div>
+</nav>
 
 <!-- ===== MAIN CONTENT ===== -->
 <div class="main">
@@ -318,35 +314,6 @@
     </main>
 </div>
 
-<!-- ===== FOOTER ===== -->
-<footer role="contentinfo">
-    <div class="footer-inner">
-        <div class="footer-brand">
-            <h3>Diaspora County 48</h3>
-            <p>A global network dedicated to the health, welfare, and prosperity of our community members living abroad.</p>
-        </div>
-        <div class="footer-col">
-            <h4>Resources</h4>
-            <ul>
-                <li><a href="{% url 'find_doctors' %}">Doctor Search</a></li>
-                <li><a href="#">Insurance FAQ</a></li>
-                <li><a href="#">Mental Health</a></li>
-            </ul>
-        </div>
-        <div class="footer-col">
-            <h4>Support</h4>
-            <ul>
-                <li><a href="#">Contact Us</a></li>
-                <li><a href="#">Emergency Info</a></li>
-                <li><a href="#" id="privacy-link">Privacy</a></li>
-            </ul>
-        </div>
-    </div>
-    <div class="footer-bottom">
-        <p>© 2026 Diaspora County 48. All rights reserved.</p>
-    </div>
-</footer>
-
 <!-- ===== PROFILE MODAL ===== -->
 <div class="modal-overlay" id="profile-modal" role="dialog" aria-modal="true" aria-labelledby="profile-name">
     <div class="modal" id="profile-modal-inner">
@@ -446,13 +413,6 @@ let currentDoctorId = null;
 let currentDoctorName = '';
 let profileOpener = null;
 let bookingOpener = null;
-
-// ============ NAV TOGGLE ============
-function toggleNav(btn) {
-    const nav = document.getElementById('nav-links');
-    const open = nav.classList.toggle('open');
-    btn.setAttribute('aria-expanded', open);
-}
 
 // ============ SORT ============
 function applySort(val) {
@@ -671,5 +631,5 @@ function clearErrors() {
 // Init trapFocus on booking
 trapFocus(document.getElementById('booking-modal-inner'));
 </script>
-</body>
-</html>
+
+{% endblock content %}

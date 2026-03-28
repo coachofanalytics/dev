@@ -1,1 +1,0 @@
-"""communities.views test package"""

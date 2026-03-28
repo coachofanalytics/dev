@@ -65,7 +65,7 @@ INSTALLED_APPS = [
     'memberjoin',
     'cloudinary',
     'cloudinary_storage',
-    'communities',
+    # 'communities',  # App not found - commented out
     #'debug_toolbar',
 
 ]

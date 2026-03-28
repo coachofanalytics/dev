@@ -1,0 +1,58 @@
+{% extends "main/document_services/base_document_services.html" %}
+
+{% block page_title %}Payment Options{% endblock %}
+
+{% block content %}
+<div id="payment-options-view" class="page-view p-8">
+    <h1 class="text-3xl font-bold text-gray-800 mb-8">Complete Payment</h1>
+
+    <div id="payment-options" class="modal-overlay fixed inset-0 z-[60] flex items-center justify-center">
+        <div class="bg-white rounded-xl shadow-2xl w-full max-w-2xl p-8">
+            <h2 class="text-2xl font-bold text-gray-800 mb-2">Select Payment Method</h2>
+            <p class="text-gray-600 mb-6">Amount to pay: <span class="font-bold text-blue-600">1,500 KES</span></p>
+
+            <div class="space-y-1 mb-8 border-b pb-6">
+                <label class="pay-option-radio" onclick="selectPayment('mtn')">
+                    <input type="radio" name="pay-option" value="mtn" checked>
+                    <div class="flex items-center flex-1">
+                        <span class="pay-option-label">MTN Mobile Money</span>
+                        <span id="provider-icon" class="w-8 h-4 bg-yellow-400 rounded-sm flex items-center justify-center text-[8px] font-bold">MTN</span>
+                    </div>
+                </label>
+                <label class="pay-option-radio" onclick="selectPayment('airtel')">
+                    <input type="radio" name="pay-option" value="airtel">
+                    <div class="flex items-center flex-1">
+                        <span class="pay-option-label">Airtel Money</span>
+                    </div>
+                </label>
+            </div>
+
+            <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-8">
+                <p class="text-xs text-yellow-800 mb-2 font-medium">DIAL THIS CODE FROM YOUR PHONE:</p>
+                <p id="dial-code-text" class="text-lg font-mono font-bold text-gray-800">*182*3*7*<span class="text-green-600">886047723245</span>#</p>
+                <p class="text-xs text-yellow-700 mt-3">Replace the amount <span class="font-mono font-bold">886047723245</span> with <span class="font-mono font-bold">1500</span> if you want to pay a different amount.</p>
+            </div>
+
+            <div class="flex justify-between">
+                <button onclick="window.location.hash='#payment-summary'" class="bg-gray-100 text-gray-700 px-6 py-2 rounded font-bold hover:bg-gray-200 transition">
+                    ← Back
+                </button>
+                <button id="pay-btn" onclick="finishPayment()" class="bg-green-600 text-white px-6 py-2 rounded font-bold hover:bg-green-700 transition">
+                    Pay 1,500 KES
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div class="bg-white rounded-lg shadow-sm border border-gray-100 p-8 text-center">
+        <svg width="48" height="48" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" class="mx-auto mb-4 text-green-600"><path d="M9 12l2 2 4-4m7 0a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+        <h2 class="text-2xl font-bold text-gray-800 mb-2">Payment Portal Loading...</h2>
+        <p class="text-gray-600">Please follow the payment instructions displayed above.</p>
+    </div>
+
+    <script>
+        // Initialize payment method
+        selectPayment('mtn');
+    </script>
+</div>
+{% endblock %}

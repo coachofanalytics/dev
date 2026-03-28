@@ -1,1 +1,0 @@
-"""memberjoin models tests package"""

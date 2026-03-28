@@ -128,21 +128,12 @@
                             </div>
                         </div>
                 
-                        <!-- Document Services -->
+                        <!-- Document Services (integrated frontend routes) -->
                         <div class="sub-dropdown">
-                            <a href="https://dc48k.org/">Document Services</a>
+                            <a href="{% url 'main:document_services_dashboard' %}">Document Services</a>
                             <div class="sub-dropdown-content">
-                                <a href="#">Issuance of Certificates</a>
-                                <a href="#">Document Legalization and Authentication</a>
-                            </div>
-                        </div>
-                
-                        <!-- Community Support -->
-                        <div class="sub-dropdown">
-                            <a href="{% url 'communities:home' %}">Community Support</a>
-                            <div class="sub-dropdown-content">
-                                <a href="#">Forums and Networking</a>
-                                <a href="#">Community Events</a>
+                                <a href="{% url 'main:document_services_documents' %}">Issuance of Certificates</a>
+                                <a href="{% url 'main:document_services_documents' %}">Document Legalization and Authentication</a>
                             </div>
                         </div>
                 
@@ -179,8 +170,8 @@
                         <div class="sub-dropdown">
                             <a href="{% url 'main:education_landing' %}">Education and Training</a>
                             <div class="sub-dropdown-content">
-                                <a href="{% url 'main:scholarship_search' %}">Scholarships</a>
-                                <a href="{% url 'main:education_landing' %}">Training Sessions</a>
+                                <a href="{% url 'main:scholarship_search' %}">Scholarships Search</a>
+                                <a href="{% url 'main:education_training' %}">Training & Skills</a>
                             </div>
                         </div>
                     </div>
@@ -188,7 +179,7 @@
                 
             
            
-            <li><a href="{% url 'news:home' %}" class="navLin">NEWS</a></li>
+            <li><a href="{% url 'main:news_list' %}" class="navLin">NEWS</a></li>
             <!-- Membership link shows only for authenticated users (moved to auth block) -->
             <li><a href="https://dc48k.org/contact/" class="navLin">CONTACT US</a></li>
             <li class="dropdown">

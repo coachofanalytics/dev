@@ -1,0 +1,288 @@
+{% extends "main/base_templates/base.html" %}
+{% load static %}
+{% block content %}
+
+<style>
+    .form-hero {
+        background: linear-gradient(135deg, #1a3a2a 0%, #2563eb 100%);
+        color: white;
+        padding: 3rem 2rem;
+        margin-bottom: 2rem;
+    }
+    .form-headline {
+        font-size: 2.5rem;
+        margin: 0;
+        line-height: 1.2;
+    }
+    .form-container {
+        max-width: 800px;
+        margin: 0 auto;
+        padding: 2rem;
+    }
+    .form-group {
+        margin-bottom: 1.5rem;
+    }
+    .form-group label {
+        display: block;
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+        color: #374151;
+    }
+    .form-group input[type="text"],
+    .form-group input[type="email"],
+    .form-group input[type="url"],
+    .form-group input[type="file"],
+    .form-group textarea,
+    .form-group select {
+        width: 100%;
+        padding: 0.75rem;
+        border: 2px solid #e5e7eb;
+        border-radius: 6px;
+        font-size: 1rem;
+        font-family: inherit;
+        transition: border-color 0.3s;
+    }
+    .form-group input[type="text"]:focus,
+    .form-group input[type="email"]:focus,
+    .form-group input[type="url"]:focus,
+    .form-group input[type="file"]:focus,
+    .form-group textarea:focus,
+    .form-group select:focus {
+        outline: none;
+        border-color: #2563eb;
+        box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+    }
+    .form-group textarea {
+        resize: vertical;
+        min-height: 200px;
+    }
+    .form-group.checkbox {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    .form-group.checkbox input[type="checkbox"] {
+        width: auto;
+        margin: 0;
+        cursor: pointer;
+    }
+    .form-group.checkbox label {
+        margin: 0;
+        cursor: pointer;
+    }
+    .form-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1.5rem;
+    }
+    @media (max-width: 640px) {
+        .form-row {
+            grid-template-columns: 1fr;
+        }
+    }
+    .error-message {
+        color: #dc2626;
+        font-size: 0.875rem;
+        margin-top: 0.25rem;
+    }
+    .form-actions {
+        display: flex;
+        gap: 1rem;
+        margin-top: 2rem;
+        padding-top: 1.5rem;
+        border-top: 2px solid #e5e7eb;
+    }
+    .btn {
+        padding: 0.75rem 1.5rem;
+        border-radius: 6px;
+        font-weight: 600;
+        text-decoration: none;
+        cursor: pointer;
+        border: none;
+        font-size: 1rem;
+        transition: all 0.3s;
+    }
+    .btn-primary {
+        background: #2563eb;
+        color: white;
+    }
+    .btn-primary:hover {
+        background: #1d4ed8;
+    }
+    .btn-secondary {
+        background: #e5e7eb;
+        color: #374151;
+    }
+    .btn-secondary:hover {
+        background: #d1d5db;
+    }
+    .success-message {
+        background: #dcfce7;
+        border: 2px solid #15803d;
+        color: #15803d;
+        padding: 1rem;
+        border-radius: 6px;
+        margin-bottom: 1.5rem;
+    }
+    .breadcrumb {
+        font-size: 0.9rem;
+        color: #6b7280;
+        margin-bottom: 1rem;
+    }
+    .breadcrumb a {
+        color: #2563eb;
+        text-decoration: none;
+    }
+    .hint-text {
+        font-size: 0.875rem;
+        color: #6b7280;
+        margin-top: 0.25rem;
+    }
+</style>
+
+<main class="mx-auto pb-16">
+
+    <!-- Breadcrumb -->
+    <nav class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 mt-4 breadcrumb">
+        <a href="{% url 'main:layout' %}">Home</a>
+        <span> / </span>
+        <a href="{% url 'main:consular_assistance' %}">Consular Assistance</a>
+        <span> / </span>
+        <a href="{% url 'main:news_list' %}">News & Updates</a>
+        <span> / </span>
+        <span>{{ title }}</span>
+    </nav>
+
+    <!-- Form Hero -->
+    <div class="form-hero">
+        <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+            <h1 class="form-headline">{{ title }}</h1>
+            <p style="margin: 0.5rem 0 0 0; opacity: 0.9;">
+                {% if action == 'Edit' %}
+                Update news and announcements
+                {% else %}
+                Create a new news item or announcement
+                {% endif %}
+            </p>
+        </div>
+    </div>
+
+    <!-- Form Container -->
+    <div class="form-container">
+        
+        {% if errors %}
+        <div style="background: #fee2e2; border: 2px solid #dc2626; color: #991b1b; padding: 1rem; border-radius: 6px; margin-bottom: 1.5rem;">
+            <strong>Please fix the following errors:</strong>
+            <ul style="margin: 0.5rem 0 0 0; padding-left: 1.5rem;">
+                {% for field, message in errors.items %}
+                <li>{{ message }}</li>
+                {% endfor %}
+            </ul>
+        </div>
+        {% endif %}
+
+        <form method="POST" enctype="multipart/form-data">
+            {% csrf_token %}
+
+            <!-- Title -->
+            <div class="form-group">
+                <label for="title">Title *</label>
+                <input type="text" id="title" name="title" value="{{ form_data.title }}" required 
+                       placeholder="Enter news title">
+                {% if errors.title %}<div class="error-message">{{ errors.title }}</div>{% endif %}
+            </div>
+
+            <!-- Category and Author Row -->
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="category">Category *</label>
+                    <select id="category" name="category" required>
+                        <option value="">-- Select Category --</option>
+                        {% for cat_value, cat_name in categories %}
+                        <option value="{{ cat_value }}" {% if form_data.category == cat_value %}selected{% endif %}>
+                            {{ cat_name }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                    {% if errors.category %}<div class="error-message">{{ errors.category }}</div>{% endif %}
+                </div>
+
+                <div class="form-group">
+                    <label for="author">Author</label>
+                    <input type="text" id="author" name="author" value="{{ form_data.author }}" 
+                           placeholder="DC48K News Team">
+                    <div class="hint-text">Default: DC48K News Team</div>
+                </div>
+            </div>
+
+            <!-- Excerpt -->
+            <div class="form-group">
+                <label for="excerpt">Excerpt (Short Summary)</label>
+                <textarea id="excerpt" name="excerpt" placeholder="Brief summary to show in listings"
+                          style="min-height: 80px;">{{ form_data.excerpt }}</textarea>
+                <div class="hint-text">This will appear in news listings. If empty, the first 150 characters of content will be used.</div>
+            </div>
+
+            <!-- Main Content -->
+            <div class="form-group">
+                <label for="content">Content *</label>
+                <textarea id="content" name="content" required 
+                          placeholder="Enter the full news content...">{{ form_data.content }}</textarea>
+                {% if errors.content %}<div class="error-message">{{ errors.content }}</div>{% endif %}
+            </div>
+
+            <!-- Image Upload -->
+            <div class="form-group">
+                <label for="image">Featured Image</label>
+                <input type="file" id="image" name="image" accept="image/*">
+                <div class="hint-text">Recommended size: 1200x600px. Formats: JPG, PNG, WebP</div>
+                {% if news.image %}
+                <div style="margin-top: 0.5rem;">
+                    <small>Current image: <a href="{{ news.image.url }}" target="_blank">View</a></small>
+                </div>
+                {% endif %}
+            </div>
+
+            <!-- Official Link -->
+            <div class="form-group">
+                <label for="link">Official Link (Optional)</label>
+                <input type="url" id="link" name="link" value="{{ form_data.link }}" 
+                       placeholder="https://example.com/resource">
+                <div class="hint-text">Link to official government or embassy resource</div>
+            </div>
+
+            <!-- Checkboxes Row -->
+            <div class="form-row">
+                <div class="form-group checkbox">
+                    <input type="checkbox" id="is_event" name="is_event" 
+                           {% if form_data.is_event %}checked{% endif %}>
+                    <label for="is_event">Mark as Event</label>
+                </div>
+
+                <div class="form-group checkbox">
+                    <input type="checkbox" id="is_featured" name="is_featured" 
+                           {% if form_data.is_featured %}checked{% endif %}>
+                    <label for="is_featured">Feature on Homepage</label>
+                </div>
+            </div>
+
+            <!-- Form Actions -->
+            <div class="form-actions">
+                <button type="submit" class="btn btn-primary">
+                    {% if action == 'Edit' %}
+                    ✓ Update News
+                    {% else %}
+                    + Create News
+                    {% endif %}
+                </button>
+                <a href="{% if news %}{% url 'main:news_detail' news.id %}{% else %}{% url 'main:news_list' %}{% endif %}" 
+                   class="btn btn-secondary">
+                    Cancel
+                </a>
+            </div>
+        </form>
+    </div>
+
+</main>
+
+{% endblock %}

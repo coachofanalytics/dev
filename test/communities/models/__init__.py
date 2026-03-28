@@ -1,1 +1,0 @@
-"""communities.models test package"""

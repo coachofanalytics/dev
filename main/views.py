@@ -35,16 +35,29 @@ from main.forms import ContactForm, GovernanceForm, ArticleForm
 from django.contrib.auth import get_user_model
 #<<<<<<< 25.10_DC48_UAT_UO
 from django.views.decorators.http import require_POST
-from django.views.decorators.csrf import csrf_protect
 from django.http import JsonResponse, HttpResponse
 from django.core.mail import send_mail
 from django.utils.html import strip_tags
-#=======
+from django.utils import timezone
+from django.contrib.auth import get_user_model
 
-from django.urls import reverse_lazy
-from django.views.generic.edit import CreateView, UpdateView, DeleteView
-from django.views.generic.detail import DetailView
+# Models imports
+from .models import (
+    Assets, Description, News, Page, Service, SubService, Team,
+    SafetyAlertSubscription, EmergencyHotline, StaffContact,
+    InsurancePlan, AIRecommendationRule, ExpertInquiry,
+    ConsularAssistancePage, NewsArticle, Category, Subscriber,
+    Scholarship, ContactMessage, Testimonial, TrainingCourse,
+    Donation_organization, MedicalResourceInquiry, Governance
+)
+from accounts.models import CustomerUser
+from .utils import image_view, path_values
+from .forms import ContactForm, DonorForm, MessageForm, ScholarshipSearchForm, GovernanceForm, ArticleForm, ScholarshipForm,TrainingCourseForm
+
 import csv
+import feedparser
+import random
+
 
 # Details Donation View
 class DonationDetailView(DetailView):
@@ -57,8 +70,7 @@ class DonationCreateView(CreateView):
     template_name = 'main/snippets_templates/table/donation_create.html'
     success_url = reverse_lazy('main:donation')
 
-#>>>>>>> 25.10_DC48_UAT_ND
-User=get_user_model()
+User = get_user_model()
 
 
 def error400(request):
@@ -624,9 +636,12 @@ def request_mentorship(request):
 
 
 def course_register(request):
-    """Render a mock course registration page where users can view course types,
-    see prices, and interact with a demo PayPal-style button. The page also
-    includes a client-side form to add course types dynamically (no server save).
+    """
+    Render course/scholarship registration page.
+    Supports:
+    - Browse available courses
+    - Pre-select a course via course_id parameter
+    - Pre-select a scholarship via scholarship_id parameter
     """
     courses = [
         {
@@ -654,10 +669,42 @@ def course_register(request):
             'price': 95.00,
         },
     ]
+    
+    # Get selected object if provided
+    selected_object = None
+    selected_type = None
+    
+    # Check for course_id (TrainingCourse)
+    course_id = request.GET.get('course_id', None)
+    if course_id:
+        try:
+            selected_object = TrainingCourse.objects.get(id=int(course_id))
+            selected_type = 'course'
+        except (TrainingCourse.DoesNotExist, ValueError):
+            selected_object = None
+    
+    # Check for scholarship_id (Scholarship)
+    scholarship_id = request.GET.get('scholarship_id', None)
+    if scholarship_id and not selected_object:
+        try:
+            selected_object = Scholarship.objects.get(id=int(scholarship_id))
+            selected_type = 'scholarship'
+        except (Scholarship.DoesNotExist, ValueError):
+            selected_object = None
+    
     # If requested as a partial (AJAX in-page load), return only the fragment
     if request.GET.get('partial') == '1':
-        return render(request, 'main/education/course_register_fragment.html', {'courses': courses})
-    return render(request, 'main/education/course_register.html', {'courses': courses})
+        return render(request, 'main/education/course_register_fragment.html', {
+            'courses': courses,
+            'selected_object': selected_object,
+            'selected_type': selected_type,
+        })
+    
+    return render(request, 'main/education/course_register.html', {
+        'courses': courses,
+        'selected_object': selected_object,
+        'selected_type': selected_type,
+    })
 
 
 def donation_list(request):
@@ -687,42 +734,408 @@ def scholarship_search(request):
     scholarships = Scholarship.objects.all()
     form = ScholarshipSearchForm(request.GET or None)
 
-    # Direct GET filters (used by integration tests)
-    level = request.GET.get('level')
-    field = request.GET.get('field')
-
-    if level and level != 'All':
-        scholarships = scholarships.filter(level=level)
-
-    if field and field != 'All':
-        scholarships = scholarships.filter(field=field)
 
     if form.is_valid():
         data = form.cleaned_data
         # apply filter
-        if data['search_keyword']:
+        keyword = data.get("search_keyword")
+        if keyword:
             scholarships = scholarships.filter(
-                Q(title__icontains=data['search_keyword']) |
-                Q(provider__icontains=data['search_keyword']) 
+                Q(title__icontains=keyword) |
+                Q(provider__icontains=keyword) 
             )
-        if data['filter_level'] and data['filter_level'] != 'All':
-            scholarships = scholarships.filter(level=data['filter_level'])
 
-        if data['filter_field'] and data['filter_field'] != 'All':
-            scholarships = scholarships.filter(field=data['filter_field'])
+        currency = data.get("filter_currency")
+        if currency:
+            scholarships = scholarships.filter(
+                amount_value__isnull=False, 
+                amount_currency = currency
+            )
+        else:
+            pass
 
-        if data['filter_location'] and data['filter_location'] != 'All':
-            scholarships = scholarships.filter(location=data['filter_location'])
+        level = data.get("filter_level")
+        if level:
+            scholarships = scholarships.filter(level=level)
 
-        if data['filter_status']:
-            scholarships = scholarships.filter(status='Closing soon')
+        field = data.get("filter_field")
+        if field:
+            scholarships = scholarships.filter(field=field)
+
+        location = data.get("filter_location")
+        if location:
+            scholarships = scholarships.filter(location=location)
+
+        if  data.get("filter_status"):
+            scholarships = scholarships.filter(status=Scholarship.Status.CLOSING_SOON)
+        
     context = {
         'scholarships': scholarships,
         'form': form,
         'result_count': scholarships.count(),
     }
     return render(request, 'scholarship_app/scholarship_search.html',context)
-#>>>>>>> 25.10_DC48_UAT_ND
+
+@login_required
+def add_scholarship(request):
+    if request.method == "POST":
+        form  = ScholarshipForm(request.POST)
+        if form.is_valid():
+            obj = form.save(commit=False)
+            obj.created_by = request.user
+            obj.save()
+            return redirect('main:scholarship_search')
+    
+    else:
+        form = ScholarshipForm()
+
+    return render(request, "scholarship_app/add_scholarship.html", {"form": form})
+
+@login_required
+def scholarship_edit(request, pk):
+    scholarship = get_object_or_404(Scholarship, pk=pk, created_by=request.user)
+    if request.method == "POST":
+        form = ScholarshipForm(request.POST, instance=scholarship)
+        if form.is_valid():
+            form.save()
+            return redirect('main:add_scholarship')
+    
+    else:
+        form  = ScholarshipForm(instance=scholarship)
+
+    return render(request,'scholarship_app/scholarship_edit.html', {'form': form})
+
+
+@login_required
+def scholarship_delete(request, pk):
+    scholarship = get_object_or_404(Scholarship, pk=pk, created_by=request.user)
+    if request.method == "POST":
+        scholarship.delete()
+        return redirect('main:add_scholarship')
+
+    return render(request,'scholarship_app/scholarship_delete.html', {'form': form})
+
+
+def ai_refresh_scholarships(request):
+    today = timezone.now().date()
+    scholarships = Scholarship.objects.all()
+    scored = []
+
+    for s in scholarships:
+        score = 0
+
+        if not s.deadline:
+            continue
+
+        days_left = (s.deadline - today).days
+
+        if days_left < 0:
+            continue
+
+        if days_left <= 7:
+            score += 5
+        elif days_left <= 30:
+            score += 3
+
+        if s.status and s.status.lower() == "open":
+            score += 3
+
+        if isinstance(s.amount, str) and "full" in s.amount.lower():
+            score += 4
+
+        scored.append((score, s))
+
+    scored.sort(reverse=True, key=lambda x: x[0])
+    top_pool = scored[:25]
+    selected = random.sample(top_pool, min(6, len(top_pool)))
+    best = [s for score, s in selected]
+
+    data = []
+    for s in best:
+        data.append({
+            "title": s.title,
+            "provider": s.provider,
+            "level": s.level,
+            "field": s.field,
+            "location": s.location,
+            "amount": s.amount,
+            "deadline": s.deadline.strftime("%Y-%m-%d") if s.deadline else None,
+            "status": s.status
+        })
+
+    return JsonResponse({
+        "scholarships": data,
+        "count": len(data)
+    })
+
+def education_training(request):
+    courses = TrainingCourse.objects.all()  # Changed from filter(created_by=request.user)
+    
+    search_query = request.GET.get('search', '')
+    if search_query:
+        courses = courses.filter(
+            Q(title__icontains=search_query) |
+            Q(course_code__icontains=search_query) |
+            Q(description__icontains=search_query) |
+            Q(instructor__icontains=search_query)
+        )
+    
+    category_filter = request.GET.get('category', '')
+    if category_filter:
+        courses = courses.filter(category=category_filter)
+    
+    format_filter = request.GET.get('format', '')
+    if format_filter:
+        courses = courses.filter(format=format_filter)
+    
+    status_filter = request.GET.get('status', '')
+    if status_filter:
+        courses = courses.filter(status=status_filter)
+
+    paginator = Paginator(courses, 6)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+    
+    context = {
+        'page_obj': page_obj,
+        'paginator': paginator,
+        'search_query': search_query,
+        'category_filter': category_filter,
+        'format_filter': format_filter,
+        'status_filter': status_filter,
+    }
+    
+    return render(request, 'main/education/training_skills.html', context)
+
+
+@login_required
+def course_crud(request):
+    from django.contrib import messages
+    
+    courses = TrainingCourse.objects.filter(created_by=request.user)
+    editing_course = False
+    course_id = request.GET.get('edit', None)
+    course_to_edit = None
+    
+    # Check if editing an existing course
+    if course_id:
+        try:
+            course_to_edit = get_object_or_404(TrainingCourse, id=int(course_id), created_by=request.user)
+            editing_course = True
+        except (ValueError, TrainingCourse.DoesNotExist):
+            pass
+    
+    if request.method == 'POST':
+        if course_to_edit:
+            # Updating existing course
+            form = TrainingCourseForm(request.POST, request.FILES, instance=course_to_edit)
+        else:
+            # Creating new course
+            form = TrainingCourseForm(request.POST, request.FILES)
+        
+        if form.is_valid():
+            course = form.save(commit=False)
+            if not course_to_edit:
+                course.created_by = request.user
+            course.save()
+            if course_to_edit:
+                messages.success(request, f'Course "{course.title}" updated successfully!')
+            else:
+                messages.success(request, f'Course "{course.title}" created successfully!')
+            return redirect('main:course_crud')
+    else:
+        if course_to_edit:
+            form = TrainingCourseForm(instance=course_to_edit)
+        else:
+            form = TrainingCourseForm()
+    
+    return render(request, 'main/education/course_crud.html', {
+        'courses': courses,
+        'form': form,
+        'editing_course': editing_course,
+        'course_to_edit': course_to_edit,
+    })
+
+
+
+@login_required
+def add_course(request):
+    form = TrainingCourseForm(request.POST or None, request.FILES or None)
+
+    if form.is_valid():
+        course = form.save(commit=False)
+        course.created_by = request.user
+        course.save()
+        return redirect('main:education_training')
+
+    return render(request, 'main/education/add_course.html', {'form': form})
+
+
+@login_required
+def edit_course(request, pk):
+    course = get_object_or_404(TrainingCourse, id=pk, created_by=request.user)
+    
+    if request.method == 'POST':
+        form = TrainingCourseForm(request.POST, request.FILES, instance=course)
+        if form.is_valid():
+            form.save()
+            return redirect('main:course_crud') 
+    else:
+        form = TrainingCourseForm(instance=course)
+    
+    courses = TrainingCourse.objects.filter(created_by=request.user)
+    return render(request, 'main/education/course_crud.html', {
+        'courses': courses,
+        'form': form,
+        'editing_course': True,
+    })
+
+@login_required
+def delete_course(request, pk):
+    from django.contrib import messages
+    
+    course = get_object_or_404(TrainingCourse, id=pk, created_by=request.user)
+    
+    if request.method == "POST":
+        course_title = course.title
+        course.delete()
+        messages.success(request, f'Course "{course_title}" deleted successfully!')
+        return redirect('main:course_crud')  
+    
+    return redirect('main:course_crud')
+
+
+
+def ai_course_discovery(request):
+
+    courses = []
+    seen = set()
+
+    mit_feeds = [
+        "https://ocw.mit.edu/courses/rss.xml",
+        "https://ocw.mit.edu/courses/new-courses/feed",
+    ]
+
+    courses = []
+
+    for url in mit_feeds:
+        feed = feedparser.parse(url)
+
+        for entry in feed.entries:
+            title = entry.title.strip()
+
+            if title in seen:
+                continue
+            seen.add(title)
+
+            courses.append({
+                "title": title,
+                "university": "MIT",
+                "platform": "MIT OpenCourseWare",
+                "duration": "Self-paced",
+                "url": entry.link,
+                "is_free": True
+            })
+
+    # Harvard / edX courses
+    harvard_courses = [
+        {
+            "title": "CS50: Introduction to Computer Science",
+            "university": "Harvard University",
+            "platform": "edX",
+            "duration": "12 Weeks",
+            "url": "https://www.edx.org/cs50",
+            "is_free": True
+        },
+        {
+            "title": "Data Science: Machine Learning",
+            "university": "Harvard University",
+            "platform": "edX",
+            "duration": "8 Weeks",
+            "url": "https://www.edx.org/course/data-science-machine-learning",
+            "is_free": True
+        },
+        {
+            "title": "CS50's AI with Python",
+            "university": "Harvard University",
+            "platform": "edX",
+            "duration": "7 Weeks",
+            "url": "https://www.edx.org/course/cs50s-introducation-to-artificial-intelligence-with-python",
+            "is_free": True
+        }
+    ]
+
+    # Youtube Courses
+
+    youtube_courses = [
+        {
+            "title": "Python Full Course for Beginners",
+            "university": "FreeCodeCamp",
+            "platform": "Youtube",
+            "duration": "Self-paced",
+            "url": "https://www.youtube.com/watch?v=rfscVS0vtbw",
+            "is_free": True
+        },
+        {
+            "title": "JavaScript Full Course",
+            "university": "FreeCodeCamp",
+            "platform": "Youtube",
+            "duration": "Self-paced",
+            "url": "https://www.youtube.com/watch?v=jS4aFq5-91M",
+            "is_free": True
+        },
+        {
+            "title": "Machine Learning Full Course",
+            "university": "Stanford (Andrew Ng)",
+            "platform": "Youtube",
+            "duration": "Self-paced",
+            "url": "https://www.youtube.com/watch?v=jGwoUgTS7I",
+            "is_free": True
+        },
+    ]
+  
+    stanford_courses = [
+        {
+            "title": "Machine Learning",
+            "university": "Stanford University",
+            "platform": "Coursera",
+            "duration": "10 Weeks",
+            "url": "https://www.coursera.org/learn/machine-learning"
+        }
+    ]
+
+    futurelearn_courses = [
+        {
+            "title": "Digital Skills: Web Analytics",
+            "university": "Accenture",
+            "platform": "FutureLearn",
+            "duration": "4 Weeks",
+            "url": "https://www.futurelearn.com/courses/digital-skills-web-analytics",
+            "is_free": True
+        },
+    ]
+
+    courses.extend(harvard_courses)
+    courses.extend(stanford_courses)
+    courses.extend(youtube_courses)
+    courses.extend(futurelearn_courses)
+
+    if len(courses) < 6:
+        return JsonResponse({
+            "courses": courses,
+            "count": len(courses)
+        })
+    
+    random.shuffle(courses)
+    pool = courses[:20]
+    selected = random.sample(pool, min(6,len(pool)))
+
+    return JsonResponse({
+        "courses": selected,
+        "count": len(selected)
+    })
+    
+
 
 def testimonial_list(request):
     testimonial = Testimonial.objects.all() 
