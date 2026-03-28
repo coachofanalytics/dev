@@ -37,31 +37,32 @@ AUTHENTICATION_BACKENDS = (
 )
 # Application definition
 INSTALLED_APPS = [
-    "main.apps.MainConfig",
+    'main.apps.MainConfig',
     #'users.apps.UsersConfig',
-    "accounts.apps.AccountsConfig",
-    "finance.apps.FinanceConfig",
-    "crispy_forms",
-    "django.contrib.admin",
-    "django.contrib.auth",
-    "django.contrib.contenttypes",
-    "django.contrib.sessions",
-    "django.contrib.messages",
-    "django.contrib.staticfiles",
+    'accounts.apps.AccountsConfig',
+    'finance.apps.FinanceConfig',
+    'crispy_forms',
+    'django.contrib.admin',
+    'django.contrib.auth',
+    'django.contrib.contenttypes',
+    'django.contrib.sessions',
+    'django.contrib.messages',
+    'django.contrib.staticfiles',
     'django.contrib.sites',
-    "storages",
-    "django_countries",
-    "mathfilters",
-    "mptt",
-    "django_filters",
-    "django_celery_beat",
-    "django_celery_results",
-    "allauth",
-    "allauth.account",
-    "allauth.socialaccount",
-    "allauth.socialaccount.providers.google",
-    "allauth.socialaccount.providers.facebook",
-    "django_crontab",
+    'storages',
+    'django_countries',
+    'mathfilters',
+    'mptt',
+    'django_filters',
+    'django_celery_beat',
+    'django_celery_results',
+    
+    'allauth',
+    'allauth.account',
+    'allauth.socialaccount',
+    'allauth.socialaccount.providers.google',
+    'allauth.socialaccount.providers.facebook',
+    'django_crontab',
     # 'memberjoin',  # App not found - commented out
     'cloudinary',
     'cloudinary_storage',
@@ -326,7 +327,10 @@ AWS_S3_FILE_OVERWRITE = False
 AWS_DEFAULT_ACL = None
 
 
-from celery.schedules import crontab
+try:
+    from celery.schedules import crontab
+except ImportError:
+    crontab = None
 
 CELERY_BROKER_URL = "redis://default:xjaoROhpU8Lbiz8OZskVTgyYDFAdSmlo@redis-11854.c240.us-east-1-3.ec2.cloud.redislabs.com:11854"
 CELERY_RESULT_BACKEND = "redis://default:xjaoROhpU8Lbiz8OZskVTgyYDFAdSmlo@redis-11854.c240.us-east-1-3.ec2.cloud.redislabs.com:11854"
@@ -335,19 +339,22 @@ CELERY_TASK_SERIALIZER = "json"
 CELERY_RESULT_SERIALIZER = "json"
 CELERY_IMPORTS = "coda_project.task"
 
-CELERYBEAT_SCHEDULE = {
-    "run_on_every_1st": {
-        "task": "task_history",
-        "schedule": crontab(0, 0, day_of_month="1"),
-        #'schedule': crontab(),
-    },
+if crontab is not None:
+    CELERYBEAT_SCHEDULE = {
+        "run_on_every_1st": {
+            "task": "task_history",
+            "schedule": crontab(0, 0, day_of_month="1"),
+            #'schedule': crontab(),
+        },
 
-    "run_on_every_1st": {
-        "task": "advertisement",
-        "schedule": crontab(0, 0, day_of_month="1"),
-        #'schedule': crontab(),
-    },
-}
+        "run_on_every_1st": {
+            "task": "advertisement",
+            "schedule": crontab(0, 0, day_of_month="1"),
+            #'schedule': crontab(),
+        },
+    }
+else:
+    CELERYBEAT_SCHEDULE = {}
 
 #==================PAYMENT SETTINGS=================
 # Testing Payment methods
