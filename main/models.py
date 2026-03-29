@@ -1339,11 +1339,11 @@ class Subscriber(models.Model):
     subscribed_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        return f"{self.first_name} {self.last_name} - {self.email}"
+        return f"{self.email}"
 
     class Meta:
-        verbose_name_plural = "Membership Registrations"
-        ordering = ['-registration_date']
+        verbose_name_plural = "Subscribers"
+        ordering = ['-subscribed_at']
 
 
 # ============================================
