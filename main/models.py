@@ -1514,3 +1514,41 @@ class MembershipRegistration(models.Model):
     class Meta:
         verbose_name_plural = "Membership Registrations"
         ordering = ['-registration_date']
+
+
+# ============================================
+# LEGAL & IMMIGRATION SERVICES MODELS
+# ============================================
+
+class LegalService(models.Model):
+    """
+    Model to store legal & immigration guidance services.
+    Used on the Legal and Immigration Guidance dedicated page.
+    """
+    CATEGORY_CHOICES = [
+        ('visa', 'Visa and Residency Services'),
+        ('citizenship', 'Citizenship and Naturalization'),
+        ('legal_referral', 'Legal Representation & Referrals'),
+    ]
+    
+    title = models.CharField(max_length=200)
+    category = models.CharField(max_length=50, choices=CATEGORY_CHOICES)
+    description = models.TextField()
+    image_url = models.URLField(blank=True, null=True)
+    features = models.JSONField(default=list)  # List of bullet points
+    cta_button_text = models.CharField(max_length=100, default='Learn More')
+    cta_button_url = models.URLField(blank=True)
+    order = models.IntegerField(default=0)  # Display order
+    is_active = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['order']
+        verbose_name = 'Legal Service'
+        verbose_name_plural = 'Legal Services'
+
+    def __str__(self):
+        return self.title
+
+

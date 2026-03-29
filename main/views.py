@@ -2199,3 +2199,27 @@ def member_home(request):
             'contact_form': contact_form
         }
         return render(request, 'main/memberjoin/member_home.html', context)
+
+
+# ============================================
+# LEGAL & IMMIGRATION SERVICES VIEWS
+# ============================================
+
+def legal_immigration_guidance(request):
+    """
+    Render the Legal & Immigration Guidance page.
+    Displays service information, CTA buttons, and disclaimer.
+    """
+    from .models import LegalService
+    
+    services = LegalService.objects.filter(is_active=True).order_by('order')
+    
+    context = {
+        'page_title': 'Legal & Immigration Guidance',
+        'page_description': 'Expert guidance and trusted referrals to help you navigate the complexities of international law and immigration processes.',
+        'services': services,
+    }
+    return render(request, 'main/legal_and_immigration_guidance.html', context)
+
+
+    

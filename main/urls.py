@@ -19,6 +19,9 @@ urlpatterns = [
     path('consular-assistance/book-consultation/', views.book_consular_consultation, name='book_consular_consultation'),
 
     path('data/consular/information-updates/', views.consular_information_updates, name='consular_information_updates'),
+    path('legal-immigration-guidance/', views.legal_immigration_guidance, name='legal_immigration_guidance'),
+
+    
     
     # Communities App Integration - now handled at project level (coda_project/urls.py)
     # path('communities/', include('main.urls_communities')),
