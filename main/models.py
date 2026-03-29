@@ -12,6 +12,8 @@ from datetime import timedelta
 from django.utils.text import slugify
 import random
 import string
+import uuid
+from .ai_services import generate_article_summary
 
 User = get_user_model()
 
@@ -101,37 +103,15 @@ class SubService(models.Model):
 
 
 class News(models.Model):
-    CATEGORY_CHOICES = [
-        ('press', 'Press Release'),
-        ('embassy', 'Embassy & Government News'),
-        ('community', 'Community Update'),
-        ('other', 'Other News'),
-    ]
-    
     title = models.CharField(max_length=200)
     content = models.TextField()
-    category = models.CharField(max_length=50, choices=CATEGORY_CHOICES, default='other')
     link = models.URLField(null=True, blank=True)
-    published_date = models.DateField(auto_now_add=True)
-    updated_date = models.DateField(auto_now=True)
+    published_date = models.DateField()
     is_event = models.BooleanField(default=False)
     image = models.ImageField(upload_to="news_images/", blank=True, null=True)
-    author = models.CharField(max_length=150, default='DC48K News Team')
-    excerpt = models.TextField(max_length=500, blank=True, null=True, help_text="Short summary for news lists")
-    is_featured = models.BooleanField(default=False, help_text="Show at top of news list")
-    is_active = models.BooleanField(default=True)
-
-    class Meta:
-        ordering = ['-published_date']
-        verbose_name = 'News Item'
-        verbose_name_plural = 'News Items'
 
     def __str__(self):
-        return f"{self.title} ({self.get_category_display()})"
-    
-    def get_excerpt(self):
-        """Return excerpt or first 150 chars of content"""
-        return self.excerpt or self.content[:150] + '...'
+        return self.title
 
 
 class Team(models.Model):
@@ -354,7 +334,7 @@ class Scholarship(models.Model):
         choices=Status.choices,
         default=Status.OPEN
     )
-
+    created_by = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
@@ -454,6 +434,7 @@ class TrainingCourse(models.Model):
     syllabus = models.TextField(blank=True, help_text="Course outline/syllabus")
     prerequisites = models.TextField(blank=True, help_text="Required knowledge or courses")
     image = models.ImageField(upload_to='courses/', null=True, blank=True)
+    created_by = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True) 
 
@@ -749,28 +730,6 @@ class AIRecommendationRule(models.Model):
 
 class ExpertInquiry(models.Model):
     """Store expert consultation requests from the modal form"""
-    CONSULTATION_TYPES = [
-        ('Legal & Immigration', 'Legal & Immigration'),
-        ('Documentation', 'Documentation'),
-        ('Property & Estate', 'Property & Estate'),
-        ('Other', 'Other'),
-    ]
-    
-    LANGUAGE_CHOICES = [
-        ('English', 'English'),
-        ('Swahili', 'Swahili'),
-        ('French', 'French'),
-        ('Spanish', 'Spanish'),
-        ('Other', 'Other'),
-    ]
-    
-    URGENCY_CHOICES = [
-        ('Not Urgent', 'Not Urgent'),
-        ('Moderately Urgent', 'Moderately Urgent (within 3-5 days)'),
-        ('Very Urgent', 'Very Urgent (within 24-48 hours)'),
-        ('Emergency', 'Emergency (immediate assistance needed)'),
-    ]
-    
     full_name = models.CharField(max_length=200)
     email = models.EmailField()
     phone = models.CharField(max_length=20, blank=True, null=True)
@@ -780,13 +739,7 @@ class ExpertInquiry(models.Model):
     notes = models.TextField(blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-    
-    # Consultation-specific fields
-    consultation_type = models.CharField(max_length=50, choices=CONSULTATION_TYPES, blank=True, null=True)
-    preferred_language = models.CharField(max_length=50, choices=LANGUAGE_CHOICES, blank=True, null=True)
-    location = models.CharField(max_length=200, blank=True, null=True, help_text="Client's location/country")
-    urgency = models.CharField(max_length=50, choices=URGENCY_CHOICES, blank=True, null=True)
-    additional_notes = models.TextField(blank=True, null=True)
+
 
      # ============= NEW FIELDS FOR SLA TRACKING =============
     first_response_time = models.DateTimeField(null=True, blank=True, help_text="When this inquiry was first responded to")
@@ -1328,185 +1281,62 @@ class ExpertInquiry(models.Model):
         open_inquiries = cls.objects.filter(is_contacted=False)
         for inquiry in open_inquiries:
             inquiry.check_and_escalate()
-        print(f"✅ Checked SLA for {open_inquiries.count()} inquiries")
+        print(f"✅ Checked SLA for {open_inquiries.count()} inquiries")    
 
 
-# ============= COMMUNITIES APP MODELS =============
-# Community member model
-class CommunityMember(models.Model):
+class Category(models.Model):
     name = models.CharField(max_length=100)
-    email = models.EmailField(unique=True)
-    phone = models.CharField(max_length=15, blank=True, null=True)
-    profession = models.CharField(max_length=100, default="Not Specified")
-    region = models.CharField(max_length=100, default="Not Specified")
-    specialization = models.CharField(max_length=200, blank=True, null=True)
-    bio = models.TextField(blank=True, null=True)
-    website = models.URLField(blank=True, null=True)
-    profile_picture = models.ImageField(upload_to='member_profiles/', blank=True, null=True)
-    is_verified = models.BooleanField(default=True)
-    is_public_directory = models.BooleanField(default=True)
-    date_joined = models.DateTimeField(auto_now_add=True)
-    last_updated = models.DateTimeField(auto_now=True)
-    
-    def __str__(self):
-        return f"{self.name} - {self.profession}"
-    
-    class Meta:
-        ordering = ['-date_joined']
-
-
-class DirectoryProfile(models.Model):
-    MEMBERSHIP_CHOICES = [
-        ('verified', 'Verified (Free)'),
-        ('premium', 'Premium ($9/mo)'),
-    ]
-    CATEGORY_CHOICES = [
-        ('tech', 'Tech & IT'),
-        ('legal', 'Legal'),
-        ('finance', 'Finance & Accounting'),
-        ('health', 'Healthcare'),
-        ('education', 'Education'),
-        ('business', 'Business & Consulting'),
-        ('creative', 'Creative & Media'),
-        ('engineering', 'Engineering'),
-        ('other', 'Other'),
-    ]
-    
-    community_member = models.OneToOneField(
-        CommunityMember,
-        on_delete=models.CASCADE,
-        related_name='directory_profile'
-    )
-    full_name = models.CharField(max_length=100)
-    profession = models.CharField(max_length=100)
-    region_city = models.CharField(max_length=100)
-    category = models.CharField(max_length=50, choices=CATEGORY_CHOICES)
-    membership_type = models.CharField(max_length=20, choices=MEMBERSHIP_CHOICES, default='verified')
-    expertise_summary = models.TextField()
-    profile_photo = models.ImageField(upload_to='directory_profiles/', blank=True, null=True)
-    is_approved = models.BooleanField(default=False)
-    is_published = models.BooleanField(default=True)
+    slug = models.SlugField(unique=True, blank=True)
+    description = models.TextField(blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
-    
-    def __str__(self):
-        return f"{self.full_name} - {self.profession}"
-    
+
     def save(self, *args, **kwargs):
-        if self.community_member:
-            self.community_member.name = self.full_name
-            self.community_member.profession = self.profession
-            self.community_member.region = self.region_city
-            self.community_member.save()
+        if not self.slug:
+            self.slug = slugify(self.name)
         super().save(*args, **kwargs)
 
-
-class ForumCategory(models.Model):
-    name = models.CharField(max_length=255)
-    slug = models.SlugField(unique=True)
-    description = models.TextField()
+    class Meta:
+        verbose_name_plural = "Categories"
 
     def __str__(self):
         return self.name
 
-
-class Post(models.Model):
+class NewsArticle(models.Model):
+    STATUS_CHOICES = (
+        ('DRAFT', 'Draft'),
+        ('PUBLISHED', 'Published'),
+    )
+    category = models.ForeignKey(Category, on_delete=models.CASCADE, related_name='articles')
     title = models.CharField(max_length=255)
+    slug = models.SlugField(unique=True, blank=True, max_length=255)
+    author = models.CharField(max_length=100)
+    featured_image =models.ImageField(upload_to='news_images/')
     content = models.TextField()
-    category = models.ForeignKey(ForumCategory, on_delete=models.CASCADE)
-    created_at = models.DateTimeField(auto_now_add=True)
 
+    status = models.CharField(max_length=10,choices=STATUS_CHOICES, default='DRAFT')
+    ai_summary = models.TextField(blank=True,null=False, help_text="AI_generated summary for index page")
+    is_breaking = models.BooleanField(default=False)
+    
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    views = models.PositiveBigIntegerField(default=0)
+
+    def save(self, *args, **kwargs):
+        if not self.slug:
+            self.slug = slugify(self.title)[:250]
+
+        if self.content and not self.ai_summary:
+            self.ai_summary = generate_article_summary(self.content)
+        super().save(*args, **kwargs)
     def __str__(self):
         return self.title
 
-
-class CommentP(models.Model):
-    post = models.ForeignKey(Post, related_name='comments_p', on_delete=models.CASCADE)
-    author = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
-    content = models.TextField()
-    created_at = models.DateTimeField(auto_now=True)
-
-    def __str__(self):
-        return f"Comment by {self.author.username} on {self.post.title}"
-
-
-class EventCalendar(models.Model):
-    name = models.CharField(max_length=255)
-    start_date = models.DateTimeField()
-    end_date = models.DateTimeField()
-    location = models.CharField(max_length=255)
-    description = models.TextField()
-
-    def __str__(self):
-        return self.name
-
-
-class UserProfile(models.Model):
-    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="communities_profile")
-    full_name = models.CharField(max_length=150, blank=True, null=True)
-    contact_email = models.EmailField(blank=True, null=True)
-    county_city = models.CharField(max_length=120, blank=True, null=True)
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
-
-    def __str__(self):
-        return f"{self.user.username} Profile"
-
-
-class UserSettings(models.Model):
-    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="communities_settings")
-    enable_notifications = models.BooleanField(default=True)
-    enable_2fa = models.BooleanField(default=False)
-    allow_marketing_emails = models.BooleanField(default=False)
-    updated_at = models.DateTimeField(auto_now=True)
-    
-    def __str__(self):
-        return f"{self.user.username} Settings"
-
-
-class UserPreferences(models.Model):
-    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="communities_preferences")
-    interest_area = models.CharField(max_length=150, blank=True, null=True)
-    communication_channel = models.CharField(
-        max_length=50,
-        choices=[
-            ("Email", "Email"),  
-            ("SMS", "SMS"),
-            ("WhatsApp", "WhatsApp"),
-            ("Telegram", "Telegram"),
-        ],
-        default="Email"
-    )
-    profile_visibility = models.BooleanField(default=True)
-    updated_at = models.DateTimeField(auto_now=True)
-    
-    def __str__(self):
-        return f"{self.user.username} Preferences"
-
-# ============================================
-# MEMBERJOIN APP MODELS
-# ============================================
-
-class MembershipRegistration(models.Model):
-    """Membership registration model from memberjoin app"""
-    
-    MEMBERSHIP_CHOICES = [
-        ('individual', 'Individual'),
-        ('leader', 'Leader'),
-        ('organization', 'Organization'),
-    ]
-    
-    first_name = models.CharField(max_length=30)
-    last_name = models.CharField(max_length=30)
+class Subscriber(models.Model):
     email = models.EmailField(unique=True)
-    phone_number = models.CharField(max_length=15, blank=True, null=True)
-    country = models.CharField(max_length=30, blank=True, null=True)
-    city = models.CharField(max_length=30, blank=True, null=True)
-    address = models.TextField(blank=True, null=True)
-    membership_type = models.CharField(max_length=20, choices=MEMBERSHIP_CHOICES)
-    organization_name = models.CharField(max_length=100, blank=True, null=True)
-    date_of_birth = models.DateField(blank=True, null=True)
-    registration_date = models.DateTimeField(auto_now_add=True)
+    is_active = models.BooleanField(default=True)
+    conf_token = models.CharField(max_length=100, default=uuid.uuid4, editable=False)
+    confirmed = models.BooleanField(default=False)
+    subscribed_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
         return f"{self.first_name} {self.last_name} - {self.email}"
@@ -1552,3 +1382,4 @@ class LegalService(models.Model):
         return self.title
 
 
+        return self.email

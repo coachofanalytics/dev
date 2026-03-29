@@ -12,37 +12,48 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.views.generic import (
     CreateView,
     UpdateView,
+    ListView,
+    DetailView,
 )
 #<<<<<<< 25.10_DC48_UAT_UO
-from .models import Assets,Description, News, Page, Service, SubService,Team, SafetyAlertSubscription, EmergencyHotline, StaffContact, InsurancePlan, AIRecommendationRule, ExpertInquiry, ConsularAssistancePage
+from .models import Assets,Description, News, Page, Service, SubService,Team, SafetyAlertSubscription, EmergencyHotline, StaffContact, InsurancePlan, AIRecommendationRule, ExpertInquiry, ConsularAssistancePage, NewsArticle, Category, Subscriber
 #=======
 from django.db.models import Q
 #<<<<<<< HEAD
-from .models import Scholarship, Donation_organisation, ContactMessage, Testimonial, TrainingCourse
+from .models import Scholarship, Donation_organisation, ContactMessage, Testimonial
 #>>>>>>> origin/25.11_DC48K_UAT_FN
 from accounts.models import CustomerUser
 ##=======
-from .models import Assets,Description, News, Page, Service, SubService,Team, Donation_organization, MedicalResourceInquiry,Governance
+from .models import Assets,Description, News, Page, Service, SubService,Team, Donation_organization, MedicalResourceInquiry,Governance, NewsArticle, Category, Subscriber
 from accounts.models import CustomerUser
 from .utils import image_view,path_values
 from .forms import ContactForm, DonorForm, MessageForm,ScholarshipSearchForm
 ##=======
 from django.views.decorators.csrf import csrf_exempt
-from main.forms import ContactForm, GovernanceForm
+from main.forms import ContactForm, GovernanceForm, ArticleForm
 #>>>>>>> origin/25.10_DC48K_UAT_FN
 from django.contrib.auth import get_user_model
 #<<<<<<< 25.10_DC48_UAT_UO
 from django.views.decorators.http import require_POST
-from django.views.decorators.csrf import csrf_protect
 from django.http import JsonResponse, HttpResponse
 from django.core.mail import send_mail
 from django.utils.html import strip_tags
 from django.utils import timezone
-#=======
+from django.contrib.auth import get_user_model
 
-from django.urls import reverse_lazy
-from django.views.generic.edit import CreateView, UpdateView, DeleteView
-from django.views.generic.detail import DetailView
+# Models imports
+from .models import (
+    Assets, Description, News, Page, Service, SubService, Team,
+    SafetyAlertSubscription, EmergencyHotline, StaffContact,
+    InsurancePlan, AIRecommendationRule, ExpertInquiry,
+    ConsularAssistancePage, NewsArticle, Category, Subscriber,
+    Scholarship, ContactMessage, Testimonial, TrainingCourse,
+    Donation_organization, MedicalResourceInquiry, Governance
+)
+from accounts.models import CustomerUser
+from .utils import image_view, path_values
+from .forms import ContactForm, DonorForm, MessageForm, ScholarshipSearchForm, GovernanceForm, ArticleForm, ScholarshipForm,TrainingCourseForm
+
 import csv
 import feedparser
 import random
@@ -59,29 +70,7 @@ class DonationCreateView(CreateView):
     template_name = 'main/snippets_templates/table/donation_create.html'
     success_url = reverse_lazy('main:donation')
 
-#>>>>>>> 25.10_DC48_UAT_ND
-User=get_user_model()
-
-# Import communities models and forms
-from .models import (
-    CommunityMember,
-    DirectoryProfile,
-    ForumCategory,
-    Post,
-    CommentP,
-    EventCalendar,
-    UserProfile as CommunitiesUserProfile,
-    UserSettings as CommunitiesUserSettings,
-    UserPreferences as CommunitiesUserPreferences,
-)
-from .forms import (
-    CommunitiesJoinForm,
-    CommunitiesDirectoryProfileForm,
-    CommunitiesPostForm,
-    CommunitiesCommentForm,
-    CommunitiesEventForm,
-)
-from .utils import send_email
+User = get_user_model()
 
 
 def error400(request):
@@ -125,62 +114,11 @@ def medical_resource_form(request):
     if request.method == 'POST':
         name = request.POST.get('name')
         email = request.POST.get('email')
-        phone = request.POST.get('phone', '')
-        location = request.POST.get('location', '')
-        service_type = request.POST.get('service_type', '')
         message = request.POST.get('message')
-        
-        # Validation
-        errors = {}
-        if not name:
-            errors['name'] = 'Name is required'
-        if not email:
-            errors['email'] = 'Email is required'
-        if not message:
-            errors['message'] = 'Inquiry details are required'
-        
-        if errors:
-            context = {
-                'form_data': {
-                    'name': name,
-                    'email': email,
-                    'phone': phone,
-                    'location': location,
-                    'service_type': service_type,
-                    'message': message,
-                },
-                'errors': errors,
-                'title': 'Medical Resource Inquiry',
-            }
-            return render(request, 'main/data/medical_resource_form.html', context, status=400)
-        
-        # Build message with additional info
-        full_message = f"Service Type: {service_type}\nLocation: {location}\nPhone: {phone}\n\n{message}"
-        if phone or location or service_type:
-            full_message = f"Service Type: {service_type}\nLocation: {location}\nPhone: {phone}\n\n{message}"
-        else:
-            full_message = message
-        
-        MedicalResourceInquiry.objects.create(
-            name=name, 
-            email=email, 
-            message=full_message
-        )
+        MedicalResourceInquiry.objects.create(name=name, email=email, message=message)
         # Redirect using the named URL so it works regardless of include path
         return redirect('main:healthcare_info')
-    
-    context = {
-        'form_data': {
-            'name': '',
-            'email': '',
-            'phone': '',
-            'location': '',
-            'service_type': '',
-            'message': '',
-        },
-        'title': 'Medical Resource Inquiry',
-    }
-    return render(request, 'main/data/medical_resource_form.html', context)
+    return render(request, 'main/data/medical_resource_form.html')
 
 
 def general_errors(request):
@@ -403,22 +341,21 @@ def consular_information_updates(request):
     return render(request, 'main/consular/information_updates.html', context)
 
 
-def book_consular_consultation(request):
+def consular_information_updates(request):
     """
-    Render the Book a Consultation page for consular assistance.
-    Allows users to request a consultation on legal matters, documentation, property issues, etc.
-    Reuses the ExpertInquiry model for storing consultation requests.
+    Render the Consular Assistance → Information and Updates page.
+    Follows the project's page/description pattern if available.
     """
     # Ensure a Page exists for this content (keeps behavior consistent with other pages)
-    page_instance, _ = Page.objects.get_or_create(page_name='Consular - Book Consultation')
+    page_instance, _ = Page.objects.get_or_create(page_name='Consular - Information and Updates')
     description = Description.objects.filter(page=page_instance)
 
     context = {
         'description': description,
-        'title': 'Book a Consultation',
+        'title': 'Information and Updates',
     }
 
-    return render(request, 'main/consular/book_consultation.html', context)
+    return render(request, 'main/consular/information_updates.html', context)
 
 
 def healthcare_info(request):
@@ -490,192 +427,14 @@ def healthcare_info(request):
 
 
 def news_list(request):
-    """Display news items with category filtering"""
-    category = request.GET.get('category', '')
-    
-    # Get all active news
-    news_queryset = News.objects.filter(is_active=True)
-    
-    # Filter by category if provided
-    if category and category in dict(News.CATEGORY_CHOICES):
-        news_queryset = news_queryset.filter(category=category)
-    
-    # Featured news first, then by date
-    featured_news = news_queryset.filter(is_featured=True)
-    other_news = news_queryset.filter(is_featured=False)
-    
-    context = {
-        'featured_news': featured_news,
-        'news_list': other_news,
-        'all_news': list(featured_news) + list(other_news),
-        'category': category,
-        'category_name': dict(News.CATEGORY_CHOICES).get(category, 'All News'),
-        'categories': News.CATEGORY_CHOICES,
-        'title': dict(News.CATEGORY_CHOICES).get(category, 'All News'),
-    }
-    return render(request, 'main/news/news_list.html', context)
+    news_list = News.objects.all()
+    print('info=============',news_list)
+    return render(request, 'main/snippets_templates/table/news.html', {'news_list': news_list})
 
 
 def news_detail(request, id):
-    """Display full news article"""
-    news = get_object_or_404(News, id=id, is_active=True)
-    
-    # Get related news from same category
-    related_news = News.objects.filter(
-        category=news.category, 
-        is_active=True
-    ).exclude(id=id)[:3]
-    
-    context = {
-        'news': news,
-        'related_news': related_news,
-        'title': news.title,
-    }
-    return render(request, 'main/news/news_detail.html', context)
-
-
-def news_create(request):
-    """Create a new news item"""
-    if request.method == 'POST':
-        form_data = {
-            'title': request.POST.get('title'),
-            'content': request.POST.get('content'),
-            'category': request.POST.get('category'),
-            'excerpt': request.POST.get('excerpt'),
-            'author': request.POST.get('author', 'DC48K News Team'),
-            'link': request.POST.get('link'),
-            'is_event': request.POST.get('is_event') == 'on',
-            'is_featured': request.POST.get('is_featured') == 'on',
-        }
-        
-        # Validation
-        errors = {}
-        if not form_data['title']:
-            errors['title'] = 'Title is required'
-        if not form_data['content']:
-            errors['content'] = 'Content is required'
-        if not form_data['category']:
-            errors['category'] = 'Category is required'
-        
-        if errors:
-            context = {
-                'form_data': form_data,
-                'errors': errors,
-                'categories': News.CATEGORY_CHOICES,
-                'title': 'Add News',
-            }
-            return render(request, 'main/news/news_form.html', context, status=400)
-        
-        # Create news item
-        news = News.objects.create(**form_data)
-        
-        # Handle image upload
-        if request.FILES.get('image'):
-            news.image = request.FILES['image']
-            news.save()
-        
-        return redirect('main:news_detail', id=news.id)
-    
-    context = {
-        'form_data': {
-            'title': '',
-            'content': '',
-            'category': '',
-            'excerpt': '',
-            'author': 'DC48K News Team',
-            'link': '',
-            'is_event': False,
-            'is_featured': False,
-        },
-        'categories': News.CATEGORY_CHOICES,
-        'title': 'Add News',
-        'action': 'Create',
-    }
-    return render(request, 'main/news/news_form.html', context)
-
-
-def news_edit(request, id):
-    """Edit a news item"""
     news = get_object_or_404(News, id=id)
-    
-    if request.method == 'POST':
-        form_data = {
-            'title': request.POST.get('title'),
-            'content': request.POST.get('content'),
-            'category': request.POST.get('category'),
-            'excerpt': request.POST.get('excerpt'),
-            'author': request.POST.get('author'),
-            'link': request.POST.get('link'),
-            'is_event': request.POST.get('is_event') == 'on',
-            'is_featured': request.POST.get('is_featured') == 'on',
-        }
-        
-        # Validation
-        errors = {}
-        if not form_data['title']:
-            errors['title'] = 'Title is required'
-        if not form_data['content']:
-            errors['content'] = 'Content is required'
-        if not form_data['category']:
-            errors['category'] = 'Category is required'
-        
-        if errors:
-            context = {
-                'news': news,
-                'form_data': form_data,
-                'errors': errors,
-                'categories': News.CATEGORY_CHOICES,
-                'title': f'Edit: {news.title}',
-                'action': 'Edit',
-            }
-            return render(request, 'main/news/news_form.html', context, status=400)
-        
-        # Update news item
-        for key, value in form_data.items():
-            setattr(news, key, value)
-        
-        # Handle image upload
-        if request.FILES.get('image'):
-            news.image = request.FILES['image']
-        
-        news.save()
-        
-        return redirect('main:news_detail', id=news.id)
-    
-    context = {
-        'news': news,
-        'form_data': {
-            'title': news.title,
-            'content': news.content,
-            'category': news.category,
-            'excerpt': news.excerpt,
-            'author': news.author,
-            'link': news.link,
-            'is_event': news.is_event,
-            'is_featured': news.is_featured,
-        },
-        'categories': News.CATEGORY_CHOICES,
-        'title': f'Edit: {news.title}',
-        'action': 'Edit',
-    }
-    return render(request, 'main/news/news_form.html', context)
-
-
-def news_delete(request, id):
-    """Delete a news item (soft delete by marking inactive)"""
-    news = get_object_or_404(News, id=id)
-    
-    if request.method == 'POST':
-        news.is_active = False
-        news.save()
-        category = request.POST.get('category', news.category)
-        return redirect('main:news_list', category=category)
-    
-    context = {
-        'news': news,
-        'title': 'Delete News',
-    }
-    return render(request, 'main/news/news_delete_confirm.html', context)
+    return render(request, 'main/snippets_templates/table/news_detail.html', {'news': news})
 
 
 def contact_us_list(request):
@@ -877,9 +636,12 @@ def request_mentorship(request):
 
 
 def course_register(request):
-    """Render a mock course registration page where users can view course types,
-    see prices, and interact with a demo PayPal-style button. The page also
-    includes a client-side form to add course types dynamically (no server save).
+    """
+    Render course/scholarship registration page.
+    Supports:
+    - Browse available courses
+    - Pre-select a course via course_id parameter
+    - Pre-select a scholarship via scholarship_id parameter
     """
     courses = [
         {
@@ -907,10 +669,42 @@ def course_register(request):
             'price': 95.00,
         },
     ]
+    
+    # Get selected object if provided
+    selected_object = None
+    selected_type = None
+    
+    # Check for course_id (TrainingCourse)
+    course_id = request.GET.get('course_id', None)
+    if course_id:
+        try:
+            selected_object = TrainingCourse.objects.get(id=int(course_id))
+            selected_type = 'course'
+        except (TrainingCourse.DoesNotExist, ValueError):
+            selected_object = None
+    
+    # Check for scholarship_id (Scholarship)
+    scholarship_id = request.GET.get('scholarship_id', None)
+    if scholarship_id and not selected_object:
+        try:
+            selected_object = Scholarship.objects.get(id=int(scholarship_id))
+            selected_type = 'scholarship'
+        except (Scholarship.DoesNotExist, ValueError):
+            selected_object = None
+    
     # If requested as a partial (AJAX in-page load), return only the fragment
     if request.GET.get('partial') == '1':
-        return render(request, 'main/education/course_register_fragment.html', {'courses': courses})
-    return render(request, 'main/education/course_register.html', {'courses': courses})
+        return render(request, 'main/education/course_register_fragment.html', {
+            'courses': courses,
+            'selected_object': selected_object,
+            'selected_type': selected_type,
+        })
+    
+    return render(request, 'main/education/course_register.html', {
+        'courses': courses,
+        'selected_object': selected_object,
+        'selected_type': selected_type,
+    })
 
 
 def donation_list(request):
@@ -982,6 +776,46 @@ def scholarship_search(request):
     }
     return render(request, 'scholarship_app/scholarship_search.html',context)
 
+@login_required
+def add_scholarship(request):
+    if request.method == "POST":
+        form  = ScholarshipForm(request.POST)
+        if form.is_valid():
+            obj = form.save(commit=False)
+            obj.created_by = request.user
+            obj.save()
+            return redirect('main:scholarship_search')
+    
+    else:
+        form = ScholarshipForm()
+
+    return render(request, "scholarship_app/add_scholarship.html", {"form": form})
+
+@login_required
+def scholarship_edit(request, pk):
+    scholarship = get_object_or_404(Scholarship, pk=pk, created_by=request.user)
+    if request.method == "POST":
+        form = ScholarshipForm(request.POST, instance=scholarship)
+        if form.is_valid():
+            form.save()
+            return redirect('main:add_scholarship')
+    
+    else:
+        form  = ScholarshipForm(instance=scholarship)
+
+    return render(request,'scholarship_app/scholarship_edit.html', {'form': form})
+
+
+@login_required
+def scholarship_delete(request, pk):
+    scholarship = get_object_or_404(Scholarship, pk=pk, created_by=request.user)
+    if request.method == "POST":
+        scholarship.delete()
+        return redirect('main:add_scholarship')
+
+    return render(request,'scholarship_app/scholarship_delete.html', {'form': form})
+
+
 def ai_refresh_scholarships(request):
     today = timezone.now().date()
     scholarships = Scholarship.objects.all()
@@ -1012,7 +846,9 @@ def ai_refresh_scholarships(request):
         scored.append((score, s))
 
     scored.sort(reverse=True, key=lambda x: x[0])
-    best = [s for score, s in scored[:6]]
+    top_pool = scored[:25]
+    selected = random.sample(top_pool, min(6, len(top_pool)))
+    best = [s for score, s in selected]
 
     data = []
     for s in best:
@@ -1033,36 +869,172 @@ def ai_refresh_scholarships(request):
     })
 
 def education_training(request):
-    courses = TrainingCourse.objects.all()
+    courses = TrainingCourse.objects.all()  # Changed from filter(created_by=request.user)
+    
+    search_query = request.GET.get('search', '')
+    if search_query:
+        courses = courses.filter(
+            Q(title__icontains=search_query) |
+            Q(course_code__icontains=search_query) |
+            Q(description__icontains=search_query) |
+            Q(instructor__icontains=search_query)
+        )
+    
+    category_filter = request.GET.get('category', '')
+    if category_filter:
+        courses = courses.filter(category=category_filter)
+    
+    format_filter = request.GET.get('format', '')
+    if format_filter:
+        courses = courses.filter(format=format_filter)
+    
+    status_filter = request.GET.get('status', '')
+    if status_filter:
+        courses = courses.filter(status=status_filter)
 
-    context ={
-        "courses": courses
+    paginator = Paginator(courses, 6)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+    
+    context = {
+        'page_obj': page_obj,
+        'paginator': paginator,
+        'search_query': search_query,
+        'category_filter': category_filter,
+        'format_filter': format_filter,
+        'status_filter': status_filter,
     }
     
-    return render(request, "main/education/training_skills.html", context)
+    return render(request, 'main/education/training_skills.html', context)
+
+
+@login_required
+def course_crud(request):
+    from django.contrib import messages
+    
+    courses = TrainingCourse.objects.filter(created_by=request.user)
+    editing_course = False
+    course_id = request.GET.get('edit', None)
+    course_to_edit = None
+    
+    # Check if editing an existing course
+    if course_id:
+        try:
+            course_to_edit = get_object_or_404(TrainingCourse, id=int(course_id), created_by=request.user)
+            editing_course = True
+        except (ValueError, TrainingCourse.DoesNotExist):
+            pass
+    
+    if request.method == 'POST':
+        if course_to_edit:
+            # Updating existing course
+            form = TrainingCourseForm(request.POST, request.FILES, instance=course_to_edit)
+        else:
+            # Creating new course
+            form = TrainingCourseForm(request.POST, request.FILES)
+        
+        if form.is_valid():
+            course = form.save(commit=False)
+            if not course_to_edit:
+                course.created_by = request.user
+            course.save()
+            if course_to_edit:
+                messages.success(request, f'Course "{course.title}" updated successfully!')
+            else:
+                messages.success(request, f'Course "{course.title}" created successfully!')
+            return redirect('main:course_crud')
+    else:
+        if course_to_edit:
+            form = TrainingCourseForm(instance=course_to_edit)
+        else:
+            form = TrainingCourseForm()
+    
+    return render(request, 'main/education/course_crud.html', {
+        'courses': courses,
+        'form': form,
+        'editing_course': editing_course,
+        'course_to_edit': course_to_edit,
+    })
+
+
+
+@login_required
+def add_course(request):
+    form = TrainingCourseForm(request.POST or None, request.FILES or None)
+
+    if form.is_valid():
+        course = form.save(commit=False)
+        course.created_by = request.user
+        course.save()
+        return redirect('main:education_training')
+
+    return render(request, 'main/education/add_course.html', {'form': form})
+
+
+@login_required
+def edit_course(request, pk):
+    course = get_object_or_404(TrainingCourse, id=pk, created_by=request.user)
+    
+    if request.method == 'POST':
+        form = TrainingCourseForm(request.POST, request.FILES, instance=course)
+        if form.is_valid():
+            form.save()
+            return redirect('main:course_crud') 
+    else:
+        form = TrainingCourseForm(instance=course)
+    
+    courses = TrainingCourse.objects.filter(created_by=request.user)
+    return render(request, 'main/education/course_crud.html', {
+        'courses': courses,
+        'form': form,
+        'editing_course': True,
+    })
+
+@login_required
+def delete_course(request, pk):
+    from django.contrib import messages
+    
+    course = get_object_or_404(TrainingCourse, id=pk, created_by=request.user)
+    
+    if request.method == "POST":
+        course_title = course.title
+        course.delete()
+        messages.success(request, f'Course "{course_title}" deleted successfully!')
+        return redirect('main:course_crud')  
+    
+    return redirect('main:course_crud')
 
 
 
 def ai_course_discovery(request):
 
-    feeds = [
+    courses = []
+    seen = set()
+
+    mit_feeds = [
         "https://ocw.mit.edu/courses/rss.xml",
         "https://ocw.mit.edu/courses/new-courses/feed",
     ]
 
     courses = []
 
-    for url in feeds:
+    for url in mit_feeds:
         feed = feedparser.parse(url)
 
-        for entry in feed.entries[:10]:
+        for entry in feed.entries:
+            title = entry.title.strip()
+
+            if title in seen:
+                continue
+            seen.add(title)
 
             courses.append({
-                "title": entry.title,
+                "title": title,
                 "university": "MIT",
                 "platform": "MIT OpenCourseWare",
                 "duration": "Self-paced",
-                "url": entry.link
+                "url": entry.link,
+                "is_free": True
             })
 
     # Harvard / edX courses
@@ -1072,17 +1044,56 @@ def ai_course_discovery(request):
             "university": "Harvard University",
             "platform": "edX",
             "duration": "12 Weeks",
-            "url": "https://www.edx.org/cs50"
+            "url": "https://www.edx.org/cs50",
+            "is_free": True
         },
         {
             "title": "Data Science: Machine Learning",
             "university": "Harvard University",
             "platform": "edX",
             "duration": "8 Weeks",
-            "url": "https://www.edx.org/course/data-science-machine-learning"
+            "url": "https://www.edx.org/course/data-science-machine-learning",
+            "is_free": True
+        },
+        {
+            "title": "CS50's AI with Python",
+            "university": "Harvard University",
+            "platform": "edX",
+            "duration": "7 Weeks",
+            "url": "https://www.edx.org/course/cs50s-introducation-to-artificial-intelligence-with-python",
+            "is_free": True
         }
     ]
 
+    # Youtube Courses
+
+    youtube_courses = [
+        {
+            "title": "Python Full Course for Beginners",
+            "university": "FreeCodeCamp",
+            "platform": "Youtube",
+            "duration": "Self-paced",
+            "url": "https://www.youtube.com/watch?v=rfscVS0vtbw",
+            "is_free": True
+        },
+        {
+            "title": "JavaScript Full Course",
+            "university": "FreeCodeCamp",
+            "platform": "Youtube",
+            "duration": "Self-paced",
+            "url": "https://www.youtube.com/watch?v=jS4aFq5-91M",
+            "is_free": True
+        },
+        {
+            "title": "Machine Learning Full Course",
+            "university": "Stanford (Andrew Ng)",
+            "platform": "Youtube",
+            "duration": "Self-paced",
+            "url": "https://www.youtube.com/watch?v=jGwoUgTS7I",
+            "is_free": True
+        },
+    ]
+  
     stanford_courses = [
         {
             "title": "Machine Learning",
@@ -1093,15 +1104,37 @@ def ai_course_discovery(request):
         }
     ]
 
+    futurelearn_courses = [
+        {
+            "title": "Digital Skills: Web Analytics",
+            "university": "Accenture",
+            "platform": "FutureLearn",
+            "duration": "4 Weeks",
+            "url": "https://www.futurelearn.com/courses/digital-skills-web-analytics",
+            "is_free": True
+        },
+    ]
+
     courses.extend(harvard_courses)
     courses.extend(stanford_courses)
+    courses.extend(youtube_courses)
+    courses.extend(futurelearn_courses)
 
+    if len(courses) < 6:
+        return JsonResponse({
+            "courses": courses,
+            "count": len(courses)
+        })
+    
     random.shuffle(courses)
+    pool = courses[:20]
+    selected = random.sample(pool, min(6,len(pool)))
 
     return JsonResponse({
-        "courses": courses[:10]
+        "courses": selected,
+        "count": len(selected)
     })
-
+    
 
 
 def testimonial_list(request):
@@ -1749,31 +1782,16 @@ def generate_recommendation_text(age, residence, priority, plan):
 @require_POST
 def submit_expert_inquiry(request):
     """Handle expert consultation form submissions"""
-    if request.method != 'POST':
-        return JsonResponse({'success': False, 'error': 'Only POST requests are allowed'}, status=405)
-    
     try:
         data = json.loads(request.body)
         
-        # Validate required fields
-        required_fields = ['full_name', 'email', 'phone', 'question']
-        for field in required_fields:
-            if not data.get(field):
-                return JsonResponse({'success': False, 'error': f'{field} is required'}, status=400)
-        
         # Create new inquiry
         inquiry = ExpertInquiry.objects.create(
-            full_name=data.get('full_name').strip() if data.get('full_name') else '',
-            email=data.get('email').strip() if data.get('email') else '',
-            phone=str(data.get('phone', '')).strip()[:20],  # Limit to 20 chars
-            question=data.get('question').strip() if data.get('question') else '',
-            interested_plan_id=data.get('plan_id') if data.get('plan_id') else None,
-            # Consultation-specific fields
-            consultation_type=data.get('consultation_type'),
-            preferred_language=data.get('preferred_language'),
-            location=data.get('location'),
-            urgency=data.get('urgency'),
-            additional_notes=data.get('additional_notes')
+            full_name=data.get('full_name'),
+            email=data.get('email'),
+            phone=data.get('phone', ''),
+            question=data.get('question'),
+            interested_plan_id=data.get('plan_id') if data.get('plan_id') else None
         )
         
         # TODO: Send email notification to admin
@@ -1784,12 +1802,10 @@ def submit_expert_inquiry(request):
             'message': 'Your request has been submitted successfully. An expert will contact you within 24 hours.'
         })
         
-    except json.JSONDecodeError as e:
-        return JsonResponse({'success': False, 'error': f'Invalid JSON: {str(e)}'}, status=400)
+    except json.JSONDecodeError:
+        return JsonResponse({'success': False, 'error': 'Invalid JSON'}, status=400)
     except Exception as e:
-        import traceback
-        traceback.print_exc()  # Print to server logs
-        return JsonResponse({'success': False, 'error': f'Server error: {str(e)}'}, status=500)
+        return JsonResponse({'success': False, 'error': str(e)}, status=500)
 
 
 def download_comparison_csv(request):
@@ -1891,298 +1907,182 @@ def document_services_support_help(request):
     return render(request, 'main/document_services/support_help.html')
 
 
-# ============================================
-# COMMUNITIES APP VIEWS
-# ============================================
 
-def communities_home(request):
-    """Communities hub home page"""
-    return render(request, 'main/communities/home.html')
+class LandingPageView(TemplateView):
+    template_name = 'main/news/home.html'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['latest_news'] = NewsArticle.objects.filter(status = 'PUBLISHED').order_by('created_at')[:3]
+        context['categories'] = Category.objects.all()
+        return context
 
 
-def communities_join(request):
-    """Allow users to join the community with basic info"""
-    if request.method == 'POST':
-        form = CommunitiesJoinForm(request.POST, request.FILES)
-        if form.is_valid():
-            member = form.save()
-            context = {
-                'name': member.name,
-                'email': member.email
-            }
-            try:
-                send_email(
-                    subject='Welcome to GCI Community!',
-                    recipient_list=[member.email],
-                    context=context,
-                    html_template='main/communities/welcome_email.html',
-                    plain_template='main/communities/welcome_email.txt'
+class ArticleHomeView(ListView):
+    model = NewsArticle
+    template_name = 'main/news/news_listing.html'
+    context_object_name = 'articles'
+    paginate_by = 7
+
+    def get_queryset(self):
+        queryset = NewsArticle.objects.filter(status = 'PUBLISHED').order_by('created_at')
+
+        query = self.request.GET.get('q')
+        if query:
+            queryset = queryset.filter(
+                Q(title__icontains=query) |
+                Q(content__icontains=query)
+            )
+
+        return queryset
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['categories'] = Category.objects.all()
+    
+        all_articles = context['articles']
+        if all_articles:
+            context['hero_article'] = all_articles[0]
+            context['grid_articles'] = all_articles[1:]
+        return context
+
+class ArticleDetailView(DetailView):
+    model = NewsArticle 
+    template_name = 'main/news/article_detail.html'
+    context_object_name = 'article'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['related_articles'] = NewsArticle.objects.filter(
+            category=self.object.category
+        ).exclude(
+            id=self.object.id
+        )[:3]
+        return context
+
+class ArticleCreateView(LoginRequiredMixin, CreateView):
+    model = NewsArticle
+    form_class = ArticleForm
+    template_name = 'main/news/article_form.html'
+    success_url =reverse_lazy('news:dashboard')
+
+    def form_valid(self, form):
+        if not form.instance.author:
+            form.instance.author = self.request.user
+        return super().form_valid(form)
+    
+class ArticleEditView(LoginRequiredMixin, UpdateView):
+    model = NewsArticle
+    form_class = ArticleForm
+    template_name = 'main/news/article_form.html'
+    success_url = reverse_lazy('news:dashboard')
+
+    
+class ArticleDeleteView(LoginRequiredMixin, DeleteView):
+    model = NewsArticle
+    template_name = 'main/news/article_confirm_delete.html'
+    success_url = reverse_lazy('news:dashboard')
+
+
+
+# Category Views
+class CategoryArticleListView(ListView):
+    model = NewsArticle
+    template_name = 'main/news/category_articles.html'
+    context_object_name = 'articles'
+    paginate_by = 6 
+
+    def get_queryset(self):
+        self.category = get_object_or_404(Category, slug=self.kwargs['slug'])
+        return NewsArticle.objects.filter(category=self.category, status = 'PUBLISHED').order_by('-created_at')
+    
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['category'] = self.category
+        return context
+        
+
+class CategoryCreateView(LoginRequiredMixin, CreateView):
+    model = Category
+    fields = ['name', 'description']
+    template_name = 'main/news/category_form.html'
+    success_url = reverse_lazy('news:dashboard')
+
+    
+class CategoryEditView(LoginRequiredMixin, UpdateView):
+    model = Category
+    fields = ['name', 'description']
+    template_name = 'main/news/category_form.html'
+    success_url = reverse_lazy('news:dashboard')
+
+class CategoryDeleteView(LoginRequiredMixin, DeleteView):
+    model = Category
+    template_name = 'main/news/category_confirm_delete.html'
+    success_url = reverse_lazy('news:dashboard')
+
+
+class AdminDashboardView(LoginRequiredMixin, TemplateView):
+    template_name = 'main/news/dashboard.html'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs) 
+        query = self.request.GET.get('q')
+        articles = NewsArticle.objects.all()
+        
+        if query:
+           
+            recent_articles = articles.filter(
+                Q(title__icontains=query) | 
+                Q(category__name__icontains=query)
+            ).order_by('-created_at')
+        else:
+           
+            recent_articles = articles.order_by('-created_at')[:10]
+
+        context['total_count'] = articles.count()
+        context['published_count'] = articles.filter(status='PUBLISHED').count()
+        context['draft_count'] = articles.filter(status='DRAFT').count()
+        context['subscriber_count'] = Subscriber.objects.filter(confirmed=True).count()
+        context['categories'] = Category.objects.all()
+        context['recent_articles'] = recent_articles
+        context['query'] = query 
+        
+        return context
+
+def subscribe(request):
+    if request.method == "POST":
+        email = request.POST.get('email')
+        if email:
+            sub, created = Subscriber.objects.get_or_create(email=email)
+            if created:
+                verify_url = request.build_absolute_uri(
+                    reverse('news:confirm_email', args=[sub.conf_token])
                 )
-            except Exception as e:
-                print(f'Email send error: {e}')
-            
-            messages.success(request, f'Welcome {member.name}! You have joined the community.')
-            return redirect('communities:member_directory')
-    else:
-        form = CommunitiesJoinForm()
-    return render(request, 'main/communities/join.html', {'form': form})
 
-
-def communities_member_directory(request):
-    """List all public member directory profiles"""
-    profiles = DirectoryProfile.objects.filter(is_published=True)
-    
-    # Search and filter
-    search_query = request.GET.get('search', '')
-    category = request.GET.get('category', '')
-    
-    if search_query:
-        profiles = profiles.filter(
-            Q(full_name__icontains=search_query) |
-            Q(profession__icontains=search_query) |
-            Q(expertise_summary__icontains=search_query)
-        )
-    
-    if category:
-        profiles = profiles.filter(category=category)
-    
-    context = {
-        'profiles': profiles,
-        'categories': DirectoryProfile.CATEGORY_CHOICES if hasattr(DirectoryProfile, 'CATEGORY_CHOICES') else []
-    }
-    return render(request, 'main/communities/member_directory.html', context)
-
-
-def communities_join_directory(request, member_id):
-    """Create or update directory profile for a member"""
-    member = get_object_or_404(CommunityMember, id=member_id)
-    profile, created = DirectoryProfile.objects.get_or_create(member=member)
-    
-    if request.method == 'POST':
-        form = CommunitiesDirectoryProfileForm(request.POST, request.FILES, instance=profile)
-        if form.is_valid():
-            form.save()
-            messages.success(request, 'Your directory profile has been updated.')
-            return redirect('communities:member_directory')
-    else:
-        form = CommunitiesDirectoryProfileForm(instance=profile)
-    
-    return render(request, 'main/communities/join_directory.html', {'form': form, 'member': member})
-
-
-def communities_join_directory_form(request):
-    """Display the join directory form page"""
-    return render(request, 'main/communities/join_directory_form.html')
-
-
-def communities_forum_home(request):
-    """Forum home page with categories"""
-    categories = ForumCategory.objects.all()
-    recent_posts = Post.objects.all().order_by('-created_at')[:5]
-    
-    context = {
-        'categories': categories,
-        'recent_posts': recent_posts
-    }
-    return render(request, 'main/communities/forum_home.html', context)
-
-
-def communities_category_detail(request, slug):
-    """Display all posts in a category"""
-    category = get_object_or_404(ForumCategory, slug=slug)
-    posts = Post.objects.filter(category=category).order_by('-created_at')
-    
-    context = {
-        'category': category,
-        'posts': posts
-    }
-    return render(request, 'main/communities/category_detail.html', context)
-
-
-def communities_view_post(request, post_id):
-    """Display a single forum post with comments"""
-    post = get_object_or_404(Post, id=post_id)
-    comments = CommentP.objects.filter(post=post).order_by('created_at')
-    
-    if request.method == 'POST':
-        form = CommunitiesCommentForm(request.POST)
-        if form.is_valid():
-            comment = form.save(commit=False)
-            comment.post = post
-            comment.author = request.user
-            comment.save()
-            messages.success(request, 'Your comment has been posted.')
-            return redirect('communities:view_post', post_id=post.id)
-    else:
-        form = CommunitiesCommentForm()
-    
-    context = {
-        'post': post,
-        'comments': comments,
-        'form': form
-    }
-    return render(request, 'main/communities/view_post.html', context)
-
-
-def communities_create_post(request, slug):
-    """Create a new forum post in a category"""
-    category = get_object_or_404(ForumCategory, slug=slug)
-    
-    if request.method == 'POST':
-        form = CommunitiesPostForm(request.POST)
-        if form.is_valid():
-            post = form.save(commit=False)
-            post.category = category
-            post.save()
-            messages.success(request, 'Your post has been created.')
-            return redirect('communities:view_post', post_id=post.id)
-    else:
-        form = CommunitiesPostForm(initial={'category': category})
-    
-    context = {
-        'form': form,
-        'category': category
-    }
-    return render(request, 'main/communities/create_post.html', context)
-
-
-def communities_add_comment(request, post_id):
-    """Handle comment addition via POST"""
-    post = get_object_or_404(Post, id=post_id)
-    
-    if request.method == 'POST':
-        form = CommunitiesCommentForm(request.POST)
-        if form.is_valid():
-            comment = form.save(commit=False)
-            comment.post = post
-            comment.author = request.user
-            comment.save()
-            messages.success(request, 'Your comment has been posted.')
-    
-    return redirect('communities:view_post', post_id=post.id)
-
-
-def communities_event_calendar(request):
-    """Display community events calendar"""
-    events = EventCalendar.objects.all().order_by('start_date')
-    
-    context = {
-        'events': events
-    }
-    return render(request, 'main/communities/event_calendar.html', context)
-
-
-def communities_create_event(request):
-    """Create a new community event"""
-    if request.method == 'POST':
-        form = CommunitiesEventForm(request.POST)
-        if form.is_valid():
-            event = form.save()
-            messages.success(request, 'Event has been created.')
-            return redirect('communities:event_detail', id=event.id)
-    else:
-        form = CommunitiesEventForm()
-    
-    return render(request, 'main/communities/create_event.html', {'form': form})
-
-
-def communities_event_detail(request, id):
-    """Display event details"""
-    event = get_object_or_404(EventCalendar, id=id)
-    
-    context = {
-        'event': event
-    }
-    return render(request, 'main/communities/event_detail.html', context)
-
-
-def communities_edit_event(request, id):
-    """Edit an existing event"""
-    event = get_object_or_404(EventCalendar, id=id)
-    
-    if request.method == 'POST':
-        form = CommunitiesEventForm(request.POST, instance=event)
-        if form.is_valid():
-            form.save()
-            messages.success(request, 'Event has been updated.')
-            return redirect('communities:event_detail', id=event.id)
-    else:
-        form = CommunitiesEventForm(instance=event)
-    
-    return render(request, 'main/communities/edit_event.html', {'form': form, 'event': event})
-
-
-def communities_delete_event(request, id):
-    """Delete an event"""
-    event = get_object_or_404(EventCalendar, id=id)
-    
-    if request.method == 'POST':
-        event.delete()
-        messages.success(request, 'Event deleted successfully!')
-        return redirect('communities:event_calendar')
-    
-    return render(request, 'main/communities/delete_event.html', {'event': event})
-
-
-def communities_contact_view(request):
-    """Handle community contact form submissions"""
-    if request.method == 'POST':
-        form = ContactForm(request.POST)
-        if form.is_valid():
-            contact = form.save()
-            context = {
-                'name': contact.name,
-                'email': contact.email,
-                'message': contact.message
-            }
-            
-            # Send confirmation email to user
-            try:
-                send_email(
-                    subject=f'Hello {contact.name}, thank you for contacting us!',
-                    recipient_list=[contact.email],
-                    context=context,
-                    html_template='main/communities/contact_response.html',
-                    plain_template='main/communities/contact_response.txt'
+                send_mail(
+                    "Action Required: Confirm your subscription",
+                    f"Thanks for signing up! please Verify your email here: {verify_url}",
+                    "noreply@dc48kcoda.dev",
+                    [email]
                 )
-            except Exception as e:
-                print(f'Error sending user email: {e}')
-            
-            # Send notification to admin
-            try:
-                send_email(
-                    subject=f'New Contact Message from {contact.name}',
-                    recipient_list=['info@gcicrwanda.com'],
-                    context=context,
-                    html_template='main/communities/emails/admin_contact_notification.html',
-                    plain_template='main/communities/emails/admin_contact_notification.txt'
-                )
-            except Exception as e:
-                print(f'Error sending admin email: {e}')
-            
-            messages.success(request, 'Thank you for your message. We will get back to you soon.')
-            return redirect('communities:home')
-    else:
-        form = ContactForm()
-    
-    return render(request, 'main/communities/contact_form.html', {'form': form})
 
+                return JsonResponse({"status": "success", "msg": "Check your email to confirm!"})
+            return JsonResponse({"status": "exists", "msg": "you're already on the list."})
+        return JsonResponse({"status": "error", "msg": "Invalid Request"})
 
-# ============================================
-# MEMBERJOIN APP VIEWS
-# ============================================
+    return JsonResponse({"status": "error", "msg": "Only POST allowed"}, status=405)
 
 def member_home(request):
     """Handle member registration and contact message submission"""
     if request.method == 'POST':
         if 'register_submit' in request.POST:
-            # Import here to avoid duplicate ContactMessage form import
             from .forms import MembershipRegistrationForm
             member_form = MembershipRegistrationForm(request.POST)
             if member_form.is_valid():
                 member_form.save()
                 messages.success(request, 'Membership registration successful! Welcome to DC48.')
                 return redirect('main:member_home')
+
         elif 'contact_submit' in request.POST:
             from .forms import ContactMessageForm
             contact_form = ContactMessageForm(request.POST)
@@ -2190,15 +2090,17 @@ def member_home(request):
                 contact_form.save()
                 messages.success(request, 'Your message has been sent successfully!')
                 return redirect('main:member_home')
+
     else:
         from .forms import MembershipRegistrationForm, ContactMessageForm
         member_form = MembershipRegistrationForm()
         contact_form = ContactMessageForm()
-        context = {
-            'form': member_form,
-            'contact_form': contact_form
-        }
-        return render(request, 'main/memberjoin/member_home.html', context)
+
+    context = {
+        'form': member_form,
+        'contact_form': contact_form
+    }
+    return render(request, 'main/memberjoin/member_home.html', context)
 
 
 # ============================================
@@ -2206,10 +2108,6 @@ def member_home(request):
 # ============================================
 
 def legal_immigration_guidance(request):
-    """
-    Render the Legal & Immigration Guidance page.
-    Displays service information, CTA buttons, and disclaimer.
-    """
     from .models import LegalService
     
     services = LegalService.objects.filter(is_active=True).order_by('order')
@@ -2222,4 +2120,15 @@ def legal_immigration_guidance(request):
     return render(request, 'main/legal_and_immigration_guidance.html', context)
 
 
-    
+# ============================================
+# NEWS SUBSCRIPTION
+# ============================================
+
+def confirm_email(request, token):
+    subscriber = get_object_or_404(Subscriber, conf_token=token)
+    subscriber.confirmed = True
+    subscriber.save()
+
+    return render(request, 'main/news/subscription_confirmed.html', {
+        'email': subscriber.email
+    })
