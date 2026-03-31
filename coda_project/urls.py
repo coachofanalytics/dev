@@ -84,7 +84,7 @@ urlpatterns = [
     path('social_accounts/login/', account_views.login_view),
     path('social_accounts/social/signup/', account_views.login_view),
     path('social_accounts/', include('allauth.urls')),
-    # path('communities/', include('communities.urls', namespace='communities')),  # App not found - commented out
+    path('communities/', include('main.urls_communities')),
 ]
 
 if settings.DEBUG:

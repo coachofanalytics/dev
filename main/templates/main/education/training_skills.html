@@ -99,7 +99,7 @@
                         + Add Course
                     </a>
                 {% else %}
-                    <a href="{% url 'login' %}?next={{ request.path }}"
+                    <a href="{% url 'accounts:account-login' %}?next={{ request.path }}"
                        class="bg-green-600 text-white px-6 py-3 rounded-full font-semibold hover:bg-green-700 transition">
                         Login to Add Course
                     </a>

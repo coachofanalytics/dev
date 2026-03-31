@@ -23,7 +23,8 @@ urlpatterns = [
 
     
     
-    # Communities App Integration - now handled at project level (coda_project/urls.py)
+    # Communities App Integration - registered at project level (coda_project/urls.py)
+    # to avoid nesting under the 'main' namespace
     # path('communities/', include('main.urls_communities')),
     # path('gallery/', views.gallery_list, name='gallery_list'),
     # path('news/add/', views.news_create, name='news_create'),
