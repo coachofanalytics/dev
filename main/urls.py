@@ -15,10 +15,17 @@ urlpatterns = [
     path('healthcare/insurance-support/api/inquiry/', views.submit_expert_inquiry, name='submit_expert_inquiry'),
     path('healthcare/insurance-support/download-csv/', views.download_comparison_csv, name='download_comparison_csv'),
 
+    # ===== CONSULAR ASSISTANCE MAIN PAGE =====
     path('consular-assistance/', views.consular_assistance, name='consular_assistance'),
-    # path('consular-assistance/book-consultation/', views.book_consular_consultation, name='book_consular_consultation'),
+    path('consular-assistance/book-consultation/', views.book_consular_consultation, name='book_consular_consultation'),
 
+    # ===== CONSULAR ASSISTANCE SUB-PAGES =====
     path('data/consular/information-updates/', views.consular_information_updates, name='consular_information_updates'),
+    path('data/consular/press-releases/', views.consular_press_releases, name='consular_press_releases'),
+    path('data/consular/embassy-news/', views.consular_embassy_news, name='consular_embassy_news'),
+    path('data/consular/community-updates/', views.consular_community_updates, name='consular_community_updates'),
+    path('data/consular/all-updates/', views.consular_all_updates, name='consular_all_updates'),
+    
     path('legal-immigration-guidance/', views.legal_immigration_guidance, name='legal_immigration_guidance'),
 
     
