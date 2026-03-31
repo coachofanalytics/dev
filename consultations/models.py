@@ -8,7 +8,7 @@ from django.db import models
 from django.shortcuts import render, redirect
 
 
-
+from django_countries.fields import CountryField
 
 
 
@@ -199,6 +199,7 @@ class Consultation(models.Model):
 from django.db import models
 
 class PreAssessment(models.Model):
+    
     COUNTRY_CHOICES = [
         ('canada', 'Canada'),
         ('usa', 'USA'),

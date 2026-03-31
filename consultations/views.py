@@ -320,3 +320,6 @@ def attorney_success(request):
 
 def contacts(request):
     return render(request, 'consultations/contacts.html')
+def pre_social_login(self, request, sociallogin):
+        # Optional custom logic
+        pass
