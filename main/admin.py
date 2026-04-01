@@ -397,3 +397,20 @@ class MembershipRegistrationAdmin(admin.ModelAdmin):
         }),
     )
 
+@admin.register(LegalService)
+class LegalServiceAdmin(admin.ModelAdmin):
+    list_display = ['title', 'category', 'order', 'is_active']
+    list_filter = ['category', 'is_active']
+    search_fields = ['title', 'description']
+    fieldsets = (
+        ('Service Information', {
+            'fields': ('title', 'category', 'description')
+        }),
+        ('Display Options', {
+            'fields': ('image_url', 'features', 'cta_button_text', 'order', 'is_active')
+        }),
+        ('Timestamps', {
+            'fields': ('created_at', 'updated_at'),
+            'classes': ('collapse',)
+        }),
+    )

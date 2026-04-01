@@ -1514,3 +1514,105 @@ class MembershipRegistration(models.Model):
     class Meta:
         verbose_name_plural = "Membership Registrations"
         ordering = ['-registration_date']
+
+
+class LegalService(models.Model):
+        CATEGORY_CHOICES = [
+            ('visa', 'Visa and Residency Services'),
+            ('citizenship', 'Citizenship and Naturalization'),
+            ('legal_referral', 'Legal Representation & Referrals'),
+            ]
+       
+        title = models.CharField(
+        max_length=200,
+        help_text="Enter service title")
+       
+        category = models.CharField(
+        max_length=50,
+        choices=CATEGORY_CHOICES,
+        help_text="Select the type of legal service")
+       
+        description = models.TextField(
+        help_text="Detailed explanation of this service")
+       
+        image_url = models.URLField(
+        blank=True,
+        null=True,
+        help_text="Image URL: /static/community/img/visa-residency.png")
+       
+        features = models.JSONField(
+        default=list,
+        help_text='Format: ["Feature 1", "Feature 2", "Feature 3", "Feature 4"]')
+       
+        cta_button_text = models.CharField(
+        max_length=100,
+        default='Learn More',
+        help_text="Text on the action button")
+       
+        order = models.IntegerField(
+        default=0,
+        help_text="1=first, 2=second, 3=third. Lower numbers appear first" )
+       
+        is_active = models.BooleanField(
+        default=True,
+        help_text="Uncheck to hide this service from the page")
+       
+        created_at = models.DateTimeField(auto_now_add=True)
+        updated_at = models.DateTimeField(auto_now=True)
+        
+        def __str__(self):
+           return self.title
+
+        class Meta:
+          ordering = ['order']  # Always sort by order field
+          verbose_name = 'Legal Service'
+          verbose_name_plural = 'Legal Services'
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
