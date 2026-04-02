@@ -948,6 +948,34 @@ class ExpertInquiry(models.Model):
     def get_uncontacted_inquiries(cls):
         """Get all inquiries that haven't been contacted"""
         return cls.objects.filter(is_contacted=False).order_by('-created_at')
+
+
+class PromoContent(models.Model):
+    title = models.CharField(max_length=200)
+    subtitle = models.CharField(max_length=200, blank=True, null=True)
+    
+    description = models.TextField()
+    
+    background_image = models.URLField(
+        help_text="Poster background image URL"
+    )
+    
+    colors = models.JSONField(
+        default=list,
+        help_text='Example: ["purple", "green", "pink", "yellow"]'
+    )
+    
+    tags = models.JSONField(
+        default=list,
+        help_text='Example: ["afrobeats", "amapiano", "2026", "phantom"]'
+    )
+    
+    is_featured = models.BooleanField(default=True)
+    
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return self.title
     
     @classmethod
     def get_urgent_inquiries(cls):
