@@ -1544,7 +1544,10 @@ class MembershipRegistration(models.Model):
         ordering = ['-registration_date']
 
 
-class LegalService(models.Model):
+
+
+
+class Legal_servicess(models.Model):
         CATEGORY_CHOICES = [
             ('visa', 'Visa and Residency Services'),
             ('citizenship', 'Citizenship and Naturalization'),
@@ -1596,8 +1599,6 @@ class LegalService(models.Model):
           verbose_name = 'Legal Service'
           verbose_name_plural = 'Legal Services'
           
-
-
 
 
 
