@@ -7,7 +7,9 @@ from django.urls import reverse
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.forms import UserCreationForm
+from .forms import LegalServicesForm
 import json
+
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.views.generic import (
     CreateView,
@@ -2209,3 +2211,16 @@ def Legal_servicess_list(request):
         'services': services
     }
     return render(request, 'main/legalervice_list.html', context)
+
+
+def Legal_service_Create(request):
+    """View to create a new legal service"""
+    if request.method == 'POST':
+        form = LegalServicesForm(request.POST)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Legal service created successfully!')
+            return redirect('main:Legal_servicess_list')
+    else:
+        form = LegalServicesForm()
+    return render(request, 'main/legalervice_form.html', {'form': form})

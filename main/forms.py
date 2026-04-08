@@ -1,7 +1,7 @@
 from django import forms
 from .models import Testimonial, Feedback, Donation_organisation, Donation_organization, ContactMessage, Scholarship
 from django.utils import timezone
-from .models import AppointmentRequest
+from .models import AppointmentRequest , Legal_servicess
 # Feedback / Contact Form
 
 from django.contrib.auth.models import User
@@ -401,4 +401,21 @@ class ContactMessageForm(forms.ModelForm):
             'name': forms.TextInput(attrs={'class': 'w-full border rounded-lg p-2', 'placeholder': 'Your Name'}),
             'email': forms.EmailInput(attrs={'class': 'w-full border rounded-lg p-2', 'placeholder': 'Your Email'}),
             'message': forms.Textarea(attrs={'class': 'w-full border rounded-lg p-2', 'placeholder': 'Your Message', 'rows': 5}),
+        }
+
+
+class LegalServicesForm(forms.ModelForm):
+    
+    class Meta:
+        model = Legal_servicess
+        fields = ['title', 'category', 'description', 'image_url','features','cta_button_text','order','is_active']
+        widgets = {
+            'title': forms.TextInput(attrs={'class': 'w-full border rounded-lg p-2', 'placeholder': 'Service Title'}),
+            'category': forms.Select(attrs={'class': 'w-full border rounded-lg p-2'}),
+            'description': forms.Textarea(attrs={'class': 'w-full border rounded-lg p-2', 'placeholder': 'Service Description', 'rows': 5}),
+            'image_url': forms.URLInput(attrs={'class': 'w-full border rounded-lg p-2', 'placeholder': 'Image URL'}),
+            'features': forms.Textarea(attrs={'class': 'w-full border rounded-lg p-2', 'placeholder': 'Service Features', 'rows': 3}),
+            'cta_button_text': forms.TextInput(attrs={'class': 'w-full border rounded-lg p-2', 'placeholder': 'Call to Action Button Text'}),
+            'order': forms.NumberInput(attrs={'class': 'w-full border rounded-lg p-2', 'placeholder': 'Order'}),
+            'is_active': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
         }
