@@ -36,6 +36,10 @@ admin.site.register(ConsularAssistancePage)
 admin.site.register(AppointmentRequest)
 admin.site.register(Doctor)
 
+# membership registration by afanyu 
+admin.site.register(Membership_plan)
+admin.site.register(Member_Registration)
+
 
 
 @admin.register(ExpertInquiry)
@@ -76,7 +80,7 @@ class ExpertInquiryAdmin(admin.ModelAdmin):
         'add_urgent_note', 
         'send_reminder',
         'assign_to_me',
-        'escalated_selected'
+        'escalate_selected'
         ]
     
     fieldsets = (
