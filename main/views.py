@@ -19,7 +19,7 @@ from django.views.generic import (
 #<<<<<<< 25.10_DC48_UAT_UO
 from .models import Assets,Description, News, Page, Service, SubService,Team, SafetyAlertSubscription, EmergencyHotline, StaffContact, InsurancePlan, AIRecommendationRule, ExpertInquiry, ConsularAssistancePage, NewsArticle, Category, Subscriber
 #=======
-from django.db.models import Q
+from django.db.models import Q, F
 #<<<<<<< HEAD
 from .models import Scholarship, Donation_organisation, ContactMessage, Testimonial
 #>>>>>>> origin/25.11_DC48K_UAT_FN
@@ -1951,6 +1951,21 @@ class ArticleDetailView(DetailView):
     model = NewsArticle 
     template_name = 'main/news/article_detail.html'
     context_object_name = 'article'
+
+    def get_object(self, queryset=None):
+        """Override get_object to increment views atomically using F() expression.
+        
+        F() expressions ensure:
+        - Thread-safe: Prevents race conditions under high traffic
+        - Database-level: Increments happen at database level, not in Python
+        - Atomic: No possibility of lost counts from concurrent requests
+        """
+        obj = super().get_object(queryset)
+        # Atomically increment views using F() expression
+        NewsArticle.objects.filter(pk=obj.pk).update(views=F('views') + 1)
+        # Refresh instance with updated view count from database
+        obj.refresh_from_db()
+        return obj
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)

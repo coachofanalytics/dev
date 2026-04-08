@@ -127,6 +127,70 @@
     }
 
     .card-image { width: 100%; height: 224px; object-fit: cover; }
+    
+    /* Card image wrapper for breaking badge */
+    .card-image-wrapper {
+        position: relative;
+        overflow: hidden;
+        height: 224px;
+    }
+
+    .card-image-wrapper img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    /* Breaking news badge for cards */
+    .breaking-badge {
+        position: absolute;
+        top: 12px;
+        left: 12px;
+        background: linear-gradient(135deg, #ef4444, #dc2626);
+        color: white;
+        padding: 8px 14px;
+        border-radius: 6px;
+        font-weight: 700;
+        font-size: 0.75rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        z-index: 10;
+        animation: pulse-badge 2s infinite;
+    }
+
+    .breaking-badge::before {
+        content: '';
+        width: 6px;
+        height: 6px;
+        background: white;
+        border-radius: 50%;
+        animation: blink 1.5s infinite;
+    }
+
+    @keyframes pulse-badge {
+        0%, 100% {
+            box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+            transform: scale(1);
+        }
+        50% {
+            box-shadow: 0 6px 16px rgba(239, 68, 68, 0.5);
+            transform: scale(1.02);
+        }
+    }
+
+    @keyframes blink {
+        0%, 49%, 100% {
+            opacity: 1;
+        }
+        50%, 99% {
+            opacity: 0.4;
+        }
+    }
+    
     .card-body { padding: 1.5rem; display: flex; flex-direction: column; gap: 0.75rem; }
     .card-tag { font-size: 0.75rem; font-weight: 700; color: var(--accent-teal); text-transform: uppercase; }
     .card-title { font-size: 1.25rem; font-weight: 700; color: #0f172a; line-height: 1.2; }
@@ -225,6 +289,11 @@
     {% if hero_article and page_obj.number == 1 %}
     <div class="hero-banner" style="background-image: url('{{ hero_article.featured_image.url }}');">
         <div class="hero-overlay"></div>
+        {% if hero_article.is_breaking %}
+        <div class="breaking-badge" style="position: absolute; top: 20px; left: 20px; z-index: 20;">
+            🔴 LIVE / BREAKING
+        </div>
+        {% endif %}
         <div class="hero-text-content">
             <h1 class="hero-title">{{ hero_article.title }}</h1>
             <p class="hero-description">{{ hero_article.ai_snippet|truncatechars:180 }}</p>
@@ -275,7 +344,14 @@
     <div class="article-grid">
         {% for article in grid_articles %}
         <article class="article-card">
-            <img src="{{ article.featured_image.url }}" class="card-image" alt="{{ article.title }}">
+            <div class="card-image-wrapper">
+                <img src="{{ article.featured_image.url }}" alt="{{ article.title }}">
+                {% if article.is_breaking %}
+                <div class="breaking-badge">
+                    🔴 LIVE
+                </div>
+                {% endif %}
+            </div>
             <div class="card-body">
                 <span class="card-tag">{{ article.category.name }}</span>
                 <h3 class="card-title">{{ article.title }}</h3>

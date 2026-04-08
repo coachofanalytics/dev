@@ -336,11 +336,17 @@ class ArticleForm(forms.ModelForm):
     class Meta:
         model = NewsArticle
         fields = [
-            'category', 'title', 'slug', 'author',
+            'category', 'title', 'author',
             'featured_image', 'content', 'ai_summary',
-            'is_breaking', 'status', 'views'
+            'is_breaking', 'status'
         ]
         widgets = {
             'content': forms.Textarea(attrs={'rows': 10}),
             'ai_summary': forms.Textarea(attrs={'rows': 3}),
         }
+    
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # Ensure views field is never exposed, even if accidentally added
+        if 'views' in self.fields:
+            del self.fields['views']

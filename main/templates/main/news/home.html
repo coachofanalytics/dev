@@ -43,7 +43,71 @@
     width: 100%;
     height: 200px;
     object-fit:cover;
+    position: relative;
+}
 
+/* Image wrapper for breaking badge on home page cards */
+.news-card-image-wrapper {
+    position: relative;
+    width: 100%;
+    height: 200px;
+    overflow: hidden;
+}
+
+.news-card-image-wrapper img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+/* Breaking news badge */
+.breaking-badge {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    background: linear-gradient(135deg, #ef4444, #dc2626);
+    color: white;
+    padding: 7px 12px;
+    border-radius: 5px;
+    font-weight: 700;
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    z-index: 10;
+    animation: pulse-badge-home 2s infinite;
+}
+
+.breaking-badge::before {
+    content: '';
+    width: 5px;
+    height: 5px;
+    background: white;
+    border-radius: 50%;
+    animation: blink 1.5s infinite;
+}
+
+@keyframes pulse-badge-home {
+    0%, 100% {
+        box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+        transform: scale(1);
+    }
+    50% {
+        box-shadow: 0 6px 16px rgba(239, 68, 68, 0.5);
+        transform: scale(1.02);
+    }
+}
+
+@keyframes blink {
+    0%, 49%, 100% {
+        opacity: 1;
+    }
+    50%, 99% {
+        opacity: 0.4;
+    }
 }
 .card-content{
     padding: 20px;
@@ -166,7 +230,12 @@
 <section class="hero-slider">
     <div class="slide-container">
         {% for article in latest_news|slice:":2" %}
-        <div class="slide" style="background-image: url('{{ article.featured_image.url }}');">
+        <div class="slide" style="background-image: url('{{ article.featured_image.url }}'); position: relative;">
+            {% if article.is_breaking %}
+            <div class="breaking-badge" style="position: absolute; top: 20px; left: 20px; z-index: 20;">
+                🔴 LIVE / BREAKING
+            </div>
+            {% endif %}
             <div class=" slide-overlay">
                 <div class="slide-content">
                     <span class="slide-tag">{{ article.category.name }}</span>
@@ -195,7 +264,14 @@
         {% for article in latest_news %}
         <article class="news-card-home">
             {% if article.featured_image %}
-            <img src="{{ article.featured_image.url }}" alt="{{ article.title }}">
+            <div class="news-card-image-wrapper">
+                <img src="{{ article.featured_image.url }}" alt="{{ article.title }}">
+                {% if article.is_breaking %}
+                <div class="breaking-badge">
+                    🔴 LIVE
+                </div>
+                {% endif %}
+            </div>
             {% endif %}
             <div class="card-content">
                 <span class="card-date">{{ article.created_at|date:"M d, Y" }}</span>

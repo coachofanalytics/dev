@@ -240,9 +240,26 @@ class CategoryAdmin(admin.ModelAdmin):
 
 @admin.register(NewsArticle)
 class NewsArticleAdmin(admin.ModelAdmin):
-    list_display = ('title', 'category', 'status', 'created_at')
+    list_display = ('title', 'category', 'status', 'created_at', 'views')
     list_filter = ('status', 'category')
     search_fields = ('title', 'content')
+    readonly_fields = ('views', 'created_at', 'updated_at', 'slug')
+    
+    fieldsets = (
+        ('Article Content', {
+            'fields': ('title', 'slug', 'category', 'author', 'content', 'ai_summary')
+        }),
+        ('Publishing', {
+            'fields': ('status', 'is_breaking', 'featured_image')
+        }),
+        ('Analytics', {
+            'fields': ('views',),
+            'description': 'View count is automatically incremented when users visit the article. This field is read-only.'
+        }),
+        ('Metadata', {
+            'fields': ('created_at', 'updated_at'),
+        }),
+    )
 
 @admin.register(Subscriber)
 class SubscriberAdmin(admin.ModelAdmin):
