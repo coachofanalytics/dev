@@ -1,8 +1,12 @@
 from django.contrib import admin
 from django.utils.html import format_html
-from .models import *
 
+
+from django.contrib import admin
+# from .models import LegalService
+from .models import *
 # Register your models here.
+admin.site.register(Legal_servicess)
 admin.site.register(Assets)
 admin.site.register(Feedback)
 admin.site.register(Description)
@@ -397,24 +401,20 @@ class MembershipRegistrationAdmin(admin.ModelAdmin):
         }),
     )
 
-@admin.register(LegalService)
-class LegalServiceAdmin(admin.ModelAdmin):
-    list_display = ['title', 'category', 'is_active', 'order', 'created_at']
-    list_filter = ['category', 'is_active', 'created_at']
-    search_fields = ['title', 'description']
-    fieldsets = (
-        ('Basic Information', {
-            'fields': ('title', 'category', 'description', 'order')
-        }),
-        ('Media & Content', {
-            'fields': ('image_url', 'features')
-        }),
-        ('Call-to-Action', {
-            'fields': ('cta_button_text', 'cta_button_url')
-        }),
-        ('Status', {
-            'fields': ('is_active', 'created_at', 'updated_at'),
-            'classes': ('collapse',)
-        }),
-    )
-    readonly_fields = ['created_at', 'updated_at']
+# @admin.register(LegalService)
+# class LegalServiceAdmin(admin.ModelAdmin):
+#     list_display = ['title', 'category', 'order', 'is_active']
+#     list_filter = ['category', 'is_active']
+#     search_fields = ['title', 'description']
+#     fieldsets = (
+#         ('Service Information', {
+#             'fields': ('title', 'category', 'description')
+#         }),
+#         ('Display Options', {
+#             'fields': ('image_url', 'features', 'cta_button_text', 'order', 'is_active')
+#         }),
+#         ('Timestamps', {
+#             'fields': ('created_at', 'updated_at'),
+#             'classes': ('collapse',)
+#         }),
+#     )

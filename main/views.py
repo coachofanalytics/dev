@@ -13,8 +13,9 @@ from django.views.generic import (
     CreateView,
     UpdateView,
 )
+
 #<<<<<<< 25.10_DC48_UAT_UO
-from .models import Assets,Description, News, Page, Service, SubService,Team, SafetyAlertSubscription, EmergencyHotline, StaffContact, InsurancePlan, AIRecommendationRule, ExpertInquiry, ConsularAssistancePage
+from .models import Assets,Description, News, Page, Service, SubService,Team, SafetyAlertSubscription, EmergencyHotline, StaffContact, InsurancePlan, AIRecommendationRule, ExpertInquiry, ConsularAssistancePage,Legal_servicess
 #=======
 from django.db.models import Q
 #<<<<<<< HEAD
@@ -2199,3 +2200,12 @@ def member_home(request):
             'contact_form': contact_form
         }
         return render(request, 'main/memberjoin/member_home.html', context)
+    
+
+def Legal_servicess_list(request):
+    """View to list all legal services"""
+    services = Legal_servicess.objects.all()
+    context = {
+        'services': services
+    }
+    return render(request, 'main/legalervice_list.html', context)

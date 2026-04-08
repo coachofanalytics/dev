@@ -948,6 +948,34 @@ class ExpertInquiry(models.Model):
     def get_uncontacted_inquiries(cls):
         """Get all inquiries that haven't been contacted"""
         return cls.objects.filter(is_contacted=False).order_by('-created_at')
+
+
+class PromoContent(models.Model):
+    title = models.CharField(max_length=200)
+    subtitle = models.CharField(max_length=200, blank=True, null=True)
+    
+    description = models.TextField()
+    
+    background_image = models.URLField(
+        help_text="Poster background image URL"
+    )
+    
+    colors = models.JSONField(
+        default=list,
+        help_text='Example: ["purple", "green", "pink", "yellow"]'
+    )
+    
+    tags = models.JSONField(
+        default=list,
+        help_text='Example: ["afrobeats", "amapiano", "2026", "phantom"]'
+    )
+    
+    is_featured = models.BooleanField(default=True)
+    
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return self.title
     
     @classmethod
     def get_urgent_inquiries(cls):
@@ -1515,56 +1543,105 @@ class MembershipRegistration(models.Model):
         verbose_name_plural = "Membership Registrations"
         ordering = ['-registration_date']
 
-class LegalService(models.Model):
+
+
+
+
+class Legal_servicess(models.Model):
         CATEGORY_CHOICES = [
-        ('visa', 'Visa and Residency Services'),
-        ('citizenship', 'Citizenship and Naturalization'),
-        ('legal_referral', 'Legal Representation & Referrals'),
-    ]
+            ('visa', 'Visa and Residency Services'),
+            ('citizenship', 'Citizenship and Naturalization'),
+            ('legal_referral', 'Legal Representation & Referrals'),
+            ]
+       
         title = models.CharField(
         max_length=200,
-        help_text="Enter service title"
-    )
+        help_text="Enter service title")
+       
         category = models.CharField(
         max_length=50,
         choices=CATEGORY_CHOICES,
-        help_text="Select the type of legal service"
-    )
+        help_text="Select the type of legal service")
+       
         description = models.TextField(
-        help_text="Detailed explanation of this service"
-    )
+        help_text="Detailed explanation of this service")
+       
         image_url = models.URLField(
         blank=True,
         null=True,
-        help_text="Image URL: /static/community/img/visa-residency.png"
-    )
+        help_text="Image URL: /static/community/img/visa-residency.png")
+       
         features = models.JSONField(
         default=list,
-        help_text='Format: ["Feature 1", "Feature 2", "Feature 3", "Feature 4"]'
-    )
+        help_text='Format: ["Feature 1", "Feature 2", "Feature 3", "Feature 4"]')
+       
         cta_button_text = models.CharField(
         max_length=100,
         default='Learn More',
-        help_text="Text on the action button"
-    )
-        cta_button_url = models.URLField(
-        blank=True,
-        help_text="URL button points to (e.g., /services/visa)"
-    )
+        help_text="Text on the action button")
+       
         order = models.IntegerField(
         default=0,
-        help_text="1=first, 2=second, 3=third. Lower numbers appear first"
-    )
+        help_text="1=first, 2=second, 3=third. Lower numbers appear first" )
+       
         is_active = models.BooleanField(
         default=True,
-        help_text="Uncheck to hide this service from the page"
-    )
+        help_text="Uncheck to hide this service from the page")
+       
         created_at = models.DateTimeField(auto_now_add=True)
         updated_at = models.DateTimeField(auto_now=True)
-class Meta:
-        ordering = ['order']  # Always sort by order field
-        verbose_name = 'Legal Service'
-        verbose_name_plural = 'Legal Services'
-def __str__(self):
+        
+        def __str__(self):
+           return self.title
 
-        return self.title
+        class Meta:
+          ordering = ['order']  # Always sort by order field
+          verbose_name = 'Legal Service'
+          verbose_name_plural = 'Legal Services'
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

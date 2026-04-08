@@ -1,0 +1,41 @@
+{% extends "main/base_templates/base.html" %}
+{% load static %}
+
+{% block content %}
+
+<h1>Legal Services</h1>
+
+{% for service in services %}
+    {% if service.is_active %}
+        <div class="service-card">
+
+            <h2>{{ service.title }}</h2>
+
+            <span class="badge">{{ service.get_category_display }}</span>
+
+            {% if service.image_url %}
+                <div>
+                    <img src="{{ service.image_url }}" alt="{{ service.title }}">
+                </div>
+            {% endif %}
+
+            <p>{{ service.description|truncatewords:20 }}</p>
+
+            <!-- Features -->
+            <ul>
+                {% for feature in service.features %}
+                    <li>{{ feature }}</li>
+                {% endfor %}
+            </ul>
+
+            <a href="{% url 'legal-service-detail' service.id %}">
+                {{ service.cta_button_text }}
+            </a>
+
+        </div>
+    {% endif %}
+{% empty %}
+    <p>No legal services available.</p>
+{% endfor %}
+
+{% endblock %}
