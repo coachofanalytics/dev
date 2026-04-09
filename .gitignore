@@ -202,6 +202,11 @@ credentials*.json
 #reports
 main/BackendTests/reports/
 EducationReports/
+main/ActualSupportReports
+main/summary_reports
+main/seven_documents
+
+*.md
 
 # Temporary files created during merge and cleanup
 check_views.ps1
