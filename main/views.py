@@ -501,10 +501,10 @@ def activate_helpline(request):
 #=======
 #<<<<<<< HEAD
 def donor_list(request):
-    donations = Donation_organisation.objects.all()  # Remove is_donor filter
+    donations = Donation_organization.objects.all()  # Remove is_donor filter
     return render(request, 'main/donor.html', {'donations': donations})
 def donor_details(request, pk):
-    donation = get_object_or_404(Donation_organisation, pk=pk)
+    donation = get_object_or_404(Donation_organization, pk=pk)
     return render(request, 'main/donor_details.html', {'donation': donation})
 def add_donor(request):
     if request.method == "POST":
@@ -525,7 +525,7 @@ def add_donor(request):
         }
     return render(request, "main/add_donor.html",context)
 def edit_donor(request, pk):
-    donation = get_object_or_404(Donation_organisation, pk=pk)
+    donation = get_object_or_404(Donation_organization, pk=pk)
     if request.method == "POST":
         form = DonorForm(request.POST, instance=donation)
         if form.is_valid():
@@ -535,7 +535,7 @@ def edit_donor(request, pk):
         form = DonorForm(instance=donation)
     return render(request, 'main/edit_donor.html', {'form': form, 'donation': donation})
 def delete_donor(request, pk):
-    donation = get_object_or_404(Donation_organisation, pk=pk)
+    donation = get_object_or_404(Donation_organization, pk=pk)
     if request.method == "POST":
         donation.delete()
         return redirect('main:donor_list')
