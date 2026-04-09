@@ -207,6 +207,7 @@ main/summary_reports
 main/seven_documents
 
 *.md
+main/IMPLEMENTATION_GUIDE.md
 
 # Temporary files created during merge and cleanup
 check_views.ps1
