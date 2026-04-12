@@ -1435,9 +1435,11 @@ def testimonial_delete(request, pk):
     })
 
 
-def consular_assistance(request):
-    page = ConsularAssistancePage.objects.first()
-    context = { 'page': page, }
+def book_consular_consultation(request):
+    context = {
+        'page': ConsularAssistancePage.objects.first(),
+        'consultation_mode': True
+    }
     return render(request, "main/consular_assistance.html", context)
 
 
