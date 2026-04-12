@@ -16,7 +16,7 @@ urlpatterns = [
     path('healthcare/insurance-support/download-csv/', views.download_comparison_csv, name='download_comparison_csv'),
 
     path('consular-assistance/', views.consular_assistance, name='consular_assistance'),
-    # path('consular-assistance/book-consultation/', views.book_consular_consultation, name='book_consular_consultation'),
+    path('consular-assistance/book-consultation/', views.book_consular_consultation, name='book_consular_consultation'),
 
     path('data/consular/information-updates/', views.consular_information_updates, name='consular_information_updates'),
     
