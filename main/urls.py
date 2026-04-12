@@ -2,6 +2,7 @@ from django.urls import path, include
 from main.views import AboutView
 from . import views
 # from .utils import convert_html_to_pdf
+from accounts import views as account_views
 
 app_name = 'main'
 urlpatterns = [
@@ -16,7 +17,6 @@ urlpatterns = [
     path('healthcare/insurance-support/download-csv/', views.download_comparison_csv, name='download_comparison_csv'),
 
     path('consular-assistance/', views.consular_assistance, name='consular_assistance'),
-    path('consular-assistance/book-consultation/', views.book_consular_consultation, name='book_consular_consultation'),
 
     path('data/consular/information-updates/', views.consular_information_updates, name='consular_information_updates'),
     
@@ -123,6 +123,7 @@ urlpatterns = [
     path('quick-add-user/', views.quick_add_user, name='quick_add_user'),
     # In your app's urls.py
     path('test-user-endpoint/', views.test_user_endpoint, name='test_user_endpoint'),
+    path('login/', account_views.custom_login_view, name='login'),
 ]
 
     
