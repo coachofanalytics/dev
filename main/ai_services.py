@@ -6,7 +6,7 @@ def generate_article_summary(content):
         client = Groq(api_key=settings.GROQ_API_KEY)
 
         response = client.chat.completions.create(
-            model="moonshotai/kimi-k2-instruct",
+            model="llama-3.3-70b-versatile",
             messages=[
                 {
                     "role": "user",
