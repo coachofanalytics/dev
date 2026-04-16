@@ -121,9 +121,9 @@ urlpatterns = [
     path('course/delete/<int:pk>',views.delete_course, name='delete_course'),
     
     # ============================================
-    # MEMBERJOIN APP URLS (INTEGRATED)
+    # MEMBERSHIP & GOVERNANCE URLS
     # ============================================
-    # path('membership', views.member_home, name='member_home'),
+    # path('membership', views.member_home, name='member_home'),  # Currently disabled
     path('governance/', views.governance_list, name='governance_list'),
     path('governance/create/', views.governance_create, name='governance_create'),
     path('governance/<int:pk>/', views.governance_detail, name='governance_detail'),

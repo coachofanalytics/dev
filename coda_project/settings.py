@@ -62,7 +62,6 @@ INSTALLED_APPS = [
     "allauth.socialaccount.providers.google",
     "allauth.socialaccount.providers.facebook",
     "django_crontab",
-    # 'memberjoin',  # App directory exists but missing required files (models.py, views.py, etc.)
     'cloudinary',
     'cloudinary_storage',
     # 'communities',  # App not found - commented out
