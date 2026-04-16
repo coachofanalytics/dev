@@ -2232,9 +2232,24 @@ def book_consular_consultation(request):
     Render the Book Consultation form page.
     """
     if request.method == 'POST':
-        # Handle form submission
-        messages.success(request, 'Your consultation request has been submitted. We will contact you shortly.')
-        return redirect('main:consular_assistance')
+        # Handle AJAX form submission
+        import json
+        try:
+            data = json.loads(request.body)
+            
+            # Here you would save the consultation request to database
+            # For now, we'll just return success
+            # In production, create a ConsultationRequest model and save it
+            
+            return JsonResponse({
+                'success': True,
+                'message': 'Your consultation request has been submitted. We will contact you shortly.'
+            })
+        except Exception as e:
+            return JsonResponse({
+                'success': False,
+                'error': str(e)
+            }, status=400)
     
     context = {
         'title': 'Book a Consultation',

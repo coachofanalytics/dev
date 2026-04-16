@@ -136,11 +136,17 @@ def pay(request, service=None):
 
     user = request.user
     print(user)
-    membership = get_object_or_404(Membership, member=user)
-    fee_usd = membership.fee
-
-    fee_kes = fee_usd * get_exchange_rate('USD', 'KES')
-    print(fee_kes)
+    
+    # Handle case where user doesn't have a membership
+    try:
+        membership = Membership.objects.get(member=user)
+        fee_usd = membership.fee
+        fee_kes = fee_usd * get_exchange_rate('USD', 'KES')
+        print(fee_kes)
+    except Membership.DoesNotExist:
+        # Redirect user to membership registration if they don't have one
+        messages.info(request, 'Please register for a membership before making a payment.')
+        return redirect('accounts:membership_registration')
    
 
     context = {
