@@ -9,6 +9,7 @@ logs.log
 *.pyc
 __pycache__/
 local_settings.py
+db.sqlite3
 db.sqlite3-journal
 
 .idea/
@@ -25,6 +26,7 @@ package.json
 package-lock.json
 node_modules/
 
+
 # Build/utility tools (not part of project)
 *.jar
 bfg-*.jar
@@ -36,6 +38,7 @@ test_*.py
 *_test.py
 */test/
 */tests/
+BackendTests/
 
 # Report files and directories
 report/
@@ -160,6 +163,9 @@ env.bak/
 venv.bak/
 node_modules/
 
+# Tests
+tests/
+
 # Spyder project settings
 .spyderproject
 .spyproject
@@ -195,3 +201,22 @@ token.json
 *.secret
 .env
 credentials*.json
+
+#reports
+main/BackendTests/reports/
+EducationReports/
+
+# Temporary files created during merge and cleanup
+check_views.ps1
+current_views.txt
+temp_views.txt
+url_views.txt
+main/migrations/0010_merge_20260326_1652.py
+
+# Guidance files for newTest
+main/IMPLEMENTATION_GUID.md
+COMPREHENSIVE_TEST_SUITE_COMPLETE.md
+NEWS_APP_COMPREHENSIVE_TESTS_SUMMARY.md
+
+# database files
+db.sqlite3

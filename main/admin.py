@@ -238,18 +238,6 @@ class AIRecommendationRuleAdmin(admin.ModelAdmin):
 # ============================================
 # COMMUNITIES APP MODELS ADMIN REGISTRATION
 # ============================================
-from .models import (
-    CommunityMember,
-    DirectoryProfile,
-    ForumCategory,
-    Post,
-    CommentP,
-    EventCalendar,
-    UserProfile,
-    UserSettings,
-    UserPreferences,
-)
-
 
 @admin.register(CommunityMember)
 class CommunityMemberAdmin(admin.ModelAdmin):
@@ -281,7 +269,7 @@ class DirectoryProfileAdmin(admin.ModelAdmin):
     search_fields = ['full_name', 'profession', 'category', 'expertise_summary']
     fieldsets = (
         ('Profile Information', {
-            'fields': ('member', 'full_name', 'profession', 'region_city')
+            'fields': ('community_member', 'full_name', 'profession', 'region_city')
         }),
         ('Expertise', {
             'fields': ('category', 'membership_type', 'expertise_summary', 'profile_photo')
@@ -299,8 +287,8 @@ class ForumCategoryAdmin(admin.ModelAdmin):
     search_fields = ['name', 'description']
 
 
-@admin.register(Post)
-class PostAdmin(admin.ModelAdmin):
+@admin.register(CommunityPost)
+class CommunityPostAdmin(admin.ModelAdmin):
     list_display = ['title', 'category', 'created_at']
     list_filter = ['category', 'created_at']
     search_fields = ['title', 'content']
@@ -348,52 +336,26 @@ class EventCalendarAdmin(admin.ModelAdmin):
     )
 
 
-@admin.register(UserProfile)
-class UserProfileAdmin(admin.ModelAdmin):
-    list_display = ['user', 'get_bio']
-    search_fields = ['user__username', 'user__email']
-    
-    def get_bio(self, obj):
-        return 'View on site' if obj.user else 'No user'
-    get_bio.short_description = 'Bio'
-
-
-@admin.register(UserSettings)
-class UserSettingsAdmin(admin.ModelAdmin):
-    list_display = ['user', 'enable_notifications']
-    list_filter = ['enable_notifications']
-    search_fields = ['user__username', 'user__email']
-
-
-@admin.register(UserPreferences)
-class UserPreferencesAdmin(admin.ModelAdmin):
-    list_display = ['user']
-    search_fields = ['user__username', 'user__email']
-
-
-# ============================================
-# MEMBERJOIN APP ADMIN
-# ============================================
-
-@admin.register(MembershipRegistration)
-class MembershipRegistrationAdmin(admin.ModelAdmin):
-    list_display = ['first_name', 'last_name', 'email', 'membership_type', 'registration_date']
-    list_filter = ['membership_type', 'registration_date', 'country']
-    search_fields = ['first_name', 'last_name', 'email', 'organization_name']
-    readonly_fields = ['registration_date']
+@admin.register(LegalService)
+class LegalServiceAdmin(admin.ModelAdmin):
+    """Admin interface for managing Legal & Immigration Services"""
+    list_display = ['title', 'category', 'is_active', 'order', 'created_at']
+    list_filter = ['category', 'is_active', 'created_at']
+    search_fields = ['title', 'description']
     fieldsets = (
-        ('Personal Information', {
-            'fields': ('first_name', 'last_name', 'email', 'phone_number', 'date_of_birth')
+        ('Basic Information', {
+            'fields': ('title', 'category', 'description', 'order')
         }),
-        ('Location', {
-            'fields': ('country', 'city', 'address')
+        ('Media & Content', {
+            'fields': ('image_url', 'features')
         }),
-        ('Membership', {
-            'fields': ('membership_type', 'organization_name')
+        ('Call-to-Action', {
+            'fields': ('cta_button_text', 'cta_button_url')
         }),
-        ('Metadata', {
-            'fields': ('registration_date',),
+        ('Status', {
+            'fields': ('is_active', 'created_at', 'updated_at'),
             'classes': ('collapse',)
         }),
     )
+    readonly_fields = ['created_at', 'updated_at']
 

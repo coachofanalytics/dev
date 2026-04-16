@@ -10,23 +10,22 @@
     <span class="mx-2">/</span>
     <a href="{% url 'main:consular_assistance' %}" class="text-brand-blue hover:underline">Consular Assistance</a>
     <span class="mx-2">/</span>
-    <span class="text-brand-green font-semibold">Information & Updates</span>
+    <a href="{% url 'main:consular_information_updates' %}" class="text-brand-blue hover:underline">Information & Updates</a>
+    <span class="mx-2">/</span>
+    <span class="text-brand-green font-semibold">All Updates</span>
 </nav>
 
 <section class="hero-section">
  <div class="hero-content">
-    <h1>Information and Updates</h1>
-    <p>Stay connected, stay informed. The official source for press releases, essential
-        government news, and vital community updates for the diaspora.
+    <h1>All Updates</h1>
+    <p>Comprehensive news and updates from all categories:
+        press releases, government notices, and community announcements.
     </p>
-    <a href="#latest-updates" class="hero-section-btn">
-      VIEW LATEST UPDATES
-    </a>
  </div>
 </section>
 
-<section class="news-categories">
-  <h2 class="section-title">Essential News Categories</h2>
+<section class="news-categories" style="max-width: 5xl; margin: 0 auto; padding: 2rem 1rem;">
+  <h2 class="section-title">Browse by Category</h2>
 
   <div class="card-grid">
 
@@ -38,7 +37,7 @@
           Official announcements regarding new services, key partnerships,
           and operational changes within Diaspora County 48.
         </p>
-        <a href="{% url 'main:consular_press_releases' %}">Read All Releases →</a>
+        <a href="{% url 'main:consular_press_releases' %}">View All →</a>
       </div>
     </div>
 
@@ -50,7 +49,7 @@
           Critical updates on passport renewals, visa policy changes,
           consular services, and major legislative changes.
         </p>
-        <a href="{% url 'main:consular_embassy_news' %}">View Official Notices →</a>
+        <a href="{% url 'main:consular_embassy_news' %}">View All →</a>
       </div>
     </div>
 
@@ -62,42 +61,17 @@
           Community alerts, event listings, local resource sharing,
           and general information relevant to daily life abroad.
         </p>
-        <a href="{% url 'main:consular_community_updates' %}">Explore Community Board →</a>
+        <a href="{% url 'main:consular_community_updates' %}">View All →</a>
       </div>
     </div>
 
   </div>
 </section>
 
-
-<section id="latest-updates" class="recent-headlines">
-
-  <h2 class="recent-title">Recent Headlines</h2>
-
-  <div class="headline-card">
-    <span class="tag embassy">EMBASSY ALERT</span>
-    <h3>Temporary Suspension of e-Passport Services in London Effective October 15</h3>
-    <p class="meta">October 1, 2025 | Consular Affairs Department</p>
-  </div>
-
-  <div class="headline-card">
-    <span class="tag press">PRESS RELEASE</span>
-    <h3>DC48K Launches New Financial Literacy Program in Partnership with Diaspora Bank</h3>
-    <p class="meta">September 25, 2025 | Corporate Communications</p>
-  </div>
-
-  <div class="headline-card">
-    <span class="tag community">COMMUNITY UPDATE</span>
-    <h3>Call for Volunteers: Annual Diaspora Mentorship Drive Now Accepting Applications</h3>
-    <p class="meta">September 18, 2025 | Community Outreach Team</p>
-  </div>
-
-  <div class="load-more-container">
-    <a href="{% url 'main:consular_all_updates' %}" class="load-more-btn">
-      VIEW ALL UPDATES
-    </a>
-  </div>
-
-</section>
+<div class="load-more-container">
+  <a href="{% url 'main:consular_information_updates' %}" class="load-more-btn">
+    BACK TO INFORMATION & UPDATES
+  </a>
+</div>
 
 {% endblock %}

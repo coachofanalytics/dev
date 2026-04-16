@@ -56,10 +56,18 @@
             </h1>
             <p>Our AI constantly scans the web for the latest funding opportunities.</p>
             <br>
-            <button id="refresh-ai-search"
-             class="bg-green-600 text-white px-6 py-2 rounded-full font-semibold hover:bg-green-700 transition">
-             Refresh AI Research
-             </button>
+            <!-- Buttons on same horizontal line -->
+    <div class="flex gap-4 mt-4">
+        <button id="refresh-ai-search"
+            class="bg-green-600 text-white px-6 py-2 rounded-full font-semibold hover:bg-green-700 transition">
+            Refresh AI Research
+        </button>
+
+        <button onclick="openAddModal()"
+            class="bg-blue-600 text-white px-6 py-2 rounded-full font-semibold hover:bg-blue-700 transition">
+            Add New Scholarship
+        </button>
+    </div>
         </div>
     </header>
 
@@ -279,7 +287,8 @@
                             <p class="text-sm font-semibold text-gray-600">
                                 Deadline: <span class="text-brand-red">{{ scholarship.deadline|date:"m/d/Y" }}</span>
                             </p>
-                            <a href="{% url 'main:course_register' %}" onclick="console.log('Applying for {{ scholarship.title }}')" class="bg-brand-blue text-white font-bold py-2 px-4 rounded-md text-sm hover:bg-[#183693] transition duration-300 shadow-md">
+                            <a href="{% url 'main:course_register' %}?scholarship_id={{ scholarship.id }}" 
+                               class="bg-brand-blue text-white font-bold py-2 px-4 rounded-md text-sm hover:bg-[#183693] transition duration-300 shadow-md">
                                 Apply Now
                             </a>
                         </div>
@@ -296,144 +305,251 @@
                 </div>
             </div>
         </div>
-    </div>
+        <!-- ADD SCHOLARSHIP MODAL -->
+<div id="addModal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-50">
+    <div class="bg-white rounded-xl shadow-lg p-6 w-full max-w-md">
+        <h2 class="text-xl font-bold text-gray-800 mb-4">Access Requirement</h2>
 
-    <script>
-        function toggleFilters() {
-            const sidebar = document.getElementById('filter-sidebar');
-            sidebar.classList.toggle('filter-hidden');
-        }
-
-      function resetFilters() {
-          const form = document.getElementById('search-form');
-          
-          // Reset all input and select fields
-          form.querySelectorAll('input, select').forEach(el => {
-              if (el.type === 'checkbox' || el.type === 'radio') {
-                  el.checked = false;
-              } else {
-                  el.value = '';
-              }
-          });
-      
-          // Submit the form after resetting
-          form.submit();
-      }
-
-    async function refreshAIResearch() {
-        const container = document.getElementById("scholarship-results");
-        const count = document.getElementById("result-count");
-
-        // Show loading message
-        container.innerHTML = `
-            <div class="col-span-2 text-center py-16">
-                <p class="text-lg font-semibold text-brand-green animate-pulse">
-                    🤖 AI is searching the web for real-time scholarship opportunities...
-                </p>
-                <p class="text-gray-500 mt-3">
-                    Analyzing deadlines, funding amounts, and availability
-                </p>
+        <form id="accessForm">
+            <div class="mb-4">
+                <label class="block text-sm font-medium text-gray-700">Membership Status</label>
+                <select id="memberStatus" class="w-full border rounded-lg p-2 mt-1">
+                    <option value="">-- Select --</option>
+                    <option value="active">Active Member</option>
+                    <option value="inactive">Not Active</option>
+                </select>
             </div>
-        `;
 
-        try {
-            const response = await fetch("{% url 'main:ai_refresh_scholarships' %}");
-            const data = await response.json();
+            <div class="mb-4">
+                <label class="block text-sm font-medium text-gray-700">Donation Status</label>
+                <select id="donationStatus" class="w-full border rounded-lg p-2 mt-1">
+                    <option value="">-- Select --</option>
+                    <option value="yes">Donated</option>
+                    <option value="no">Not Yet</option>
+                </select>
+            </div>
 
-            // Update result count
-            count.textContent = data.count;
+            <div class="flex justify-between mt-6">
+                <button type="button" onclick="closeAddModal()"
+                    class="bg-gray-300 px-4 py-2 rounded-lg">
+                    Cancel
+                </button>
 
-            // Clear results
-            container.innerHTML = "";
+                <button type="button" onclick="validateAccess()"
+                    class="bg-blue-600 text-white px-4 py-2 rounded-lg">
+                    Continue
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+    </div>
+<script>
 
-            // Render scholarships
-            data.scholarships.forEach(s => {
-                const borderColor = s.status === "Closing Soon" ? "border-brand-red" : "border-brand-green";
-                const statusColor = s.status === "Closing Soon" ? "bg-brand-red text-white" : "bg-brand-green text-white";
-                
-                // Determine amount class
-                let amountClass = "";
-                if (s.amount_description && s.amount_description.toLowerCase().includes('full tuition')) {
-                    amountClass = "amount-full-tuition";
-                } else if (s.amount_currency === 'USD') {
-                    amountClass = "currency-usd";
-                } else if (s.amount_currency === 'KES') {
-                    amountClass = "currency-kes";
-                } else if (s.amount_currency === 'EUR') {
-                    amountClass = "currency-eur";
-                } else if (s.amount_currency === 'GBP') {
-                    amountClass = "currency-gbp";
-                }
+function openAddModal() {
+    document.getElementById("addModal").classList.remove("hidden");
+}
 
-                const card = document.createElement("div");
-                card.className = `bg-white p-6 rounded-xl shadow-lg hover:shadow-xl transition duration-300 border-t-4 ${borderColor}`;
+function closeAddModal() {
+    document.getElementById("addModal").classList.add("hidden");
+}
 
-                card.innerHTML = `
-                    <div class="flex justify-between items-start mb-4">
-                        <h3 class="text-xl font-bold text-brand-blue leading-tight">${s.title}</h3>
-                        <span class="text-sm font-semibold px-3 py-1 rounded-full ${statusColor}">${s.status.toUpperCase()}</span>
-                    </div>
-                    <p class="text-sm text-gray-500 mb-4 font-medium">${s.provider}</p>
+function validateAccess() {
+    const member = document.getElementById("memberStatus").value;
+    const donation = document.getElementById("donationStatus").value;
 
-                    <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 text-sm mb-6 border-b pb-4">
-                        <div class="flex flex-col">
-                            <span class="text-xs font-medium text-gray-500 uppercase">Level</span>
-                            <span class="font-semibold text-gray-800">${s.level}</span>
-                        </div>
-                        <div class="flex flex-col">
-                            <span class="text-xs font-medium text-gray-500 uppercase">Field</span>
-                            <span class="font-semibold text-gray-800">${s.field}</span>
-                        </div>
-                        <div class="flex flex-col">
-                            <span class="text-xs font-medium text-gray-500 uppercase">Location</span>
-                            <span class="font-semibold text-gray-800">${s.location}</span>
-                        </div>
-                        <div class="flex flex-col">
-                            <span class="text-xs font-medium text-gray-500 uppercase">Amount</span>
-                            <span class="font-semibold ${amountClass}">${s.amount}</span>
-                            ${s.amount_value && !s.amount_description ? 
-                                `<span class="text-xs text-gray-500 mt-1">(${s.amount_currency})</span>` : ''}
-                        </div>
-                    </div>
-
-                    <div class="flex justify-between items-center">
-                        <p class="text-sm font-semibold text-gray-600">
-                            Deadline: <span class="text-brand-red">${s.deadline}</span>
-                        </p>
-                        <a href="#" class="bg-brand-blue text-white font-bold py-2 px-4 rounded-md text-sm hover:bg-[#183693] transition duration-300 shadow-md">Apply Now</a>
-                    </div>
-                `;
-
-                container.appendChild(card);
-            });
-
-        } catch (error) {
-            container.innerHTML = `
-                <div class="col-span-2 text-center py-10 text-red-500">
-                    ⚠️ AI failed to fetch scholarships
-                </div>
-            `;
-            console.error(error);
-        }
+    if (member === "active" && donation === "yes") {
+        // ✅ Redirect to add scholarship page
+        window.location.href = "{% url 'main:add_scholarship' %}";
+    } else {
+        alert("❌ You must be an active member and have donated.");
     }
+}
 
-    // Safe DOM ready initialization: bind handlers when DOM is loaded and elements exist
-    document.addEventListener('DOMContentLoaded', function() {
-        const refreshBtn = document.getElementById('refresh-ai-search');
-        if (refreshBtn) {
-            refreshBtn.addEventListener('click', refreshAIResearch);
-        }
+function toggleFilters() {
+    const sidebar = document.getElementById('filter-sidebar');
+    sidebar.classList.toggle('filter-hidden');
+}
 
-        // Auto-submit form when filters change (optional)
-        const form = document.getElementById('search-form');
-        if (form) {
-            const inputs = form.querySelectorAll('select, input[type="text"], input[type="search"], textarea, input[type="checkbox"], input[type="radio"]');
-            inputs.forEach(input => {
-                input.addEventListener('change', function() {
-                    form.submit();
-                });
-            });
+function resetFilters() {
+    const form = document.getElementById('search-form');
+
+    form.querySelectorAll('input, select').forEach(el => {
+        if (el.type === 'checkbox' || el.type === 'radio') {
+            el.checked = false;
+        } else {
+            el.value = '';
         }
     });
-    </script>
+
+    form.submit();
+}
+
+// 🤖 AI REFRESH FUNCTION (CLEAN + SAFE + FAST)
+async function refreshAIResearch() {
+    const container = document.getElementById("scholarship-results");
+    const count = document.getElementById("result-count");
+
+    // 🔄 Loading UI
+    container.innerHTML = `
+        <div class="col-span-2 text-center py-16">
+            <p class="text-lg font-semibold text-brand-green animate-pulse">
+                🤖 AI is analyzing scholarships...
+            </p>
+            <p class="text-gray-500 mt-3">
+                Matching deadlines, funding, and your interests
+            </p>
+        </div>
+    `;
+
+    try {
+        const response = await fetch("{% url 'main:ai_refresh_scholarships' %}");
+        const data = await response.json();
+
+        count.textContent = data.count || 0;
+        container.innerHTML = "";
+
+        // 😕 Empty state
+        if (!data.scholarships || data.scholarships.length === 0) {
+            container.innerHTML = `
+                <div class="col-span-2 text-center py-10 text-gray-500">
+                    😕 No scholarships found right now
+                </div>
+            `;
+            return;
+        }
+
+        const fragment = document.createDocumentFragment();
+
+        data.scholarships.forEach(s => {
+            // 🧠 Safe fallback values
+            const status = (s.status || "Unknown").toLowerCase();
+
+            const borderColor = status.includes("closing")
+                ? "border-brand-red"
+                : "border-brand-green";
+
+            const statusColor = status.includes("closing")
+                ? "bg-brand-red text-white"
+                : "bg-brand-green text-white";
+
+            // 💰 Amount styling
+            let amountClass = "font-semibold text-gray-800";
+            if (s.amount && s.amount.toLowerCase().includes("full")) {
+                amountClass = "amount-full-tuition";
+            }
+
+            const card = document.createElement("div");
+            card.className = `bg-white p-6 rounded-xl shadow-lg hover:shadow-xl transition duration-300 border-t-4 ${borderColor}`;
+
+            card.innerHTML = `
+                <div class="flex justify-between items-start mb-4">
+                    <h3 class="text-xl font-bold text-brand-blue leading-tight">
+                        ${s.title || "No title"}
+                    </h3>
+                    <span class="text-sm font-semibold px-3 py-1 rounded-full ${statusColor}">
+                        ${(s.status || "Unknown").toUpperCase()}
+                    </span>
+                </div>
+
+                <p class="text-sm text-gray-500 mb-4 font-medium">
+                    ${s.provider || "Unknown provider"}
+                </p>
+
+                <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 text-sm mb-6 border-b pb-4">
+                    <div>
+                        <span class="text-xs text-gray-500 uppercase">Level</span>
+                        <p class="font-semibold">${s.level || "-"}</p>
+                    </div>
+                    <div>
+                        <span class="text-xs text-gray-500 uppercase">Field</span>
+                        <p class="font-semibold">${s.field || "-"}</p>
+                    </div>
+                    <div>
+                        <span class="text-xs text-gray-500 uppercase">Location</span>
+                        <p class="font-semibold">${s.location || "-"}</p>
+                    </div>
+                    <div>
+                        <span class="text-xs text-gray-500 uppercase">Amount</span>
+                        <p class="${amountClass}">${s.amount || "-"}</p>
+                    </div>
+                </div>
+
+                <div class="flex justify-between items-center">
+                    <p class="text-sm font-semibold text-gray-600">
+                        Deadline: <span class="text-brand-red">
+                            ${s.deadline || "N/A"}
+                        </span>
+                    </p>
+
+                    <button onclick="trackClick(${s.id})"
+                        class="bg-brand-blue text-white font-bold py-2 px-4 rounded-md text-sm hover:bg-[#183693] transition duration-300 shadow-md">
+                        Apply Now
+                    </button>
+                </div>
+            `;
+
+            fragment.appendChild(card);
+        });
+
+        container.appendChild(fragment);
+
+    } catch (error) {
+        console.error(error);
+
+        container.innerHTML = `
+            <div class="col-span-2 text-center py-10 text-red-500">
+                ⚠️ Failed to load scholarships
+            </div>
+        `;
+    }
+}
+
+// 🎯 APPLY FOR SCHOLARSHIP (redirect to registration)
+async function trackClick(id) {
+    try {
+        // Track the click for analytics
+        await fetch(`/track-click/${id}/`, {
+            method: "POST",
+            headers: {
+                "X-CSRFToken": getCSRFToken(),
+                "Content-Type": "application/json"
+            }
+        });
+    } catch (e) {
+        console.error("Tracking failed", e);
+    }
+    
+    // Redirect to course registration with scholarship_id
+    window.location.href = `/education/courses/register/?scholarship_id=${id}`;
+}
+
+// 🔐 CSRF TOKEN HELPER
+function getCSRFToken() {
+    return document.cookie
+        .split("; ")
+        .find(row => row.startsWith("csrftoken="))
+        ?.split("=")[1];
+}
+
+// 🚀 INIT
+document.addEventListener('DOMContentLoaded', function () {
+    const refreshBtn = document.getElementById('refresh-ai-search');
+    if (refreshBtn) {
+        refreshBtn.addEventListener('click', refreshAIResearch);
+    }
+
+    const form = document.getElementById('search-form');
+    if (form) {
+        const inputs = form.querySelectorAll(
+            'select, input[type="text"], input[type="search"], textarea, input[type="checkbox"], input[type="radio"]'
+        );
+
+        inputs.forEach(input => {
+            input.addEventListener('change', () => form.submit());
+        });
+    }
+});
+</script>
 {% endblock %}
+

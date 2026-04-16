@@ -109,6 +109,7 @@ def download_image(url):
 from django.core.mail import EmailMultiAlternatives
 from django.template.loader import render_to_string
 from django.utils.html import strip_tags
+from django.conf import settings as django_settings
 
 def send_email(subject, recipient_list, context, html_template, plain_template):
     """
@@ -134,7 +135,7 @@ def send_email(subject, recipient_list, context, html_template, plain_template):
         email = EmailMultiAlternatives(
             subject=subject,
             body=plain_message,
-            from_email=settings.EMAIL_HOST_USER,
+            from_email=django_settings.EMAIL_HOST_USER,
             to=recipient_list
         )
 
@@ -147,15 +148,6 @@ def send_email(subject, recipient_list, context, html_template, plain_template):
 
     except Exception as e:
         print(f"❌ Error sending email: {e}")
-    image_path = "media/data/image.jpg"
-    res = requests.get(url, stream=True)
-    if res.status_code == 200:
-        with open(image_path, "wb") as f:
-            f.write(res.content)
-        # print("Image sucessfully Downloaded: ", image_path)
-    else:
-        print("Image Couldn't be retrieved")
-    return image_path
 
 #===============Processing Images from Database==================
 def image_view(request):

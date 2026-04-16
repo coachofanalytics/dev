@@ -124,7 +124,7 @@
                             <a href="{% url 'main:consular_assistance' %}">Consular Assistance</a>
                             <div class="sub-dropdown-content">
                                 <a href="{% url 'main:consular_information_updates' %}">Information and Updates</a>
-                                <a href="#">Legal and Immigration Guidance</a>
+                                <a href="{% url 'main:legal_immigration_guidance' %}">Legal and Immigration Guidance</a>
                             </div>
                         </div>
                 
@@ -141,8 +141,9 @@
                         <div class="sub-dropdown">
                             <a href="{% url 'communities:home' %}">Community Support</a>
                             <div class="sub-dropdown-content">
-                                <a href="#">Forums and Networking</a>
-                                <a href="#">Community Events</a>
+                                <a href="{% url 'communities:member_directory' %}">Member Directory</a>
+                                <a href="{% url 'communities:forum_home' %}">Community Forum</a>
+                                <a href="{% url 'communities:event_calendar' %}">Events Calendar</a>
                             </div>
                         </div>
                 

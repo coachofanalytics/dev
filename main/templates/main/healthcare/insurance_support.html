@@ -343,12 +343,43 @@ function runAnalysis() {
             // Optional: Add animation
             resultDiv.classList.add('animate-fade-in');
         } else {
-            alert('Error: ' + (data.error || 'Could not get recommendation'));
+            // Show error inline instead of alert
+            const errorDiv = document.getElementById('ai-error-message');
+            if (errorDiv) {
+                errorDiv.textContent = data.error || 'Could not get recommendation. Please try different criteria.';
+                errorDiv.classList.remove('hidden');
+                errorDiv.classList.add('block');
+            } else {
+                // Create error div if it doesn't exist
+                const resultDiv = document.getElementById('ai-result');
+                if (resultDiv) {
+                    const newErrorDiv = document.createElement('div');
+                    newErrorDiv.id = 'ai-error-message';
+                    newErrorDiv.className = 'mt-4 p-4 bg-red-50 border border-red-200 rounded-lg text-red-700';
+                    newErrorDiv.textContent = data.error || 'Could not get recommendation. Please try different criteria.';
+                    resultDiv.parentNode.insertBefore(newErrorDiv, resultDiv);
+                }
+            }
         }
     })
     .catch(error => {
         console.error('AI Recommendation Error:', error);
-        alert('Unable to get recommendation. Please try again.');
+        // Show error inline instead of alert
+        const errorDiv = document.getElementById('ai-error-message');
+        if (errorDiv) {
+            errorDiv.textContent = 'Unable to get recommendation. Please ensure you have selected all options and try again.';
+            errorDiv.classList.remove('hidden');
+            errorDiv.classList.add('block');
+        } else {
+            const resultDiv = document.getElementById('ai-result');
+            if (resultDiv) {
+                const newErrorDiv = document.createElement('div');
+                newErrorDiv.id = 'ai-error-message';
+                newErrorDiv.className = 'mt-4 p-4 bg-red-50 border border-red-200 rounded-lg text-red-700';
+                newErrorDiv.textContent = 'Unable to get recommendation. Please ensure you have selected all options and try again.';
+                resultDiv.parentNode.insertBefore(newErrorDiv, resultDiv);
+            }
+        }
     })
     .finally(() => {
         // Reset button
@@ -422,13 +453,34 @@ function runAnalysis() {
     })
     .then(data => {
         console.log("Success response:", data);
-        alert(data.message || "Request sent successfully!");
-        toggleModal();
-        form.reset();
+        // Show success message inline
+        const form = document.getElementById('expert-inquiry-form');
+        if (form) {
+            const successDiv = form.querySelector('.success-message');
+            if (successDiv) {
+                successDiv.textContent = data.message || "Request sent successfully! We'll contact you soon.";
+                successDiv.classList.remove('hidden');
+                successDiv.classList.add('block');
+            }
+        }
+        // Close modal after short delay
+        setTimeout(() => {
+            toggleModal();
+            form.reset();
+        }, 2000);
     })
     .catch(error => {
         console.error("Fetch error:", error);
-        alert("Network error: " + error.message);
+        // Show error inline in form
+        const form = document.getElementById('expert-inquiry-form');
+        if (form) {
+            const errorDiv = form.querySelector('.error-message');
+            if (errorDiv) {
+                errorDiv.textContent = "Network error: " + error.message;
+                errorDiv.classList.remove('hidden');
+                errorDiv.classList.add('block');
+            }
+        }
     })
     .finally(() => {
         btn.innerText = originalText;

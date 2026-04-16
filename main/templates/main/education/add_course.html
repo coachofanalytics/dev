@@ -1,0 +1,61 @@
+{% extends "main/base_templates/base.html" %}
+{% block content %}
+
+<div class="max-w-4xl mx-auto bg-white p-6 rounded-xl shadow-lg mt-10">
+    
+    <!-- Header with Back Button -->
+    <div class="flex justify-between items-center mb-6 pb-4 border-b">
+        <h2 class="text-2xl font-bold text-gray-800">
+            {% if form.instance.pk %}
+                Edit Course
+            {% else %}
+                Add New Course
+            {% endif %}
+        </h2>
+        <button onclick="window.history.back()" 
+                class="text-gray-600 hover:text-gray-800">
+            ← Back
+        </button>
+    </div>
+
+    <!-- Course Form -->
+    <form method="POST" enctype="multipart/form-data">
+        {% csrf_token %}
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {% for field in form %}
+                <div class="{% if field.name == 'description' or field.name == 'syllabus' or field.name == 'prerequisites' %}col-span-2{% endif %}">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">
+                        {{ field.label }}
+                        {% if field.field.required %}
+                            <span class="text-red-500">*</span>
+                        {% endif %}
+                    </label>
+                    {{ field }}
+                    {% if field.help_text %}
+                        <p class="text-xs text-gray-500 mt-1">{{ field.help_text }}</p>
+                    {% endif %}
+                    {% if field.errors %}
+                        <p class="text-red-500 text-xs mt-1">{{ field.errors|striptags }}</p>
+                    {% endif %}
+                </div>
+            {% endfor %}
+        </div>
+        
+        <div class="flex gap-3 mt-6 pt-4 border-t">
+            <button type="submit" 
+                    class="bg-green-600 text-white px-6 py-2 rounded-lg hover:bg-green-700 transition">
+                {% if form.instance.pk %}Update Course{% else %}Save Course{% endif %}
+            </button>
+            
+            {% if form.instance.pk %}
+                <a href="{% url 'main:education_training' %}" 
+                   class="bg-gray-500 text-white px-6 py-2 rounded-lg hover:bg-gray-600 transition">
+                    Cancel
+                </a>
+            {% endif %}
+        </div>
+    </form>
+</div>
+
+{% endblock %}

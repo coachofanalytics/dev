@@ -64,8 +64,7 @@ INSTALLED_APPS = [
     "django_crontab",
     'cloudinary',
     'cloudinary_storage',
-    # 'communities',  # Integrated into main app
-    # 'memberjoin',  # Integrated into main app
+    # 'communities',  # App not found - commented out
     #'debug_toolbar',
 
 ]

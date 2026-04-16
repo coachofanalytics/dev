@@ -1,0 +1,347 @@
+{% extends "main/base_templates/base.html" %}
+{% load static %}
+{% block title %} {{ article.title }} -DC48K {% endblock %}
+{% block content %}
+
+<style>
+    
+    :root {
+        --primary-green: #00332c;
+        --accent-teal: #008080;
+        --text-slate: #334155;
+        --bg-light: #f8fafc;
+        --white: #ffffff;
+    }
+
+    .main-wrapper {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 2rem 1rem;
+        font-family: 'Inter', sans-serif;
+    }
+
+   
+    .hero-banner {
+        position: relative;
+        min-height: 480px;
+        display: flex;
+        flex-direction: column;
+        justify-content: flex-end;
+        border-radius: 0.75rem;
+        overflow: hidden;
+        padding: 2.5rem;
+        background-size: cover;
+        background-position: center;
+        margin-bottom: 2rem;
+    }
+
+    .hero-overlay {
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(to top, rgba(0,0,0,0.8) 0%, rgba(0,0,0,0.3) 60%, transparent 100%);
+        z-index: 1;
+    }
+
+    .hero-text-content {
+        position: relative;
+        z-index: 10;
+        color: var(--white);
+    }
+
+    .hero-title {
+        font-size: clamp(2rem, 5vw, 3rem);
+        font-weight: 800;
+        margin-bottom: 1rem;
+        line-height: 1.1;
+    }
+
+    .hero-description {
+        font-size: 1.125rem;
+        color: #e2e8f0;
+        max-width: 36rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .btn-read-more {
+        display: inline-block;
+        background-color: var(--accent-teal);
+        color: var(--white);
+        padding: 0.75rem 1.5rem;
+        border-radius: 0.5rem;
+        font-weight: 700;
+        text-decoration: none;
+        transition: opacity 0.2s;
+    }
+
+    
+    .breadcrumb {
+        font-size: 0.875rem;
+        color: #64748b;
+        margin-bottom: 2rem;
+    }
+    .breadcrumb a { color: var(--primary-green); text-decoration: none; font-weight: 600; }
+
+    .filter-bar {
+        display: flex;
+        gap: 1rem;
+        margin-bottom: 2rem;
+        max-width: 1200px;
+        margin-left: auto;
+        margin-right: auto;
+    }
+
+    .search-input {
+        flex: 1;
+        padding: 12px 20px;
+        border-radius: 30px;
+        border: 1px solid #2d3748;
+        background: var(--white);
+        color: #2d3748;
+    }
+
+    .category-select {
+        padding: 12px 20px;
+        border-radius: 30px;
+        border: 1px solid #2d3748;
+        background: var(--white);
+        color: #2d3748;
+        cursor: pointer;
+    }
+   
+    .article-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+        gap: 2rem;
+    }
+
+    .article-card {
+        background: var(--white);
+        border: 1px solid #e2e8f0;
+        border-radius: 0.75rem;
+        overflow: hidden;
+        transition: transform 0.3s, box-shadow 0.3s;
+    }
+    .article-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+    }
+
+    .card-image { width: 100%; height: 224px; object-fit: cover; }
+    .card-body { padding: 1.5rem; display: flex; flex-direction: column; gap: 0.75rem; }
+    .card-tag { font-size: 0.75rem; font-weight: 700; color: var(--accent-teal); text-transform: uppercase; }
+    .card-title { font-size: 1.25rem; font-weight: 700; color: #0f172a; line-height: 1.2; }
+    .card-snippet { font-size: 0.875rem; color: #475569; line-height: 1.5; }
+
+   
+    .pagination-container {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-top: 3rem;
+        padding-top: 1.5rem;
+        border-top: 1px solid #f1f5f9;
+    }
+
+    .btn-pagination {
+        padding: 0.5rem 1.5rem;
+        background-color: var(--primary-green);
+        color: var(--white);
+        border-radius: 0.5rem;
+        text-decoration: none;
+        font-weight: 600;
+        border: none;
+    }
+
+    .btn-pagination:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+    }
+
+   
+    .newsletter-section {
+        background: #eff6ff;
+        padding: 80px 20px;
+        margin-top: 60px;
+        text-align: center;
+        
+        
+    }
+
+    .newsletter-content { max-width: 600px; margin: 0 auto; }
+
+    .newsletter-title {
+        font-size: 2.5rem;
+        font-weight: 800;
+        color:var(--accent-teal);
+        margin-bottom: 15px;
+    }
+
+    .newsletter-subtitle {
+        color: #2d3748;
+        font-size: 1.1rem;
+        margin-bottom: 30px;
+    }
+
+    .subscribe-form {
+        display: flex;
+        gap: 10px;
+        background: rgba(255, 255, 255, 0.05);
+        padding: 8px;
+        border-radius: 50px;
+        border: 1px solid #2d3748;
+    }
+
+    .subscribe-input {
+        flex: 1;
+        background: transparent;
+        border: none;
+        padding: 12px 25px;
+        color: black;
+        font-size: 1rem;
+        outline: none;
+    }
+
+    .subscribe-btn {
+        background:var(--accent-teal); 
+        color: white;
+        border: none;
+        padding: 12px 30px;
+        border-radius: 50px;
+        font-weight: 700;
+        cursor: pointer;
+        transition: transform 0.2s;
+    }
+
+    .subscribe-btn:hover { transform: scale(1.05); }
+
+    .msg-box { margin-top: 15px; font-size: 0.9rem; display: none; }
+</style>
+
+
+
+
+<main class="main-wrapper">
+    
+    {% if hero_article and page_obj.number == 1 %}
+    <div class="hero-banner" style="background-image: url('{{ hero_article.featured_image.url }}');">
+        <div class="hero-overlay"></div>
+        <div class="hero-text-content">
+            <h1 class="hero-title">{{ hero_article.title }}</h1>
+            <p class="hero-description">{{ hero_article.ai_snippet|truncatechars:180 }}</p>
+            <a href="{% url 'news:article_detail' hero_article.slug %}" class="btn-read-more">Read More</a>
+        </div>
+    </div>
+    {% endif %}
+
+    <nav class="breadcrumb">
+        <a href="/">Home</a> / <span>News & Articles</span>
+    </nav>
+
+   <form method="GET" action="{% url 'news:news_listing' %}" class="filter-bar">
+    <input 
+        type="text" 
+        name="q" 
+        class="search-input" 
+        placeholder="Search articles..." 
+        value="{{ request.GET.q|default:'' }}"
+    >
+    
+    <select name="cat" class="category-select" onchange="navigateToCategory(this)">
+    <option value="">All Categories</option>
+    {% for cat in categories %}
+        <option value="{% url 'news:category_detail' cat.slug %}" 
+            {% if category.slug == cat.slug %}selected{% endif %}>
+            {{ cat.name }}
+        </option>
+    {% endfor %}
+    </select>
+
+    <script>
+    function navigateToCategory(selectElement) {
+        const url = selectElement.value;
+        if (url) {
+            window.location.href = url; 
+        } else {
+            window.location.href = "{% url 'news:news_listing' %}"; 
+        }
+    }
+    </script>
+    
+    <button type="submit" style="display:none;"></button>
+    </form>
+
+    <h2 style="font-size: 1.875rem; font-weight: 700; margin-bottom: 1.5rem;">All Articles</h2>
+
+    <div class="article-grid">
+        {% for article in grid_articles %}
+        <article class="article-card">
+            <img src="{{ article.featured_image.url }}" class="card-image" alt="{{ article.title }}">
+            <div class="card-body">
+                <span class="card-tag">{{ article.category.name }}</span>
+                <h3 class="card-title">{{ article.title }}</h3>
+                <p class="card-snippet">{{ article.ai_snippet|truncatechars:180 }}</p>
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-top: auto;">
+                    <span style="font-size: 0.75rem; color: #94a3b8;">{{ article.created_at|date:"M d, Y" }}</span>
+                    <a href="{% url 'news:article_detail' article.slug %}" style="font-weight: 700; color: var(--accent-teal); text-decoration: none; font-size: 0.875rem;">Read More →</a>
+                </div>
+            </div>
+        </article>
+        {% endfor %}
+    </div>
+
+    <div class="pagination-container">
+        {% if page_obj.has_previous %}
+            <a href="?page={{ page_obj.previous_page_number }}" class="btn-pagination">Previous</a>
+        {% else %}
+            <button class="btn-pagination" disabled>Previous</button>
+        {% endif %}
+
+        <span style="font-weight: 500; color: #64748b;">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
+
+        {% if page_obj.has_next %}
+            <a href="?page={{ page_obj.next_page_number }}" class="btn-pagination">Next</a>
+        {% else %}
+            <button class="btn-pagination" disabled>Next</button>
+        {% endif %}
+    </div>
+</main>
+
+
+<section class="newsletter-section">
+    <div class="newsletter-content">
+        <h2 class="newsletter-title">Stay Updated</h2>
+        <p class="newsletter-subtitle">Get the latest policy updates and event news delivered directly to your inbox.</p>
+        
+        <form id="newsletter-form" class="subscribe-form">
+            {% csrf_token %}
+            <input type="email" name="email" class="subscribe-input" placeholder="Enter your email address" required>
+            <button type="submit" class="subscribe-btn">Subscribe</button>
+        </form>
+        <div id="subscribe-msg" class="msg-box"></div>
+    </div>
+</section>
+
+  <script>
+
+      document.getElementById('newsletter-form').addEventListener('submit', function(e){
+        e.preventDefault();
+        const formData = new FormData(this);
+        const msgBox = document.getElementById('subscribe-msg');
+
+        fetch("{% url 'news:subscribe' %}",{
+            method: 'POST',
+            body: formData,
+            headers: {'X-Requestes-With': 'XMLHttpRequest'}
+        })
+        .then(response => response.json())
+        .then(data => {
+            msgBox.style.display = 'block';
+            msgBox.style.color = data.status === 'success' ? '#1aca69' : '#c91313';
+            msgBox.innerText = data.msg;
+            if(data.status === 'success') this.reset();
+        });
+    });
+
+  </script>
+
+{% endblock %}

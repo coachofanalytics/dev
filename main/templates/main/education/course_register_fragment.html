@@ -1,8 +1,75 @@
 <div class="max-w-6xl mx-auto py-12 px-4" id="course-register-fragment">
   <header class="mb-8">
-    <h1 class="text-4xl font-extrabold text-gray-900">Course Registration & Payments (Demo)</h1>
-    <p class="mt-2 text-gray-600">Browse available courses, add new course types (client-side), and try the demo PayPal button. Payments are not functional in this demo.</p>
+    <h1 class="text-4xl font-extrabold text-gray-900">Course & Scholarship Registration</h1>
+    <p class="mt-2 text-gray-600">Browse available courses, apply for scholarships, and complete your registration.</p>
   </header>
+
+  <!-- Selected Object Display (if passed via URL) -->
+  {% if selected_object %}
+  <div class="mb-8 p-6 bg-gradient-to-r from-blue-50 to-green-50 border-2 border-blue-200 rounded-lg shadow-md">
+    <div class="flex justify-between items-start">
+      <div class="flex-1">
+        {% if selected_type == 'scholarship' %}
+          <div class="flex items-center gap-2 mb-2">
+            <svg class="w-5 h-5 text-blue-600" fill="currentColor" viewBox="0 0 20 20"><path d="M4 4a2 2 0 00-2 2v4a2 2 0 002 2V6h10a2 2 0 00-2-2H4zm2 6a2 2 0 012-2h8a2 2 0 012 2v4a2 2 0 01-2 2H8a2 2 0 01-2-2v-4zm6 4a2 2 0 100-4 2 2 0 000 4z"/></svg>
+            <h2 class="text-2xl font-bold text-blue-900">Scholarship Application</h2>
+          </div>
+          <p class="text-gray-700 mb-2"><strong>{{ selected_object.title }}</strong></p>
+          <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+            <div>
+              <p class="text-gray-600">Provider</p>
+              <p class="font-semibold">{{ selected_object.provider }}</p>
+            </div>
+            <div>
+              <p class="text-gray-600">Level</p>
+              <p class="font-semibold">{{ selected_object.get_level_display }}</p>
+            </div>
+            <div>
+              <p class="text-gray-600">Field</p>
+              <p class="font-semibold">{{ selected_object.get_field_display }}</p>
+            </div>
+            <div>
+              <p class="text-gray-600">Deadline</p>
+              <p class="font-semibold text-red-600">{{ selected_object.deadline|date:"M d, Y" }}</p>
+            </div>
+          </div>
+          <div class="mt-3 p-3 bg-white rounded border-l-4 border-blue-500">
+            <p class="text-sm"><strong>Amount:</strong> {{ selected_object.get_amount_currency_display }} - {{ selected_object.amount_description|default:selected_object.amount_value }}</p>
+          </div>
+        {% elif selected_type == 'course' %}
+          <div class="flex items-center gap-2 mb-2">
+            <svg class="w-5 h-5 text-green-600" fill="currentColor" viewBox="0 0 20 20"><path d="M10.5 1.5H3a1.5 1.5 0 00-1.5 1.5v12a1.5 1.5 0 001.5 1.5h10a1.5 1.5 0 001.5-1.5V11m-10 5l2.5-2.5m0 0l2.5 2.5m-2.5-2.5v5m3-12h3m0 0v3m0 0h3m0 0v-3m0 3h-3"/></svg>
+            <h2 class="text-2xl font-bold text-green-900">Course Registration</h2>
+          </div>
+          <p class="text-gray-700 mb-2"><strong>{{ selected_object.title }}</strong></p>
+          <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+            <div>
+              <p class="text-gray-600">Category</p>
+              <p class="font-semibold">{{ selected_object.get_category_display }}</p>
+            </div>
+            <div>
+              <p class="text-gray-600">Format</p>
+              <p class="font-semibold">{{ selected_object.get_format_display }}</p>
+            </div>
+            <div>
+              <p class="text-gray-600">Duration</p>
+              <p class="font-semibold">{{ selected_object.duration }}</p>
+            </div>
+            <div>
+              <p class="text-gray-600">Start Date</p>
+              <p class="font-semibold">{{ selected_object.start_date|date:"M d, Y" }}</p>
+            </div>
+          </div>
+          <div class="mt-3 p-3 bg-white rounded border-l-4 border-green-500">
+            <p class="text-sm"><strong>Price:</strong> {% if selected_object.price %}${{ selected_object.price }}{% else %}Free{% endif %}</p>
+            {% if selected_object.description %}<p class="text-sm mt-1">{{ selected_object.description|truncatewords:20 }}</p>{% endif %}
+          </div>
+        {% endif %}
+      </div>
+      <a href="{% url 'main:course_register' %}" class="text-blue-600 hover:text-blue-800 font-semibold text-sm">Clear Selection</a>
+    </div>
+  </div>
+  {% endif %}
 
   <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
     <div class="lg:col-span-2">

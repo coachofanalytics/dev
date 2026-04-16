@@ -1,0 +1,159 @@
+{% extends "main/base_templates/base.html" %}
+
+{% block content %}
+<style>
+    /* Header Section */
+    .category-header {
+        padding: 80px 0 50px;
+        text-align: center;
+        background: #f8fafc; /* Subtle light background */
+        border-bottom: 1px solid #e2e8f0;
+        margin-bottom: 60px;
+        border-radius: 0 0 40px 40px;
+    }
+    
+    .back-link {
+        display: inline-block;
+        color: #64748b;
+        text-decoration: none;
+        margin-bottom: 15px;
+        font-weight: 700;
+        text-transform: uppercase;
+        font-size: 0.85rem;
+        letter-spacing: 1px;
+        transition: color 0.2s;
+    }
+    .back-link:hover { color: #2563eb; }
+    
+    .category-title {
+        font-size: 3.5rem;
+        font-weight: 900;
+        color: #0f172a;
+        margin: 0;
+        letter-spacing: -1px;
+    }
+    .category-title span { color: #2563eb; } /* Blue accent to match home */
+
+    /* News Grid & Cards */
+    .news-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+        gap: 30px;
+        max-width: 1200px;
+        margin: 0 auto 80px;
+    }
+    
+    .news-card { 
+        background: #ffffff; 
+        border-radius: 20px; 
+        overflow: hidden; 
+        border: 1px solid #e2e8f0;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+        transition: all 0.3s ease;
+        display: flex;
+        flex-direction: column;
+        height: 100%;
+    }
+
+    .news-card:hover { 
+        transform: translateY(-10px); 
+        box-shadow: 0 12px 30px rgba(0,0,0,0.1);
+    }
+
+    .card-img-wrapper {
+        position: relative;
+        width: 100%;
+        height: 220px;
+        overflow: hidden;
+    }
+
+    .card-img { 
+        width: 100%; 
+        height: 100%; 
+        object-fit: cover;
+        transition: transform 0.5s ease;
+    }
+
+    .news-card:hover .card-img { transform: scale(1.1); }
+
+    .card-body { 
+        padding: 25px; 
+        display: flex;
+        flex-direction: column;
+        flex-grow: 1;
+    }
+
+    .card-date {
+        font-size: 0.8rem;
+        color: #94a3b8;
+        font-weight: 600;
+        margin-bottom: 10px;
+        display: block;
+    }
+
+    .card-title { 
+        color: #1e293b; 
+        font-size: 1.5rem; 
+        font-weight: 800;
+        margin-bottom: 15px; 
+        line-height: 1.3;
+    }
+
+    .card-snippet { 
+        color: #475569; 
+        font-size: 1rem; 
+        line-height: 1.7; 
+        margin-bottom: 25px;
+    }
+
+    .read-more-btn {
+        margin-top: auto;
+        color: #2563eb;
+        font-weight: 700;
+        font-size: 0.95rem;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .read-more-btn i { transition: transform 0.2s; }
+    .news-card:hover .read-more-btn i { transform: translateX(5px); }
+</style>
+
+<div class="container" style="max-width: 1200px; margin: 0 auto; padding: 0 20px;">
+    
+    <div class="category-header">
+        <a href="{% url 'news:news_listing' %}" class="back-link">← All Articles</a>
+        <h1 class="category-title">CATEGORY: <span>{{ category.name }}</span></h1>
+    </div>
+
+    <div class="news-grid">
+        {% for article in articles %}
+        <a href="{% url 'news:article_detail' article.slug %}" style="text-decoration: none;">
+            <article class="news-card">
+                <div class="card-img-wrapper">
+                    {% if article.featured_image %}
+                        <img src="{{ article.featured_image.url }}" class="card-img" alt="{{ article.title }}">
+                    {% else %}
+                        <div style="width:100%; height:100%; background:#f1f5f9; display:flex; align-items:center; justify-content:center; color:#cbd5e1;">No Image</div>
+                    {% endif %}
+                </div>
+                <div class="card-body">
+                    <span class="card-date">{{ article.created_at|date:"F d, Y" }}</span>
+                    <h2 class="card-title">{{ article.title }}</h2>
+                    <p class="card-snippet">{{ article.ai_snippet|truncatechars:140 }}</p>
+                    <div class="read-more-btn">
+                        Read Full Article <i>→</i>
+                    </div>
+                </div>
+            </article>
+        </a>
+        {% empty %}
+        <div style="text-align: center; grid-column: 1/-1; padding: 100px 0;">
+            <h3 style="color: #64748b;">No articles found in this category yet.</h3>
+            <a href="{% url 'news:news_listing' %}" style="color: #2563eb; font-weight: 700;">Browse all news</a>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}
