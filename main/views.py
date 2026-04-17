@@ -2213,6 +2213,8 @@ def Legal_servicess_list(request):
     return render(request, 'main/legalervice_list.html', context)
 
 
+
+
 def Legal_service_Create(request):
     """View to create a new legal service"""
     if request.method == 'POST':

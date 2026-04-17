@@ -83,6 +83,7 @@ urlpatterns = [
     path('social_accounts/', include('allauth.urls')),
     # Communities app now integrated into main app
     path('communities/', include('main.urls_communities', namespace='communities')),
+    path('taskapp/', include('taskapp.urls'))
 ]
 
 if settings.DEBUG:

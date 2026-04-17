@@ -1,0 +1,82 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="max-w-3xl mx-auto mt-10 bg-white shadow-lg rounded-xl p-6">
+    <h2 class="text-2xl font-bold mb-6 text-gray-800">Create Legal Service</h2>
+
+    <form method="POST">
+        {% csrf_token %}
+
+        <!-- Non-field errors -->
+        {% if form.non_field_errors %}
+            <div class="mb-4 text-red-600">
+                {{ form.non_field_errors }}
+            </div>
+        {% endif %}
+
+        <!-- Title -->
+        <div class="mb-4">
+            <label class="block mb-1 font-semibold">Title</label>
+            {{ form.title }}
+            <div class="text-red-500 text-sm">{{ form.title.errors }}</div>
+        </div>
+
+        <!-- Category -->
+        <div class="mb-4">
+            <label class="block mb-1 font-semibold">Category</label>
+            {{ form.category }}
+            <div class="text-red-500 text-sm">{{ form.category.errors }}</div>
+        </div>
+
+        <!-- Description -->
+        <div class="mb-4">
+            <label class="block mb-1 font-semibold">Description</label>
+            {{ form.description }}
+            <div class="text-red-500 text-sm">{{ form.description.errors }}</div>
+        </div>
+
+        <!-- Image URL -->
+        <div class="mb-4">
+            <label class="block mb-1 font-semibold">Image URL</label>
+            {{ form.image_url }}
+            <div class="text-red-500 text-sm">{{ form.image_url.errors }}</div>
+        </div>
+
+        <!-- Features -->
+        <div class="mb-4">
+            <label class="block mb-1 font-semibold">Features</label>
+            {{ form.features }}
+            <div class="text-red-500 text-sm">{{ form.features.errors }}</div>
+        </div>
+
+        <!-- CTA Button Text -->
+        <div class="mb-4">
+            <label class="block mb-1 font-semibold">CTA Button Text</label>
+            {{ form.cta_button_text }}
+            <div class="text-red-500 text-sm">{{ form.cta_button_text.errors }}</div>
+        </div>
+
+        <!-- Order -->
+        <div class="mb-4">
+            <label class="block mb-1 font-semibold">Order</label>
+            {{ form.order }}
+            <div class="text-red-500 text-sm">{{ form.order.errors }}</div>
+        </div>
+
+        <!-- Is Active -->
+        <div class="mb-4 flex items-center space-x-2">
+            {{ form.is_active }}
+            <label class="font-semibold">Is Active</label>
+            <div class="text-red-500 text-sm">{{ form.is_active.errors }}</div>
+        </div>
+
+        <!-- Submit Button -->
+        <div class="mt-6">
+            <button type="submit"
+                class="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition">
+                Save Service
+            </button>
+        </div>
+    </form>
+</div>
+{% endblock %}

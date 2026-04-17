@@ -117,6 +117,7 @@ urlpatterns = [
     path('test-user-endpoint/', views.test_user_endpoint, name='test_user_endpoint'),
     
     path('Legal_servicess/', views.Legal_servicess_list, name='Legal_servicess_list'),
+    path('Legal_service_Create/', views.Legal_service_Create, name='Legal_servicess_create'),
     # path('legal-services/', include('legal_service.urls')),
 
 ]    
