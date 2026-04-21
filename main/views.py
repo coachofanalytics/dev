@@ -835,3 +835,13 @@ def signup(request):
     return render(request, 'main/signup.html')
 def visa_applicationform(request):
     return render(request, 'main/visa_applicationform.html')
+
+
+def support_page(request):
+    """
+    View for the support ecosystem page
+    """
+    context = {
+        'page_title': 'Support Ecosystem | DC48K',
+    }
+    return render(request, 'main/support_page.html', context)
