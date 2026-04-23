@@ -6,7 +6,7 @@ class Transaction(Base):
     __tablename__ = "finance_transactions"
     __table_args__ = {'schema': 'public'}
 
-    id = Column(Integer, primary_key=True, index=True, default=1)
+    id = Column(Integer, primary_key=True, index=True)
     sender = Column(String)
     receiver = Column(String)
     phone = Column(String)

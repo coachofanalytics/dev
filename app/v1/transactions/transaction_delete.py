@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends
 from app.core.db.database import get_db
 from sqlalchemy.orm import Session
-from app.core.schemas.transactions.transaction import TransactionSchema
+# from app.core.schemas.transactions.transaction import TransactionSchema
 from app.core.models.transactions.transaction import Transaction
 
 

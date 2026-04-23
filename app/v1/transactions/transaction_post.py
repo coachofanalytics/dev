@@ -2,7 +2,7 @@ from fastapi import APIRouter, status
 from fastapi.params import Depends
 from app.core.db.database import get_db
 from sqlalchemy.orm import Session
-from app.core.schemas.transactions.transaction import TransactionSchema
+from app.core.schemas.transactions.transaction import TransactionCreate,TransactionResponse
 from app.core.models.transactions.transaction import Transaction
 
 
@@ -11,10 +11,10 @@ router = APIRouter(
 )
 
 @router.post('/transaction', status_code = status.HTTP_201_CREATED)
-def add_transaction(request:TransactionSchema, db: Session = Depends(get_db)):
+def add_transaction(request:TransactionCreate, db: Session = Depends(get_db)):
 
     new_transaction =  Transaction(
-        id = request.id,
+        # id = request.id,
         sender = request.sender,
         receiver = request.receiver,
         phone = request.phone,
@@ -36,4 +36,4 @@ def add_transaction(request:TransactionSchema, db: Session = Depends(get_db)):
     db.commit()
     db.refresh(new_transaction)
 
-    return request
+    return new_transaction
