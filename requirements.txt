@@ -9,13 +9,16 @@ charset-normalizer==3.4.2
 click==8.1.8
 colorama==0.4.6
 cryptography==44.0.3
+dnspython==2.8.0
 ecdsa==0.19.1
+email-validator==2.3.0
 exceptiongroup==1.2.2
 fastapi==0.115.12
 greenlet==3.4.0
 h11==0.16.0
 idna==3.10
 isodate==0.7.2
+MarkupSafe==3.0.3
 numpy==2.0.2
 pandas==2.2.3
 passlib==1.7.4
@@ -40,3 +43,4 @@ typing_extensions==4.13.2
 tzdata==2025.2
 urllib3==2.4.0
 uvicorn==0.34.2
+Werkzeug==3.1.8
