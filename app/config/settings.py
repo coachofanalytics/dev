@@ -43,3 +43,13 @@ def get_database_url():
     database_url = f"postgresql://{user}:{password}@{host}:{port}/{dbname}"
 
     return database_url
+
+
+# JWT settings
+
+def get_jwt_settings():
+    secret_key = os.environ.get('SECRET_KEY', 'my-secret-key-for-development-only')
+    algorithm = os.environ.get('ALGORITHM', 'HS256')
+    expire_minutes = int(os.environ.get('ACCESS_TOKEN_EXPIRES_MINUTES'))
+
+    return secret_key, algorithm, expire_minutes
