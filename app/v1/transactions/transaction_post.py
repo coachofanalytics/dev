@@ -1,9 +1,11 @@
-from fastapi import APIRouter, status
+from fastapi import APIRouter, status, HTTPException
 from fastapi.params import Depends
 from app.core.db.database import get_db
 from sqlalchemy.orm import Session
 from app.core.schemas.transactions.transaction import TransactionCreate,TransactionResponse
 from app.core.models.transactions.transaction import Transaction
+from app.core.dependencies.auth import get_current_user
+from app.core.models.users.user import User
 
 
 router = APIRouter(
@@ -11,7 +13,11 @@ router = APIRouter(
 )
 
 @router.post('/transaction', status_code = status.HTTP_201_CREATED)
-def add_transaction(request:TransactionCreate, db: Session = Depends(get_db)):
+def add_transaction(
+    request:TransactionCreate, 
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+    ):
 
     new_transaction =  Transaction(
         # id = request.id,
