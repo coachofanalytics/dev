@@ -83,6 +83,9 @@ urlpatterns = [
     path('social_accounts/social/signup/', account_views.login_view),
     path('social_accounts/', include('allauth.urls')),
    path('communities/', include('communities.urls')),
+   # Django auth URLs new
+    path('login/', auth_views.LoginView.as_view(template_name='main/login.html'), name='login'),
+    path('logout/', auth_views.LogoutView.as_view(next_page='explore_network'), name='logout'),
 ]
 
 if settings.DEBUG:

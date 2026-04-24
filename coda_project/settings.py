@@ -64,12 +64,19 @@ INSTALLED_APPS = [
     "django_crontab",
     'memberjoin',
     'communities',
-    'consultations',
+    'consultations', #from here
+
+    
+    
+    
     
     
     
 
 ]
+#new added
+
+#end of new added
 
 DEFAULT_AUTO_FIELD = "django.db.models.AutoField"
 
@@ -388,3 +395,9 @@ EMAIL_USE_TLS = True
 EMAIL_HOST_USER = "dc48kvisaassistance@gmail.com"
 EMAIL_HOST_PASSWORD = "kphmvzsbajpunjkx"
 DEFAULT_FROM_EMAIL = "dc48kvisaassistance@gmail.com"
+#added code 
+STRIPE_SECRET_KEY = "your_secret_key"
+STRIPE_PUBLIC_KEY = "your_public_key"
+STRIPE_PUBLIC_KEY = "pk_test_..."
+STRIPE_SECRET_KEY = "sk_test_..."
+STRIPE_WEBHOOK_SECRET = "whsec_21b07176ecdfd011413846b54acd39f6be3718ad2a30e7d02e1a4959e5cbb193"   # we’ll use this later

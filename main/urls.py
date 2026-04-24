@@ -4,9 +4,17 @@ from . import views
 # from .utils import convert_html_to_pdf
 
 app_name = 'main'
+app_name = 'network'
 urlpatterns = [
     path('book_consultations/', views.book_consultations, name='book_consultations'),
     path('support/', views.support_page, name='support_page'),
+    path('apply/<int:pk>/', views.apply_to_opportunity, name='apply'),
+    
+    path('support/donate/', views.donate_view, name='donate'),
+    path('support/donation/success/', views.donation_success, name='donation_success'),
+    path("stripe/webhook/", views.stripe_webhook, name="stripe_webhook"),
+    path('network/', views.network_view, name='network'),
+    path('network/create/', views.create_item, name='create_item'),
     path('start_application/', views.start_application, name='start_application'),
     path('signup/', views.signup, name='signup'),
     path('visa_applicationform/', views.visa_applicationform, name='visa_applicationform'),

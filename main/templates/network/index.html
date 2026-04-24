@@ -1,0 +1,83 @@
+{% extends 'main/base_templates/base.html' %}
+
+{% block content %}
+
+<div class="container py-5">
+
+    <!-- Header -->
+    <div class="text-center mb-5">
+        <h1 class="fw-bold">Explore The Network</h1>
+        <p class="text-muted">
+            Discover real needs and opportunities to make an impact.
+        </p>
+        <a href="{% url 'main:create_item' %}" class="btn btn-success mt-3">
+            + Post Opportunity
+        </a>
+    </div>
+
+    <!-- Filters -->
+    <form method="GET" class="row mb-4">
+        <div class="col-md-4">
+            <select name="category" class="form-select">
+                <option value="">All Categories</option>
+                <option value="donation">Donation</option>
+                <option value="volunteer">Volunteer</option>
+                <option value="help">Help Request</option>
+            </select>
+        </div>
+
+        <div class="col-md-4">
+            <input type="text" name="location" class="form-control" placeholder="Location">
+        </div>
+
+        <div class="col-md-4">
+            <select name="urgency" class="form-select">
+                <option value="">All Urgency</option>
+                <option value="high">High</option>
+                <option value="medium">Medium</option>
+                <option value="low">Low</option>
+            </select>
+        </div>
+
+        <div class="col-12 mt-3 text-center">
+            <button type="submit" class="btn btn-primary px-4">Filter</button>
+        </div>
+    </form>
+
+    <!-- Cards -->
+    <div class="row">
+        {% for item in items %}
+        <div class="col-md-4 mb-4">
+            <div class="card shadow-sm border-0 h-100">
+
+                <div class="card-body">
+
+                    <div class="d-flex justify-content-between mb-2">
+                        <span class="badge bg-dark text-capitalize">
+                            {{ item.category }}
+                        </span>
+
+                        <span class="badge bg-danger text-capitalize">
+                            {{ item.urgency }}
+                        </span>
+                    </div>
+
+                    <h5 class="fw-bold">{{ item.title }}</h5>
+
+                    <p class="text-muted">
+                        {{ item.description|truncatewords:18 }}
+                    </p>
+
+                
+                </div>
+
+            </div>
+        </div>
+        {% empty %}
+            <p class="text-center">No items found.</p>
+        {% endfor %}
+    </div>
+
+</div>
+
+{% endblock %}

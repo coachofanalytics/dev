@@ -1,0 +1,166 @@
+{% extends 'main/base_templates/base.html' %}
+
+
+{% block content %}
+
+<style>
+/* Page background */
+.form-page {
+    background:   background: linear-gradient(135deg, #198754, #0cf30c);
+    min-height: 100vh;
+    padding: 60px 0;
+}
+.form-container {
+    
+    max-width: 700px;
+    margin: 0 auto;
+}
+/* Header */
+.form-title {
+    font-size: 2.2rem;
+    font-weight: 700;
+    color: #ed0707;
+}
+
+.form-subtitle {
+    color: #001eff;
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+/* Card */
+.form-card {
+    background: #052fff;
+    border-radius: 20px;
+    padding: 45px;
+    box-shadow: 0 10px 35px rgba(0, 0, 0, 0.08);
+    transition: 0.3s ease;
+}
+
+.form-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 18px 45px rgba(0, 0, 0, 0.12);
+    
+    border: 2px solid #0004ff;
+}
+
+/* Inputs */
+.form-control,
+.form-select,
+textarea {
+    border-radius: 10px;
+    padding: 10px;
+    border: 2px solid #0004ff;
+    transition: all 0.2s ease;
+    width: 100%;
+}
+
+.form-control:focus,
+.form-select:focus,
+textarea:focus {
+    border-color: #198754;
+    box-shadow: 0 0 0 0.2rem rgba(25, 135, 84, 0.15);
+}
+
+/* Labels */
+.form-label {
+    font-weight: 600;
+    margin-bottom: 6px;
+    
+}
+
+/* Spacing */
+.form-group {
+    margin-bottom: 20px;
+}
+
+/* Button */
+.btn-submit {
+    background: linear-gradient(135deg, #198754, #157347);
+    border: none;
+    padding: 14px;
+    font-size: 1.1rem;
+    border-radius: 12px;
+    color: #fff;
+    font-weight: 600;
+    transition: 0.3s ease;
+}
+
+.btn-submit:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 25px rgba(25, 135, 84, 0.3);
+}
+.mb-4{
+    color: #002fed;
+    border-radius: 10px;
+    
+}
+</style>
+<div class="container py-5">
+
+    <!-- Page Header -->
+    <div class="text-center mb-5"style="color: #ff0707;font-size: 2.9rem;font-weight: 700;">
+        <h1 class="fw-bold">Post an Opportunity</h1>
+        <p class="text-muted"style="color: #9bfffd;font-size: 1.9rem;">
+            Share a need, request support, or create an opportunity for others to contribute.
+        </p>
+    </div>
+
+    <!-- Form Card -->
+    <div class="row justify-content-center"sty>
+        <div class="col-lg-8"style>
+
+            <div class="card shadow-lg border-0 rounded-4">
+                <div class="card-body p-5"style="background: #9bffe1;border-radius: 20px;">
+
+                    <form method="POST"styl>
+                        {% csrf_token %}
+
+                        <!-- Title -->
+                        <div class="mb-4">
+                            <label class="form-label fw-semibold"sty>Title</label>
+                            {{ form.title }}
+                        </div>
+
+                        <!-- Description -->
+                        <div class="mb-4">
+                            <label class="form-label fw-semibold">Description</label>
+                            {{ form.description }}
+                        </div>
+
+                        <!-- Category -->
+                        <div class="mb-4">
+                            <label class="form-label fw-semibold">Category</label>
+                            {{ form.category }}
+                        </div>
+
+                        <!-- Urgency -->
+                        <div class="mb-4">
+                            <label class="form-label fw-semibold">Urgency Level</label>
+                            {{ form.urgency }}
+                        </div>
+
+                        <!-- Location -->
+                        <div class="mb-4">
+                            <label class="form-label fw-semibold">Location</label>
+                            {{ form.location }}
+                        </div>
+
+                        <!-- Submit -->
+                        <div class="d-grid mt-4">
+                            <button type="submit" class="btn btn-success btn-lg fw-bold">
+                                Submit Opportunity
+                            </button>
+                        </div>
+
+                    </form>
+
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+</div>
+
+{% endblock %}

@@ -73,44 +73,7 @@
 </head>
 <body class="bg-brand-lightGray text-slate-900">
 
-    <!-- Navbar -->
-    <nav class="fixed w-full top-0 z-50 bg-brand-green text-white shadow-xl">
-        <div class="max-w-7xl mx-auto px-6 lg:px-12 flex justify-between items-center h-20">
-            <!-- Logo with Kenya Flag -->
-            <div class="flex items-center gap-3">
-                <div class="w-10 h-10 rounded-full border-2 border-white overflow-hidden flex-shrink-0">
-                    <img src="https://flagcdn.com/w80/ke.png" alt="Kenya Flag" class="w-full h-full object-cover">
-                </div>
-                <span class="text-2xl font-black tracking-tighter uppercase">DC48K</span>
-            </div>
-
-            <!-- Exact Nav Links -->
-            <div class="hidden lg:flex items-center space-x-6">
-                <a href="{% url 'home' %}" class="nav-link">HOME</a>
-                <a href="#" class="nav-link">ABOUT US</a>
-                <a href="#" class="nav-link">SERVICES</a>
-                <a href="#" class="nav-link">NEWS</a>
-                <a href="{% url 'main:support_page' %}" class="nav-link text-white/80 border-b-2 border-white pb-1">SUPPORT</a>
-                <a href="#" class="nav-link">CONTACT US</a>
-                <a href="#" class="nav-link">LOGIN</a>
-                <a href="#" class="bg-white text-brand-green px-5 py-2 rounded font-black text-[10px] tracking-widest hover:bg-slate-100 transition-colors">REGISTER</a>
-            </div>
-
-            <button class="lg:hidden text-2xl" onclick="toggleMenu()"><i class="fa-solid fa-bars-staggered"></i></button>
-        </div>
-
-        <!-- Mobile Menu -->
-        <div id="mobileMenu" class="hidden bg-brand-green p-6 border-t border-white/10 lg:hidden shadow-2xl">
-            <div class="flex flex-col space-y-4">
-                <a href="{% url 'home' %}" class="nav-link">HOME</a>
-                <a href="#" class="nav-link">ABOUT US</a>
-                <a href="#" class="nav-link">SERVICES</a>
-                <a href="{% url 'main:support_page' %}" class="nav-link">SUPPORT</a>
-                <a href="#" class="nav-link">LOGIN</a>
-                <a href="#" class="nav-link text-white bg-white/10 p-2 rounded">REGISTER</a>
-            </div>
-        </div>
-    </nav>
+   
 
     <!-- Hero Section -->
     <section class="hero-gradient pt-48 pb-24 text-center text-white px-6">
@@ -127,9 +90,9 @@
                 DC48K is a mission-driven ecosystem. Whether you're offering your heart, your hands, or your strength, we're here to facilitate the connection.
             </p>
 
-            <button class="btn-red px-12 py-5 rounded font-black text-xs uppercase tracking-[0.2em] shadow-2xl" onclick="scrollToCards()">
-                Explore The Network
-            </button>
+            <a href="{% url 'main:network' %}" class="btn btn-danger btn-lg px-5 py-3 fw-bold">
+    EXPLORE THE NETWORK
+</a>
         </div>
     </section>
 
@@ -146,9 +109,9 @@
                 <p class="text-slate-500 leading-relaxed text-sm mb-8">
                     Empower our global mission with direct funding. Your contributions drive immediate local impact and long-term sustainability.
                 </p>
-                <button class="mt-auto font-black text-[10px] uppercase tracking-widest text-brand-green border-b-2 border-brand-green hover:text-brand-darkBlue hover:border-brand-darkBlue transition-colors" onclick="handleDonate()">
-                    Make Donation
-                </button>
+               <a href="{% url 'main:donate' %}" class="btn btn-primary">
+                 Make Donation
+            </a>
             </div>
 
             <!-- Card 2: Volunteer -->

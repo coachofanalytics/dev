@@ -1,0 +1,41 @@
+{% extends 'main/base_templates/base.html' %}
+
+{% block content %}
+<div class="container mt-5">
+    <h2>Make a Donation</h2>
+
+    <form method="POST">
+        {% csrf_token %}
+
+        <div class="mb-3">
+            <label>Name</label>
+            {{ form.name }}
+        </div>
+
+        <div class="mb-3">
+            <label>Email</label>
+            {{ form.email }}
+        </div>
+
+        <div class="mb-3">
+            <label>Amount</label>
+            {{ form.amount }}
+        </div>
+
+        <div class="mb-3">
+            <label>Message (Optional)</label>
+            {{ form.message }}
+        </div>
+
+        <div class="mb-3">
+            <label>
+                {{ form.anonymous }} Donate anonymously
+            </label>
+        </div>
+
+        <button type="submit" class="btn btn-primary">
+            Proceed to Payment
+        </button>
+    </form>
+</div>
+{% endblock %}

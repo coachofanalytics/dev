@@ -1,0 +1,8 @@
+<h2>Apply for {{ opportunity.title }}</h2>
+
+<form method="post">
+    {% csrf_token %}
+    {{ form.as_p }}
+
+    <button type="submit">Submit Application</button>
+</form>

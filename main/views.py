@@ -47,6 +47,75 @@ from django.core.mail import send_mail
 from .forms import ConsultationForm
 from .models import Consultation
 
+
+from .models import NetworkItem
+from .forms import NetworkItemForm
+# new code i create myself
+# views.py
+from django.shortcuts import render, redirect, get_object_or_404
+from .models import Opportunity
+from .forms import ApplicationForm
+
+from .forms import DonationForm
+from .models import Donation
+
+
+@login_required
+def apply_to_opportunity(request, pk):
+    opportunity = get_object_or_404(Opportunity, pk=pk)
+
+    if request.method == 'POST':
+        form = ApplicationForm(request.POST)
+        if form.is_valid():
+            app = form.save(commit=False)
+            app.user = request.user
+            app.opportunity = opportunity
+            app.save()
+            return redirect('success_page')
+    else:
+        form = ApplicationForm()
+
+    return render(request, 'main/apply.html', {'form': form})
+
+def success_page(request):
+    return render(request, 'main/success.html')
+
+
+def network_view(request):
+    items = NetworkItem.objects.filter(is_active=True).order_by('-created_at')
+
+    category = request.GET.get('category')
+    location = request.GET.get('location')
+    urgency = request.GET.get('urgency')
+
+    if category:
+        items = items.filter(category=category)
+
+    if location:
+        items = items.filter(location__icontains=location)
+
+    if urgency:
+        items = items.filter(urgency=urgency)
+
+    context = {
+        'items': items
+    }
+    return render(request, 'network/index.html', context)
+
+
+@login_required
+def create_item(request):
+    if request.method == 'POST':
+        form = NetworkItemForm(request.POST)
+        if form.is_valid():
+            item = form.save(commit=False)
+            item.user = request.user
+            item.save()
+            return redirect('network:network')
+    else:
+        form = NetworkItemForm()
+
+    return render(request, 'network/create_item.html', {'form': form})
 # Details Donation View
 class DonationDetailView(DetailView):
     model = Donation_organization
@@ -845,3 +914,83 @@ def support_page(request):
         'page_title': 'Support Ecosystem | DC48K',
     }
     return render(request, 'main/support_page.html', context)
+#new views for donation
+
+
+
+def donate_view(request):
+    if request.method == "POST":
+        form = DonationForm(request.POST)
+        if form.is_valid():
+            donation = form.save(commit=False)
+            donation.status = "pending"
+            donation.save()
+
+            # ✅ Create Stripe Checkout Session
+            session = stripe.checkout.Session.create(
+                payment_method_types=['card'],
+                line_items=[{
+                    'price_data': {
+                        'currency': 'usd',
+                        'product_data': {
+                            'name': 'Donation',
+                        },
+                        'unit_amount': int(donation.amount * 100),  # cents
+                    },
+                    'quantity': 1,
+                }],
+                mode='payment',
+                success_url='http://127.0.0.1:8000/support/donate/success/',
+                cancel_url='http://127.0.0.1:8000/support/donate/',
+            )
+
+            # save session id
+            donation.stripe_session_id = session.id
+            donation.save()
+
+            return redirect(session.url)
+
+    else:
+        form = DonationForm()
+
+    return render(request, "main/support/donate.html", {"form": form})
+from django.shortcuts import render
+
+def donation_success(request):
+    return render(request, 'support/donation_success.html')
+import stripe
+from django.conf import settings
+from django.http import JsonResponse
+
+stripe.api_key = settings.STRIPE_SECRET_KEY
+
+from django.views.decorators.csrf import csrf_exempt
+from django.http import HttpResponse
+
+@csrf_exempt
+def stripe_webhook(request):
+    payload = request.body
+    sig_header = request.META.get('HTTP_STRIPE_SIGNATURE')
+    endpoint_secret = settings.STRIPE_WEBHOOK_SECRET
+
+    try:
+        event = stripe.Webhook.construct_event(
+            payload, sig_header, endpoint_secret
+        )
+    except Exception:
+        return HttpResponse(status=400)
+
+    # ✅ PAYMENT SUCCESS
+    if event['type'] == 'checkout.session.completed':
+        session = event['data']['object']
+
+        session_id = session.get('id')
+
+        try:
+            donation = Donation.objects.get(stripe_session_id=session_id)
+            donation.status = "completed"
+            donation.save()
+        except Donation.DoesNotExist:
+            pass
+
+    return HttpResponse(status=200)

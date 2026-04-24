@@ -3,6 +3,25 @@ from django.forms import ModelForm
 from .models import Feedback, Donation_organisation, Donation_organization, ContactMessage, Scholarship
 
 from .models import Consultation
+from .models import NetworkItem
+
+#new code i create myself
+
+from .models import NetworkItem
+
+# forms.py
+
+from .models import Application
+from .models import Donation
+
+class ApplicationForm(forms.ModelForm):
+    class Meta:
+        model = Application
+        fields = ['motivation']
+class NetworkItemForm(forms.ModelForm):
+    class Meta:
+        model = NetworkItem
+        fields = ['title', 'description', 'category', 'urgency', 'location']
 # Feedback / Contact Form
 class ContactForm(forms.ModelForm):
     class Meta:
@@ -114,3 +133,15 @@ class ConsultationForm(forms.ModelForm):
             'document',
             'preferred_date'
         ]
+
+        
+#new form for donation
+
+class DonationForm(forms.ModelForm):
+    amount = forms.DecimalField(
+        widget=forms.NumberInput(attrs={"class": "form-control", "placeholder": "Enter amount"})
+    )
+
+    class Meta:
+        model = Donation
+        fields = ["name", "email", "amount", "message", "anonymous"]
