@@ -1,0 +1,34 @@
+{% extends 'main/base_templates/base.html' %}
+{% block content %}
+
+<style>
+    .ticket-hero { background: linear-gradient(135deg,#f5fbff 0%, #e8f6ff 60%, #e6f3ff 100%); padding:48px 0; }
+    .ticket-card { max-width:780px; margin:0 auto; background:white; border-radius:12px; box-shadow:0 12px 30px rgba(6,84,150,0.06); padding:28px; }
+    .ticket-header { background:#0077d9; padding:14px 16px; border-radius:8px; color:white; margin-bottom:18px; }
+    .ticket-header h2 { margin:0; font-size:20px; font-weight:800 }
+    .ticket-sub { margin:6px 0 0 0; color:rgba(255,255,255,0.9); font-size:14px }
+    .support-form label { font-weight:700; color:#084a79; display:block; margin-bottom:6px }
+    .support-form input[type="text"], .support-form input[type="email"], .support-form textarea, .support-form select { width:100%; padding:10px 12px; border-radius:8px; border:1px solid #d6e9fb; background:#fbfdff; margin-bottom:12px }
+    .support-form button[type=submit] { background: linear-gradient(90deg,#0077d9,#00a5ff); color:white; border:none; padding:10px 16px; border-radius:10px; font-weight:700 }
+    @media (max-width:720px){ .ticket-card{ padding:18px } }
+</style>
+
+<section class="ticket-hero">
+    <div class="ticket-card">
+        <div class="ticket-header">
+            <h2>Create Support Ticket</h2>
+            <div class="ticket-sub">Describe your issue and our support team will respond as soon as possible.</div>
+        </div>
+
+        <form class="support-form" method="POST" enctype="multipart/form-data">
+            {% csrf_token %}
+            {{ form.as_p }}
+            <div style="display:flex; gap:10px; align-items:center; margin-top:8px;">
+                <button type="submit" class="btn">Submit Ticket</button>
+                <a href="/" class="btn-ghost" style="border:none; color:#0b66b2;">Cancel</a>
+            </div>
+        </form>
+    </div>
+</section>
+
+{% endblock %}

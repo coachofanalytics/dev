@@ -76,3 +76,11 @@ class VolunteerAdmin(admin.ModelAdmin):
     list_display = ('full_name','email','phone','availability','role','status','created_at')
     list_filter = ('status','availability','role','country')
     search_fields = ('full_name','email','phone')
+
+    from .models import SupportTicket
+
+@admin.register(SupportTicket)
+class SupportTicketAdmin(admin.ModelAdmin):
+    list_display = ('ticket_id','full_name','category','priority','status','created_at')
+    list_filter = ('status','priority','category')
+    search_fields = ('ticket_id','full_name','email','subject')

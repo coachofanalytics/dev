@@ -146,8 +146,7 @@ class DonationForm(forms.ModelForm):
         model = Donation
         fields = ["name", "email", "amount", "message", "anonymous"]
 
-        
-from .models import Volunteer
+from .models import Volunteer, SupportTicket
 
 
 class VolunteerForm(forms.ModelForm):
@@ -200,4 +199,19 @@ class VolunteerForm(forms.ModelForm):
             'impact_goal': forms.Textarea(attrs={'rows':3}),
             'skills': forms.Textarea(attrs={'rows':2}),
             'interests': forms.Textarea(attrs={'rows':2}),
+        }
+   
+
+class SupportTicketForm(forms.ModelForm):
+    class Meta:
+        model = SupportTicket
+
+        # fields user can fill ONLY
+        fields = [
+            'full_name','email','phone','user_type',
+            'category','priority','subject','message','attachment'
+        ]
+
+        widgets = {
+            'message': forms.Textarea(attrs={'rows':4}),
         }

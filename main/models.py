@@ -577,3 +577,67 @@ class Volunteer(models.Model):
 
     def __str__(self):
         return self.full_name
+    
+    # ================= SUPPORT TICKET SYSTEM =================
+
+USER_TYPE = [
+    ('Volunteer','Volunteer'),
+    ('Beneficiary','Beneficiary'),
+    ('Partner','Partner'),
+    ('Visitor','Visitor'),
+]
+
+CATEGORY = [
+    ('Technical problem','Technical problem'),
+    ('Volunteer support','Volunteer support'),
+    ('Donation issue','Donation issue'),
+    ('Report a problem','Report a problem'),
+    ('Partnership inquiry','Partnership inquiry'),
+    ('Mental/Community support','Mental/Community support'),
+    ('Emergency assistance','Emergency assistance'),
+    ('Other','Other'),
+]
+
+PRIORITY = [
+    ('Low','Low'),
+    ('Medium','Medium'),
+    ('High','High'),
+    ('Emergency','Emergency'),
+]
+
+TICKET_STATUS = [
+    ('Open','Open'),
+    ('In Progress','In Progress'),
+    ('Resolved','Resolved'),
+    ('Closed','Closed'),
+]
+
+
+class SupportTicket(models.Model):
+    ticket_id = models.CharField(max_length=20, unique=True, blank=True)
+
+    # 👤 USER INFO
+    full_name = models.CharField(max_length=200)
+    email = models.EmailField()
+    phone = models.CharField(max_length=20)
+    user_type = models.CharField(max_length=20, choices=USER_TYPE)
+
+    # 🆘 ISSUE DETAILS
+    category = models.CharField(max_length=50, choices=CATEGORY)
+    priority = models.CharField(max_length=20, choices=PRIORITY)
+    subject = models.CharField(max_length=200)
+    message = models.TextField()
+    attachment = models.FileField(upload_to='support/', blank=True, null=True)
+
+    # ADMIN SIDE
+    status = models.CharField(max_length=20, choices=TICKET_STATUS, default='Open')
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def save(self, *args, **kwargs):
+        if not self.ticket_id:
+            last_id = SupportTicket.objects.count() + 1
+            self.ticket_id = f"SUP-{last_id:05d}"
+        super().save(*args, **kwargs)
+
+    def __str__(self):
+        return self.ticket_id

@@ -1,0 +1,74 @@
+{% extends 'main/base_templates/base.html' %}
+{% block content %}
+<style>
+	.faq-hero {
+		background: linear-gradient(180deg,#f5fbff 0%, #e8f6ff 60%, #e6f3ff 100%);
+		padding: 48px 0;
+	}
+	.faq-card {
+		max-width: 960px;
+		margin: 0 auto;
+		background: #ffffff;
+		border-radius: 12px;
+		box-shadow: 0 12px 30px rgba(6,84,150,0.08);
+		overflow: hidden;
+		padding: 28px;
+	}
+	.faq-header { display:flex; align-items:center; gap:16px; margin-bottom:14px; }
+	.faq-title { font-size:26px; color:#043b6b; font-weight:800; margin:0; }
+	.faq-sub { color:#156aa5; margin:0; opacity:0.9 }
+	.faq-list { margin-top:18px; }
+	details.faq-item { border:1px solid #e6f4ff; border-radius:10px; padding:12px 14px; margin-bottom:10px; background:linear-gradient(180deg,#ffffff, #fbfeff); }
+	details.faq-item summary { list-style:none; cursor:pointer; font-weight:700; color:#054a7a; }
+	details.faq-item[open] { box-shadow: 0 8px 18px rgba(3,57,102,0.06); }
+	details.faq-item p { margin:10px 0 0 0; color:#334e63; }
+	.faq-ctas { display:flex; gap:10px; flex-wrap:wrap; margin-top:18px; }
+	.btn-cta { background: linear-gradient(90deg,#0077d9,#00a5ff); color:white; padding:10px 16px; border-radius:10px; border:none; font-weight:700; box-shadow:0 8px 20px rgba(0,123,205,0.12); text-decoration:none; }
+	.btn-ghost { background:transparent; color:#0b66b2; padding:10px 14px; border-radius:10px; border:1px solid #d7eefc; text-decoration:none; }
+	.btn-whatsapp { background:#25D366; color:#ffffff; padding:10px 14px; border-radius:10px; border:none; font-weight:700; text-decoration:none; box-shadow:0 8px 18px rgba(37,211,102,0.14); }
+	.btn-email { background:#1a73e8; color:#ffffff; padding:10px 14px; border-radius:10px; border:none; font-weight:700; text-decoration:none; box-shadow:0 8px 18px rgba(26,115,232,0.12); }
+	.btn-call { background:#dc3545; color:#ffffff; padding:10px 14px; border-radius:10px; border:none; font-weight:700; text-decoration:none; box-shadow:0 8px 18px rgba(220,53,69,0.12); }
+	@media (max-width:720px){ .faq-card{ padding:18px } .faq-title{font-size:20px} }
+</style>
+
+<section class="faq-hero">
+	<div class="faq-card">
+		<div class="faq-header">
+			<div>
+				<h2 class="faq-title">Help Center</h2>
+				<p class="faq-sub">Find answers to common questions or contact our team for help.</p>
+			</div>
+		</div>
+
+		<div class="faq-list" role="region" aria-label="Frequently asked questions">
+			<details class="faq-item">
+				<summary>How do I become a volunteer?</summary>
+				<p>To become a volunteer, complete the application form on our Volunteer page. We'll review your submission and get back to you within two weeks.</p>
+			</details>
+
+			<details class="faq-item">
+				<summary>How can I donate?</summary>
+				<p>You can donate via the Donate page, where we accept card and bank transfers. Receipts are emailed automatically.</p>
+			</details>
+
+			<details class="faq-item">
+				<summary>How do I join events?</summary>
+				<p>Events are listed on our Events page. Click an event to register — some events require approval.</p>
+			</details>
+
+			<details class="faq-item">
+				<summary>Account or password help</summary>
+				<p>Use the password reset link on the login page. If you still have issues, contact support and include your account email.</p>
+			</details>
+		</div>
+
+		<div class="faq-ctas">
+			<a href="{% url 'main:create_ticket' %}" class="btn-cta">Still need help? Contact us</a>
+			<a href="https://wa.me/250000000000" class="btn-whatsapp">WhatsApp</a>
+			<a href="mailto:support@dc48k.org" class="btn-email">Email</a>
+			<a href="tel:+250000000000" class="btn-call">Call Hotline</a>
+		</div>
+	</div>
+</section>
+
+{% endblock %}

@@ -1033,3 +1033,43 @@ def volunteer_register(request):
 
 def volunteer_success(request):
     return render(request, 'main/volunteer/success.html')
+
+from .forms import SupportTicketForm
+from django.core.mail import send_mail
+def support_faq(request):
+    return render(request, 'main/support/faq.html')
+
+
+def create_ticket(request):
+    if request.method == 'POST':
+        form = SupportTicketForm(request.POST, request.FILES)
+        if form.is_valid():
+            ticket = form.save()
+
+            # 📧 Email to user
+            send_mail(
+                'Support Ticket Received',
+                f'Your ticket {ticket.ticket_id} has been received. We will reply within 24 hours.',
+                'noreply@dc48k.org',
+                [ticket.email],
+                fail_silently=True,
+            )
+
+            # 📧 Email to admin
+            send_mail(
+                'New Support Ticket',
+                f'New ticket submitted: {ticket.ticket_id}',
+                'noreply@dc48k.org',
+                ['admin@dc48k.org'],
+                fail_silently=True,
+            )
+
+            return redirect('main:ticket_success', ticket_id=ticket.ticket_id)
+    else:
+        form = SupportTicketForm()
+
+    return render(request, 'main/support/create_ticket.html', {'form': form})
+
+
+def ticket_success(request, ticket_id):
+    return render(request, 'main/support/success.html', {'ticket_id': ticket_id})
