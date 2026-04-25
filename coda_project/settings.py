@@ -395,9 +395,13 @@ EMAIL_USE_TLS = True
 EMAIL_HOST_USER = "dc48kvisaassistance@gmail.com"
 EMAIL_HOST_PASSWORD = "kphmvzsbajpunjkx"
 DEFAULT_FROM_EMAIL = "dc48kvisaassistance@gmail.com"
-#added code 
-STRIPE_SECRET_KEY = "your_secret_key"
-STRIPE_PUBLIC_KEY = "your_public_key"
-STRIPE_PUBLIC_KEY = "pk_test_..."
-STRIPE_SECRET_KEY = "sk_test_..."
-STRIPE_WEBHOOK_SECRET = "whsec_21b07176ecdfd011413846b54acd39f6be3718ad2a30e7d02e1a4959e5cbb193"   # we’ll use this later
+
+# Stripe Configuration - Load from environment variables
+import os
+from dotenv import load_dotenv
+
+load_dotenv()
+
+STRIPE_SECRET_KEY = os.getenv("STRIPE_SECRET_KEY")
+STRIPE_PUBLIC_KEY = os.getenv("STRIPE_PUBLIC_KEY")
+STRIPE_WEBHOOK_SECRET = os.getenv("STRIPE_WEBHOOK_SECRET")
