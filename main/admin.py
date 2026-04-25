@@ -68,3 +68,11 @@ class LegalImmigrationResourceAdmin(admin.ModelAdmin):
     )
 admin.site.register(NetworkItem)
 
+
+from .models import Volunteer
+
+@admin.register(Volunteer)
+class VolunteerAdmin(admin.ModelAdmin):
+    list_display = ('full_name','email','phone','availability','role','status','created_at')
+    list_filter = ('status','availability','role','country')
+    search_fields = ('full_name','email','phone')

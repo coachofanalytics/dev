@@ -9,6 +9,8 @@ urlpatterns = [
     path('book_consultations/', views.book_consultations, name='book_consultations'),
     path('support/', views.support_page, name='support_page'),
     path('apply/<int:pk>/', views.apply_to_opportunity, name='apply'),
+    path('join-team/', views.volunteer_register, name='join_team'),
+    path('volunteer-success/', views.volunteer_success, name='volunteer_success'),
     
     path('support/donate/', views.donate_view, name='donate'),
     path('support/donation/success/', views.donation_success, name='donation_success'),

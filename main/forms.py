@@ -145,3 +145,59 @@ class DonationForm(forms.ModelForm):
     class Meta:
         model = Donation
         fields = ["name", "email", "amount", "message", "anonymous"]
+
+        
+from .models import Volunteer
+
+
+class VolunteerForm(forms.ModelForm):
+    class Meta:
+        model = Volunteer
+
+        # ONLY fields the volunteer should fill
+        fields = [
+            'full_name',
+            'email',
+            'phone',
+            'gender',
+            'date_of_birth',
+            'country',
+            'city',
+            'profile_photo',
+
+            'availability',
+            'available_days',
+            'hours_per_week',
+
+            'skills',
+            'interests',
+
+            'territory',
+            'is_remote',
+
+            'motivation',
+            'experience',
+            'impact_goal',
+
+            'cv',
+            'id_document',
+            'certificates',
+
+            'role',
+
+            'emergency_name',
+            'emergency_relationship',
+            'emergency_phone',
+
+            'accepted_terms',
+            'receive_updates',
+        ]
+
+        widgets = {
+            'date_of_birth': forms.DateInput(attrs={'type':'date'}),
+            'motivation': forms.Textarea(attrs={'rows':3}),
+            'experience': forms.Textarea(attrs={'rows':3}),
+            'impact_goal': forms.Textarea(attrs={'rows':3}),
+            'skills': forms.Textarea(attrs={'rows':2}),
+            'interests': forms.Textarea(attrs={'rows':2}),
+        }

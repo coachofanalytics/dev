@@ -492,3 +492,88 @@ class Donation(models.Model):
 
     def __str__(self):
         return f"{self.name} - {self.amount}"
+    
+    from django.db import models
+
+# choices
+GENDER_CHOICES = [
+    ('Male','Male'),
+    ('Female','Female'),
+    ('Other','Other'),
+]
+
+AVAILABILITY_CHOICES = [
+    ('Full-time','Full-time'),
+    ('Part-time','Part-time'),
+    ('Occasional','Occasional'),
+]
+
+ROLE_CHOICES = [
+    ('Field volunteer','Field volunteer'),
+    ('Online volunteer','Online volunteer'),
+    ('Event volunteer','Event volunteer'),
+    ('Team leader','Team leader'),
+    ('Trainer / Mentor','Trainer / Mentor'),
+    ('Fundraising ambassador','Fundraising ambassador'),
+]
+
+STATUS_CHOICES = [
+    ('Pending','Pending'),
+    ('Approved','Approved'),
+    ('Rejected','Rejected'),
+]
+
+
+class Volunteer(models.Model):
+
+    # 1️⃣ BASIC INFO
+    full_name = models.CharField(max_length=200)
+    email = models.EmailField()
+    phone = models.CharField(max_length=20)
+    gender = models.CharField(max_length=10, choices=GENDER_CHOICES, blank=True)
+    date_of_birth = models.DateField()
+    country = models.CharField(max_length=100)
+    city = models.CharField(max_length=100)
+    profile_photo = models.ImageField(upload_to='volunteers/photos/', blank=True, null=True)
+
+    # 2️⃣ AVAILABILITY
+    availability = models.CharField(max_length=20, choices=AVAILABILITY_CHOICES)
+    available_days = models.CharField(max_length=200)
+    hours_per_week = models.IntegerField()
+
+    # 3️⃣ SKILLS
+    skills = models.TextField()
+    interests = models.TextField()
+
+    # 4️⃣ TERRITORY
+    territory = models.CharField(max_length=150)
+    is_remote = models.BooleanField(default=False)
+
+    # 5️⃣ MOTIVATION
+    motivation = models.TextField()
+    experience = models.TextField(blank=True)
+    impact_goal = models.TextField()
+
+    # 6️⃣ DOCUMENTS
+    cv = models.FileField(upload_to='volunteers/cv/', blank=True, null=True)
+    id_document = models.FileField(upload_to='volunteers/id/', blank=True, null=True)
+    certificates = models.FileField(upload_to='volunteers/certificates/', blank=True, null=True)
+
+    # 7️⃣ ROLE
+    role = models.CharField(max_length=100, choices=ROLE_CHOICES)
+
+    # 8️⃣ EMERGENCY CONTACT
+    emergency_name = models.CharField(max_length=200)
+    emergency_relationship = models.CharField(max_length=100)
+    emergency_phone = models.CharField(max_length=20)
+
+    # 9️⃣ AGREEMENTS
+    accepted_terms = models.BooleanField(default=False)
+    receive_updates = models.BooleanField(default=True)
+
+    # ADMIN SIDE
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='Pending')
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return self.full_name

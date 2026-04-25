@@ -994,3 +994,42 @@ def stripe_webhook(request):
             pass
 
     return HttpResponse(status=200)
+
+
+from django.core.mail import send_mail
+from .forms import VolunteerForm
+
+
+def volunteer_register(request):
+    if request.method == 'POST':
+        form = VolunteerForm(request.POST, request.FILES)
+
+        if form.is_valid():
+            # 🚨 DO NOT USE form.save() directly
+            volunteer = form.save(commit=False)
+
+            # 🔒 FORCE admin-only fields
+            volunteer.status = "Pending"
+            volunteer.project = None
+
+            volunteer.save()
+
+            # 📧 Send confirmation email (shows in terminal for now)
+            send_mail(
+                'DC48K Volunteer Application Received',
+                'Thank you for applying to volunteer with DC48K. We will contact you soon.',
+                'noreply@dc48k.org',
+                [volunteer.email],
+                fail_silently=True,
+            )
+
+            return redirect('main:volunteer_success')
+
+    else:
+        form = VolunteerForm()
+
+    return render(request, 'main/volunteer/register.html', {'form': form})
+
+
+def volunteer_success(request):
+    return render(request, 'main/volunteer/success.html')
