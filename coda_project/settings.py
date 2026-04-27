@@ -11,9 +11,11 @@ https://docs.djangoproject.com/en/3.0/ref/settings/
 """
 
 import os
-from decouple import config
+#from decouple import config
 
 from pathlib import Path
+
+from django_filters.conf import settings
 BASE_DIR = Path(__file__).resolve().parent.parent
 # print(BASE_DIR)
 
@@ -168,7 +170,7 @@ def dba_values():
     return host,dbname,user,password  
 
 WSGI_APPLICATION = "coda_project.wsgi.application"
-import dj_database_url
+#import dj_database_url
 
 host,dbname,user,password=dba_values() #herokuprod() #herokudev() #dblocal()  #herokudev(),
 # Database
@@ -209,8 +211,8 @@ if 'test' in sys.argv:
     }
 
 
-db_from_env = dj_database_url.config(conn_max_age=600)
-DATABASES["default"].update(db_from_env)
+#db_from_env = dj_database_url.config(conn_max_age=600)
+#DATABASES["default"].update(db_from_env)
 # db_from_env = dj_database_url.config(conn_max_age=600)
 # DATABASES["default"].update(db_from_env)
 # DATABASES ={'default': dj_database_url.config(conn_max_age=600)}
@@ -326,7 +328,7 @@ AWS_S3_FILE_OVERWRITE = False
 AWS_DEFAULT_ACL = None
 
 
-from celery.schedules import crontab
+#from celery.schedules import crontab
 
 CELERY_BROKER_URL = "redis://default:xjaoROhpU8Lbiz8OZskVTgyYDFAdSmlo@redis-11854.c240.us-east-1-3.ec2.cloud.redislabs.com:11854"
 CELERY_RESULT_BACKEND = "redis://default:xjaoROhpU8Lbiz8OZskVTgyYDFAdSmlo@redis-11854.c240.us-east-1-3.ec2.cloud.redislabs.com:11854"
@@ -338,13 +340,13 @@ CELERY_IMPORTS = "coda_project.task"
 CELERYBEAT_SCHEDULE = {
     "run_on_every_1st": {
         "task": "task_history",
-        "schedule": crontab(0, 0, day_of_month="1"),
+        #"schedule": crontab(0, 0, day_of_month="1"),
         #'schedule': crontab(),
     },
 
     "run_on_every_1st": {
         "task": "advertisement",
-        "schedule": crontab(0, 0, day_of_month="1"),
+        #"schedule": crontab(0, 0, day_of_month="1"),
         #'schedule': crontab(),
     },
 }
@@ -389,16 +391,16 @@ SOCIALACCOUNT_PROVIDERS = {
 }
 
 ACCOUNT_EMAIL_VERIFICATION = 'optional'  # or 'mandatory', depending on your setup
-ACCOUNT_EMAIL_REQUIRED = True
+
 SOCIALACCOUNT_QUERY_EMAIL = True
 
 LOGIN_REDIRECT_URL = "main:layout"
 LOGIN_URL = "accounts:account-login"
 
 CLOUDINARY_STORAGE = {
-    'CLOUD_NAME': config('CLOUDINARY_CLOUD_NAME'),
-    'API_KEY':    config('CLOUDINARY_API_KEY'),
-    'API_SECRET': config('CLOUDINARY_API_SECRET'),
+    #'CLOUD_NAME': config('CLOUDINARY_CLOUD_NAME'),
+    #'API_KEY':    config('CLOUDINARY_API_KEY'),
+    #'API_SECRET': config('CLOUDINARY_API_SECRET'),
 }
 
 
@@ -418,4 +420,5 @@ ADMIN_EMAIL = 'your-email@gmail.com'  # Still use your real email here for admin
 
 # Site URL for email links
 SITE_URL = 'http://127.0.0.1:8000'
-GROQ_API_KEY = config('GROQ_API_KEY')
+# = config('GROQ_API_KEY')
+settings.ACCOUNT_SIGNUP_FIELDS = ['email*', 'username*', 'password1*', 'password2*']
