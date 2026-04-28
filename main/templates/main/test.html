@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ title }}</title>
+    <style>
+        body { font-family: sans-serif; margin: 2rem; }
+        table { width: 100%; border-collapse: collapse; margin-top: 1rem; }
+        th, td { border: 1px solid #ddd; padding: 0.5rem; vertical-align: top; }
+        th { background: #f6f6f6; }
+        .grid { display: grid; gap: 0.75rem; max-width: 700px; }
+        input, textarea, select { width: 100%; padding: 0.45rem; }
+        .row { display: flex; gap: 0.75rem; }
+        .row > div { flex: 1; }
+        .actions { display: flex; gap: 0.5rem; }
+        .msg { padding: 0.6rem; background: #eef8ee; border: 1px solid #cce5cc; margin-bottom: 1rem; }
+    </style>
+</head>
+<body>
+    <h1>Legal Services CRUD Test Page</h1>
+
+    {% if messages %}
+        {% for message in messages %}
+            <div class="msg">{{ message }}</div>
+        {% endfor %}
+    {% endif %}
+
+    <h2>Create Legal Service</h2>
+    <form method="post" class="grid">
+        {% csrf_token %}
+        <div>
+            <label for="title">Title</label>
+            <input id="title" name="title" required>
+        </div>
+        <div>
+            <label for="category">Category</label>
+            <select id="category" name="category" required>
+                {% for value, label in categories %}
+                    <option value="{{ value }}">{{ label }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div>
+            <label for="description">Description</label>
+            <textarea id="description" name="description" rows="3" required></textarea>
+        </div>
+        <div>
+            <label for="features">Features (one per line)</label>
+            <textarea id="features" name="features" rows="4"></textarea>
+        </div>
+        <div class="row">
+            <div>
+                <label for="cta_button_text">CTA Text</label>
+                <input id="cta_button_text" name="cta_button_text" value="Learn More">
+            </div>
+            <div>
+                <label for="cta_button_url">CTA URL</label>
+                <input id="cta_button_url" name="cta_button_url" placeholder="https://example.com/action">
+            </div>
+        </div>
+        <div class="row">
+            <div>
+                <label for="image_url">Image URL</label>
+                <input id="image_url" name="image_url" placeholder="https://example.com/image.png">
+            </div>
+            <div>
+                <label for="order">Order</label>
+                <input id="order" name="order" type="number" value="0">
+            </div>
+        </div>
+        <label>
+            <input type="checkbox" name="is_active" checked> Is Active
+        </label>
+        <button type="submit">Create</button>
+    </form>
+
+    <h2>Existing Legal Services</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Title</th>
+                <th>Category</th>
+                <th>Features</th>
+                <th>Order</th>
+                <th>Active</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for service in services %}
+                <tr>
+                    <td>{{ service.id }}</td>
+                    <td>{{ service.title }}</td>
+                    <td>{{ service.get_category_display }}</td>
+                    <td>
+                        {% if service.features %}
+                            <ul>
+                                {% for feature in service.features %}
+                                    <li>{{ feature }}</li>
+                                {% endfor %}
+                            </ul>
+                        {% else %}
+                            -
+                        {% endif %}
+                    </td>
+                    <td>{{ service.order }}</td>
+                    <td>{{ service.is_active }}</td>
+                    <td class="actions">
+                        <a href="{% url 'main:legal_service_test_edit' service.pk %}">Edit</a>
+                        <form method="post" action="{% url 'main:legal_service_test_delete' service.pk %}">
+                            {% csrf_token %}
+                            <button type="submit">Delete</button>
+                        </form>
+                    </td>
+                </tr>
+            {% empty %}
+                <tr>
+                    <td colspan="7">No legal services available.</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</body>
+</html>

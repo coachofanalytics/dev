@@ -25,7 +25,7 @@ db.sqlite3-journal
 package.json
 package-lock.json
 node_modules/
-BackendTests
+
 
 # Build/utility tools (not part of project)
 *.jar
@@ -38,6 +38,7 @@ test_*.py
 *_test.py
 */test/
 */tests/
+BackendTests/
 
 # Report files and directories
 report/

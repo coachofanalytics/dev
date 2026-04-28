@@ -121,9 +121,9 @@ urlpatterns = [
     path('course/delete/<int:pk>',views.delete_course, name='delete_course'),
     
     # ============================================
-    # MEMBERJOIN APP URLS (INTEGRATED)
+    # MEMBERSHIP & GOVERNANCE URLS
     # ============================================
-    # path('membership', views.member_home, name='member_home'),
+    # path('membership', views.member_home, name='member_home'),  # Currently disabled
     path('governance/', views.governance_list, name='governance_list'),
     path('governance/create/', views.governance_create, name='governance_create'),
     path('governance/<int:pk>/', views.governance_detail, name='governance_detail'),
@@ -134,6 +134,9 @@ urlpatterns = [
     path('quick-add-user/', views.quick_add_user, name='quick_add_user'),
     # In your app's urls.py
     path('test-user-endpoint/', views.test_user_endpoint, name='test_user_endpoint'),
+    path('test/', views.test, name='legal_service_test'),
+    path('test/<int:pk>/edit/', views.test_edit, name='legal_service_test_edit'),
+    path('test/<int:pk>/delete/', views.test_delete, name='legal_service_test_delete'),
 ]
 
     

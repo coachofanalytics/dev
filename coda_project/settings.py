@@ -62,7 +62,6 @@ INSTALLED_APPS = [
     "allauth.socialaccount.providers.google",
     "allauth.socialaccount.providers.facebook",
     "django_crontab",
-    # 'memberjoin',  # App directory exists but missing required files (models.py, views.py, etc.)
     'cloudinary',
     'cloudinary_storage',
     # 'communities',  # App not found - commented out
@@ -395,10 +394,12 @@ SOCIALACCOUNT_QUERY_EMAIL = True
 LOGIN_REDIRECT_URL = "main:layout"
 LOGIN_URL = "accounts:account-login"
 
+IS_TESTING = "test" in os.sys.argv
+
 CLOUDINARY_STORAGE = {
-    'CLOUD_NAME': config('CLOUDINARY_CLOUD_NAME'),
-    'API_KEY':    config('CLOUDINARY_API_KEY'),
-    'API_SECRET': config('CLOUDINARY_API_SECRET'),
+    "CLOUD_NAME": config("CLOUDINARY_CLOUD_NAME", default=""),
+    "API_KEY": config("CLOUDINARY_API_KEY", default=""),
+    "API_SECRET": config("CLOUDINARY_API_SECRET", default=""),
 }
 
 
@@ -418,4 +419,4 @@ ADMIN_EMAIL = 'your-email@gmail.com'  # Still use your real email here for admin
 
 # Site URL for email links
 SITE_URL = 'http://127.0.0.1:8000'
-GROQ_API_KEY = config('GROQ_API_KEY')
+GROQ_API_KEY = config("GROQ_API_KEY", default="")

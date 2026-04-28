@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ title }}</title>
+    <style>
+        body { font-family: sans-serif; margin: 2rem; }
+        .grid { display: grid; gap: 0.75rem; max-width: 700px; }
+        input, textarea, select { width: 100%; padding: 0.45rem; }
+        .row { display: flex; gap: 0.75rem; }
+        .row > div { flex: 1; }
+    </style>
+</head>
+<body>
+    <h1>Edit Legal Service #{{ service.id }}</h1>
+    <p><a href="{% url 'main:legal_service_test' %}">Back to test page</a></p>
+
+    <form method="post" class="grid">
+        {% csrf_token %}
+        <div>
+            <label for="title">Title</label>
+            <input id="title" name="title" value="{{ service.title }}" required>
+        </div>
+        <div>
+            <label for="category">Category</label>
+            <select id="category" name="category" required>
+                {% for value, label in categories %}
+                    <option value="{{ value }}" {% if service.category == value %}selected{% endif %}>{{ label }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div>
+            <label for="description">Description</label>
+            <textarea id="description" name="description" rows="3" required>{{ service.description }}</textarea>
+        </div>
+        <div>
+            <label for="features">Features (one per line)</label>
+            <textarea id="features" name="features" rows="4">{% for feature in service.features %}{{ feature }}{% if not forloop.last %}
+{% endif %}{% endfor %}</textarea>
+        </div>
+        <div class="row">
+            <div>
+                <label for="cta_button_text">CTA Text</label>
+                <input id="cta_button_text" name="cta_button_text" value="{{ service.cta_button_text }}">
+            </div>
+            <div>
+                <label for="cta_button_url">CTA URL</label>
+                <input id="cta_button_url" name="cta_button_url" value="{{ service.cta_button_url }}">
+            </div>
+        </div>
+        <div class="row">
+            <div>
+                <label for="image_url">Image URL</label>
+                <input id="image_url" name="image_url" value="{{ service.image_url|default:'' }}">
+            </div>
+            <div>
+                <label for="order">Order</label>
+                <input id="order" name="order" type="number" value="{{ service.order }}">
+            </div>
+        </div>
+        <label>
+            <input type="checkbox" name="is_active" {% if service.is_active %}checked{% endif %}> Is Active
+        </label>
+        <button type="submit">Save</button>
+    </form>
+</body>
+</html>
