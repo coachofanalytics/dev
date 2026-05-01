@@ -359,3 +359,4 @@ class LegalServiceAdmin(admin.ModelAdmin):
     )
     readonly_fields = ['created_at', 'updated_at']
 
+admin.site.register(Bookings)
