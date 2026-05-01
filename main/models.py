@@ -1514,3 +1514,15 @@ class EventCalendar(models.Model):
 
     def __str__(self):
         return self.name
+
+class Booking(models.Model):
+    name = models.CharField(max_length=255)
+    email = models.EmailField()
+    phone = models.CharField(max_length=20)
+    service_type = models.CharField(max_length=255)
+    preferred_date= models.DateField()
+    preferred_time = models.TimeField()
+    additional_info = models.TextField(blank=True, null=True)
+    
+    def __str__(self):
+        return f"{self.name} - {self.service_type}"
