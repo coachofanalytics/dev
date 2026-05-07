@@ -15,29 +15,37 @@ from django.views.generic import (
 )
 #<<<<<<< 25.10_DC48_UAT_UO
 from .models import Assets,Description, News, Page, Service, SubService,Team, SafetyAlertSubscription, EmergencyHotline, StaffContact, InsurancePlan, AIRecommendationRule, ExpertInquiry, ConsularAssistancePage
-#=======
+
+
 from django.db.models import Q
-#<<<<<<< HEAD
+
+
 from .models import Scholarship, Donation_organisation, ContactMessage, Testimonial
-#>>>>>>> origin/25.11_DC48K_UAT_FN
+
+
 from accounts.models import CustomerUser
-##=======
+
+
 from .models import Assets,Description, News, Page, Service, SubService,Team, Donation_organization, MedicalResourceInquiry,Governance
 from accounts.models import CustomerUser
 from .utils import image_view,path_values
 from .forms import ContactForm, DonorForm, MessageForm,ScholarshipSearchForm
-##=======
+
+
 from django.views.decorators.csrf import csrf_exempt
 from main.forms import ContactForm, GovernanceForm
-#>>>>>>> origin/25.10_DC48K_UAT_FN
+
+
 from django.contrib.auth import get_user_model
-#<<<<<<< 25.10_DC48_UAT_UO
+
+
 from django.views.decorators.http import require_POST
 from django.views.decorators.csrf import csrf_protect
 from django.http import JsonResponse, HttpResponse
 from django.core.mail import send_mail
 from django.utils.html import strip_tags
-#=======
+
+
 
 from django.urls import reverse_lazy
 from django.views.generic.edit import CreateView, UpdateView, DeleteView
@@ -55,7 +63,8 @@ class DonationCreateView(CreateView):
     template_name = 'main/snippets_templates/table/donation_create.html'
     success_url = reverse_lazy('main:donation')
 
-#>>>>>>> 25.10_DC48_UAT_ND
+
+
 User=get_user_model()
 
 
@@ -112,7 +121,8 @@ def general_errors(request):
     context={'message':'message'}
     return render(request,'main/errors/generalerrors.html',context)
 
-#  ===================================================================================   
+
+
 def hendler400(request,exception):
     return render(request, "errors/400.html")
 
@@ -138,20 +148,23 @@ from django.shortcuts import get_object_or_404
 
 
 def layout(request):
-#<<<<<<< 25.10_DC48_UAT_UO
+
+
+
     page_instance, _ = Page.objects.get_or_create(page_name='Home')
     description = Description.objects.filter(page=page_instance)
-#=======
-#<<<<<<< HEAD
+
+
     # Define page_instance for the home page or desired page
     page_instance = Page.objects.filter(page_name='Home').first()
     description = Description.objects.filter(page=page_instance)
-#=======
+
+
     # Ensure a Page instance exists for the Home page; if it doesn't, create a minimal one
     page_instance, _ = Page.objects.get_or_create(page_name='Home')
     description = Description.objects.filter(page = page_instance)
-#>>>>>>> origin/25.10_DC48K_UAT_FN
-#>>>>>>> 25.10_DC48_UAT_ND
+
+
     service = Service.objects.all()
     subservice = SubService.objects.all()
     news = News.objects.all().order_by('-published_date')[:3] 
@@ -677,7 +690,8 @@ class DonationDeleteView(DeleteView):
     success_url = reverse_lazy('main:donation')
 
 
-#>>>>>>> origin/25.10_DC48K_UAT_FN
+
+
 
 # Scholarship views
 
@@ -720,7 +734,7 @@ def scholarship_search(request):
         'result_count': scholarships.count(),
     }
     return render(request, 'scholarship_app/scholarship_search.html',context)
-#>>>>>>> 25.10_DC48_UAT_ND
+
 
 def testimonial_list(request):
     testimonial = Testimonial.objects.all() 
@@ -1427,3 +1441,8 @@ def download_comparison_csv(request):
         ])
     
     return response
+
+    from django.shortcuts import render
+
+def legal_guidance_landing_page(request):
+    return render(request, 'main/legal_guidance_landing_page.html')

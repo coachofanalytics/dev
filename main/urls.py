@@ -23,12 +23,12 @@ urlpatterns = [
     path('news/<int:id>/', views.news_detail, name='news_detail'),
     path('contract-us/', views.contact_us_list, name='contact_us_list'),
     path('about/', AboutView.as_view(), name='about'),
-#<<<<<<< 25.10_DC48_UAT_UO
+
     path('crisis_page/', views.crisis_page, name='crisis_page'),
     path('subscribe_alerts/', views.subscribe_alerts, name='subscribe_alerts'),
     path('activate_helpline/', views.activate_helpline, name='activate_helpline'),
-    
-#=======
+    path('legal-guidance/', views.legal_guidance_landing_page, name='legal_guidance_landing_page'),
+
     path('donors/', views.donor_list, name='donor_list'),
     path('add-donor/', views.add_donor, name='add_donor'),
     path('donor/<int:pk>/', views.donor_details, name='donor_details'),
@@ -45,7 +45,7 @@ urlpatterns = [
     path('donation/add/', views.DonationCreateView.as_view(), name='donation_add'),
     path('donation/<int:pk>/edit/', views.DonationEditView.as_view(), name='donation_edit'),
     path('donation/<int:pk>/delete/', views.DonationDeleteView.as_view(), name='donation_delete'),
-#>>>>>>> 25.10_DC48_UAT_ND
+
     
    #==============ERRORS==============================================
     path('400Error/', views.error400, name='400error'),
@@ -68,13 +68,11 @@ urlpatterns = [
     # Scholarship search (root-level /scholarship)
     path('scholarship', views.scholarship_search, name='scholarship_search'),
 
-#<<<<<<< 25.11_DC48K_UAT_FN
-    # Education and training views
-#=======
+#
     # Education pages removed — keep navbar buttons but links point to placeholders
     # scholaship url
     path('scholarship', views.scholarship_search, name='scholarship_search'),
-#>>>>>>> 25.10_DC48_UAT_ND
+
 
     path('education/', views.education_landing, name = 'education_landing'),
     path('education/scholarship/',views.education_landing, name = 'education_scholarship'),
