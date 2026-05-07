@@ -1,14 +1,15 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Legal and Immigration Guidance | DC48K</title>
-    <script src="https://cdn.jsdelivr.net/npm/tailwindcss@2.1.2/dist/tailwind.min.js"></script>
-</head>
-<body class="font-sans bg-gray-50">
+{% extends "main/base_templates/base.html" %}
+{% load static %}
 
-<!-- Navigation bar, Hero, Services, Legal Safeguards, Footer go here -->
+{% block content %}
+   <section class="relative bg-cover bg-center h-[500px] sm:h-[400px]" style="background-image: url('{% static 'images/hero-image.jpg' %}'); background-color: #F3F4F6;">
+    <div class="absolute inset-0 bg-black opacity-50"></div>
+    <div class="relative z-10 container mx-auto text-center text-white py-24 sm:py-16">
+        <h1 class="text-5xl font-extrabold leading-tight sm:text-4xl">Legal & Immigration Guidance</h1>
+        <p class="text-lg mt-4 sm:text-base">Expert guidance and trusted referrals to help you navigate the complexities of international law and immigration processes.</p>
+        <a href="#booking" class="mt-8 inline-block px-6 py-3 bg-red-600 text-white text-xl font-semibold rounded-full hover:bg-red-500 transition duration-300">Book a Legal Consultation</a>
+    </div>
+</section>
 
-</body>
-</html>
+    <!-- Add additional sections like Services, Legal Safeguards, Footer here -->
+{% endblock %}
