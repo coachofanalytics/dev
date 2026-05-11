@@ -13,6 +13,12 @@ from django.utils.text import slugify
 import random
 import string
 
+
+
+
+
+
+from django_countries.fields import CountryField  # This is from the 'django-countries' package
 User = get_user_model()
 
 
@@ -1514,3 +1520,148 @@ class MembershipRegistration(models.Model):
     class Meta:
         verbose_name_plural = "Membership Registrations"
         ordering = ['-registration_date']
+
+
+class Department(models.Model):
+    description = models.TextField(max_length=500, null=True, blank=True)  # Optional field for description
+    slug = models.SlugField(unique=True)  # SlugField for URL-friendly names, not nullable
+    is_featured = models.BooleanField(default=False)  # BooleanField, not varchar, defaults to False
+    is_active = models.BooleanField(default=True)  # BooleanField, not varchar, defaults to True
+
+    def __str__(self):
+        return self.slug  # Optional: human-readable representation of the department
+    
+
+class Location(models.Model):
+    zipcode = models.CharField(max_length=10, null=True, blank=True)
+    city = models.CharField(max_length=100, null=True, blank=True)
+    state = models.CharField(max_length=100, null=True, blank=True)
+    country = CountryField(blank_label='Select Country', null=True, blank=True)
+
+    def __str__(self):
+        return f"{self.city}, {self.state}, {self.country}"
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
