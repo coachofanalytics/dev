@@ -28,7 +28,7 @@ admin.site.register(TrainingCourse)
 admin.site.register(Testimonial)
 admin.site.register(Governance)
 
-
+admin.site.register(LegalService)
 # admin.site.register(Testimonial)
 from .models import ConsularAssistancePage
 admin.site.register(ConsularAssistancePage)
