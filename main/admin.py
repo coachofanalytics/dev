@@ -336,7 +336,7 @@ class EventCalendarAdmin(admin.ModelAdmin):
     )
 
 
-@admin.register(LegalService)
+# @admin.register(LegalService)
 class LegalServiceAdmin(admin.ModelAdmin):
     """Admin interface for managing Legal & Immigration Services"""
     list_display = ['title', 'category', 'is_active', 'order', 'created_at']
