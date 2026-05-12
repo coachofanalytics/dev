@@ -28,7 +28,7 @@ admin.site.register(TrainingCourse)
 admin.site.register(Testimonial)
 admin.site.register(Governance)
 
-
+admin.site.register(LegalService)
 # admin.site.register(Testimonial)
 from .models import ConsularAssistancePage
 admin.site.register(ConsularAssistancePage)
@@ -336,7 +336,7 @@ class EventCalendarAdmin(admin.ModelAdmin):
     )
 
 
-@admin.register(LegalService)
+# @admin.register(LegalService)
 class LegalServiceAdmin(admin.ModelAdmin):
     """Admin interface for managing Legal & Immigration Services"""
     list_display = ['title', 'category', 'is_active', 'order', 'created_at']
