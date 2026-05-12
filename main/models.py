@@ -1526,3 +1526,9 @@ class Bookings(models.Model):
 
     def __str__(self):
         return f"{self.name} - {self.service_type}"
+    
+class TestMigrationsIssue(models.Model):
+    test_field = models.CharField(max_length=255)
+
+    def __str__(self):
+        return self.test_field
