@@ -17,7 +17,7 @@ from django.views.generic import (
     DeleteView,
 )
 #<<<<<<< 25.10_DC48_UAT_UO
-from .models import Assets,Description, News, Page, Service, SubService,Team, SafetyAlertSubscription, EmergencyHotline, StaffContact, InsurancePlan, AIRecommendationRule, ExpertInquiry, ConsularAssistancePage, NewsArticle, Category, Subscriber
+from .models import Assets,Description, LegalService, News, Page, Service, SubService,Team, SafetyAlertSubscription, EmergencyHotline, StaffContact, InsurancePlan, AIRecommendationRule, ExpertInquiry, ConsularAssistancePage, NewsArticle, Category, Subscriber
 #=======
 from django.db.models import Q
 #<<<<<<< HEAD
@@ -2635,3 +2635,13 @@ def communities_contact_view(request):
     else:
         form = CommunityContactForm()
     return render(request, 'main/communities/contact_form.html', {'form': form})
+
+
+def legalServiceListView(request):
+    legal_services = LegalService.objects.all().order_by("-id")
+
+    context = {
+        "legal_services": legal_services
+    }
+
+    return render(request, "main/legal_services_list.html", context)
