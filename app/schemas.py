@@ -26,5 +26,6 @@ class Transaction(TransactionBase):
     created_at: datetime
     updated_at: datetime
 
-    class Config:
-        orm_mode = True  # To tell Pydantic to treat SQLAlchemy models as dicts
+model_config = {
+    "from_attributes": True
+}

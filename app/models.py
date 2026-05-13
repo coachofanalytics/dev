@@ -1,16 +1,16 @@
-from sqlalchemy import Column, Integer, String, ForeignKey, DateTime, Numeric
-from sqlalchemy.orm import relationship
+from sqlalchemy import Column, Integer, String, DateTime, Numeric
 from sqlalchemy.ext.declarative import declarative_base
 import datetime
 
 Base = declarative_base()
 
+
 class Transaction(Base):
     __tablename__ = "transactions"
-    
+
     id = Column(Integer, primary_key=True, index=True)
-    sender_id = Column(Integer, ForeignKey("customers.id"), nullable=True)  # Assuming 'CustomerUser' table exists
-    department_id = Column(Integer, ForeignKey("departments.id"), nullable=True)  # Assuming 'Department' table exists
+    sender_id = Column(Integer, nullable=True)
+    department_id = Column(Integer, nullable=True)
     receiver = Column(String(100), nullable=True)
     phone = Column(String(50), nullable=True)
     type = Column(String(100), nullable=True)
@@ -24,7 +24,9 @@ class Transaction(Base):
     category = Column(String(100), nullable=False)
     total_transactions_amt = Column(Numeric(10, 2), nullable=True)
     created_at = Column(DateTime, default=datetime.datetime.utcnow, nullable=False)
-    updated_at = Column(DateTime, default=datetime.datetime.utcnow, onupdate=datetime.datetime.utcnow, nullable=False)
-
-    sender = relationship("CustomerUser", back_populates="transactions")  # Assuming CustomerUser is defined
-    department = relationship("Department", back_populates="transactions")  # Assuming Department is defined
+    updated_at = Column(
+        DateTime,
+        default=datetime.datetime.utcnow,
+        onupdate=datetime.datetime.utcnow,
+        nullable=False
+    )
