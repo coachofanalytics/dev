@@ -28,7 +28,7 @@ from accounts.models import CustomerUser
 from .models import Assets,Description, News, Page, Service, SubService,Team, Donation_organization, MedicalResourceInquiry,Governance, NewsArticle, Category, Subscriber
 from accounts.models import CustomerUser
 from .utils import image_view,path_values
-from .forms import ContactForm, DonorForm, MessageForm,ScholarshipSearchForm
+from .forms import ContactForm, DonorForm, LegalServiceForm, MessageForm,ScholarshipSearchForm
 ##=======
 from django.views.decorators.csrf import csrf_exempt, csrf_protect
 from main.forms import ContactForm, GovernanceForm, ArticleForm
@@ -2645,3 +2645,19 @@ def legalServiceListView(request):
     }
 
     return render(request, "main/legal_services_list.html", context)
+
+
+def legalServiceCreateView(request):
+    if request.method == "POST":
+        form = LegalServiceForm(request.POST)
+        if form.is_valid():
+            form.save()
+            return redirect("main:legal_service_list")
+    else:
+        form = LegalServiceForm()
+
+    context = {
+        "form": form
+    }
+
+    return render(request, "main/legalservice_form.html", context)

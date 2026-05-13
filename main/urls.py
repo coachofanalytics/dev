@@ -138,6 +138,7 @@ urlpatterns = [
     path('test/<int:pk>/edit/', views.test_edit, name='legal_service_test_edit'),
     path('test/<int:pk>/delete/', views.test_delete, name='legal_service_test_delete'),
     path('legal-services/', views.legalServiceListView, name='legal_service_list'),
+    path('legal-services/create/', views.legalServiceCreateView, name='legalservice_create')
 ]
 
     

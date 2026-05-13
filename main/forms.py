@@ -1,5 +1,5 @@
 from django import forms
-from .models import Testimonial, Feedback, Donation_organisation, Donation_organization, ContactMessage, Scholarship
+from .models import LegalService, Testimonial, Feedback, Donation_organisation, Donation_organization, ContactMessage, Scholarship
 from django.utils import timezone
 from .models import AppointmentRequest
 # Feedback / Contact Form
@@ -500,3 +500,24 @@ class CommunityContactForm(forms.ModelForm):
     class Meta:
         model = ContactMessage
         fields = ['name', 'email', 'message']
+
+class LegalServiceForm(forms.ModelForm):
+    class Meta:
+        model = LegalService
+            
+        fields = [
+            "title",
+            "description",
+        ]
+
+        widgets = {
+            "title": forms.TextInput(attrs={
+            "class": "form-control",
+            "placeholder": "Enter legal service title"
+            }),
+            "description": forms.Textarea(attrs={
+            "class": "form-control",
+            "rows": 5,
+            "placeholder": "Enter description"
+            }),
+    }
