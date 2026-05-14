@@ -1,0 +1,40 @@
+{% extends "main/base_templates/base.html" %} {% block content %}
+
+<div class="container mt-4">
+  <h2>Legal Service Details</h2>
+
+  <div class="card mt-3">
+    <div class="card-body">
+      <h4 class="card-title">{{ legal_service }}</h4>
+
+      {% for field in display_fields %}
+      <p>
+        <strong>{{ field.label }}:</strong>
+        {{ field.value }}
+      </p>
+      {% endfor %}
+    </div>
+  </div>
+
+  <div class="mt-3">
+    <a href="{% url 'main:legal_service_list' %}" class="btn btn-secondary">
+      Back
+    </a>
+
+    {% comment %} <a
+      href="{% url 'main:legal_service_update' legal_service.pk %}"
+      class="btn btn-warning"
+    >
+      Edit
+    </a> {% endcomment %}
+
+    <a
+      href="{% url 'main:legal_service_delete' legal_service.pk %}"
+      class="btn btn-danger"
+    >
+      Delete
+    </a>
+  </div>
+</div>
+
+{% endblock %}

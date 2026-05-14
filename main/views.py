@@ -2674,3 +2674,20 @@ def legalServiceDeleteView(request, pk):
     }
 
     return render(request, "main/legalservice_confirm_delete.html", context)
+
+def legalServiceDetailView(request, pk):
+    legal_service = get_object_or_404(LegalService, pk=pk)
+    display_fields = [
+        {
+            "label": field.verbose_name.title(),
+            "value": field.value_from_object(legal_service),
+        }
+        for field in legal_service._meta.fields
+    ]
+
+    context = {
+    "legal_service": legal_service,
+    "display_fields": display_fields,
+    }
+
+    return render(request, "main/legalservice_detail.html", context)
