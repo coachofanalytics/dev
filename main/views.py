@@ -2661,3 +2661,16 @@ def legalServiceCreateView(request):
     }
 
     return render(request, "main/legalservice_form.html", context)
+
+def legalServiceDeleteView(request, pk):
+    legal_service = get_object_or_404(LegalService, pk=pk)
+
+    if request.method == "POST":
+        legal_service.delete()
+        return redirect("main:legal_service_list")
+
+    context = {
+    "legal_service": legal_service
+    }
+
+    return render(request, "main/legalservice_confirm_delete.html", context)
