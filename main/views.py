@@ -2674,3 +2674,24 @@ def legalServiceDeleteView(request, pk):
     }
 
     return render(request, "main/legalservice_confirm_delete.html", context)
+
+def legalServiceUpdateView(request, pk):
+    # Get the object or return 404
+    legal_service = get_object_or_404(LegalService, pk=pk)
+
+    # Bind the form to POST data if submitted, else use the instance for pre-fill
+    if request.method == "POST":
+        form = LegalServiceForm(request.POST, instance=legal_service)
+        if form.is_valid():
+            form.save()
+            return redirect("main:legal_service_list")
+    else:
+        form = LegalServiceForm(instance=legal_service)
+
+    # Pass the form and object to the template
+    context = {
+        "form": form,
+        "legal_service": legal_service
+    }
+
+    return render(request, "main/legal_service_update.html", context)
