@@ -1541,127 +1541,20 @@ class Location(models.Model):
     def __str__(self):
         return f"{self.city}, {self.state}, {self.country}"
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+class LegalService(models.Model):
+    title = models.CharField(max_length=200)
+    category = models.CharField(max_length=100)  # e.g., "visa", "residency", "citizenship"
+    description = models.TextField()
+    image_url = models.URLField(blank=True, null=True)
+    features = models.JSONField(default=list, blank=True)  # List of features/benefits
+    cta_button_text = models.CharField(max_length=50, default="Learn More")
+    cta_button_url = models.URLField(blank=True, null=True)
+    order = models.IntegerField(default=0)
+    is_active = models.BooleanField(default=True)
+
+    class Meta:
+        ordering = ['order']
+        verbose_name = "Legal Service"
+        verbose_name_plural = "Legal Services"
+    def __str__(self):
+        return self.title

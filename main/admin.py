@@ -1,6 +1,6 @@
 from django.contrib import admin
 from .models import (
-    Assets, Feedback, Page, Team, Content, Service, SubService, News,
+    Assets, Feedback, LegalService, Page, Team, Content, Service, SubService, News,
     Gallery_image, ContactUs, SafetyAlertSubscription, EmergencyHotline,
     StaffContact, Donation_organisation, ContactMessage, Donation_organization,
     Scholarship, TrainingCourse, Testimonial, Governance, 
@@ -42,6 +42,7 @@ admin.site.register(UserSettings)
 admin.site.register(UserPreferences)
 admin.site.register(MembershipRegistration)
 admin.site.register(Description)
+admin.site.register(LegalService)
 
 
 # Custom admin registrations
