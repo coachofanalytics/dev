@@ -63,8 +63,8 @@ INSTALLED_APPS = [
     "allauth.socialaccount.providers.facebook",
     "django_crontab",
     # 'memberjoin',  # App not found - commented out
-    'cloudinary',
-    'cloudinary_storage',
+    # 'cloudinary',
+    # 'cloudinary_storage',
     # 'communities',  # App not found - commented out
     #'debug_toolbar',
 
@@ -264,7 +264,7 @@ STATIC_URL = "/static/"
 
 STORAGES = {
     "default": {
-        "BACKEND": "cloudinary_storage.storage.MediaCloudinaryStorage",
+        # "BACKEND": "cloudinary_storage.storage.MediaCloudinaryStorage",
     },
     "staticfiles": {
         "BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage" if DEBUG 
@@ -395,11 +395,11 @@ SOCIALACCOUNT_QUERY_EMAIL = True
 LOGIN_REDIRECT_URL = "main:layout"
 LOGIN_URL = "accounts:account-login"
 
-CLOUDINARY_STORAGE = {
-    'CLOUD_NAME': config('CLOUDINARY_CLOUD_NAME'),
-    'API_KEY':    config('CLOUDINARY_API_KEY'),
-    'API_SECRET': config('CLOUDINARY_API_SECRET'),
-}
+# CLOUDINARY_STORAGE = {
+#     'CLOUD_NAME': config('CLOUDINARY_CLOUD_NAME'),
+#     'API_KEY':    config('CLOUDINARY_API_KEY'),
+#     'API_SECRET': config('CLOUDINARY_API_SECRET'),
+# }
 
 
 # EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
@@ -418,4 +418,4 @@ ADMIN_EMAIL = 'your-email@gmail.com'  # Still use your real email here for admin
 
 # Site URL for email links
 SITE_URL = 'http://127.0.0.1:8000'
-GROQ_API_KEY = config('GROQ_API_KEY')
+# GROQ_API_KEY = config('GROQ_API_KEY')
