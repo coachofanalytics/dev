@@ -140,7 +140,7 @@ urlpatterns = [
     path('legal-services/', views.legalServiceListView, name='legal_service_list'),
     path('legal-services/create/', views.legalServiceCreateView, name='legalservice_create'),
     path("legal-services/<int:pk>/delete/",views.legalServiceDeleteView,name="legal_service_delete"),
-    path("legal-services/<int:pk>/",views.legalServiceDetailView,name="legal_service_detail"),
+    path("legal-services/<int:pk>/update/", views.legalServiceUpdateView, name="legal_service_update"),
 ]
 
     
