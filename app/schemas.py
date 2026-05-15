@@ -29,3 +29,16 @@ class Transaction(TransactionBase):
 model_config = {
     "from_attributes": True
 }
+
+class TransactionUpdate(BaseModel):
+    receiver: Optional[str] = None
+    phone: Optional[str] = None
+    type: Optional[str] = None
+    receipt_link: Optional[str] = None
+    qty: Optional[float] = None
+    amount: Optional[float] = None
+    transaction_cost: Optional[float] = None
+    description: Optional[str] = None
+    payment_method: Optional[str] = None
+    category: Optional[str] = None
+    total_transactions_amt: Optional[float] = None
