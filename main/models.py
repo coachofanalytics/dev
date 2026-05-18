@@ -1531,4 +1531,222 @@ class TestMigrationsIssue(models.Model):
     test_field = models.CharField(max_length=255)
 
     def __str__(self):
-        return self.test_field
+        return f"{self.user.username} Settings"
+
+
+class UserPreferences(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="communities_preferences")
+    interest_area = models.CharField(max_length=150, blank=True, null=True)
+    communication_channel = models.CharField(
+        max_length=50,
+        choices=[
+            ("Email", "Email"),  
+            ("SMS", "SMS"),
+            ("WhatsApp", "WhatsApp"),
+            ("Telegram", "Telegram"),
+        ],
+        default="Email"
+    )
+    profile_visibility = models.BooleanField(default=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    def __str__(self):
+        return f"{self.user.username} Preferences"
+
+# ============================================
+# MEMBERJOIN APP MODELS
+# ============================================
+
+class MembershipRegistration(models.Model):
+    """Membership registration model from memberjoin app"""
+    
+    MEMBERSHIP_CHOICES = [
+        ('individual', 'Individual'),
+        ('leader', 'Leader'),
+        ('organization', 'Organization'),
+    ]
+    
+    first_name = models.CharField(max_length=30)
+    last_name = models.CharField(max_length=30)
+    email = models.EmailField(unique=True)
+    phone_number = models.CharField(max_length=15, blank=True, null=True)
+    country = models.CharField(max_length=30, blank=True, null=True)
+    city = models.CharField(max_length=30, blank=True, null=True)
+    address = models.TextField(blank=True, null=True)
+    membership_type = models.CharField(max_length=20, choices=MEMBERSHIP_CHOICES)
+    organization_name = models.CharField(max_length=100, blank=True, null=True)
+    date_of_birth = models.DateField(blank=True, null=True)
+    registration_date = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.first_name} {self.last_name} - {self.email}"
+
+    class Meta:
+        verbose_name_plural = "Membership Registrations"
+        ordering = ['-registration_date']
+
+
+class Department(models.Model):
+    description = models.TextField(max_length=500, null=True, blank=True)  # Optional field for description
+    slug = models.SlugField(unique=True)  # SlugField for URL-friendly names, not nullable
+    is_featured = models.BooleanField(default=False)  # BooleanField, not varchar, defaults to False
+    is_active = models.BooleanField(default=True)  # BooleanField, not varchar, defaults to True
+
+    def __str__(self):
+        return self.slug  # Optional: human-readable representation of the department
+    
+
+class Location(models.Model):
+    zipcode = models.CharField(max_length=10, null=True, blank=True)
+    city = models.CharField(max_length=100, null=True, blank=True)
+    state = models.CharField(max_length=100, null=True, blank=True)
+    country = models.CharField(max_length=100, null=True, blank=True)
+
+    def __str__(self):
+        return f"{self.city}, {self.state}, {self.country}"
+
+class LegalService(models.Model):
+    title = models.CharField(max_length=200)
+    category = models.CharField(max_length=100)  # e.g., "visa", "residency", "citizenship"
+    description = models.TextField()
+    image_url = models.URLField(blank=True, null=True)
+    features = models.JSONField(default=list, blank=True)  # List of features/benefits
+    cta_button_text = models.CharField(max_length=50, default="Learn More")
+    cta_button_url = models.URLField(blank=True, null=True)
+    order = models.IntegerField(default=0)
+    is_active = models.BooleanField(default=True)
+
+    class Meta:
+        ordering = ['order']
+        verbose_name = "Legal Service"
+        verbose_name_plural = "Legal Services"
+    def __str__(self):
+        return self.title
+
+#COP systems models
+
+class ContractTemplate(models.Model):
+    name = models.CharField(max_length=255)
+    slug = models.SlugField()
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return self.name
+
+
+class ContractTemplateVersion(models.Model):
+    contract_template = models.ForeignKey(
+        ContractTemplate,
+        related_name="versions",
+        on_delete=models.CASCADE,
+    )
+    version = models.PositiveIntegerField()
+    template_body = models.TextField()
+    merge_schema = models.JSONField()
+    is_published = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+
+class PackageDefinition(models.Model):
+    name = models.CharField(max_length=255)
+    slug = models.SlugField()
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+
+class PackageDefinitionDocument(models.Model):
+    package_definition = models.ForeignKey(
+        PackageDefinition,
+        related_name="documents",
+        on_delete=models.CASCADE,
+    )
+    contract_template = models.ForeignKey(
+        ContractTemplate,
+        on_delete=models.CASCADE,
+    )
+    order = models.PositiveIntegerField()
+
+
+class ContractPackage(models.Model):
+    class State(models.TextChoices):
+        DRAFT = "DRAFT", "DRAFT"
+        GENERATED = "GENERATED", "GENERATED"
+        SENT = "SENT", "SENT"
+        SIGNED = "SIGNED", "SIGNED"
+        EXECUTED = "EXECUTED", "EXECUTED"
+
+    package_definition = models.ForeignKey(
+        PackageDefinition,
+        on_delete=models.CASCADE,
+    )
+    state = models.CharField(max_length=20, choices=State.choices)
+    origination_key = models.CharField(max_length=255)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+
+class ContractDocument(models.Model):
+    contract_package = models.ForeignKey(
+        ContractPackage,
+        related_name="documents",
+        on_delete=models.CASCADE,
+    )
+    contract_template_version = models.ForeignKey(
+        ContractTemplateVersion,
+        on_delete=models.CASCADE,
+    )
+    html_snapshot = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
+
+
+class ContractSignature(models.Model):
+    contract_document = models.ForeignKey(
+        ContractDocument,
+        related_name="signatures",
+        on_delete=models.CASCADE,
+    )
+    signer = models.CharField(max_length=255)
+    artifact = models.TextField()
+    signed_at = models.DateTimeField()
+    ip_address = models.GenericIPAddressField()
+    method = models.CharField(max_length=50)
+
+
+class ContractEvent(models.Model):
+    contract_package = models.ForeignKey(
+        ContractPackage,
+        related_name="events",
+        on_delete=models.CASCADE,
+    )
+    event_type = models.CharField(max_length=100)
+    actor = models.CharField(max_length=255)
+    payload = models.JSONField()
+    created_at = models.DateTimeField(auto_now_add=True)
+
+
+class ContractAttachment(models.Model):
+    contract_document = models.ForeignKey(
+        ContractDocument,
+        related_name="attachments",
+        on_delete=models.CASCADE,
+    )
+    file = models.TextField(blank=True, null=True)
+    external_uri = models.URLField(blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+
+class CandidatePlacement(models.Model):
+    candidate = models.CharField(max_length=255)
+    employer = models.CharField(max_length=255)
+    salary = models.DecimalField(max_digits=12, decimal_places=2)
+    placement_fee = models.DecimalField(max_digits=12, decimal_places=2)
+    start_date = models.DateField()
+    contract_package = models.ForeignKey(
+        ContractPackage,
+        null=True,
+        blank=True,
+        on_delete=models.CASCADE,
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
