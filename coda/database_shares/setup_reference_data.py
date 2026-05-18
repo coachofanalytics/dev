@@ -16,8 +16,9 @@ import sys
 import uuid
 
 # Change to coda directory
-coda_dir = os.path.join(os.path.dirname(__file__), "..", "coda")
-os.chdir(coda_dir)
+# coda_dir = os.path.join(os.path.dirname(__file__), "..", "coda")
+coda_dir = os.getcwd()
+# os.chdir(coda_dir)
 sys.path.insert(0, coda_dir)
 
 import django
