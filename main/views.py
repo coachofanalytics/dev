@@ -17,7 +17,7 @@ from django.views.generic import (
     DeleteView,
 )
 #<<<<<<< 25.10_DC48_UAT_UO
-from .models import Assets,Description, LegalService, News, Page, Service, SubService,Team, SafetyAlertSubscription, EmergencyHotline, StaffContact, InsurancePlan, AIRecommendationRule, ExpertInquiry, ConsularAssistancePage, NewsArticle, Category, Subscriber
+from .models import Assets,Description, LegalService, News, Page, Service, SubService,Team, SafetyAlertSubscription, EmergencyHotline, StaffContact, InsurancePlan, AIRecommendationRule, ExpertInquiry, ConsularAssistancePage, NewsArticle, Category, Subscriber , Employer, Job, Industry
 #=======
 from django.db.models import Q
 #<<<<<<< HEAD
@@ -42,6 +42,8 @@ from django.utils.html import strip_tags
 from django.utils import timezone
 from django.views.decorators.http import require_http_methods
 from django.contrib.auth import get_user_model
+from django.utils.text import slugify
+
 
 # Models imports
 from .models import (
@@ -2695,3 +2697,230 @@ def legalServiceUpdateView(request, pk):
     }
 
     return render(request, "main/legal_service_update.html", context)
+
+
+# industry list_view 
+def industry_list_view(request):
+    industries = Industry.objects.all().order_by('name')
+    return render(request, 'main/industry_list.html', {'industries': industries})
+
+# industry detail_view
+def industry_detail_view(request, pk):
+    industry = get_object_or_404(Industry, pk=pk)
+    return render(request, 'main/industry_detail.html', {'industry': industry})
+
+# industry create_view
+def industry_create_view(request):
+    if request.method == 'POST':
+        name = request.POST.get('name', '').strip()
+        slug = request.POST.get('slug', '').strip()
+
+        if not name or not slug:
+            messages.error(request, 'Name and slug are required.')
+            return redirect('main:industry_create')
+
+        if Industry.objects.filter(slug=slug).exists():
+            messages.error(request, 'Slug already exists.')
+            return redirect('main:industry_create')
+
+        if Industry.objects.filter(name__iexact=name).exists():
+            messages.error(request, 'Industry name already exists.')
+            return redirect('main:industry_create')
+
+        Industry.objects.create(name=name, slug=slug)
+        messages.success(request, 'Industry created successfully!')
+        return redirect('main:industry_list')
+
+    return render(request, 'main/industry_form.html')
+
+# industry update_view
+def industry_update_view(request, pk):
+    industry = get_object_or_404(Industry, pk=pk)
+
+    if request.method == 'POST':
+        name = request.POST.get('name')
+        slug = request.POST.get('slug')
+
+        if not name or not slug:
+            messages.error(request, 'Both name and slug are required.')
+            return redirect('main:industry_update', pk=pk)
+
+        if Industry.objects.filter(slug=slug).exclude(pk=pk).exists():
+            messages.error(request, 'An industry with this slug already exists.')
+            return redirect('main:industry_update', pk=pk)
+
+        industry.name = name
+        industry.slug = slug
+        industry.save()
+        messages.success(request, 'Industry updated successfully!')
+        return redirect('main:industry_list')
+
+    return render(request, 'main/industry_form.html', {'industry': industry})
+# industry delete_view 
+def industry_delete_view(request, pk):
+    industry = Industry.objects.filter(id=pk).first()
+
+    if not industry:
+        messages.error(request, 'Industry not found.')
+        return redirect('main:industry_list')
+
+    if request.method == 'POST':
+        industry.delete()
+        messages.success(request, 'Industry deleted successfully!')
+        return redirect('main:industry_list')
+
+    return render(request, 'main/industry_confirm_delete.html', {
+        'industry': industry
+    })
+    
+    
+# job listing views
+def job_list_view(request):
+    jobs = Job.objects.filter(status='published')
+
+    industry = request.GET.get('industry')
+    job_type = request.GET.get('job_type')
+    experience = request.GET.get('experience')
+    location = request.GET.get('location')
+    search = request.GET.get('search')
+
+    if industry:
+        jobs = jobs.filter(industry__slug=industry)
+
+    if job_type:
+        jobs = jobs.filter(job_type=job_type)
+
+    if experience:
+        jobs = jobs.filter(experience_level=experience)
+
+    if location:
+        jobs = jobs.filter(location__icontains=location)
+
+    if search:
+        jobs = jobs.filter(title__icontains=search)
+
+    return render(request, 'main/job_list.html', {
+        'jobs': jobs.order_by('-posted_at')
+    })
+
+# job create view
+def job_create_view(request):
+    industries = Industry.objects.all()
+
+    if request.method == 'POST':
+        title = request.POST.get('title', '').strip()
+        description = request.POST.get('description', '').strip()
+        industry_id = request.POST.get('industry')
+        job_type = request.POST.get('job_type')
+        experience_level = request.POST.get('experience_level')
+        location = request.POST.get('location', '').strip()
+        is_remote = request.POST.get('is_remote') == 'on'
+
+        salary_min = request.POST.get('salary_min')
+        salary_max = request.POST.get('salary_max')
+        currency = request.POST.get('currency', 'RWF')
+        expires_at = request.POST.get('expires_at')
+
+        if not title or not description:
+            messages.error(request, 'Title and description are required.')
+            return redirect('main:job_create')
+
+        industry = Industry.objects.filter(id=industry_id).first()
+        if not industry:
+            messages.error(request, 'Invalid industry selected.')
+            return redirect('main:job_create')
+
+        slug = slugify(title)
+
+        # prevent duplicate slug
+        if Job.objects.filter(slug=slug).exists():
+            slug = f"{slug}-{timezone.now().timestamp()}"
+
+        employer = request.user.employer
+
+        Job.objects.create(
+            title=title,
+            description=description,
+            industry=industry,
+            job_type=job_type,
+            experience_level=experience_level,
+            location=location,
+            is_remote=is_remote,
+            salary_min=salary_min or None,
+            salary_max=salary_max or None,
+            currency=currency,
+            expires_at=expires_at,
+            slug=slug,
+            employer=employer,
+            status='published'
+        )
+
+        messages.success(request, 'Job created successfully!')
+        return redirect('main:job_list')
+
+    return render(request, 'main/job_form.html', {
+        'industries': industries
+    })
+    
+    
+# job detail views 
+def job_detail_view(request, slug):
+    job = Job.objects.filter(slug=slug, status='published').first()
+
+    if not job:
+        messages.error(request, 'Job not found.')
+        return redirect('main:job_list')
+
+    return render(request, 'main/job_detail.html', {
+        'job': job
+    })
+    
+# job update view
+
+def job_update_view(request, pk):
+    job = Job.objects.filter(id=pk, employer=request.user.employer).first()
+
+    if not job:
+        messages.error(request, 'Job not found or unauthorized.')
+        return redirect('main:job_list')
+
+    industries = Industry.objects.all()
+
+    if request.method == 'POST':
+        job.title = request.POST.get('title', '').strip()
+        job.description = request.POST.get('description', '').strip()
+        job.location = request.POST.get('location', '').strip()
+        job.job_type = request.POST.get('job_type')
+        job.experience_level = request.POST.get('experience_level')
+        job.is_remote = request.POST.get('is_remote') == 'on'
+        job.currency = request.POST.get('currency', 'RWF')
+
+        industry_id = request.POST.get('industry')
+        job.industry = Industry.objects.filter(id=industry_id).first()
+
+        job.save()
+
+        messages.success(request, 'Job updated successfully!')
+        return redirect('main:job_detail', slug=job.slug)
+
+    return render(request, 'main/job_form.html', {
+        'job': job,
+        'industries': industries
+    })
+    
+    
+def job_delete_view(request, slug):
+    job = Job.objects.filter(slug=slug, employer=request.user.employer).first()
+
+    if not job:
+        messages.error(request, 'Job not found or unauthorized.')
+        return redirect('main:job_list')
+
+    if request.method == 'POST':
+        job.delete()
+        messages.success(request, 'Job deleted successfully!')
+        return redirect('main:job_list')
+
+    return render(request, 'main/job_confirm_delete.html', {
+        'job': job
+    })

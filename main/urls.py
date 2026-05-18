@@ -141,6 +141,11 @@ urlpatterns = [
     path('legal-services/create/', views.legalServiceCreateView, name='legalservice_create'),
     path("legal-services/<int:pk>/delete/",views.legalServiceDeleteView,name="legal_service_delete"),
     path("legal-services/<int:pk>/update/", views.legalServiceUpdateView, name="legal_service_update"),
+    path("job-listings/", views.job_list_view, name='job_listings'),
+    path("job-listings/<int:pk>/", views.job_detail_view, name='job_detail'),
+    path("job-listings/create/", views.job_create_view, name='job_create'),
+    path("job-listings/<int:pk>/delete/", views.job_delete_view, name='job_delete'),
+    path("job-listings/<int:pk>/update/", views.job_update_view, name='job_update'),
 ]
 
     

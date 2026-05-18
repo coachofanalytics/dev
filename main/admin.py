@@ -35,6 +35,9 @@ admin.site.register(ConsularAssistancePage)
 
 admin.site.register(AppointmentRequest)
 admin.site.register(Doctor)
+admin.site.register(Employer)
+admin.site.register(Job)
+admin.site.register(Industry)
 
 
 

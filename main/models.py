@@ -1532,3 +1532,114 @@ class TestMigrationsIssue(models.Model):
 
     def __str__(self):
         return self.test_field
+    
+
+class Employer(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    company_name = models.CharField(max_length=255)
+    website = models.URLField(blank=True, null=True)
+    logo = models.ImageField(upload_to="employers/", blank=True, null=True)
+
+    
+    created_at = models.DateTimeField(auto_now_add=True)
+    
+    
+class Job(models.Model):
+
+    class JobType(models.TextChoices):
+        FULL_TIME = "full_time", "Full Time"
+        PART_TIME = "part_time", "Part Time"
+        CONTRACT = "contract", "Contract"
+        INTERNSHIP = "internship", "Internship"
+        FREELANCE = "freelance", "Freelance"
+
+    class ExperienceLevel(models.TextChoices):
+        ENTRY = "entry", "Entry Level"
+        MID = "mid", "Mid Level"
+        SENIOR = "senior", "Senior Level"
+        LEAD = "lead", "Lead"
+        EXECUTIVE = "executive", "Executive"
+
+    class Status(models.TextChoices):
+        DRAFT = "draft", "Draft"
+        PUBLISHED = "published", "Published"
+        CLOSED = "closed", "Closed"
+        EXPIRED = "expired", "Expired"
+
+    employer = models.ForeignKey(
+        Employer,
+        on_delete=models.CASCADE,
+        related_name="jobs"
+    )
+
+    title = models.CharField(max_length=255)
+
+    slug = models.SlugField(unique=True)
+
+    description = models.TextField()
+
+    responsibilities = models.TextField(blank=True, null=True)
+
+    requirements = models.TextField(blank=True, null=True)
+
+    benefits = models.TextField(blank=True, null=True)
+
+    industry = models.ForeignKey(
+        "Industry",
+        on_delete=models.SET_NULL,
+        null=True
+    )
+
+    job_type = models.CharField(
+        max_length=20,
+        choices=JobType.choices
+    )
+
+    experience_level = models.CharField(
+        max_length=20,
+        choices=ExperienceLevel.choices
+    )
+
+    location = models.CharField(max_length=255)
+
+    is_remote = models.BooleanField(default=False)
+
+    salary_min = models.DecimalField(
+        max_digits=12,
+        decimal_places=2,
+        null=True,
+        blank=True
+    )
+
+    salary_max = models.DecimalField(
+        max_digits=12,
+        decimal_places=2,
+        null=True,
+        blank=True
+    )
+
+    currency = models.CharField(max_length=10, default="RWF")
+
+    status = models.CharField(
+        max_length=20,
+        choices=Status.choices,
+        default=Status.DRAFT
+    )
+
+    posted_at = models.DateTimeField(auto_now_add=True)
+
+    expires_at = models.DateTimeField()
+
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ["-posted_at"]
+        
+
+
+class Industry(models.Model):
+    name = models.CharField(max_length=100, unique=True)
+    slug = models.SlugField(unique=True)
+
+    def __str__(self):
+        return self.name
