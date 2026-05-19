@@ -16,14 +16,16 @@ import sys
 import uuid
 
 # Change to coda directory
-coda_dir = os.path.join(os.path.dirname(__file__), "..", "coda")
+import os
+
+base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+coda_dir = base_dir
 os.chdir(coda_dir)
-sys.path.insert(0, coda_dir)
 
 import django
 
 os.environ.setdefault(
-    "DJANGO_SETTINGS_MODULE", "coda_project.coda_settings.local_settings"
+     "DJANGO_SETTINGS_MODULE", "coda_project.settings"
 )
 django.setup()
 

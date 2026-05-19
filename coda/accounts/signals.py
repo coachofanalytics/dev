@@ -74,6 +74,39 @@ def add_user_to_group(sender, instance, created, **kwargs):
             new_group.save()
             print(f"User {instance.username} added to new group: {new_group.name}")
 
+@receiver(post_save, sender=CustomerUser)
+def send_user_verification_email(sender, instance, created, **kwargs):
+    """
+    Send verification email when a new user is created.
+    
+    This handler:
+    - Only fires for newly created users (created=True)
+    - Only sends if email is not yet verified and token exists
+    - Calls send_verification_email directly (not via Celery)
+    - Handles failures gracefully without raising exceptions
+    """
+    # Prevent infinite recursion by checking if this is a newly created user
+    if created and not instance.email_verified and instance.verification_token:
+        logger.info(f"Signal handler: Sending verification email to {instance.email}")
+        try:
+            # Import here to avoid circular imports
+            from accounts.utils import send_verification_email
+            
+            # Send email directly - request is None because we're in a signal
+            success = send_verification_email(
+                request=None,
+                user=instance,
+                password=None
+            )
+            
+            if success:
+                logger.info(f"Signal handler: Verification email sent successfully to {instance.email}")
+            else:
+                logger.warning(f"Signal handler: Failed to send verification email to {instance.email}")
+                
+        except Exception as e:
+            logger.error(f"Signal handler: Exception while sending verification email to {instance.email}: {str(e)}", exc_info=True)
+
 
 @receiver(post_save, sender=CustomerUser)
 def create_user_profile(sender, instance, created, **kwargs):
@@ -111,4 +144,6 @@ def send_applicant_email_on_activation(sender, instance, **kwargs):
         print(f"User {instance.email} is a Job Applicant and is active. Sending email.")
         send_email_to_applicant(instance)
     else:
-        print(f"Conditions not met for sending email to {instance.email}")
+        print(f"Conditions not met for sending email to {instance.email}") 
+
+
