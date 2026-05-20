@@ -1,5 +1,19 @@
 from django import forms
-from .models import LegalService, Testimonial, Feedback, Donation_organisation, Donation_organization, ContactMessage, Scholarship
+from .models import (
+    ContractTemplateVersion,
+    ContractTemplate,
+    PackageDefinition,
+    PackageDefinitionDocument,
+    ContractPackage,
+    CandidatePlacement,
+    LegalService,
+    Testimonial,
+    Feedback,
+    Donation_organisation,
+    Donation_organization,
+    ContactMessage,
+    Scholarship,
+)
 from django.utils import timezone
 from .models import AppointmentRequest
 # Feedback / Contact Form
@@ -212,6 +226,134 @@ class ScholarshipForm(forms.ModelForm):
             'deadline':forms.DateInput(attrs={'type':'date'  ,'class':'w-full border rounded-lg p-2'}),
             'status':forms.Select(attrs={'class':'w-full border rounded-lg p-2'}),
         }
+
+
+class SignatureForm(forms.Form):
+    name = forms.CharField(max_length=255, widget=forms.TextInput(attrs={"class": "input"}))
+
+
+class ContractDefinitionForm(forms.Form):
+    name = forms.CharField(max_length=255)
+    slug = forms.SlugField(max_length=255)
+    merge_schema = forms.CharField(widget=forms.Textarea, help_text="JSON")
+    required_documents = forms.ModelMultipleChoiceField(
+        queryset=ContractTemplateVersion.objects.filter(
+            is_published=True
+        ).select_related(
+            "contract_template"
+        ).order_by("contract_template__name", "version"),
+    )
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields["required_documents"].label_from_instance = (
+            lambda obj: f"{obj.contract_template.name} v{obj.version}"
+        )
+        for field in self.fields.values():
+            field.widget.attrs.setdefault("class", "input")
+
+    def clean_merge_schema(self):
+        import json
+
+        raw_value = self.cleaned_data["merge_schema"]
+        try:
+            parsed = json.loads(raw_value)
+        except json.JSONDecodeError as exc:
+            raise forms.ValidationError("Invalid JSON.") from exc
+
+        required_fields = parsed.get("required_fields")
+        if not isinstance(required_fields, list):
+            raise forms.ValidationError(
+                "merge_schema must contain a required_fields list."
+            )
+
+        return parsed
+
+
+class CandidatePlacementForm(forms.ModelForm):
+    class Meta:
+        model = CandidatePlacement
+        fields = [
+            "candidate",
+            "candidate_email",
+            "employer",
+            "salary",
+            "placement_fee",
+            "start_date",
+            "package_definition",
+        ]
+        widgets = {
+            "candidate": forms.TextInput(attrs={"class": "input"}),
+            "candidate_email": forms.EmailInput(attrs={"class": "input"}),
+            "employer": forms.TextInput(attrs={"class": "input"}),
+            "salary": forms.NumberInput(attrs={"class": "input"}),
+            "placement_fee": forms.NumberInput(attrs={"class": "input"}),
+            "start_date": forms.DateInput(attrs={"class": "input", "type": "date"}),
+            "package_definition": forms.Select(attrs={"class": "input"}),
+        }
+
+
+class ContractTemplateForm(forms.ModelForm):
+    class Meta:
+        model = ContractTemplate
+        fields = ["name", "slug"]
+        widgets = {
+            "name": forms.TextInput(attrs={"class": "input"}),
+            "slug": forms.TextInput(attrs={"class": "input"}),
+        }
+
+
+class ContractTemplateVersionForm(forms.ModelForm):
+    class Meta:
+        model = ContractTemplateVersion
+        fields = [
+            "contract_template",
+            "version",
+            "template_body",
+            "is_published",
+        ]
+        widgets = {
+            "contract_template": forms.Select(attrs={"class": "input"}),
+            "version": forms.NumberInput(attrs={"class": "input"}),
+            "template_body": forms.Textarea(attrs={"class": "input", "rows": 6}),
+        }
+
+
+class PackageDefinitionDocumentForm(forms.ModelForm):
+    class Meta:
+        model = PackageDefinitionDocument
+        fields = [
+            "package_definition",
+            "contract_template_version",
+            "order",
+        ]
+        widgets = {
+            "package_definition": forms.Select(attrs={"class": "input"}),
+            "contract_template_version": forms.Select(attrs={"class": "input"}),
+            "order": forms.NumberInput(attrs={"class": "input"}),
+        }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields["order"].required = False
+        self.fields["contract_template_version"].queryset = (
+            ContractTemplateVersion.objects.filter(is_published=True)
+            .select_related("contract_template")
+            .order_by("contract_template__name", "version")
+        )
+        self.fields["contract_template_version"].label_from_instance = (
+            lambda obj: f"{obj.contract_template.name} v{obj.version}"
+        )
+
+
+class ContractSearchForm(forms.Form):
+    candidate = forms.CharField(required=False, widget=forms.TextInput(attrs={"class": "input"}))
+    package_id = forms.IntegerField(required=False, widget=forms.NumberInput(attrs={"class": "input"}))
+    status = forms.ChoiceField(
+        required=False,
+        choices=[("", "Any status")] + list(ContractPackage.State.choices),
+        widget=forms.Select(attrs={"class": "input"}),
+    )
 
 
 

@@ -1,0 +1,91 @@
+{% extends "cop/base.html" %}
+
+{% block title %}Contract Search{% endblock %}
+
+{% block content %}
+<title>Contract Package</title>
+    <style>
+        body {
+            font-family: Arial;
+            margin: 40px;
+        }
+
+        .section {
+            margin-bottom: 30px;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 15px;
+            backdrop-filter: blur(20px);
+            background-color: rgba(0, 0, 0, 0.253);
+            
+        }
+
+        .section-header {
+            margin-bottom: 30px;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 15px;
+            backdrop-filter: blur(20px);
+            background-color: rgba(0, 0, 0, 0.253);
+            
+        }
+        .doc {
+            margin-bottom: 20px;
+            padding: 10px;
+            border: 1px solid #eee;
+        }
+
+        iframe {
+            width: 100%;
+            height: 500px;
+            border: none;
+        }
+    </style>
+<h1>Contract Package</h1>
+
+    <div class="section-header">
+        <h2>State</h2>
+        <p>{{ state }}</p>
+    </div>
+
+    <div class="section">
+        <h2>Documents</h2>
+        {% for doc in documents %}
+            <div class="doc">
+                <h4>Document #{{ doc.id }}</h4>
+                {{ doc.html_snapshot|safe }}
+            </div>
+        {% empty %}
+            <p>No documents found.</p>
+        {% endfor %}
+    </div>
+
+    <div class="section">
+        <h2>Signatures</h2>
+        {% for sig in signatures %}
+            <p>
+                <strong>{{ sig.signer }}</strong>
+                signed document {{ sig.document_id }}
+                at {{ sig.signed_at }}
+                via {{ sig.method }}
+            </p>
+        {% empty %}
+            <p>No signatures yet.</p>
+        {% endfor %}
+    </div>
+
+    <div class="section">
+        <h2>Events</h2>
+        {% for event in events %}
+            <p>
+                <strong>{{ event.event_type }}</strong> —
+                {{ event.actor }} —
+                {{ event.created_at }}
+            </p>
+        {% empty %}
+            <p>No events.</p>
+        {% endfor %}
+    </div>
+
+
+{% endblock %}

@@ -1,0 +1,193 @@
+{% extends "cop/base.html" %}
+
+{% block title %}Template Management{% endblock %}
+
+{% block content %}
+  <section class="hero">
+    <span class="pill">Template management</span>
+    <h1>Define packages and publish templates</h1>
+    <p>Create templates, publish versions, and attach them to package definitions.</p>
+  </section>
+
+  <section class="grid cols-2">
+    <div class="grid">
+      <div class="card">
+        <h2>Create template</h2>
+        {% if template_form.errors %}
+          <div class="item" style="border-color: var(--accent);">
+            <strong>Fix the highlighted fields.</strong>
+            {{ template_form.errors }}
+          </div>
+        {% endif %}
+        <form method="post" class="form-grid">
+          {% csrf_token %}
+          <input type="hidden" name="action" value="create_template" />
+          <div>
+            <label for="{{ template_form.name.id_for_label }}">Template name</label>
+            {{ template_form.name }}
+          </div>
+          <div>
+            <label for="{{ template_form.slug.id_for_label }}">Slug</label>
+            {{ template_form.slug }}
+          </div>
+          <button class="button" type="submit">Create template</button>
+        </form>
+      </div>
+
+      <div class="card">
+        <h2>Publish template version</h2>
+        {% if version_form.errors %}
+          <div class="item" style="border-color: var(--accent);">
+            <strong>Fix the highlighted fields.</strong>
+            {{ version_form.errors }}
+          </div>
+        {% endif %}
+        <form method="post" class="form-grid">
+          {% csrf_token %}
+          <input type="hidden" name="action" value="create_version" />
+          <div>
+            <label for="{{ version_form.contract_template.id_for_label }}">Template</label>
+            {{ version_form.contract_template }}
+          </div>
+          <div class="split">
+            <div>
+              <label for="{{ version_form.version.id_for_label }}">Version</label>
+              {{ version_form.version }}
+            </div>
+            <div>
+              <label for="{{ version_form.is_published.id_for_label }}">Published</label>
+              {{ version_form.is_published }}
+            </div>
+          </div>
+          <div>
+            <label for="{{ version_form.template_body.id_for_label }}">Template body</label>
+            {{ version_form.template_body }}
+          </div>
+          <button class="button" type="submit">Save version</button>
+        </form>
+      </div>
+
+      <div class="card">
+        <h2>Create package definition</h2>
+        {% if definition_form.errors %}
+          <div class="item" style="border-color: var(--accent);">
+            <strong>Fix the highlighted fields.</strong>
+            {{ definition_form.errors }}
+          </div>
+        {% endif %}
+        <form method="post" class="form-grid">
+          {% csrf_token %}
+          <input type="hidden" name="action" value="create_definition" />
+          <div>
+            <label for="{{ definition_form.name.id_for_label }}">Definition name</label>
+            {{ definition_form.name }}
+          </div>
+          <div>
+            <label for="{{ definition_form.slug.id_for_label }}">Slug</label>
+            {{ definition_form.slug }}
+          </div>
+          <div>
+            <label for="{{ definition_form.merge_schema.id_for_label }}">Merge schema</label>
+            {{ definition_form.merge_schema }}
+          </div>
+          <div>
+            <label for="{{ definition_form.required_documents.id_for_label }}">Published documents</label>
+            {{ definition_form.required_documents }}
+          </div>
+          <button class="button" type="submit">Create definition</button>
+        </form>
+      </div>
+
+      <div class="card">
+        <h2>Add definition document</h2>
+        {% if document_form.errors %}
+          <div class="item" style="border-color: var(--accent);">
+            <strong>Fix the highlighted fields.</strong>
+            {{ document_form.errors }}
+          </div>
+        {% endif %}
+        <form method="post" class="form-grid">
+          {% csrf_token %}
+          <input type="hidden" name="action" value="add_definition_document" />
+          <div>
+            <label for="{{ document_form.package_definition.id_for_label }}">Package definition</label>
+            {{ document_form.package_definition }}
+          </div>
+          <div>
+            <label for="{{ document_form.contract_template_version.id_for_label }}">Template version</label>
+            {{ document_form.contract_template_version }}
+          </div>
+          <div>
+            <label for="{{ document_form.order.id_for_label }}">Order (optional)</label>
+            {{ document_form.order }}
+            <div class="helper">Leave blank to append to the end.</div>
+          </div>
+          <button class="button secondary" type="submit">Add document</button>
+        </form>
+      </div>
+    </div>
+
+    <div class="grid">
+      <div class="card">
+        <h2>Templates</h2>
+        <div class="list">
+          {% for template in templates %}
+            <div class="item">
+              <strong>{{ template.name }}</strong>
+              <p class="muted" style="margin: 6px 0 0;">Slug: {{ template.slug }}</p>
+              <div class="list" style="margin-top: 10px;">
+                {% for version in template.versions.all %}
+                  <div class="row">
+                    <span>v{{ version.version }}</span>
+                    {% if version.is_published %}
+                      <span class="badge" data-state="GENERATED">Published</span>
+                    {% else %}
+                      <span class="badge">Draft</span>
+                    {% endif %}
+                  </div>
+                {% empty %}
+                  <p class="muted">No versions yet.</p>
+                {% endfor %}
+              </div>
+            </div>
+          {% empty %}
+            <p class="muted">No templates created.</p>
+          {% endfor %}
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>Package definitions</h2>
+        <div class="list">
+          {% for definition in definitions %}
+            <div class="item">
+              <strong>{{ definition.name }}</strong>
+              <p class="muted" style="margin: 6px 0 0;">Slug: {{ definition.slug }}</p>
+              <div class="list" style="margin-top: 10px;">
+                {% for doc in definition.documents.all %}
+                  <div class="row">
+                    <span>
+                      {{ doc.contract_template_version.contract_template.name }}
+                      v{{ doc.contract_template_version.version }}
+                      (Order {{ doc.order }})
+                    </span>
+                    <form method="post">
+                      {% csrf_token %}
+                      <input type="hidden" name="action" value="remove_definition_document" />
+                      <input type="hidden" name="document_id" value="{{ doc.id }}" />
+                      <button class="button ghost" type="submit">Remove</button>
+                    </form>
+                  </div>
+                {% empty %}
+                  <p class="muted">No documents attached.</p>
+                {% endfor %}
+              </div>
+            </div>
+          {% empty %}
+            <p class="muted">No package definitions created.</p>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+  </section>
+{% endblock %}

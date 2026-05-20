@@ -1,0 +1,25 @@
+{% extends "cop/base.html" %}
+
+{% block title %}Contract Signing{% endblock %}
+
+{% block content %}
+  <section class="hero">
+    <span class="pill">Signature required</span>
+    <h1>Review and sign the contract</h1>
+    <p>Confirm your full name to record the signature and timestamp.</p>
+  </section>
+
+  <div class="card" style="max-width: 520px;">
+    {% if placement %}
+      <p class="muted" style="margin-top: 0;">Candidate: {{ placement.candidate }} | {{ placement.employer }}</p>
+    {% endif %}
+    <form method="post" class="form-grid">
+      {% csrf_token %}
+      <div>
+        <label for="{{ form.name.id_for_label }}">Full name</label>
+        {{ form.name }}
+      </div>
+      <button class="button" type="submit">Sign contract</button>
+    </form>
+  </div>
+{% endblock %}

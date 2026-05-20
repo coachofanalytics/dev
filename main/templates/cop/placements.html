@@ -1,0 +1,90 @@
+{% extends "cop/base.html" %}
+
+{% block title %}Create Placement{% endblock %}
+
+{% block content %}
+  <section class="hero">
+    <span class="pill">Placement intake</span>
+    <h1>Capture candidate details</h1>
+    <p>Log a placement, choose the contract package, and generate documents when ready.</p>
+  </section>
+
+  <div class="grid cols-2">
+    <div class="card">
+      <h2>New placement</h2>
+      {% if form.errors %}
+        <div class="item" style="border-color: var(--accent);">
+          <strong>Fix the highlighted fields.</strong>
+          {{ form.errors }}
+        </div>
+      {% endif %}
+      <form method="post" class="form-grid">
+        {% csrf_token %}
+        <div>
+          <label for="{{ form.candidate.id_for_label }}">Candidate name</label>
+          {{ form.candidate }}
+        </div>
+        <div>
+          <label for="{{ form.candidate_email.id_for_label }}">Candidate email</label>
+          {{ form.candidate_email }}
+        </div>
+        <div>
+          <label for="{{ form.employer.id_for_label }}">Employer</label>
+          {{ form.employer }}
+        </div>
+        <div class="split">
+          <div>
+            <label for="{{ form.salary.id_for_label }}">Salary</label>
+            {{ form.salary }}
+          </div>
+          <div>
+            <label for="{{ form.placement_fee.id_for_label }}">Placement fee</label>
+            {{ form.placement_fee }}
+          </div>
+        </div>
+        <div class="split">
+          <div>
+            <label for="{{ form.start_date.id_for_label }}">Start date</label>
+            {{ form.start_date }}
+          </div>
+          <div>
+            <label for="{{ form.package_definition.id_for_label }}">Contract package</label>
+            {{ form.package_definition }}
+          </div>
+        </div>
+        <button class="button" type="submit">Create placement</button>
+        <p class="helper">Need more packages? Add them from the Templates page.</p>
+      </form>
+    </div>
+
+    <div class="card">
+      <h2>Recent placements</h2>
+      <div class="list">
+        {% for placement in placements %}
+          <div class="item">
+            <div class="row">
+              <div>
+                <strong>{{ placement.candidate }}</strong>
+                <p class="muted" style="margin: 6px 0 0;">{{ placement.employer }} | {{ placement.start_date }}</p>
+                {% if placement.package_definition %}
+                  <span class="pill">{{ placement.package_definition.name }}</span>
+                {% endif %}
+              </div>
+              <div style="display:flex; gap:10px; flex-wrap:wrap;">
+                <form method="post" action="/cop/placements/{{ placement.id }}/generate/">
+                  {% csrf_token %}
+                  <button class="button" type="submit">Generate</button>
+                </form>
+                {% if placement.contract_package_id %}
+                  <a class="button ghost" href="/cop/?package_id={{ placement.contract_package_id }}">Inspect</a>
+                {% endif %}
+              </div>
+            </div>
+          </div>
+        {% empty %}
+          <p class="muted">No placements yet.</p>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+{% endblock %}

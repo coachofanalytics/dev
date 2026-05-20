@@ -1624,6 +1624,7 @@ class LegalService(models.Model):
         return self.title
 
 #COP systems models
+#==========================================
 
 class ContractTemplate(models.Model):
     name = models.CharField(max_length=255)
@@ -1643,7 +1644,6 @@ class ContractTemplateVersion(models.Model):
     )
     version = models.PositiveIntegerField()
     template_body = models.TextField()
-    merge_schema = models.JSONField()
     is_published = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
 
@@ -1651,6 +1651,7 @@ class ContractTemplateVersion(models.Model):
 class PackageDefinition(models.Model):
     name = models.CharField(max_length=255)
     slug = models.SlugField()
+    merge_schema = models.JSONField(default=dict)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -1661,8 +1662,8 @@ class PackageDefinitionDocument(models.Model):
         related_name="documents",
         on_delete=models.CASCADE,
     )
-    contract_template = models.ForeignKey(
-        ContractTemplate,
+    contract_template_version = models.ForeignKey(
+        ContractTemplateVersion,
         on_delete=models.CASCADE,
     )
     order = models.PositiveIntegerField()
@@ -1738,10 +1739,17 @@ class ContractAttachment(models.Model):
 
 class CandidatePlacement(models.Model):
     candidate = models.CharField(max_length=255)
+    candidate_email = models.EmailField(blank=True, null=True)
     employer = models.CharField(max_length=255)
     salary = models.DecimalField(max_digits=12, decimal_places=2)
     placement_fee = models.DecimalField(max_digits=12, decimal_places=2)
     start_date = models.DateField()
+    package_definition = models.ForeignKey(
+        PackageDefinition,
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+    )
     contract_package = models.ForeignKey(
         ContractPackage,
         null=True,

@@ -1,0 +1,66 @@
+{% extends "cop/base.html" %}
+
+{% block title %}Contract Search{% endblock %}
+
+{% block content %}
+  <section class="hero">
+    <span class="pill">Contract search</span>
+    <h1>Find packages fast</h1>
+    <p>Search by candidate name, package ID, or lifecycle status.</p>
+  </section>
+
+  <div class="card" style="margin-bottom: 20px;">
+    <form method="get" class="form-grid">
+      <div class="split">
+        <div>
+          <label for="{{ form.candidate.id_for_label }}">Candidate</label>
+          {{ form.candidate }}
+        </div>
+        <div>
+          <label for="{{ form.package_id.id_for_label }}">Package ID</label>
+          {{ form.package_id }}
+        </div>
+      </div>
+      <div class="split">
+        <div>
+          <label for="{{ form.status.id_for_label }}">Status</label>
+          {{ form.status }}
+        </div>
+      </div>
+      <button class="button" type="submit">Search</button>
+    </form>
+  </div>
+
+  <div class="card">
+    <div class="row" style="margin-bottom: 12px;">
+      <h2 style="margin: 0;">Results</h2>
+      <span class="pill">{{ result_count }} package{{ result_count|pluralize }}</span>
+    </div>
+    <div class="list">
+      {% for row in package_rows %}
+        <div class="item">
+          <div class="row">
+            <div>
+              <strong>Package #{{ row.package.id }}</strong>
+              {% if row.placement %}
+                <p class="muted" style="margin: 6px 0 0;">{{ row.placement.candidate }} | {{ row.placement.employer }}</p>
+              {% endif %}
+            </div>
+            <div style="display:flex; gap:10px; flex-wrap:wrap; align-items:center;">
+              <span class="badge" data-state="{{ row.package.state }}">{{ row.package.state }}</span>
+              <a class="button ghost" href="/cop/?package_id={{ row.package.id }}">Inspect</a>
+              {% if row.package.state == "GENERATED" %}
+                <form method="post" action="/cop/packages/{{ row.package.id }}/send/">
+                  {% csrf_token %}
+                  <button class="button" type="submit">Send</button>
+                </form>
+              {% endif %}
+            </div>
+          </div>
+        </div>
+      {% empty %}
+        <p class="muted">No packages found.</p>
+      {% endfor %}
+    </div>
+  </div>
+{% endblock %}

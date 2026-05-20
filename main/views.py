@@ -16,10 +16,11 @@ from django.views.generic import (
     DetailView,
     DeleteView,
 )
+from .services.contract_origination.render_service import render_html
 #<<<<<<< 25.10_DC48_UAT_UO
 from .models import Assets,Description, LegalService, News, Page, Service, SubService,Team, SafetyAlertSubscription, EmergencyHotline, StaffContact, InsurancePlan, AIRecommendationRule, ExpertInquiry, ConsularAssistancePage, NewsArticle, Category, Subscriber
 #=======
-from django.db.models import Q
+from django.db.models import Q, Count, Max
 #<<<<<<< HEAD
 from .models import Scholarship, Donation_organisation, ContactMessage, Testimonial
 #>>>>>>> origin/25.11_DC48K_UAT_FN
@@ -37,11 +38,31 @@ from django.contrib.auth import get_user_model
 #<<<<<<< 25.10_DC48_UAT_UO
 from django.views.decorators.http import require_POST
 from django.http import JsonResponse, HttpResponse
+from django.middleware.csrf import get_token
 from django.core.mail import send_mail
 from django.utils.html import strip_tags
 from django.utils import timezone
 from django.views.decorators.http import require_http_methods
 from django.contrib.auth import get_user_model
+
+from main.models import (
+    CandidatePlacement,
+    ContractDocument,
+    ContractEvent,
+    ContractPackage,
+    ContractSignature,
+    ContractTemplate,
+    PackageDefinition,
+    PackageDefinitionDocument,
+)
+from main.services.contract_origination import origination as origination_service
+from main.services.contract_origination import signature_service
+from main.services.contract_origination.exceptions import (
+    ContractOriginationError,
+    InvalidTransitionError,
+    SignatureVerificationError,
+    TokenVerificationError,
+)
 
 # Models imports
 from .models import (
@@ -54,7 +75,23 @@ from .models import (
 )
 from accounts.models import CustomerUser
 from .utils import image_view, path_values
-from .forms import ContactForm, DonorForm, MessageForm, ScholarshipSearchForm, GovernanceForm, ArticleForm, ScholarshipForm,TrainingCourseForm
+from .forms import (
+    ContactForm,
+    DonorForm,
+    MessageForm,
+    ScholarshipSearchForm,
+    GovernanceForm,
+    ArticleForm,
+    ScholarshipForm,
+    TrainingCourseForm,
+    SignatureForm,
+    ContractDefinitionForm,
+    CandidatePlacementForm,
+    ContractTemplateForm,
+    ContractTemplateVersionForm,
+    PackageDefinitionDocumentForm,
+    ContractSearchForm,
+)
 
 import csv
 import feedparser
@@ -2695,3 +2732,496 @@ def legalServiceUpdateView(request, pk):
     }
 
     return render(request, "main/legal_service_update.html", context)
+
+
+def _json_error(message, status=400):
+    return JsonResponse({"error": message}, status=status)
+
+#COP system
+#==========
+@require_POST
+def originate_placement(request, placement_id):
+    try:
+        contract_package = origination_service.create_from_placement(
+            placement_id,
+            actor="system",
+        )
+    except CandidatePlacement.DoesNotExist:
+        return _json_error("Placement not found.", status=404)
+    except ContractOriginationError as exc:
+        return _json_error(str(exc), status=400)
+
+    return JsonResponse({
+        "package_id": contract_package.id,
+        "state": contract_package.state,
+    })
+
+
+@require_POST
+def send_contract_package(request, package_id):
+    contract_package = get_object_or_404(ContractPackage, id=package_id)
+    try:
+        signature_service.mark_package_sent(contract_package, actor="system")
+    except InvalidTransitionError as exc:
+        return _json_error(str(exc), status=409)
+
+    return JsonResponse({
+        "package_id": contract_package.id,
+        "state": contract_package.state,
+    })
+
+
+@require_http_methods(["GET", "POST"])
+def contract_sign(request, token):
+    if request.method == "GET":
+        try:
+            document = signature_service.verify_signing_token(token)
+        except TokenVerificationError as exc:
+            return HttpResponse(str(exc), status=400)
+
+        csrf_token = get_token(request)
+        html = (
+            "<!doctype html>"
+            "<html><head><title>Sign Contract</title></head><body>"
+            "<div>"
+            + document.html_snapshot
+            + "</div>"
+            "<form method=\"post\">"
+            f"<input type=\"hidden\" name=\"csrfmiddlewaretoken\" value=\"{csrf_token}\">"
+            "<label>Full name</label>"
+            "<input type=\"text\" name=\"name\" required>"
+            "<button type=\"submit\">Sign</button>"
+            "</form>"
+            "</body></html>"
+        )
+        return HttpResponse(html)
+
+    signer_name = request.POST.get("name", "").strip()
+    if not signer_name:
+        return HttpResponse("Signer name is required.", status=400)
+
+    ip_address = request.META.get("REMOTE_ADDR") or "0.0.0.0"
+    try:
+        signature_service.sign_document(
+            token=token,
+            signer_name=signer_name,
+            ip_address=ip_address,
+            method="WEB",
+        )
+    except TokenVerificationError as exc:
+        return HttpResponse(str(exc), status=400)
+    except SignatureVerificationError as exc:
+        return HttpResponse(str(exc), status=400)
+    except InvalidTransitionError as exc:
+        return HttpResponse(str(exc), status=409)
+
+    success_html = (
+        "<!doctype html>"
+        "<html><head><title>Signed</title></head><body>"
+        "<p>Signature recorded successfully.</p>"
+        "</body></html>"
+    )
+    return HttpResponse(success_html)
+
+
+@require_http_methods(["GET"])
+def contract_package_detail(request, package_id):
+    contract_package = get_object_or_404(
+        ContractPackage.objects.prefetch_related("documents__signatures", "events"),
+        id=package_id,
+    )
+
+    documents = [
+        {
+            "id": document.id,
+            "html_snapshot": document.html_snapshot,
+        }
+        for document in contract_package.documents.all()
+    ]
+
+    signatures = [
+        {
+            "document_id": signature.contract_document_id,
+            "signer": signature.signer,
+            "artifact": signature.artifact,
+            "signed_at": signature.signed_at.isoformat(),
+            "ip_address": signature.ip_address,
+            "method": signature.method,
+        }
+        for signature in ContractSignature.objects.filter(
+            contract_document__contract_package=contract_package
+        )
+    ]
+
+    events = [
+        {
+            "event_type": event.event_type,
+            "actor": event.actor,
+            "payload": event.payload,
+            "created_at": event.created_at.isoformat(),
+        }
+        for event in ContractEvent.objects.filter(
+            contract_package=contract_package
+        ).order_by("created_at", "id")
+    ]
+
+    return JsonResponse({
+        "state": contract_package.state,
+        "documents": documents,
+        "signatures": signatures,
+        "events": events,
+    })
+
+
+def cop_dashboard(request):
+    if request.method == "POST":
+        definition_form = ContractDefinitionForm(request.POST)
+        if definition_form.is_valid():
+            package_definition = PackageDefinition.objects.create(
+                name=definition_form.cleaned_data["name"],
+                slug=definition_form.cleaned_data["slug"],
+                merge_schema=definition_form.cleaned_data["merge_schema"],
+            )
+            versions = sorted(
+                definition_form.cleaned_data["required_documents"],
+                key=lambda item: item.id,
+            )
+            for index, version in enumerate(versions, start=1):
+                PackageDefinitionDocument.objects.create(
+                    package_definition=package_definition,
+                    contract_template_version=version,
+                    order=index,
+                )
+            return redirect("/cop/")
+    else:
+        definition_form = ContractDefinitionForm()
+
+    placements = CandidatePlacement.objects.select_related(
+        "package_definition",
+        "contract_package",
+    ).order_by("-id")
+    packages = ContractPackage.objects.all().order_by("-id")
+    state_counts = {state: 0 for state, _ in ContractPackage.State.choices}
+    for row in ContractPackage.objects.values("state").annotate(total=Count("id")):
+        state_counts[row["state"]] = row["total"]
+    placement_map = {
+        placement.contract_package_id: placement
+        for placement in CandidatePlacement.objects.filter(
+            contract_package__isnull=False
+        )
+    }
+    package_rows = [
+        {
+            "package": package,
+            "placement": placement_map.get(package.id),
+        }
+        for package in packages
+    ]
+
+    selected_package = None
+    selected_documents = []
+    selected_events = []
+    selected_id = request.GET.get("package_id")
+    if selected_id:
+        selected_package = get_object_or_404(ContractPackage, id=selected_id)
+        selected_documents = selected_package.documents.select_related(
+            "contract_template_version"
+        )
+        selected_events = ContractEvent.objects.filter(
+            contract_package=selected_package
+        ).order_by("created_at", "id")
+
+    return render(
+        request,
+        "cop/dashboard.html",
+        {
+            "definition_form": definition_form,
+            "placements": placements,
+            "package_rows": package_rows,
+            "selected_package": selected_package,
+            "selected_documents": selected_documents,
+            "selected_events": selected_events,
+            "package_stats": state_counts,
+            "last_refresh": timezone.now(),
+        },
+    )
+
+
+@require_http_methods(["GET", "POST"])
+def cop_placements(request):
+    if request.method == "POST":
+        form = CandidatePlacementForm(request.POST)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Placement created.")
+            return redirect("main:cop_placements")
+    else:
+        form = CandidatePlacementForm()
+
+    placements = CandidatePlacement.objects.select_related(
+        "package_definition",
+        "contract_package",
+    ).order_by("-id")
+
+    return render(
+        request,
+        "cop/placements.html",
+        {
+            "form": form,
+            "placements": placements,
+        },
+    )
+
+
+@require_http_methods(["GET", "POST"])
+def cop_templates(request):
+    template_form = ContractTemplateForm(prefix="template")
+    version_form = ContractTemplateVersionForm(prefix="version")
+    definition_form = ContractDefinitionForm(prefix="definition")
+    document_form = PackageDefinitionDocumentForm(prefix="document")
+
+    if request.method == "POST":
+        action = request.POST.get("action")
+        if action == "create_template":
+            template_form = ContractTemplateForm(request.POST, prefix="template")
+            if template_form.is_valid():
+                template_form.save()
+                messages.success(request, "Template created.")
+                return redirect("main:cop_templates")
+        elif action == "create_version":
+            version_form = ContractTemplateVersionForm(request.POST, prefix="version")
+            if version_form.is_valid():
+                version_form.save()
+                messages.success(request, "Template version created.")
+                return redirect("main:cop_templates")
+        elif action == "create_definition":
+            definition_form = ContractDefinitionForm(request.POST, prefix="definition")
+            if definition_form.is_valid():
+                package_definition = PackageDefinition.objects.create(
+                    name=definition_form.cleaned_data["name"],
+                    slug=definition_form.cleaned_data["slug"],
+                    merge_schema=definition_form.cleaned_data["merge_schema"],
+                )
+                versions = sorted(
+                    definition_form.cleaned_data["required_documents"],
+                    key=lambda item: item.id,
+                )
+                for index, version in enumerate(versions, start=1):
+                    PackageDefinitionDocument.objects.create(
+                        package_definition=package_definition,
+                        contract_template_version=version,
+                        order=index,
+                    )
+                messages.success(request, "Package definition created.")
+                return redirect("main:cop_templates")
+        elif action == "add_definition_document":
+            document_form = PackageDefinitionDocumentForm(
+                request.POST,
+                prefix="document",
+            )
+            if document_form.is_valid():
+                document = document_form.save(commit=False)
+                if not document.order:
+                    last_order = (
+                        PackageDefinitionDocument.objects.filter(
+                            package_definition=document.package_definition
+                        ).aggregate(Max("order"))["order__max"]
+                        or 0
+                    )
+                    document.order = last_order + 1
+                document.save()
+                messages.success(request, "Definition document added.")
+                return redirect("main:cop_templates")
+        elif action == "remove_definition_document":
+            document_id = request.POST.get("document_id")
+            if document_id:
+                PackageDefinitionDocument.objects.filter(id=document_id).delete()
+                messages.success(request, "Definition document removed.")
+                return redirect("main:cop_templates")
+
+    templates = ContractTemplate.objects.prefetch_related("versions").order_by("name")
+    definitions = PackageDefinition.objects.prefetch_related(
+        "documents__contract_template_version__contract_template"
+    ).order_by("name")
+
+    return render(
+        request,
+        "cop/templates.html",
+        {
+            "template_form": template_form,
+            "version_form": version_form,
+            "definition_form": definition_form,
+            "document_form": document_form,
+            "templates": templates,
+            "definitions": definitions,
+        },
+    )
+
+
+@require_http_methods(["GET"])
+def cop_contracts(request):
+    form = ContractSearchForm(request.GET or None)
+    packages = ContractPackage.objects.all().order_by("-id")
+
+    if form.is_valid():
+        candidate = form.cleaned_data.get("candidate")
+        package_id = form.cleaned_data.get("package_id")
+        status = form.cleaned_data.get("status")
+
+        if candidate:
+            matching_ids = CandidatePlacement.objects.filter(
+                candidate__icontains=candidate,
+                contract_package__isnull=False,
+            ).values_list("contract_package_id", flat=True)
+            packages = packages.filter(id__in=matching_ids)
+
+        if package_id:
+            packages = packages.filter(id=package_id)
+
+        if status:
+            packages = packages.filter(state=status)
+
+    placement_map = {
+        placement.contract_package_id: placement
+        for placement in CandidatePlacement.objects.filter(
+            contract_package__isnull=False
+        )
+    }
+    package_rows = [
+        {
+            "package": package,
+            "placement": placement_map.get(package.id),
+        }
+        for package in packages
+    ]
+
+    return render(
+        request,
+        "cop/contracts.html",
+        {
+            "form": form,
+            "package_rows": package_rows,
+            "result_count": packages.count(),
+        },
+    )
+
+
+@require_POST
+def generate_package_view(request, placement_id):
+    try:
+        contract_package = origination_service.create_from_placement(
+            placement_id,
+            actor="system",
+        )
+    except CandidatePlacement.DoesNotExist:
+        return HttpResponse("Placement not found.", status=404)
+    except ContractOriginationError as exc:
+        return HttpResponse(str(exc), status=400)
+
+    return redirect(f"/cop/packages/{contract_package.id}/")
+
+
+@require_POST
+def send_package_view(request, package_id):
+    contract_package = get_object_or_404(ContractPackage, id=package_id)
+    if contract_package.state != ContractPackage.State.GENERATED:
+        return HttpResponse(
+            f"Invalid transition: {contract_package.state} -> SENT",
+            status=409,
+        )
+
+    placement = CandidatePlacement.objects.filter(
+        contract_package=contract_package
+    ).first()
+    if not placement or not placement.candidate_email:
+        return HttpResponse("Candidate email not available.", status=400)
+
+    token = signature_service.generate_package_signing_token(contract_package)
+    signing_url = request.build_absolute_uri(f"/cop/sign/{token}/")
+    print(signing_url) #Email sending not configured so we are using logs for now
+
+    try:
+        send_mail(
+            subject="Contract Signing Link",
+            message=(
+                "Please sign your contract using the link below:\n\n"
+                f"{signing_url}"
+            ),
+            from_email=settings.DEFAULT_FROM_EMAIL,
+            recipient_list=[placement.candidate_email],
+        )
+    except Exception as exc:
+        return HttpResponse(str(exc), status=500)
+
+    try:
+        signature_service.mark_package_sent(contract_package, actor="system")
+    except InvalidTransitionError as exc:
+        return HttpResponse(str(exc), status=409)
+
+    return redirect(f"/cop/?package_id={contract_package.id}")
+
+
+def sign_get_view(request, token):
+    try:
+        contract_package = signature_service.verify_package_signing_token(token)
+    except TokenVerificationError as exc:
+        return HttpResponse(str(exc), status=400)
+
+    placement = CandidatePlacement.objects.filter(
+        contract_package=contract_package
+    ).first()
+    form = SignatureForm()
+    return render(
+        request,
+        "cop/sign.html",
+        {"form": form, "token": token, "placement": placement},
+    )
+
+
+def sign_post_view(request, token):
+    form = SignatureForm(request.POST)
+    if not form.is_valid():
+        try:
+            contract_package = signature_service.verify_package_signing_token(token)
+        except TokenVerificationError as exc:
+            return HttpResponse(str(exc), status=400)
+        placement = CandidatePlacement.objects.filter(
+            contract_package=contract_package
+        ).first()
+        return render(
+            request,
+            "cop/sign.html",
+            {"form": form, "token": token, "placement": placement},
+        )
+
+    try:
+        contract_package = signature_service.verify_package_signing_token(token)
+        signature_service.sign_package(
+            token=token,
+            signer_name=form.cleaned_data["name"],
+            ip_address=request.META.get("REMOTE_ADDR") or "0.0.0.0",
+            method="WEB",
+        )
+    except TokenVerificationError as exc:
+        return HttpResponse(str(exc), status=400)
+    except SignatureVerificationError as exc:
+        return HttpResponse(str(exc), status=400)
+    except InvalidTransitionError as exc:
+        return HttpResponse(str(exc), status=409)
+
+    return redirect(f"/cop/?package_id={contract_package.id}")
+
+
+@require_http_methods(["GET", "POST"])  
+def sign_view(request, token):
+    if request.method == "POST":
+        return sign_post_view(request, token)
+    return sign_get_view(request, token)
+
+def renderContract(request, id):
+    placement = CandidatePlacement.objects.get(id=id)
+    contract_package = placement.contract_package
+    response = contract_package_detail(request, contract_package.id) 
+    context = json.loads(response.content)
+   
+    return render(request, "cop/contract_view.html", context)   

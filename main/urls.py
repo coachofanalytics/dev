@@ -141,6 +141,54 @@ urlpatterns = [
     path('legal-services/create/', views.legalServiceCreateView, name='legalservice_create'),
     path("legal-services/<int:pk>/delete/",views.legalServiceDeleteView,name="legal_service_delete"),
     path("legal-services/<int:pk>/update/", views.legalServiceUpdateView, name="legal_service_update"),
+
+    # ===== COP Phase 1 =====
+    path(
+        "placements/<int:placement_id>/originate/",
+        views.originate_placement,
+        name="cop_originate_placement",
+    ),
+    path(
+        "packages/<int:package_id>/send/",
+        views.send_contract_package,
+        name="cop_send_package",
+    ),
+    path(
+        "contracts/sign/<str:token>/",
+        views.contract_sign,
+        name="cop_contract_sign",
+    ),
+    path(
+        "packages/<int:package_id>/",
+        views.contract_package_detail,
+        name="cop_package_detail",
+    ),
+
+    # ===== COP Frontend =====
+    path("cop/", views.cop_dashboard, name="cop_dashboard"),
+    path("cop/placements/", views.cop_placements, name="cop_placements"),
+    path("cop/templates/", views.cop_templates, name="cop_templates"),
+    path("cop/contracts/", views.cop_contracts, name="cop_contracts"),
+    path(
+        "cop/placements/<int:placement_id>/generate/",
+        views.generate_package_view,
+        name="cop_generate_package",
+    ),
+    path(
+        "cop/packages/<int:package_id>/send/",
+        views.send_package_view,
+        name="cop_send_package_view",
+    ),
+    path(
+        "cop/sign/<str:token>/",
+        views.sign_view,
+        name="cop_sign",
+    ),
+    path(
+        "cop/packages/<int:id>/",
+        views.renderContract,
+        name="contract_view",
+    )
 ]
 
     

@@ -13,6 +13,7 @@ from .storage_service import store_signature_artifact
 
 
 SIGNING_SALT = "cop-contract-signing"
+PACKAGE_SIGNING_SALT = "cop-package-signing"
 
 
 def _normalize_name(value):
@@ -41,6 +42,11 @@ def generate_signing_token(contract_document):
 	signer = signing.Signer(salt=SIGNING_SALT)
 	value = f"{contract_document.contract_package_id}:{contract_document.id}"
 	return signer.sign(value)
+
+
+def generate_package_signing_token(contract_package):
+	signer = signing.Signer(salt=PACKAGE_SIGNING_SALT)
+	return signer.sign(str(contract_package.id))
 
 
 def verify_signing_token(token):
@@ -75,6 +81,26 @@ def verify_signing_token(token):
 		raise TokenVerificationError("Signing token does not match document.")
 
 	return document
+
+
+def verify_package_signing_token(token):
+	signer = signing.Signer(salt=PACKAGE_SIGNING_SALT)
+	try:
+		value = signer.unsign(token)
+	except signing.BadSignature as exc:
+		raise TokenVerificationError("Invalid signing token.") from exc
+
+	try:
+		package_id = int(value)
+	except ValueError as exc:
+		raise TokenVerificationError("Invalid signing token payload.") from exc
+
+	try:
+		contract_package = ContractPackage.objects.get(id=package_id)
+	except ContractPackage.DoesNotExist as exc:
+		raise TokenVerificationError("Contract package not found.") from exc
+
+	return contract_package
 
 
 def _get_expected_signer_name(contract_package):
@@ -173,3 +199,29 @@ def sign_document(token, signer_name, ip_address, method):
 		)
 
 	return signature
+
+
+def sign_package(token, signer_name, ip_address, method):
+	contract_package = verify_package_signing_token(token)
+
+	if contract_package.state != ContractPackage.State.SENT:
+		raise InvalidTransitionError(
+			f"Invalid transition: {contract_package.state} -> SIGNED"
+		)
+
+	expected_name = _get_expected_signer_name(contract_package)
+	if _normalize_name(signer_name) != _normalize_name(expected_name):
+		raise SignatureVerificationError("Signer name does not match.")
+
+	for document in contract_package.documents.all():
+		if ContractSignature.objects.filter(contract_document=document).exists():
+			continue
+		document_token = generate_signing_token(document)
+		sign_document(
+			token=document_token,
+			signer_name=signer_name,
+			ip_address=ip_address,
+			method=method,
+		)
+
+	return contract_package

@@ -7,7 +7,6 @@ from .exceptions import ContractOriginationError, InvalidTransitionError
 from .merge_service import build_and_validate_context
 from .registry import get_package_definition_for_placement
 from .render_service import render_html
-from .template_service import get_published_template_version
 
 
 def _transition_state(contract_package, new_state):
@@ -30,13 +29,16 @@ def _transition_state(contract_package, new_state):
 
 def originate_contract_package(placement_id, actor="system", origination_key=None):
 	placement = CandidatePlacement.objects.select_related(
-		"contract_package"
+		"contract_package",
+		"package_definition",
 	).get(id=placement_id)
 
 	if placement.contract_package:
 		return placement.contract_package
 
-	package_definition = get_package_definition_for_placement()
+	package_definition = placement.package_definition
+	if not package_definition:
+		package_definition = get_package_definition_for_placement()
 	if not origination_key:
 		origination_key = f"candidate_placement:{placement.id}"
 
@@ -64,12 +66,10 @@ def originate_contract_package(placement_id, actor="system", origination_key=Non
 		placement.save(update_fields=["contract_package", "updated_at"])
 
 		for document_def in documents:
-			template_version = get_published_template_version(
-				document_def.contract_template
-			)
+			template_version = document_def.contract_template_version
 			context = build_and_validate_context(
 				placement,
-				template_version.merge_schema,
+				package_definition.merge_schema,
 			)
 			html = render_html(template_version.template_body, context)
 			ContractDocument.objects.create(
@@ -90,3 +90,11 @@ def originate_contract_package(placement_id, actor="system", origination_key=Non
 		)
 
 	return contract_package
+
+
+def create_from_placement(placement_id, actor="system", origination_key=None):
+	return originate_contract_package(
+		placement_id,
+		actor=actor,
+		origination_key=origination_key,
+	)

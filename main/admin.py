@@ -35,6 +35,16 @@ admin.site.register(ConsularAssistancePage)
 
 admin.site.register(AppointmentRequest)
 admin.site.register(Doctor)
+admin.site.register(ContractTemplate)
+admin.site.register(ContractTemplateVersion)
+admin.site.register(PackageDefinition)
+admin.site.register(PackageDefinitionDocument)
+admin.site.register(ContractPackage)
+admin.site.register(ContractDocument)
+admin.site.register(ContractSignature)
+admin.site.register(ContractEvent)
+admin.site.register(ContractAttachment)
+admin.site.register(CandidatePlacement)
 
 
 

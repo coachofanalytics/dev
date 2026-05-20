@@ -1,0 +1,50 @@
+{% extends "cop/base.html" %}
+
+{% block title %}COP Dashboard{% endblock %}
+
+{% block content %}
+  <section class="hero">
+    <span class="pill">Live overview</span>
+    <h1>Contract operations at a glance</h1>
+    <p>Monitor placements, generate packages, and inspect signing progress in one view.</p>
+  </section>
+
+  <section class="grid cols-3">
+    {% for state, total in package_stats.items %}
+      <div class="card">
+        <div class="row">
+          <div>
+            <p class="muted">{{ state }}</p>
+            <h2 style="margin: 6px 0 0;">{{ total }}</h2>
+          </div>
+          <span class="badge" data-state="{{ state }}">{{ state }}</span>
+        </div>
+      </div>
+    {% endfor %}
+  </section>
+
+  <section class="banner" style="margin: 20px 0;">
+    <div>
+      <strong>Next steps</strong>
+      <p class="muted">Create a placement, then generate and send the package when ready.</p>
+    </div>
+    <div style="display:flex; gap:12px; flex-wrap:wrap;">
+      <a class="button" href="{% url 'main:cop_placements' %}">New placement</a>
+      <a class="button secondary" href="{% url 'main:cop_contracts' %}">Search contracts</a>
+    </div>
+  </section>
+
+  <section class="grid cols-3">
+    <div class="card">
+      {% include "cop/_definition_form.html" %}
+    </div>
+    <div class="card">
+      {% include "cop/_contract_list.html" %}
+    </div>
+    <div class="card">
+      {% include "cop/_inspector.html" %}
+    </div>
+  </section>
+
+  <p class="helper">Last refreshed: {{ last_refresh|date:"M d, Y H:i" }}</p>
+{% endblock %}

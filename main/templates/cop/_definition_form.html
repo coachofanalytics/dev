@@ -1,0 +1,31 @@
+<h2>Package Definition</h2>
+<p class="muted">Bundle published template versions into a reusable package.</p>
+
+{% if definition_form.errors %}
+  <div class="item" style="border-color: var(--accent);">
+    <strong>Fix the highlighted fields.</strong>
+    {{ definition_form.errors }}
+  </div>
+{% endif %}
+
+<form method="post" action="/cop/" class="form-grid">
+  {% csrf_token %}
+  <div>
+    <label for="{{ definition_form.name.id_for_label }}">Name</label>
+    {{ definition_form.name }}
+  </div>
+  <div>
+    <label for="{{ definition_form.slug.id_for_label }}">Slug</label>
+    {{ definition_form.slug }}
+  </div>
+  <div>
+    <label for="{{ definition_form.merge_schema.id_for_label }}">Merge Schema (JSON)</label>
+    {{ definition_form.merge_schema }}
+    <div class="helper">Required fields drive merge validation for placements.</div>
+  </div>
+  <div>
+    <label for="{{ definition_form.required_documents.id_for_label }}">Published Documents</label>
+    {{ definition_form.required_documents }}
+  </div>
+  <button class="button" type="submit">Create definition</button>
+</form>
