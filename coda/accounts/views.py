@@ -42,7 +42,6 @@ from .utils import (
     employees,
     get_clients_time,
     JOB_SUPPORT_CATEGORIES,
-    send_verification_email,
 )
 from .user_utils import get_redirect_url
 from core.utils import generate_otp
@@ -166,28 +165,6 @@ def join(request):
             # In development/testing: allauth will auto-verify
             # In production: allauth will require email verification
             logger.debug("🔍 DEBUG: User registration complete, redirecting to dashboard")
-
-            try: 
-                email_sent = send_verification_email(request=request, user=user)
-                if email_sent:
-                    logger.info(f'Verification email sent to {user.email}')
-                    messages.success(
-                        request,
-                        f'A verification email has been sent to {user.email}. Please check your inbox.'
-                    )
-                else:
-                    logger.warning(f'Email function returned False for {user.email}')
-                    messages.warning(
-                        request,
-                        'Account created, but verification email could not be sent. Please check your email settings.'
-                    )
-            except Exception as e:
-                logger.error(f'Exception while sending verification email: {e}', exc_info=True)
-                messages.warning(
-                    request,
-                    'Account created, but verification email could not be sent.'
-                )
-
 
             return redirect(get_redirect_url(user))
 

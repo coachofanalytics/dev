@@ -14,6 +14,7 @@ from django.core.paginator import Paginator
 from coda_project import settings
 from django.conf import settings
 from django.core.mail.backends.smtp import EmailBackend
+from django.core.mail import EmailMultiAlternatives, send_mail
 
 logger = logging.getLogger(__name__)
 
@@ -143,183 +144,72 @@ def validate_email(email, ip_address=""):
     return response.json() if response.status_code == 200 else None
 
 
-from django.core.mail import EmailMultiAlternatives, send_mail
-from django.core.mail.backends.console import EmailBackend as ConsoleBackend
-from django.core.mail.backends.locmem import EmailBackend as LocMemBackend
-
-# from django.contrib.sites.models import Site
-from django.contrib.sites.shortcuts import get_current_site
-
-
-def _build_verification_url(user, request=None, site_url=None):
+def send_verification_email(user, password=None, request=None, site_url=None):
     """
-    Build verification URL with fallback if request is None.
+    Send verification email to user.
+    
+    This is a minimal version that was used before the implementation fixes.
+    It sends a verification email with token and optional password.
     
     Args:
-        user: The user object with verification_token
-        request: Optional HTTP request object
-        site_url: Optional fallback site URL (e.g., from settings.SITE_URL)
+        user: User object with verification_token
+        password: Optional temporary password
+        request: Optional request object (unused in original)
+        site_url: Optional site URL (unused in original)
     
     Returns:
-        The verification URL as a string
-    """
-    verification_token = user.verification_token
-    
-    if request:
-        try:
-            verification_url = request.build_absolute_uri(
-                reverse("accounts:verify-email", kwargs={"token": str(verification_token)})
-            )
-            logger.info(f"Built verification URL from request: {verification_url}")
-            return verification_url
-        except Exception as e:
-            logger.warning(f"Failed to build URL from request: {e}, falling back to site_url")
-    
-    # Fallback: use site_url or construct from settings
-    if site_url:
-        verification_url = f"{site_url}{reverse('accounts:verify-email', kwargs={'token': str(verification_token)})}"
-    else:
-        # Final fallback: try to get from settings.SITE_URL or construct from domain
-        site_url = getattr(settings, 'SITE_URL', None)
-        if not site_url:
-            try:
-                site = get_current_site(None)
-                site_url = f"https://{site.domain}"
-            except Exception as e:
-                logger.warning(f"Could not determine site URL: {e}")
-                site_url = "https://localhost:8000"
-        
-        verification_url = f"{site_url}{reverse('accounts:verify-email', kwargs={'token': str(verification_token)})}"
-    
-    logger.info(f"Built verification URL (fallback): {verification_url}")
-    return verification_url
-
-
-def _validate_smtp_config():
-    """
-    Validate SMTP configuration and return backend configuration or fallback.
-    
-    Returns:
-        tuple: (is_valid, config_dict_or_fallback_type)
+        None or similar to original behavior
     """
     try:
-        # Check if EMAIL_INFO has all required fields
-        required_fields = ['USER', 'PASS', 'HOST', 'PORT']
-        missing_fields = [f for f in required_fields if not settings.EMAIL_INFO.get(f)]
+        if not user or not user.verification_token:
+            logger.warning("send_verification_email called without user or token")
+            return
         
-        if missing_fields:
-            logger.warning(f"Missing EMAIL_INFO fields: {missing_fields}. Using console backend for testing.")
-            return False, 'console'
-        
-        # Try to connect to SMTP server
-        backend = EmailBackend(
-            host=settings.EMAIL_INFO["HOST"],
-            port=settings.EMAIL_INFO["PORT"],
-            username=settings.EMAIL_INFO["USER"],
-            password=settings.EMAIL_INFO["PASS"],
-            use_tls=settings.EMAIL_INFO.get("USE_TLS", False),
-            use_ssl=settings.EMAIL_INFO.get("USE_SSL", False),
-        )
-        backend.open()
-        backend.close()
-        logger.info("SMTP configuration validated successfully")
-        return True, None
-        
-    except Exception as e:
-        logger.warning(f"SMTP validation failed: {e}. Will use console backend for testing.")
-        return False, 'console'
-
-
-def send_verification_email(request=None, user=None, password=None, site_url=None):
-    """
-    Sends a verification email to the user with the verification URL.
-    
-    Handles multiple scenarios:
-    - Called from view with request object (normal flow)
-    - Called from signal with request=None (async flow)
-    - SMTP failure (falls back to console or locmem backend)
-    
-    Args:
-        request: Optional HTTP request object (None when called from signals)
-        user: The user object to send verification email to
-        password: Optional temporary password to include in email
-        site_url: Optional fallback site URL for verification link
-    
-    Returns:
-        bool: True if email was sent successfully, False otherwise
-    """
-    if not user or not user.verification_token:
-        logger.error("send_verification_email called without user or verification_token")
-        return False
-    
-    try:
-        # Build the verification URL
-        verification_url = _build_verification_url(user, request, site_url)
-        logger.info(f"Verification URL built: {verification_url}")
+        # Build verification URL (basic version)
+        verification_url = reverse("accounts:verify-email", kwargs={"token": str(user.verification_token)})
         
         # Render email template
         subject = "Email Verification - CODA"
-        html_message = render_to_string(
-            "accounts/verification_email.html",
-            {
-                "user": user,
-                "verification_url": verification_url,
-                "password": password,
-            },
-        )
-        logger.info(f"Email template rendered for user {user.email}")
+        try:
+            html_message = render_to_string(
+                "accounts/verification_email.html",
+                {
+                    "user": user,
+                    "verification_url": verification_url,
+                    "password": password,
+                },
+            )
+        except Exception as e:
+            logger.warning(f"Could not render email template: {e}")
+            html_message = f"Please verify your email at: {verification_url}"
         
-        # Validate SMTP and get appropriate backend
-        smtp_valid, fallback_type = _validate_smtp_config()
-        
-        if smtp_valid:
-            # Use configured SMTP backend
-            logger.info(f"Sending verification email via SMTP to {user.email}")
+        # Send email using SMTP backend if configured
+        try:
             email_backend = EmailBackend(
-                host=settings.EMAIL_INFO["HOST"],
-                port=settings.EMAIL_INFO["PORT"],
-                username=settings.EMAIL_INFO["USER"],
-                password=settings.EMAIL_INFO["PASS"],
-                use_tls=settings.EMAIL_INFO.get("USE_TLS", False),
-                use_ssl=settings.EMAIL_INFO.get("USE_SSL", False),
+                host=settings.EMAIL_INFO.get("HOST"),
+                port=settings.EMAIL_INFO.get("PORT"),
+                username=settings.EMAIL_INFO.get("USER"),
+                password=settings.EMAIL_INFO.get("PASS"),
             )
             email_backend.open()
             
             email = EmailMultiAlternatives(
                 subject=subject,
                 body=html_message,
-                from_email=settings.EMAIL_INFO["USER"],
+                from_email=settings.EMAIL_INFO.get("USER", "noreply@coda.local"),
                 to=[user.email],
                 connection=email_backend,
             )
             email.attach_alternative(html_message, "text/html")
             email.send()
             email_backend.close()
-            logger.info(f"Verification email successfully sent to {user.email}")
-        else:
-            # Use fallback backend (console or locmem) for testing
-            logger.warning(f"Using {fallback_type} backend as fallback for testing")
-            if fallback_type == 'console':
-                backend = ConsoleBackend()
-            else:
-                backend = LocMemBackend()
+            logger.info(f"Verification email sent to {user.email}")
+        except Exception as e:
+            logger.warning(f"Could not send email via SMTP: {e}")
             
-            email = EmailMultiAlternatives(
-                subject=subject,
-                body=html_message,
-                from_email=getattr(settings, 'DEFAULT_FROM_EMAIL', 'noreply@coda.local'),
-                to=[user.email],
-                connection=backend,
-            )
-            email.attach_alternative(html_message, "text/html")
-            email.send()
-            logger.info(f"Verification email sent via {fallback_type} backend to {user.email}")
-        
-        return True
-        
     except Exception as e:
-        logger.error(f"Failed to send verification email to {user.email if user else 'unknown'}: {str(e)}", exc_info=True)
-        return False
+        logger.error(f"Error in send_verification_email: {e}")
+
 
 def send_email_to_applicant(instance):
 

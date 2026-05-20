@@ -10,6 +10,7 @@ build/
 *.egg
 
 # Virtual Environment - DO NOT COMMIT
+dc_venv/
 venv/
 env/
 ENV/
@@ -50,7 +51,8 @@ coda/finance/models/extra/
 # Archives and Backups - DO NOT COMMIT
 archive/
 backups/
-
+reports/
+tests/
 # Environment variables
 .env
 .env.local
