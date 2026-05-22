@@ -1,4 +1,4 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, EmailStr
 from typing import Optional
 from datetime import datetime
 
@@ -42,3 +42,4 @@ class TransactionResponseSchema(BaseModel):
 
     class config:
         orm_mode = True
+        

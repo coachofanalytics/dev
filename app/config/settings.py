@@ -1,34 +1,37 @@
 import os
+from dotenv import load_dotenv
 
-#  ==============DBFUNCTIONS=====================================
+load_dotenv()
+
 def dba_values():
-    if os.environ.get('ENVIRONMENT') == 'production':
+
+    env = os.environ.get('ENVIRONMENT')
+
+    if env == 'production':
         host = os.environ.get('PROD_FASTAPI_DB_HOST')
         dbname = os.environ.get('PROD_FASTAPI_DB_NAME')
         user = os.environ.get('PROD_FASTAPI_DB_USER')
-        password = os.environ.get('PROD_FASTAPI_DB_PASS')
+        password = os.environ.get('PROD_FASTAPI_DB_PASSWORD')
         port = 5432
 
-    elif os.environ.get('ENVIRONMENT') == 'staging':
+    elif env == 'staging':
         host = os.environ.get('STG_FASTAPI_DB_HOST')
-        dbname = os.environ.get('STG_FASTAPI_DB_NAME') 
+        dbname = os.environ.get('STG_FASTAPI_DB_NAME')
         user = os.environ.get('STG_FASTAPI_DB_USER')
         password = os.environ.get('STG_FASTAPI_DB_PASSWORD')
         port = 5432
 
     else:
-        #Test locally 
-        # host = os.environ.get('LOCAL_FASTAPI_DB_HOST')
-        # dbname = os.environ.get('LOCAL_FASTAPI_DB_NAME') 
-        # user = os.environ.get('LOCAL_FASTAPI_DB_USER')
-        # password = os.environ.get('LOCAL_FASTAPI_DB_PASSWORD')
-        # port = 5432
-
-        host = os.environ.get('STG_DB_HOST')
-        dbname = os.environ.get('STG_DB_NAME') 
-        user = os.environ.get('STG_DB_USER')
-        password = os.environ.get('STG_DB_PASSWORD')
+        host = os.environ.get('LOCAL_FASTAPI_DB_HOST', 'localhost')
+        dbname = os.environ.get('LOCAL_FASTAPI_DB_NAME', 'transaction_db')
+        user = os.environ.get('LOCAL_FASTAPI_DB_USER', 'postgres')
+        password = os.environ.get('LOCAL_FASTAPI_DB_PASSWORD', '123')
         port = 5432
 
+    return host, dbname, user, password, port
 
-    return host,dbname,user,password,port 
+
+def get_database_url():
+    host, dbname, user, password, port = dba_values()
+
+    return f"postgresql://{user}:{password}@{host}:{port}/{dbname}"
