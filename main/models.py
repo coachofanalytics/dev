@@ -1116,3 +1116,35 @@ class ExpertInquiry(models.Model):
         for inquiry in open_inquiries:
             inquiry.check_and_escalate()
         print(f"✅ Checked SLA for {open_inquiries.count()} inquiries")
+
+
+        from django.db import models
+
+class LegalServicePage(models.Model):
+    # Hero section
+    hero_title = models.CharField(max_length=200)
+    hero_subtitle = models.TextField()
+    hero_cta_text = models.CharField(max_length=100, default="Book Consultation")
+    hero_image = models.ImageField(upload_to='hero_images/')
+
+    # Services Section (Visa, Citizenship, Legal Representation)
+    visa_title = models.CharField(max_length=100, default="Visa & Residency")
+    visa_description = models.TextField()
+    citizenship_title = models.CharField(max_length=100, default="Citizenship & Naturalization")
+    citizenship_description = models.TextField()
+    legal_title = models.CharField(max_length=100, default="Legal Representation & Referrals")
+    legal_description = models.TextField()
+
+    # Important Notice / Disclaimer
+    disclaimer_title = models.CharField(max_length=150, default="Important Notice")
+    disclaimer_text = models.TextField()
+
+    # Footer (optional fields)
+    footer_text = models.CharField(max_length=200, default="© 2026 DC48K. All rights reserved.")
+
+    # Timestamps
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return self.hero_title
