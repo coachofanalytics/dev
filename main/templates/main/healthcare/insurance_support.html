@@ -1,0 +1,533 @@
+{% extends "main/base_templates/base.html"%}
+{% load static %}
+
+{% block content %}
+<style>section { display: block !important; }</style>
+<link rel="stylesheet" href="{% static 'main/css/healthcare.css' %}">
+<!-- Hero Section -->
+<header class="hero-gradient text-white py-20 px-4 bg-blue-800">
+    <div class="max-w-4xl mx-auto text-center">
+        <span class="text-brand-red font-bold tracking-widest uppercase text-sm bg-white/10 px-4 py-2 rounded-full mb-6 inline-block">Step 02: Healthcare Protection</span>
+        <h1 class="text-4xl md:text-6xl font-black mb-6 uppercase tracking-tight">Insurance Support</h1>
+        <p class="text-xl text-blue-100 max-w-2xl mx-auto">
+            Navigating international insurance is complex. We provide comparison tools for plans that travel with you across borders.
+        </p>
+    </div>
+</header>
+
+<!-- ===== BREADCRUMB NAVIGATION ===== -->
+<nav class="breadcrumb-nav" aria-label="Healthcare progress steps">
+    <div class="breadcrumb-container">
+        <ul class="breadcrumb-list">
+            <li class="breadcrumb-item completed">
+                <a href="{% url 'main:find_doctors' %}">
+                    <span class="breadcrumb-badge">✓</span>
+                    <span>Find Doctors</span>
+                </a>
+            </li>
+            <li class="breadcrumb-item">
+                <span class="breadcrumb-separator">→</span>
+            </li>
+            <li class="breadcrumb-item active">
+                <span class="breadcrumb-badge">2</span>
+                <span>Insurance Support</span>
+            </li>
+        </ul>
+    </div>
+</nav>
+
+<main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-20">
+    
+    <!-- AI Analyzer Section -->
+    <section class="bg-white rounded-3xl shadow-2xl overflow-hidden mb-12 border border-gray-100 relative">
+        <div class="absolute top-0 right-0 p-4 opacity-10">
+            <i class="fas fa-brain text-9xl text-brand-green"></i>
+        </div>
+        <div class="p-8 md:p-12">
+            <div class="flex items-center gap-4 mb-6">
+                <div class="w-12 h-12 rounded-full bg-brand-green flex items-center justify-center text-white text-xl ai-pulse">
+                    <i class="fas fa-robot"></i>
+                </div>
+                <div>
+                    <h2 class="text-2xl font-black text-gray-900">AI Policy Recommender</h2>
+                    <p class="text-sm text-gray-500">Answer 3 questions to get a personalized recommendation instantly.</p>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-6" id="ai-form">
+                <div class="space-y-2">
+                    <label class="text-xs font-bold text-gray-500 uppercase">Age Bracket</label>
+                    <select id="ai-age" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 focus:outline-none focus:border-brand-green font-semibold">
+                        <option value="young">18 - 30 Years</option>
+                        <option value="mid">31 - 55 Years</option>
+                        <option value="senior">56+ Years</option>
+                    </select>
+                </div>
+                <div class="space-y-2">
+                    <label class="text-xs font-bold text-gray-500 uppercase">Primary Residence</label>
+                    <select id="ai-residence" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 focus:outline-none focus:border-brand-green font-semibold">
+                        <option value="usa">USA / Canada</option>
+                        <option value="europe">Europe / UK</option>
+                        <option value="other">Rest of World</option>
+                    </select>
+                </div>
+                <div class="space-y-2">
+                    <label class="text-xs font-bold text-gray-500 uppercase">Coverage Priority</label>
+                    <select id="ai-priority" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 focus:outline-none focus:border-brand-green font-semibold">
+                        <option value="budget">Cost Savings</option>
+                        <option value="comprehensive">Full Coverage</option>
+                        <option value="emergency">Emergency Only</option>
+                    </select>
+                </div>
+                <div class="flex items-end">
+                    <button onclick="runAnalysis()" class="w-full bg-brand-green text-white font-bold py-3 rounded-xl hover:bg-green-700 transition flex items-center justify-center gap-2">
+                        <span>Analyze</span>
+                        <i class="fas fa-magic"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- AI Result(Hidden by default) -->
+            <div id="ai-result" class="hidden mt-8 pt-8 border-t border-gray-100 animate-fade-in">
+                <div class="flex flex-col md:flex-row gap-6 bg-blue-50 p-6 rounded-2xl border border-blue-100">
+                    <div class="flex-shrink-0 text-center">
+                        <div class="inline-block p-3 bg-white rounded-full shadow-sm mb-2">
+                            <span class="text-3xl">🏆</span>
+                        </div>
+                        <div class="font-bold text-brand-blue text-sm">Top Pick</div>
+                    </div>
+                    <div>
+                        <h3 class="text-lg font-bold text-gray-900 mb-2">Based on your inputs, we recommend: <span id="recommendation-name" class="text-brand-green"></span></h3>
+                        <p id="recommendation-text" class="text-gray-600 text-sm mb-4"></p>
+                        <button onclick="toggleModalWithPlan()" class="text-xs font-bold text-brand-blue hover:underline">Get a quote for this plan &rarr;</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Main Features Grid -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+        <!-- Feature 1 -->
+        <div class="bg-white p-8 rounded-3xl shadow-xl feature-card border-t-4 border-brand-red">
+            <div class="w-14 h-14 bg-red-50 rounded-2xl flex items-center justify-center mb-6">
+                <span class="text-3xl text-brand-red">📊</span>
+            </div>
+            <h3 class="text-xl font-black text-brand-blue mb-4">Cross-border Plan Comparisons</h3>
+            <p class="text-gray-600 leading-relaxed text-sm">
+                Don't settle for local coverage that stops at the border. We compare global health plans that offer seamless protection in your country of residence and your home country.
+            </p>
+            <ul class="mt-6 space-y-3 text-sm font-semibold text-gray-500">
+                <li class="flex items-center gap-2"><span class="text-brand-green">✓</span> Dual-country coverage</li>
+                <li class="flex items-center gap-2"><span class="text-brand-green">✓</span> Portability analysis</li>
+                <li class="flex items-center gap-2"><span class="text-brand-green">✓</span> Premium benchmarks</li>
+            </ul>
+        </div>
+
+        <!-- Feature 2 -->
+        <div class="bg-white p-8 rounded-3xl shadow-xl feature-card border-t-4 border-brand-green">
+            <div class="w-14 h-14 bg-green-50 rounded-2xl flex items-center justify-center mb-6">
+                <span class="text-3xl text-brand-green">✈️</span>
+            </div>
+            <h3 class="text-xl font-black text-brand-blue mb-4">Repatriation & Medical Evacuation</h3>
+            <p class="text-gray-600 leading-relaxed text-sm">
+                In critical situations, specialized transport is vital. We help you select plans that include emergency evacuation and repatriation to ensure you get the best care available.
+            </p>
+            <ul class="mt-6 space-y-3 text-sm font-semibold text-gray-500">
+                <li class="flex items-center gap-2"><span class="text-brand-green">✓</span> 24/7 Air Ambulance</li>
+                <li class="flex items-center gap-2"><span class="text-brand-green">✓</span> Family travel support</li>
+                <li class="flex items-center gap-2"><span class="text-brand-green">✓</span> Global logistics desk</li>
+            </ul>
+        </div>
+
+        <!-- Feature 3 -->
+        <div class="bg-white p-8 rounded-3xl shadow-xl feature-card border-t-4 border-brand-blue">
+            <div class="w-14 h-14 bg-blue-50 rounded-2xl flex items-center justify-center mb-6">
+                <span class="text-3xl text-brand-blue">🤝</span>
+            </div>
+            <h3 class="text-xl font-black text-brand-blue mb-4">National Scheme Integration</h3>
+            <p class="text-gray-600 leading-relaxed text-sm">
+                Learn how to bridge your private international insurance with national health schemes (like NHIF). Optimize your contributions for maximum benefit.
+            </p>
+            <ul class="mt-6 space-y-3 text-sm font-semibold text-gray-500">
+                <li class="flex items-center gap-2"><span class="text-brand-green">✓</span> Contribution guidance</li>
+                <li class="flex items-center gap-2"><span class="text-brand-green">✓</span> Benefit top-up plans</li>
+                <li class="flex items-center gap-2"><span class="text-brand-green">✓</span> Eligibility assessment</li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- Comparative Tool Preview -->
+    <section class="mt-20">
+        <div class="bg-white rounded-3xl shadow-lg overflow-hidden border border-gray-100">
+            <div class="p-8 border-b bg-gray-50 flex justify-between items-center flex-wrap gap-4">
+                <div>
+                    <h2 class="text-2xl font-black text-brand-blue">Plan Comparison Tool</h2>
+                    <p class="text-gray-500">Top rated plans for Diaspora members in {% now "Y" %}</p>
+                </div>
+                <!-- ACTIVE DOWNLOAD BUTTON -->
+                <button onclick="downloadCSV()" class="bg-brand-blue text-white px-6 py-3 rounded-xl font-bold text-sm uppercase tracking-widest hover:bg-blue-900 transition flex items-center gap-2">
+                    <i class="fas fa-download"></i> Download Report
+                </button>
+            </div>
+            <div class="overflow-x-auto">
+                <table id="comparison-table" class="w-full text-left">
+                    <thead class="bg-gray-50 text-xs font-bold text-gray-400 uppercase tracking-widest">
+                        <tr>
+                            <th class="px-8 py-4">Insurance Provider</th>
+                            <th class="px-8 py-4">Global Network</th>
+                            <th class="px-8 py-4">Max Benefit</th>
+                            <th class="px-8 py-4">Evacuation</th>
+                            <th class="px-8 py-4">Score</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-100">
+                        {% for plan in insurance_plans %}
+                        <tr class="hover:bg-blue-50/30 transition">
+                            <td class="px-8 py-6 font-bold text-brand-blue">{{ plan.provider_name }} {{ plan.plan_name }}</td>
+                            <td class="px-8 py-6 text-gray-600">{{ plan.network }}</td>
+                            <td class="px-8 py-6 text-gray-600">{{ plan.max_benefit }}</td>
+                            <td class="px-8 py-6">
+                                {% if "Included" in plan.evacuation %}
+                                <span class="bg-green-100 text-green-700 px-3 py-1 rounded-full text-xs font-bold uppercase">{{ plan.evacuation }}</span>
+                                {% else %}
+                                <span class="bg-blue-100 text-blue-700 px-3 py-1 rounded-full text-xs font-bold uppercase">{{ plan.evacuation }}</span>
+                                {% endif %}
+                            </td>
+                            <td class="px-8 py-6 text-brand-green font-black">{{ plan.score }}/10</td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="5" class="px-8 py-6 text-center text-gray-500">
+                                No insurance plans available at the moment.
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </section>
+
+    <!-- Help Section -->
+    <section class="mt-20 bg-brand-green rounded-3xl p-12 text-white flex flex-col md:flex-row items-center justify-between gap-8">
+        <div class="max-w-xl text-center md:text-left">
+            <h2 class="text-3xl font-black mb-4">Confused about which plan to choose?</h2>
+            <p class="text-teal-50 text-lg">Our insurance experts provide free consultations for Diaspora County 48 members to help you find the right fit for your family and budget.</p>
+        </div>
+        <button onclick="toggleModal()" class="bg-white text-brand-green font-black py-5 px-10 rounded-2xl uppercase tracking-widest text-sm hover:bg-gray-100 transition shadow-2xl whitespace-nowrap">
+            Speak to an Expert
+        </button>
+    </section>
+</main>
+
+<!-- EXPERT MODAL (Hidden by default) -->
+<div id="expertModal" class="fixed inset-0 z-50 hidden overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+    <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+        
+        <!-- Background overlay -->
+        <div class="fixed inset-0 bg-gray-900 bg-opacity-75 transition-opacity" aria-hidden="true" onclick="toggleModal()"></div>
+
+        <!-- Modal Panel -->
+        <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
+        <div class="inline-block align-bottom bg-white rounded-2xl text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg w-full">
+            <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+                <div class="sm:flex sm:items-start">
+                    <div class="mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-green-100 sm:mx-0 sm:h-10 sm:w-10">
+                        <i class="fas fa-user-md text-brand-green"></i>
+                    </div>
+                    <div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left w-full">
+                        <h3 class="text-lg leading-6 font-bold text-gray-900" id="modal-title">Speak to an Insurance Expert</h3>
+                        <div class="mt-2">
+                            <p class="text-sm text-gray-500 mb-4">Fill out the form below and a specialist will contact you within 24 hours.</p>
+                            <form id="contactForm" onsubmit="handleFormSubmit(event)" class="space-y-4" method="POST">
+                                <input type="hidden" name="plan_id" id="selected-plan-id">
+                                <div>
+                                    <label class="block text-xs font-bold text-gray-700 uppercase mb-1">Full Name</label>
+                                    <input type="text" name="full_name" required class="w-full border-gray-300 rounded-lg shadow-sm focus:border-brand-green focus:ring focus:ring-brand-green focus:ring-opacity-50 p-2 border">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-bold text-gray-700 uppercase mb-1">Email Address</label>
+                                    <input type="email" name="email" required class="w-full border-gray-300 rounded-lg shadow-sm focus:border-brand-green focus:ring focus:ring-brand-green focus:ring-opacity-50 p-2 border">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-bold text-gray-700 uppercase mb-1">Phone (Optional)</label>
+                                    <input type="tel" name="phone" class="w-full border-gray-300 rounded-lg shadow-sm focus:border-brand-green focus:ring focus:ring-brand-green focus:ring-opacity-50 p-2 border">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-bold text-gray-700 uppercase mb-1">Question / Concern</label>
+                                    <textarea name="question" rows="3" required class="w-full border-gray-300 rounded-lg shadow-sm focus:border-brand-green focus:ring focus:ring-brand-green focus:ring-opacity-50 p-2 border"></textarea>
+                                </div>
+                                <div class="mt-4 flex justify-end gap-3">
+                                    <button type="button" onclick="toggleModal()" class="inline-flex justify-center px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none">
+                                        Cancel
+                                    </button>
+                                    <button type="submit" class="inline-flex justify-center px-4 py-2 text-sm font-bold text-white bg-brand-green border border-transparent rounded-md hover:bg-green-700 focus:outline-none">
+                                        Submit Request
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% csrf_token %}
+
+<script>
+    // Get CSRF token
+    const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+
+    // Store the current recommended plan ID
+    let currentRecommendedPlanId = null;
+
+    // --- 1. DOWNLOAD CSV FUNCTIONALITY ---
+    function downloadCSV() {
+        window.location.href = '/healthcare/insurance-support/download-csv/';
+    }
+
+    // --- 2. AI ANALYZER LOGIC ---
+     // --- 2. AI ANALYZER LOGIC (AUTOMATED) ---
+function runAnalysis() {
+    const btn = document.querySelector('#ai-form button');
+    const originalText = btn.innerHTML;
+    const resultDiv = document.getElementById('ai-result');
+    
+    // Show loading state
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Analyzing...';
+    btn.disabled = true;
+    btn.classList.add('opacity-75');
+
+    // Get form values
+    const age = document.getElementById('ai-age').value;
+    const residence = document.getElementById('ai-residence').value;
+    const priority = document.getElementById('ai-priority').value;
+
+    console.log("Sending AI request:", { age, residence, priority });
+
+    // Make API call to your backend
+    fetch('/healthcare/insurance-support/api/recommend/', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': csrftoken
+        },
+        body: JSON.stringify({
+            age: age,
+            residence: residence,
+            priority: priority
+        })
+    })
+    .then(response => {
+        if (!response.ok) {
+            throw new Error(`HTTP error ${response.status}`);
+        }
+        return response.json();
+    })
+    .then(data => {
+        console.log("AI Response:", data);
+        
+        if (data.success) {
+            // Update UI with recommendation from database
+            document.getElementById('recommendation-name').innerText = data.plan_name;
+            document.getElementById('recommendation-text').innerText = data.recommendation_text;
+            
+            // Store plan ID for quote button
+            currentRecommendedPlanId = data.plan_id;
+            
+            // Show the result
+            resultDiv.classList.remove('hidden');
+            
+            // Optional: Add animation
+            resultDiv.classList.add('animate-fade-in');
+        } else {
+            // Show error inline instead of alert
+            const errorDiv = document.getElementById('ai-error-message');
+            if (errorDiv) {
+                errorDiv.textContent = data.error || 'Could not get recommendation. Please try different criteria.';
+                errorDiv.classList.remove('hidden');
+                errorDiv.classList.add('block');
+            } else {
+                // Create error div if it doesn't exist
+                const resultDiv = document.getElementById('ai-result');
+                if (resultDiv) {
+                    const newErrorDiv = document.createElement('div');
+                    newErrorDiv.id = 'ai-error-message';
+                    newErrorDiv.className = 'mt-4 p-4 bg-red-50 border border-red-200 rounded-lg text-red-700';
+                    newErrorDiv.textContent = data.error || 'Could not get recommendation. Please try different criteria.';
+                    resultDiv.parentNode.insertBefore(newErrorDiv, resultDiv);
+                }
+            }
+        }
+    })
+    .catch(error => {
+        console.error('AI Recommendation Error:', error);
+        // Show error inline instead of alert
+        const errorDiv = document.getElementById('ai-error-message');
+        if (errorDiv) {
+            errorDiv.textContent = 'Unable to get recommendation. Please ensure you have selected all options and try again.';
+            errorDiv.classList.remove('hidden');
+            errorDiv.classList.add('block');
+        } else {
+            const resultDiv = document.getElementById('ai-result');
+            if (resultDiv) {
+                const newErrorDiv = document.createElement('div');
+                newErrorDiv.id = 'ai-error-message';
+                newErrorDiv.className = 'mt-4 p-4 bg-red-50 border border-red-200 rounded-lg text-red-700';
+                newErrorDiv.textContent = 'Unable to get recommendation. Please ensure you have selected all options and try again.';
+                resultDiv.parentNode.insertBefore(newErrorDiv, resultDiv);
+            }
+        }
+    })
+    .finally(() => {
+        // Reset button
+        btn.innerHTML = originalText;
+        btn.disabled = false;
+        btn.classList.remove('opacity-75');
+    });
+}    
+
+    // --- 3. MODAL LOGIC ---
+    function toggleModal() {
+        const modal = document.getElementById('expertModal');
+        modal.classList.toggle('hidden');
+        // Clear any previously selected plan
+        document.getElementById('selected-plan-id').value = '';
+    }
+
+    function toggleModalWithPlan() {
+        const modal = document.getElementById('expertModal');
+        if (currentRecommendedPlanId) {
+            document.getElementById('selected-plan-id').value = currentRecommendedPlanId;
+        }
+        modal.classList.toggle('hidden');
+    }
+
+    function handleFormSubmit(e) {
+    e.preventDefault();  // This should prevent the default form submission
+    console.log("Form submission intercepted");
+    
+    const form = e.target;
+    const btn = form.querySelector('button[type="submit"]');
+    const originalText = btn.innerText;
+    
+    btn.innerText = "Sending...";
+    btn.disabled = true;
+    
+    // Collect form data
+    const formData = {
+        full_name: form.querySelector('input[name="full_name"]').value,
+        email: form.querySelector('input[name="email"]').value,
+        phone: form.querySelector('input[name="phone"]')?.value || '',
+        question: form.querySelector('textarea[name="question"]').value,
+        plan_id: form.querySelector('input[name="plan_id"]')?.value || null
+    };
+
+    console.log("Form data:", formData);
+    console.log("Sending POST request to:", '/healthcare/insurance-support/api/inquiry/');
+
+    // Submit to API - explicitly set method to POST
+    fetch('/healthcare/insurance-support/api/inquiry/', {
+        method: 'POST',  // Make sure this is POST
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': csrftoken,
+            'X-Requested-With': 'XMLHttpRequest'  // Add this header
+        },
+        body: JSON.stringify(formData)
+    })
+    .then(response => {
+        console.log("Response status:", response.status);
+        console.log("Response headers:", response.headers);
+        
+        if (!response.ok) {
+            // Try to get error message from response
+            return response.text().then(text => {
+                console.log("Error response text:", text);
+                throw new Error(`HTTP error ${response.status}: ${text.substring(0, 100)}`);
+            });
+        }
+        return response.json();
+    })
+    .then(data => {
+        console.log("Success response:", data);
+        // Show success message inline
+        const form = document.getElementById('expert-inquiry-form');
+        if (form) {
+            const successDiv = form.querySelector('.success-message');
+            if (successDiv) {
+                successDiv.textContent = data.message || "Request sent successfully! We'll contact you soon.";
+                successDiv.classList.remove('hidden');
+                successDiv.classList.add('block');
+            }
+        }
+        // Close modal after short delay
+        setTimeout(() => {
+            toggleModal();
+            form.reset();
+        }, 2000);
+    })
+    .catch(error => {
+        console.error("Fetch error:", error);
+        // Show error inline in form
+        const form = document.getElementById('expert-inquiry-form');
+        if (form) {
+            const errorDiv = form.querySelector('.error-message');
+            if (errorDiv) {
+                errorDiv.textContent = "Network error: " + error.message;
+                errorDiv.classList.remove('hidden');
+                errorDiv.classList.add('block');
+            }
+        }
+    })
+    .finally(() => {
+        btn.innerText = originalText;
+        btn.disabled = false;
+    });
+}    
+    // Close modal when clicking outside
+    window.onclick = function(event) {
+        const modal = document.getElementById('expertModal');
+        if (event.target == modal) {
+            modal.classList.add('hidden');
+        }
+    }
+</script>
+
+<style>
+    .animate-fade-in {
+        animation: fadeIn 0.5s ease-in-out;
+    }
+    
+    @keyframes fadeIn {
+        from {
+            opacity: 0;
+            transform: translateY(-10px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+    
+    .ai-pulse {
+        animation: pulse 2s infinite;
+    }
+    
+    @keyframes pulse {
+        0% {
+            box-shadow: 0 0 0 0 rgba(74, 144, 44, 0.4);
+        }
+        70% {
+            box-shadow: 0 0 0 10px rgba(74, 144, 44, 0);
+        }
+        100% {
+            box-shadow: 0 0 0 0 rgba(74, 144, 44, 0);
+        }
+    }
+</style>
+
+{% endblock %}

@@ -1,0 +1,265 @@
+{% extends "main/base_templates/base.html" %}
+{% load static %}
+{% block content %}
+
+<style>
+    section { display: block !important; }
+    .form-hero {
+        background: linear-gradient(135deg, #1a3a2a 0%, #2563eb 100%);
+        color: white;
+        padding: 3rem 2rem;
+        margin-bottom: 2rem;
+    }
+    .form-headline {
+        font-size: 2.5rem;
+        margin: 0;
+        line-height: 1.2;
+    }
+    .form-container {
+        max-width: 800px;
+        margin: 0 auto;
+        padding: 2rem;
+    }
+    .form-group {
+        margin-bottom: 1.5rem;
+    }
+    .form-group label {
+        display: block;
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+        color: #374151;
+    }
+    .form-group input[type="text"],
+    .form-group input[type="email"],
+    .form-group input[type="tel"],
+    .form-group textarea,
+    .form-group select {
+        width: 100%;
+        padding: 0.75rem;
+        border: 2px solid #e5e7eb;
+        border-radius: 6px;
+        font-size: 1rem;
+        font-family: inherit;
+        transition: border-color 0.3s;
+    }
+    .form-group input[type="text"]:focus,
+    .form-group input[type="email"]:focus,
+    .form-group input[type="tel"]:focus,
+    .form-group textarea:focus,
+    .form-group select:focus {
+        outline: none;
+        border-color: #2563eb;
+        box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+    }
+    .form-group textarea {
+        resize: vertical;
+        min-height: 150px;
+    }
+    .form-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1.5rem;
+    }
+    @media (max-width: 640px) {
+        .form-row {
+            grid-template-columns: 1fr;
+        }
+    }
+    .error-message {
+        color: #dc2626;
+        font-size: 0.875rem;
+        margin-top: 0.25rem;
+    }
+    .form-actions {
+        display: flex;
+        gap: 1rem;
+        margin-top: 2rem;
+        padding-top: 1.5rem;
+        border-top: 2px solid #e5e7eb;
+    }
+    .btn {
+        padding: 0.75rem 1.5rem;
+        border-radius: 6px;
+        font-weight: 600;
+        text-decoration: none;
+        cursor: pointer;
+        border: none;
+        font-size: 1rem;
+        transition: all 0.3s;
+    }
+    .btn-primary {
+        background: #2563eb;
+        color: white;
+    }
+    .btn-primary:hover {
+        background: #1d4ed8;
+    }
+    .btn-secondary {
+        background: #e5e7eb;
+        color: #374151;
+    }
+    .btn-secondary:hover {
+        background: #d1d5db;
+    }
+    .breadcrumb {
+        font-size: 0.9rem;
+        color: #6b7280;
+        margin-bottom: 1rem;
+    }
+    .breadcrumb a {
+        color: #2563eb;
+        text-decoration: none;
+    }
+    .hint-text {
+        font-size: 0.875rem;
+        color: #6b7280;
+        margin-top: 0.25rem;
+    }
+    .info-box {
+        background: #eff6ff;
+        border-left: 4px solid #2563eb;
+        padding: 1.5rem;
+        border-radius: 6px;
+        margin-bottom: 2rem;
+    }
+    .info-box h4 {
+        margin-top: 0;
+        color: #1d4ed8;
+    }
+    .info-box p {
+        margin-bottom: 0;
+        color: #1e40af;
+    }
+</style>
+
+<main class="mx-auto pb-16">
+
+    <!-- Breadcrumb -->
+    <nav class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 mt-4 breadcrumb">
+        <a href="{% url 'main:layout' %}">Home</a>
+        <span> / </span>
+        <a href="{% url 'main:healthcare_info' %}">Healthcare Information</a>
+        <span> / </span>
+        <span>Medical Resource Inquiry</span>
+    </nav>
+
+    <!-- Form Hero -->
+    <div class="form-hero">
+        <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+            <h1 class="form-headline">Medical Resource Inquiry</h1>
+            <p style="margin: 0.5rem 0 0 0; opacity: 0.9;">
+                Connect with qualified medical professionals and healthcare resources
+            </p>
+        </div>
+    </div>
+
+    <!-- Form Container -->
+    <div class="form-container">
+        
+        <!-- Info Box -->
+        <div class="info-box">
+            <h4>🏥 Need Medical Help?</h4>
+            <p>Submit your inquiry and our team will connect you with verified medical resources, practitioners, and wellness services tailored to your location and needs.</p>
+        </div>
+
+        {% if errors %}
+        <div style="background: #fee2e2; border: 2px solid #dc2626; color: #991b1b; padding: 1rem; border-radius: 6px; margin-bottom: 1.5rem;">
+            <strong>Please fix the following errors:</strong>
+            <ul style="margin: 0.5rem 0 0 0; padding-left: 1.5rem;">
+                {% for field, message in errors.items %}
+                <li>{{ message }}</li>
+                {% endfor %}
+            </ul>
+        </div>
+        {% endif %}
+
+        <form method="POST" enctype="multipart/form-data">
+            {% csrf_token %}
+
+            <!-- Full Name -->
+            <div class="form-group">
+                <label for="name">Full Name *</label>
+                <input type="text" id="name" name="name" value="{{ form_data.name }}" required 
+                       placeholder="Enter your full name">
+                {% if errors.name %}<div class="error-message">{{ errors.name }}</div>{% endif %}
+            </div>
+
+            <!-- Email and Phone Row -->
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="email">Email Address *</label>
+                    <input type="email" id="email" name="email" value="{{ form_data.email }}" required 
+                           placeholder="your.email@example.com">
+                    {% if errors.email %}<div class="error-message">{{ errors.email }}</div>{% endif %}
+                </div>
+
+                <div class="form-group">
+                    <label for="phone">Phone Number</label>
+                    <input type="tel" id="phone" name="phone" value="{{ form_data.phone }}" 
+                           placeholder="+1 (555) 123-4567">
+                    <div class="hint-text">Include country code for international numbers</div>
+                </div>
+            </div>
+
+            <!-- Location and Service Type Row -->
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="location">Current Location / Country</label>
+                    <input type="text" id="location" name="location" value="{{ form_data.location }}" 
+                           placeholder="Where are you located? (e.g., London, USA, Australia)">
+                    <div class="hint-text">Helps us provide location-specific resources</div>
+                </div>
+
+                <div class="form-group">
+                    <label for="service_type">Type of Medical Service Needed</label>
+                    <select id="service_type" name="service_type">
+                        <option value="">-- Select Service Type --</option>
+                        <option value="general-practitioner" {% if form_data.service_type == "general-practitioner" %}selected{% endif %}>General Practitioner</option>
+                        <option value="specialist" {% if form_data.service_type == "specialist" %}selected{% endif %}>Specialist Doctor</option>
+                        <option value="dental" {% if form_data.service_type == "dental" %}selected{% endif %}>Dental Care</option>
+                        <option value="mental-health" {% if form_data.service_type == "mental-health" %}selected{% endif %}>Mental Health / Counseling</option>
+                        <option value="pharmacy" {% if form_data.service_type == "pharmacy" %}selected{% endif %}>Pharmacy / Medications</option>
+                        <option value="emergency" {% if form_data.service_type == "emergency" %}selected{% endif %}>Emergency Services</option>
+                        <option value="health-insurance" {% if form_data.service_type == "health-insurance" %}selected{% endif %}>Health Insurance Information</option>
+                        <option value="other" {% if form_data.service_type == "other" %}selected{% endif %}>Other</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Inquiry Details -->
+            <div class="form-group">
+                <label for="message">Inquiry Details *</label>
+                <textarea id="message" name="message" required 
+                          placeholder="Please describe your medical resource need, any specific requirements, health concerns, or what type of professional you're looking for...">{{ form_data.message }}</textarea>
+                {% if errors.message %}<div class="error-message">{{ errors.message }}</div>{% endif %}
+                <div class="hint-text">Provide as much detail as possible to help us find the best match for you</div>
+            </div>
+
+            <!-- Form Actions -->
+            <div class="form-actions">
+                <button type="submit" class="btn btn-primary">
+                    📮 Submit Inquiry
+                </button>
+                <a href="{% url 'main:healthcare_info' %}" class="btn btn-secondary">
+                    Cancel
+                </a>
+            </div>
+        </form>
+
+        <!-- Support Info -->
+        <div style="background: #f9fafb; border: 1px solid #e5e7eb; padding: 1.5rem; border-radius: 6px; margin-top: 2rem;">
+            <h4 style="margin-top: 0; color: #1f2937;">What Happens Next?</h4>
+            <ol style="color: #6b7280; line-height: 1.8;">
+                <li>We review your inquiry and validate your information</li>
+                <li>Our team matches you with verified medical professionals/resources in your area</li>
+                <li>We contact you within 24-48 hours via email with personalized recommendations</li>
+                <li>You can connect directly with providers or ask us for more details</li>
+            </ol>
+        </div>
+
+    </div>
+
+</main>
+
+{% endblock %}
+
