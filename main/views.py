@@ -1,4 +1,4 @@
-from django.shortcuts import redirect, render
+from django.shortcuts import redirect, render, get_object_or_404
 from django.urls import reverse
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.views.generic import (
@@ -16,6 +16,7 @@ from django.core.mail import EmailMessage
 from django.template.loader import render_to_string
 from coda_project import settings
 from django.contrib import messages
+from django.http import JsonResponse
 
 #new code cece's assignment
 from .models import History, ContactUs
@@ -583,3 +584,179 @@ def contact_us(request):
         return redirect('main:layout')
 
     return render(reqest, "main/home_templates/home.html")
+
+
+# ============================================
+# CONSULAR ASSISTANCE - MAIN PAGES
+# ============================================
+
+def consular_assistance(request):
+    page = ConsularAssistancePage.objects.first()
+    context = { 'page': page, }
+    return render(request, "main/consular_assistance.html", context)
+
+
+def consular_information_updates(request):
+    """
+    Render the Consular Assistance → Information and Updates page.
+    Follows the project's page/description pattern if available.
+    """
+    # Ensure a Page exists for this content (keeps behavior consistent with other pages)
+    page_instance, _ = Page.objects.get_or_create(page_name='Consular - Information and Updates')
+    description = Description.objects.filter(page=page_instance)
+
+    context = {
+        'description': description,
+        'title': 'Information and Updates',
+    }
+
+    return render(request, 'main/consular/information_updates.html', context)
+
+
+def legal_immigration_guidance(request):
+    from .models import LegalService
+
+    services = LegalService.objects.filter(is_active=True).order_by('order')
+
+    context = {
+        'page_title': 'Legal & Immigration Guidance',
+        'page_description': 'Expert guidance and trusted referrals to help you navigate the complexities of international law and immigration processes.',
+        'services': services,
+    }
+    return render(request, 'main/legal_and_immigration_guidance.html', context)
+
+
+# ============================================
+# CONSULAR ASSISTANCE - SUB-PAGES
+# ============================================
+
+def consular_press_releases(request):
+    """
+    Render Press Releases sub-page within Consular Assistance.
+    Built-in static content for now - can be extended with database later.
+    """
+    page_instance, _ = Page.objects.get_or_create(page_name='Consular - Press Releases')
+
+    # Sample press releases data structure (can be enhanced with database later)
+    press_releases = [
+        {
+            'date': 'September 25, 2025',
+            'title': 'DC48K Launches New Financial Literacy Program in Partnership with Diaspora Bank',
+            'summary': 'A comprehensive financial literacy initiative designed to improve financial management skills among diaspora members.',
+        },
+        {
+            'date': 'August 15, 2025',
+            'title': 'Key Updates to Consular Assistance Services',
+            'summary': 'Streamlined appointment booking and expanded legal consultation services now available.',
+        },
+    ]
+
+    context = {
+        'title': 'Press Releases',
+        'page': page_instance,
+        'press_releases': press_releases,
+    }
+    return render(request, 'main/consular/press_releases.html', context)
+
+
+def consular_embassy_news(request):
+    """
+    Render Embassy & Government News sub-page within Consular Assistance.
+    """
+    page_instance, _ = Page.objects.get_or_create(page_name='Consular - Embassy News')
+
+    # Sample embassy news data
+    embassy_news = [
+        {
+            'date': 'October 1, 2025',
+            'title': 'Temporary Suspension of e-Passport Services in London Effective October 15',
+            'type': 'EMBASSY ALERT',
+            'summary': 'The Kenyan Embassy in London will suspend e-Passport services for system upgrade.',
+        },
+        {
+            'date': 'September 20, 2025',
+            'title': 'New Visa Processing Requirements',
+            'type': 'GOVERNMENT UPDATE',
+            'summary': 'Updated documentation requirements for visa applications effective immediately.',
+        },
+    ]
+
+    context = {
+        'title': 'Embassy & Government News',
+        'page': page_instance,
+        'embassy_news': embassy_news,
+    }
+    return render(request, 'main/consular/embassy_news.html', context)
+
+
+def consular_community_updates(request):
+    """
+    Render Community & General Updates sub-page within Consular Assistance.
+    """
+    page_instance, _ = Page.objects.get_or_create(page_name='Consular - Community Updates')
+
+    # Sample community updates data
+    community_updates = [
+        {
+            'date': 'September 18, 2025',
+            'title': 'Call for Volunteers: Annual Diaspora Mentorship Drive Now Accepting Applications',
+            'type': 'COMMUNITY UPDATE',
+            'summary': 'Join us as a mentor or mentee in our flagship diaspora support program.',
+        },
+        {
+            'date': 'September 10, 2025',
+            'title': 'Community Resources: New Legal Aid Partner Join Network',
+            'type': 'RESOURCE UPDATE',
+            'summary': 'Expanded access to affordable legal services through our partner organizations.',
+        },
+    ]
+
+    context = {
+        'title': 'Community & General Updates',
+        'page': page_instance,
+        'community_updates': community_updates,
+    }
+    return render(request, 'main/consular/community_updates.html', context)
+
+
+def consular_all_updates(request):
+    """
+    Render consolidated all updates page combining all consular news categories.
+    """
+    page_instance, _ = Page.objects.get_or_create(page_name='Consular - All Updates')
+
+    context = {
+        'title': 'All Updates',
+        'page': page_instance,
+    }
+    return render(request, 'main/consular/all_updates.html', context)
+
+
+def book_consular_consultation(request):
+    """
+    Render the Book Consultation form page.
+    """
+    if request.method == 'POST':
+        # Handle AJAX form submission
+        import json
+        try:
+            data = json.loads(request.body)
+
+            # Here you would save the consultation request to database
+            # For now, we'll just return success
+            # In production, create a ConsultationRequest model and save it
+
+            return JsonResponse({
+                'success': True,
+                'message': 'Your consultation request has been submitted. We will contact you shortly.'
+            })
+        except Exception as e:
+            return JsonResponse({
+                'success': False,
+                'error': str(e)
+            }, status=400)
+
+    context = {
+        'title': 'Book a Consultation',
+    }
+    return render(request, 'main/consular/book_consultation.html', context)

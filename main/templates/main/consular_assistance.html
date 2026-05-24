@@ -1,0 +1,124 @@
+{% extends "main/base_templates/base.html" %}
+{% load static %}
+{% block content %}
+
+<style>
+    .hero-overlay {
+        min-height: 370px;
+        background-image: url('{% static "main/img/consular/hero.png" %}');
+        background-size: cover;
+        background-position: center;
+    }
+    .hero-overlay::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.55);
+    }
+</style>
+
+    <main class="mx-auto pb-16">
+
+        <!-- HERO SECTION -->
+        <header class="relative text-white shadow-xl overflow-hidden mb-12 mt-0 bg-blue-800 hero-overlay">
+            <!-- Dark overlay -->
+            <div class="absolute inset-0 bg-dark-overlay"></div>
+            <!-- Centered content -->
+            <div class="relative z-10 flex flex-col items-center justify-center text-center px-4"
+                 style="min-height: 370px;">
+                <h1 class="text-5xl main-heading mb-4">CONSULAR ASSISTANCE</h1>
+                <h2 class="text-xl font-medium text-gray-200 mb-8" style="max-width: 520px;">
+                    Your Trusted Link to Home, Worldwide. Immediate Support, Official Guidance.
+                </h2>
+                <a href="{% url 'main:book_consular_consultation' %}"
+                   class="inline-block bg-brand-red text-white font-bold py-3 px-6 rounded-lg uppercase text-sm tracking-wider hover:bg-red-700 transition duration-300 shadow-lg">
+                    BOOK A CONSULTATION
+                </a>
+            </div>
+        </header>
+
+        <!-- Breadcrumb -->
+        <nav class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 mb-6 text-sm text-gray-500">
+            <a href="{% url 'main:layout' %}" class="text-brand-blue hover:underline">Home</a>
+            <span class="mx-2">/</span>
+            <a href="{% url 'main:service_list' %}" class="text-brand-blue hover:underline">Our Services</a>
+            <span class="mx-2">/</span>
+            <span class="text-brand-green font-semibold">Consular Assistance</span>
+        </nav>
+
+        <!-- Intro Section -->
+        <section class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 mb-16 text-center">
+            <h3 class="text-4xl main-heading text-gray-800 mb-4">How We Help You Thrive Abroad</h3>
+            <p class="text-xl text-gray-600 max-w-4xl mx-auto">
+                Navigating international bureaucracy can be tough. Our Consular Assistance services ensure that whether you need a travel document, legal advice, or urgent help, you have a clear, reliable channel back to Kenyan government support.
+            </p>
+        </section>
+
+        <!-- SERVICE BLOCKS -->
+        <section class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+
+            <!-- 1. Information and Updates (Image Left) -->
+            <div id="information-updates" class="service-block grid grid-cols-1 lg:grid-cols-2 gap-8 items-start mb-16">
+                <div class="lg:order-1">
+                    <img src="{% static 'main/img/consular/information-updates.png' %}" alt="Information and Updates" class="w-full h-64 object-cover rounded-xl shadow-lg">
+                </div>
+                <div class="lg:order-2">
+                    <h3 class="text-3xl font-extrabold text-brand-blue mb-4">1. Information and Updates</h3>
+                    <p class="text-gray-700 mb-6">
+                        Stay informed on critical changes to Kenyan policies, travel advisories, and diaspora-specific news. We provide real-time alerts and verified government communications directly to our members, preventing misinformation and delays.
+                    </p>
+                    <ul class="service-list text-gray-600">
+                        <li>Passport and Visa Renewals: Direct guidance and forms</li>
+                        <li>Travel Advisories: Real-time safety updates by country</li>
+                        <li>Government Policy Changes: Summaries of diaspora relevance</li>
+                        <li>Emergency Contact Directory: Vetted consular numbers worldwide</li>
+                    </ul>
+                    <div class="mt-6">
+                        <a href="{% url 'main:consular_information_updates' %}" class="inline-block bg-brand-green text-white font-bold py-3 px-6 rounded-md uppercase text-sm tracking-wider hover:bg-[#086a4f] transition duration-300">
+                            View Official Forms
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 2. Legal and Immigration Guidance (Image Right) -->
+            <div id="legal-immigration" class="service-block grid grid-cols-1 lg:grid-cols-2 gap-8 items-start mb-16">
+                <div class="lg:order-1">
+                    <h3 class="text-3xl font-extrabold text-brand-blue mb-4">2. Legal and Immigration Guidance</h3>
+                    <p class="text-gray-700 mb-6">
+                        Access reliable, vetted legal resources for common issues faced by the diaspora, including property disputes, dual citizenship applications, and immigration challenges in host countries. We connect you with trusted professionals.
+                    </p>
+                    <ul class="service-list text-gray-600">
+                        <li>Legal Referrals: Access to diaspora-friendly lawyers</li>
+                        <li>Property and Land Dispute Mediation: Guidance on Kenyan law</li>
+                        <li>Dual Citizenship Application Support: Step-by-step process assistance</li>
+                        <li>Wills and Estate Planning: Connecting with notaries and legal experts</li>
+                    </ul>
+                    <div class="mt-6">
+                        <a href="{% url 'main:legal_immigration_guidance' %}" class="inline-block bg-brand-red text-white font-bold py-3 px-6 rounded-md uppercase text-sm tracking-wider hover:bg-red-800 transition duration-300">
+                            Request Legal Consult
+                        </a>
+                    </div>
+                </div>
+                <div class="lg:order-2">
+                    <img src="{% static 'main/img/consular/legal-migration.png' %}" alt="Legal and Immigration Guidance" class="w-full h-64 object-cover rounded-xl shadow-lg">
+                </div>
+            </div>
+
+            <!-- Emergency Hotline CTA Block -->
+            <div class="bg-brand-blue text-white p-8 md:p-12 rounded-xl shadow-2xl mt-16 text-center">
+                <h3 class="text-4xl font-extrabold mb-3">EMERGENCY ASSISTANCE: 24/7 HOTLINE</h3>
+                <p class="text-xl text-gray-200 mb-6">
+                    In case of immediate crisis (arrest, serious accident, or natural disaster), do not wait. Contact our dedicated emergency line immediately.
+                </p>
+                <a href="tel:+254202220000" class="inline-block bg-brand-red text-white font-bold py-3 px-8 rounded-full uppercase tracking-wider text-lg hover:bg-red-800 transition duration-300 shadow-lg">
+                    Call Emergency: +254 (20) 222-0000
+                </a>
+                <p class="text-sm text-gray-300 mt-2">Kenya-based emergency support for diaspora</p>
+            </div>
+
+        </section>
+
+    </main>
+
+{% endblock content %}

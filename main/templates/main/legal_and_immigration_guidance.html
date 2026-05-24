@@ -1,0 +1,191 @@
+{% extends "main/base_templates/base.html" %}
+{% load static %}
+
+{% block content %}
+
+<!-- Custom styles for this page (must be before content for proper rendering) -->
+<style>
+    /* BRAND GUIDELINES (Consistent with reference design) */
+    .legal-page-wrapper {
+        font-family: 'Inter', sans-serif;
+        background-color: #f9fafb;
+        color: #1f2937;
+    }
+
+    /* Deep Blue (Primary CTA/Action Color) */
+    .text-brand-blue { color: #1e40af; }
+    .bg-brand-blue { background-color: #1e40af; }
+    /* NEW BRAND TEAL (Primary Accent/Branding Color) - #0a926d */
+    .text-brand-green { color: #0a926d; }
+    .bg-brand-green { background-color: #0a926d; }
+    /* Red Accent (For Logo/CTA highlights) */
+    .text-brand-red { color: #cc0000; }
+    .bg-brand-red { background-color: #cc0000; }
+
+    /* Simulating Bold Headings */
+    .main-heading { font-weight: 900; }
+
+    .feature-list li {
+        list-style-type: none;
+        position: relative;
+        padding-left: 1.5rem;
+        margin-bottom: 0.5rem;
+        color: #4b5563;
+    }
+    .feature-list li::before {
+        content: '•';
+        position: absolute;
+        left: 0;
+        top: 0;
+        color: #cc0000;
+        font-weight: bold;
+        font-size: 1.25rem;
+        line-height: 1;
+    }
+
+    /* Custom Loading Indicator Style */
+    .loading-placeholder {
+        min-height: 300px;
+        background-color: #e5e7eb;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #6b7280;
+        font-weight: 600;
+    }
+    @keyframes pulse {
+        0%, 100% { opacity: 1; }
+        50% { opacity: 0.5; }
+    }
+    .animate-pulse-custom {
+        animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+    }
+</style>
+
+<div class="legal-page-wrapper antialiased">
+
+    <!-- 1. HERO SECTION (Legal & Immigration Specific) - FULL-WIDTH -->
+    <header class="relative h-[60vh] min-h-[500px] overflow-hidden mb-12 shadow-xl">
+        <!-- Background Image -->
+        <img src="{% static 'community/img/legal-hero.png' %}"
+             alt="Legal and Immigration Guidance Hero"
+             class="absolute inset-0 w-full h-full object-cover">
+        <!-- Dark Overlay (black with 70% transparency) -->
+        <div class="absolute inset-0 bg-black bg-opacity-70"></div>
+
+        <!-- Centered Content -->
+        <div class="relative z-10 flex flex-col items-center justify-center text-center h-full max-w-4xl mx-auto p-8">
+            <h1 class="text-5xl md:text-6xl main-heading mb-4 text-white">Legal & Immigration Guidance</h1>
+            <p class="text-xl md:text-2xl text-gray-200 mb-8 max-w-3xl">
+                Expert guidance and trusted referrals to help you navigate the complexities of international law and immigration processes.
+            </p>
+            <a href="#" class="inline-block bg-red-700 text-white font-bold py-3 px-8 rounded-lg uppercase text-sm tracking-wider hover:bg-red-800 transition duration-300 shadow-xl">
+                Book a Legal Consultation
+            </a>
+        </div>
+    </header>
+
+    <main class="max-w-7xl mx-auto">
+
+        <!-- Breadcrumb Navigation -->
+        <div class="text-left px-4 sm:px-6 lg:px-8 mb-8">
+            <p class="text-sm text-gray-500">
+                <a href="{% url 'main:layout' %}" class="text-brand-blue hover:underline">Home</a> / 
+                <span class="font-semibold text-brand-green">Legal & Immigration Guidance</span>
+            </p>
+        </div>
+
+        <!-- 2. VISA AND RESIDENCY SERVICES (Image Left) -->
+        <section class="px-4 sm:px-6 lg:px-8">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-10 items-start mb-16">
+                <!-- Image -->
+                <div class="order-1 md:order-1">
+                    <img src="{% static 'community/img/visa-residency.png' %}" 
+                         alt="Visa and Residency Services" 
+                         class="w-full rounded-xl shadow-lg object-cover min-h-[200px]">
+                </div>
+                <!-- Content -->
+                <div class="order-2 md:order-2">
+                    <h2 class="text-4xl font-extrabold text-brand-blue mb-4">Visa and Residency Services</h2>
+                    <p class="text-gray-600 mb-6">
+                        Secure your status abroad with expert guidance on visa applications, extensions, and residency permits. We provide up-to-date information and procedural support to simplify your journey.
+                    </p>
+                    <ul class="feature-list">
+                        <li>Work Permit and Student Visa Assistance</li>
+                        <li>Family and Spousal Sponsorship Guidance</li>
+                        <li>Permanent Residency Application Support</li>
+                        <li>Visa Renewal and Extension Processing</li>
+                    </ul>
+                    <a href="#" class="mt-4 inline-block bg-brand-blue text-white font-bold py-2 px-4 rounded-lg uppercase text-xs tracking-wider hover:bg-blue-800 transition duration-300">
+                        Start Your Application
+                    </a>
+                </div>
+            </div>
+
+            <!-- 3. CITIZENSHIP AND NATURALIZATION (Content Left, Image Right) -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-10 items-start mb-16">
+                <!-- Content -->
+                <div class="order-1 md:order-1">
+                    <h2 class="text-4xl font-extrabold text-brand-blue mb-4">Citizenship and Naturalization</h2>
+                    <p class="text-gray-600 mb-6">
+                        Achieve your goal of citizenship with our comprehensive support. We help you understand eligibility requirements, prepare documentation, and navigate the entire naturalization process from start to finish.
+                    </p>
+                    <ul class="feature-list">
+                        <li>Eligibility Assessment and Consultation</li>
+                        <li>Application and Documentation Review</li>
+                        <li>Guidance on Dual Citizenship Policies</li>
+                        <li>Preparation for Citizenship Tests and Interviews</li>
+                    </ul>
+                    <a href="#" class="mt-4 inline-block bg-brand-blue text-white font-bold py-2 px-4 rounded-lg uppercase text-xs tracking-wider hover:bg-blue-800 transition duration-300">
+                        Explore Citizenship Paths
+                    </a>
+                </div>
+                <!-- Image -->
+                <div class="order-2 md:order-2">
+                    <img src="{% static 'community/img/citizenship.png' %}" 
+                         alt="Citizenship and Naturalization" 
+                         class="w-full rounded-xl shadow-lg object-cover min-h-[200px]">
+                </div>
+            </div>
+
+            <!-- 4. LEGAL REPRESENTATION AND REFERRALS (Image Left) -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-10 items-start mb-16">
+                <!-- Image -->
+                <div class="order-1 md:order-1">
+                    <img src="{% static 'community/img/img1.png' %}" 
+                         alt="Legal Representation & Referrals" 
+                         class="w-full rounded-xl shadow-lg object-cover min-h-[200px]">
+                </div>
+                <!-- Content -->
+                <div class="order-2 md:order-2">
+                    <h2 class="text-4xl font-extrabold text-brand-blue mb-4">Legal Representation & Referrals</h2>
+                    <p class="text-gray-600 mb-6">
+                        When you need direct legal counsel, we connect you to our network of vetted, experienced immigration and international law attorneys. Get trusted representation for complex cases, appeals, and disputes.
+                    </p>
+                    <ul class="feature-list">
+                        <li>Access to Vetted Immigration Lawyers</li>
+                        <li>Specialists in International Family Law</li>
+                        <li>Experts in Property and Business Law Abroad</li>
+                        <li>Support for Appeals and Litigation</li>
+                    </ul>
+                    <a href="#" class="mt-4 inline-block bg-brand-blue text-white font-bold py-2 px-4 rounded-lg uppercase text-xs tracking-wider hover:bg-blue-800 transition duration-300">
+                        Find an Attorney
+                    </a>
+                </div>
+            </div>
+        </section>
+
+        <!-- Disclaimer Block -->
+        <div class="bg-blue-100 border-l-4 border-brand-blue p-8 rounded-xl shadow-lg mb-16 mx-4 sm:mx-6 lg:mx-8">
+            <h3 class="text-2xl font-bold text-brand-blue mb-2">Important Notice</h3>
+            <p class="text-gray-700">
+                Diaspora County 48 provides information and guidance to assist our members. We do not offer direct legal advice. 
+                For specific legal counsel and representation, we will refer you to a qualified and licensed legal professional from our trusted network.
+            </p>
+        </div>
+
+    </main>
+
+</div>
+
+{% endblock %}

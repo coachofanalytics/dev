@@ -118,10 +118,10 @@
         <div class="dropdown-content">
           <!-- Consular Assistance -->
           <div class="sub-dropdown">
-            <a href="https://diaspora.go.ke/diplomaticmissions" target="_blank" >Consular Assistance</a>
+            <a href="{% url 'main:consular_assistance' %}">Consular Assistance</a>
             <div class="sub-dropdown-content">
-              <a href="https://diaspora.go.ke/press" target="_blank" >Information and Updates</a>
-              <a href="https://diaspora.go.ke/diplomaticmissions" target="_blank" >Legal and Immigration Guidance</a>
+              <a href="{% url 'main:consular_information_updates' %}">Information and Updates</a>
+              <a href="{% url 'main:legal_immigration_guidance' %}">Legal and Immigration Guidance</a>
             </div>
           </div>
 

@@ -1,0 +1,50 @@
+{% extends "main/base_templates/base.html" %}
+{% load static %}
+{% block content %}
+
+{% include 'main/snippets_templates/styles/styles.html' %}
+
+<!-- Breadcrumb Navigation -->
+<nav class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 mb-6 mt-4 text-sm text-gray-500">
+    <a href="{% url 'main:layout' %}" class="text-brand-blue hover:underline">Home</a>
+    <span class="mx-2">/</span>
+    <a href="{% url 'main:consular_assistance' %}" class="text-brand-blue hover:underline">Consular Assistance</a>
+    <span class="mx-2">/</span>
+    <a href="{% url 'main:consular_information_updates' %}" class="text-brand-blue hover:underline">Information & Updates</a>
+    <span class="mx-2">/</span>
+    <span class="text-brand-green font-semibold">Press Releases</span>
+</nav>
+
+<section class="hero-section">
+ <div class="hero-content">
+    <h1>Press Releases</h1>
+    <p>Official announcements regarding new services, key partnerships,
+        and operational changes within Diaspora County 48.
+    </p>
+ </div>
+</section>
+
+<section class="recent-headlines" style="max-width: 5xl; margin: 0 auto; padding: 2rem 1rem;">
+
+  <h2 class="recent-title">All Press Releases</h2>
+
+  {% for release in press_releases %}
+  <div class="headline-card">
+    <span class="tag press">PRESS RELEASE</span>
+    <h3>{{ release.title }}</h3>
+    <p class="meta">{{ release.date }} | Diaspora County 48</p>
+    <p>{{ release.summary }}</p>
+  </div>
+  {% empty %}
+  <p class="text-center text-gray-600">No press releases available at this time.</p>
+  {% endfor %}
+
+  <div class="load-more-container">
+    <a href="{% url 'main:consular_information_updates' %}" class="load-more-btn">
+      BACK TO UPDATES
+    </a>
+  </div>
+
+</section>
+
+{% endblock %}
