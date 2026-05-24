@@ -46,7 +46,6 @@ PyRect==0.2.0
 PyScreeze==0.1.28
 python-crontab==2.7.1
 python-dateutil==2.8.1
-python-dotenv==0.20.0
 python3-openid==3.2.0
 python3-xlib==0.15
 pytweening==1.0.4
