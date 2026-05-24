@@ -163,10 +163,10 @@
 
           <!-- Crisis Management -->
           <div class="sub-dropdown">
-            <a href="https://mfa.go.ke/kenyans-distress" target="_blank" >Crisis Management</a>
+            <a href="{% url 'main:crisis_page' %}">Crisis Management</a>
             <div class="sub-dropdown-content">
-              <a href="https://diaspora.go.ke/diplomaticmissions" target="_blank" >Emergency Response</a>
-              <a href="https://diaspora.go.ke/diplomaticmissions" target="_blank" >Advisories</a>
+              <a href="{% url 'main:crisis_page' %}#emergency-response">Emergency Response</a>
+              <a href="{% url 'main:crisis_page' %}#advisories">Advisories</a>
             </div>
           </div>
 

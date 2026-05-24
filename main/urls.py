@@ -46,21 +46,10 @@ urlpatterns = [
     path('ourhistory',views.ourhistory, name ='ourhistory'),
     path('contact_us',views.contact_us, name ='contact_us'),
 
-    # ===== CONSULAR ASSISTANCE MAIN PAGE =====
-    path('consular-assistance/', views.consular_assistance, name='consular_assistance'),
-    path('consular-assistance/book-consultation/', views.book_consular_consultation, name='book_consular_consultation'),
-
-    # ===== CONSULAR ASSISTANCE SUB-PAGES =====
-    path('data/consular/information-updates/', views.consular_information_updates, name='consular_information_updates'),
-    path('data/consular/press-releases/', views.consular_press_releases, name='consular_press_releases'),
-    path('data/consular/embassy-news/', views.consular_embassy_news, name='consular_embassy_news'),
-    path('data/consular/community-updates/', views.consular_community_updates, name='consular_community_updates'),
-    path('data/consular/all-updates/', views.consular_all_updates, name='consular_all_updates'),
-
-    path('legal-immigration-guidance/', views.legal_immigration_guidance, name='legal_immigration_guidance'),
-
-
-
+    # ===== Crisis Management =====
+    path('crisis_page/', views.crisis_page, name='crisis_page'),
+    path('subscribe_alerts/', views.subscribe_alerts, name='subscribe_alerts'),
+    path('activate_helpline/', views.activate_helpline, name='activate_helpline'),
 
    #==============ERRORS==============================================
     path('400Error/', views.error400, name='400error'),

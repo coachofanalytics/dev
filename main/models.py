@@ -296,6 +296,18 @@ class StaffContact(models.Model):
         return self.name
 
 
+class SafetyAlertSubscription(models.Model):
+    email = models.EmailField(unique=True)
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL, null=True, blank=True, on_delete=models.SET_NULL
+    )
+    is_active = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return self.email
+
+
 class ConsularAssistancePage(models.Model):
     title = models.CharField(max_length=255)
     slug = models.SlugField(max_length=255, unique=True)
