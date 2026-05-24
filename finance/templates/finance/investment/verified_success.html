@@ -1,0 +1,10 @@
+{% extends "main/base_templates/base.html" %}
+{% block content %}
+<div style="max-width: 600px; margin: 100px auto; text-align: center; padding: 20px; border: 1px solid #e5e7eb; border-radius: 12px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);">
+    <h1 style="color: #059669; font-size: 2.5rem; margin-bottom: 1rem;">✔ Verified!</h1>
+    <p style="font-size: 1.125rem; color: #4b5563;">Thank you, <strong>{{ email }}</strong>. Your subscription is now active.</p>
+    <div style="margin-top: 2rem;">
+        <a href="{% url 'finance:directory' %}" style="background-color: #059669; color: white; padding: 12px 24px; border-radius: 8px; text-decoration: none; font-weight: 600;">Go to Directory</a>
+    </div>
+</div>
+{% endblock %}

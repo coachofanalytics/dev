@@ -7,6 +7,7 @@ from django.urls import reverse
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 from django.contrib.auth import get_user_model
+import uuid
 
 from accounts.models import CustomerUser, Department
 
@@ -397,6 +398,50 @@ class CodaBudget(TimeStampedModel):
         if self.unit_price and self.qty:
             return round(Decimal(self.unit_price) * Decimal(self.qty), 2)
         return Decimal("0.00")
+
+
+class Opportunity(models.Model):
+
+    class Status(models.TextChoices):
+        PENDING = "PENDING", "Pending"
+        APPROVED = "APPROVED", "Approved"
+        REJECTED = "REJECTED", "Rejected"
+
+    title = models.CharField(max_length=255)
+    description = models.TextField()
+    contact = models.CharField(max_length=255, null=True, blank=True)
+    rejection_reason = models.TextField(null=True, blank=True)
+    last_notified_at = models.DateTimeField(null=True, blank=True)
+    is_suspicious = models.BooleanField(default=False)
+    type = models.CharField(max_length=255)
+    status = models.CharField(
+        max_length=10,
+        choices=Status.choices,
+        default=Status.PENDING,
+    )
+
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return self.title
+
+
+class NewsLetterSubscriber(models.Model):
+    email = models.EmailField(unique=True)
+    is_verified = models.BooleanField(default=False)
+    subscribed_at = models.DateTimeField(auto_now_add=True)
+    verification_token = models.UUIDField(default=uuid.uuid4, editable=False)
+
+    def __str__(self):
+        return self.email
+
+
+class ApprovedManager(models.Manager):
+    def get_queryset(self):
+        return super().get_queryset().filter(status='APPROVED')
+
+
+Opportunity.add_to_class('approved', ApprovedManager())
 
 
 class Payment(models.Model):

@@ -1,0 +1,278 @@
+{% extends "main/base_templates/base.html" %}
+{% block title %}Admin Control Panel{% endblock %}
+
+{% block content %}
+<style>
+    /* 1. LAYOUT & BACKGROUND */
+    .admin-dashboard { 
+        padding: 40px 0; 
+        background: #f1f5f9; /* Slightly deeper gray for better contrast with white cards */
+        min-height: 100vh; 
+        font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    }
+    .dashboard-grid { 
+        display: grid; 
+        grid-template-columns: 1fr 350px; 
+        gap: 30px; 
+    }
+    
+    /* 2. MANAGEMENT HEADER */
+    .main-content h2 {
+        color: #1e293b;
+        font-size: 28px;
+        font-weight: 800;
+        margin-bottom: 5px;
+        padding-bottom: 0;
+    }
+    .main-content p {
+        color: #64748b;
+        font-size: 16px;
+        margin-bottom: 30px;
+    }
+
+    /* 3. MODERATION CARDS (The "Breathing Room" Update) */
+    .moderation-card { 
+        background: white; 
+        padding: 35px; /* Increased internal padding */
+        border-radius: 16px; 
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        border-left: 8px solid #f59e0b; 
+        margin-bottom: 30px; /* Increased external margin */
+        transition: all 0.3s ease;
+    }
+    .moderation-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+    }
+    .moderation-card.suspicious-flag { 
+        border-left: 8px solid #dc2626; 
+        background-color: #fffafb; 
+    }
+
+    /* 4. DETAILS & SPACING */
+    .moderation-card h4 {
+        font-size: 22px;
+        font-weight: 700;
+        color: #1e293b;
+        margin: 0;
+    }
+    .moderation-meta { 
+        margin: 20px 0; /* Vertical spacing for the meta info row */
+        display: flex;
+        gap: 25px; /* Horizontal space between Email and Category */
+        color: #475569;
+        font-size: 15px;
+    }
+    .opportunity-body { 
+        background: #f8fafc; 
+        padding: 25px; /* Breathing room inside the description box */
+        border-radius: 12px; 
+        border: 1px solid #e2e8f0;
+        margin-bottom: 25px; /* Space before action buttons */
+    }
+    .opportunity-body p {
+        line-height: 1.8; /* Improves readability of descriptions */
+        color: #334155;
+        margin: 0;
+        padding: 0;
+    }
+
+    /* 5. STATUS & ALERTS */
+  
+    
+    .status-approved { background: #dcfce7; color: #166534; }
+    .status-pending { background: #fef3c7; color: #92400e; }
+    .status-rejected { background: #fee2e2; color: #991b1b; }
+
+    .spam-warning { 
+        background: #dc2626; 
+        color: white; 
+        padding: 6px 14px; 
+        border-radius: 6px; 
+        font-size: 12px; 
+        font-weight: 800; 
+        display: inline-block; 
+        margin-bottom: 15px; 
+        box-shadow: 0 4px 6px rgba(220, 38, 38, 0.2);
+    }
+
+    /* 6. BUTTONS & ACTIONS */
+    .moderation-actions {
+        display: flex;
+        gap: 12px;
+        align-items: center;
+        border-top: 1px solid #f1f5f9;
+        padding-top: 20px;
+    }
+    .btn-approve, .btn-reject, .btn-delete {
+        padding: 10px 20px; 
+        border: none; 
+        border-radius: 8px; 
+        font-weight: 700; 
+        cursor: pointer; 
+        transition: all 0.2s;
+        font-size: 14px;
+    }
+    .btn-approve { background: #16a34a; color: white; }
+    .btn-approve:hover { background: #15803d; transform: scale(1.02); }
+
+    .btn-reject { background: #ea580c; color: white; }
+    .btn-reject:hover { background: #c2410c; transform: scale(1.02); }
+
+    /* 7. SIDEBAR & NEWSLETTER */
+    .stat-badge { 
+    background: #f0fdf4; /* Light success green */
+    color: #166534; 
+    padding: 5px 12px; 
+    border-radius: 20px; 
+    font-size: 12px; 
+    font-weight: 700; 
+    border: 1px solid #dcfce7;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+/* Add a tiny green "online" pulse to the badge */
+.stat-badge::before {
+    content: "";
+    width: 6px;
+    height: 6px;
+    background: #22c55e;
+    border-radius: 50%;
+    display: inline-block;
+}
+    .newsletter-card { 
+        background: white; padding: 30px; border-radius: 16px; 
+        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1); 
+        border-top: 6px solid #2563eb;
+        position: sticky;
+        top: 20px;
+    }
+    .newsletter-card .form-group label {
+    font-size: 13px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: #64748b;
+    margin-bottom: 8px;
+}
+
+.newsletter-card .form-control {
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    transition: all 0.2s;
+}
+
+.newsletter-card .form-control:focus {
+    background: #fff;
+    border-color: #2563eb;
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+    outline: none;
+}
+    .btn-send { 
+        background: #2563eb; color: white; width: 100%; padding: 14px; 
+        border: none; border-radius: 8px; font-weight: 800; cursor: pointer;
+        font-size: 16px; margin-top: 10px;
+    }
+</style>
+
+<div class="admin-dashboard">
+    <div class="container">
+        <div class="dashboard-grid">
+            
+            <div class="main-content">
+                <h2>Management Dashboard</h2>
+                <p>Total Opportunities in System: {{ all_items|length }}</p>
+
+                {% if all_items %}
+                   {% for opp in all_items %}
+             <div class="moderation-card {% if opp.is_suspicious %}suspicious-flag{% endif %}">
+        
+        {% if opp.is_suspicious %}
+            <div class="spam-warning" style="margin-bottom: 15px;">⚠️ AUTO-FLAGGED: POTENTIAL SPAM</div>
+        {% endif %}
+
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+            <h4>{{ opp.title }}</h4>
+            <span class="status-badge status-{{ opp.status|lower }}">
+                {{ opp.status }}
+            </span>
+        </div>
+
+        <div class="moderation-meta">
+            <span><strong> Email:</strong> {{ opp.contact }}</span>
+            <span><strong> Category:</strong> {{ opp.type }}</span>
+        </div>
+
+        <div class="opportunity-body">
+            <p style="margin: 0;">{{ opp.description }}</p>
+        </div>
+
+        <div class="moderation-actions">
+            {% if opp.status != 'APPROVED' %}
+                <form method="POST" action="{% url 'finance:approve_opportunity' opp.id %}">
+                    {% csrf_token %}
+                    <button type="submit" class="btn-approve">Approve & Publish</button>
+                </form>
+            {% endif %}
+
+            {% if opp.status != 'REJECTED' %}
+                <form method="POST" action="{% url 'finance:reject_opportunity' opp.id %}">
+                    {% csrf_token %}
+                    <button type="submit" class="btn-reject">Reject </button>
+                </form>
+            {% endif %}
+
+            <form method="POST" action="{% url 'finance:delete_opportunity' opp.id %}" 
+                  onsubmit="return confirm('Permanently delete this record?');">
+                {% csrf_token %}
+                <button type="submit" style="background: #ef4444; color: white; padding: 10px 20px; border: none; border-radius: 6px; font-weight: bold; cursor: pointer;">
+                    Delete 
+                </button>
+            </form>
+        </div>
+    </div>
+{% endfor %}
+                {% else %}
+                    <div class="empty-state">No opportunities found in the database.</div>
+                {% endif %}
+            </div>
+
+            <div class="sidebar">
+                <div class="newsletter-card">
+    <h3>
+         Newsletter Engine
+        <span class="stat-badge">
+            {{ subscribers_count }} Verified Contacts
+        </span>
+    </h3>
+
+    <form method="POST" action="{% url 'finance:admin_send_newsletter' %}">
+        {% csrf_token %}
+        <div class="form-group">
+            <label>Campaign Subject</label>
+            <input type="text" name="subject" class="form-control" placeholder="E.g. Weekly Investment Roundup" required>
+        </div>
+        
+        <div class="form-group">
+            <label>Message Content</label>
+            <textarea name="message" class="form-control" rows="8" placeholder="What's the update today?" required></textarea>
+        </div>
+
+        <button type="submit" class="btn-send">
+             Launch Campaign
+        </button>
+    </form>
+
+    <div style="margin-top: 20px; padding-top: 15px; border-top: 1px dashed #e2e8f0;">
+        <p style="font-size: 12px; color: #94a3b8; text-align: center; line-height: 1.4;">
+            <strong>Pro Tip:</strong> Verified subscribers are users who confirmed their email link.
+        </p>
+    </div>
+</div>
+            </div>
+
+        </div>
+    </div>
+</div>
+{% endblock %}
