@@ -1,0 +1,636 @@
+{% extends "main/base_templates/base.html" %}
+{% load static %}
+
+{% block content %}
+
+<style>
+    /* ============ RESET & BASE (page-specific) ============ */
+    section { display: block !important; }
+    main { background: #f5f7fa; }
+
+    /* ============ HERO ============ */
+    .hero { background: linear-gradient(135deg, #1a3a2a 0%, #2563eb 100%); padding: 3.5rem 2rem; text-align: center; }
+    .hero h1 { color: #fff; font-size: 2.4rem; font-weight: 800; letter-spacing: 1px; text-transform: uppercase; margin-bottom: .75rem; }
+    .hero p { color: rgba(255,255,255,.85); font-size: 1.05rem; margin-bottom: 2rem; }
+    .search-form { display: flex; gap: .75rem; max-width: 720px; margin: 0 auto; flex-wrap: wrap; }
+    .search-form input { flex: 1; min-width: 200px; padding: .75rem 1rem; border: none; border-radius: 4px; font-size: 1rem; outline: none; }
+    .search-form input:focus { box-shadow: 0 0 0 3px rgba(255,255,255,.4); }
+    .btn-search { background: #dc2626; color: #fff; border: none; padding: .75rem 1.75rem; border-radius: 4px; font-weight: 700; font-size: .95rem; letter-spacing: .5px; cursor: pointer; text-transform: uppercase; transition: background .2s; white-space: nowrap; }
+    .btn-search:hover { background: #b91c1c; }
+
+    /* ============ MAIN LAYOUT ============ */
+    .main { max-width: 1200px; margin: 2rem auto; padding: 0 1.5rem; display: grid; grid-template-columns: 240px 1fr; gap: 1.5rem; flex: 1; width: 100%; }
+
+    /* ============ FILTERS ============ */
+    .filters { background: #fff; border-radius: 8px; padding: 1.25rem; height: fit-content; box-shadow: 0 1px 4px rgba(0,0,0,.08); }
+    .filter-group { margin-bottom: 1.5rem; }
+    .filter-group:last-child { margin-bottom: 0; }
+    .filter-title { font-size: .7rem; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: #64748b; margin-bottom: .75rem; }
+    .filter-item { display: flex; align-items: center; gap: .5rem; margin-bottom: .5rem; cursor: pointer; }
+    .filter-item input[type=checkbox] { width: 16px; height: 16px; accent-color: #2563eb; cursor: pointer; }
+    .filter-item label { font-size: .9rem; color: #374151; cursor: pointer; }
+
+    /* ============ RESULTS ============ */
+    .results-area {}
+    .results-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1rem; gap: 1rem; flex-wrap: wrap; }
+    .results-count { font-size: 1.1rem; font-weight: 600; color: #1a202c; }
+    .sort-wrap { display: flex; align-items: center; gap: .5rem; }
+    .sort-wrap label { font-size: .9rem; color: #64748b; white-space: nowrap; }
+    .sort-select { padding: .45rem .75rem; border: 1px solid #d1d5db; border-radius: 4px; font-size: .9rem; color: #374151; background: #fff; cursor: pointer; outline: none; }
+    .sort-select:focus { border-color: #2563eb; }
+
+    /* ============ DOCTOR CARDS ============ */
+    .cards-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1rem; }
+    .doctor-card { background: #fff; border-radius: 10px; padding: 1.25rem; box-shadow: 0 1px 4px rgba(0,0,0,.08); transition: box-shadow .2s, transform .15s; cursor: pointer; display: flex; flex-direction: column; gap: .75rem; position: relative; }
+    .doctor-card:hover { box-shadow: 0 4px 16px rgba(0,0,0,.12); transform: translateY(-2px); }
+    .card-top { display: flex; align-items: flex-start; gap: .85rem; }
+    .avatar { width: 52px; height: 52px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 1.1rem; color: #fff; flex-shrink: 0; }
+    .card-info { flex: 1; min-width: 0; }
+    .card-name { font-weight: 700; font-size: 1rem; color: #1a202c; margin-bottom: .1rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .card-specialty { font-size: .85rem; color: #64748b; }
+    .badge { font-size: .7rem; font-weight: 600; padding: .2rem .55rem; border-radius: 20px; white-space: nowrap; }
+    .badge-available { background: #d1fae5; color: #065f46; }
+    .badge-telehealth { background: #dbeafe; color: #1e40af; }
+    .badge-unavailable { background: #f3f4f6; color: #6b7280; }
+    .card-badges { display: flex; gap: .4rem; flex-wrap: wrap; }
+    .card-detail { display: flex; align-items: flex-start; gap: .4rem; font-size: .85rem; color: #475569; }
+    .card-detail .icon { font-size: .9rem; flex-shrink: 0; margin-top: 1px; }
+    .card-rating { display: flex; align-items: center; gap: .35rem; font-size: .85rem; color: #374151; }
+    .stars { color: #f59e0b; font-size: .9rem; }
+    .btn-book { background: #2563eb; color: #fff; border: none; border-radius: 5px; padding: .6rem 1rem; font-weight: 700; font-size: .85rem; cursor: pointer; text-transform: uppercase; letter-spacing: .5px; transition: background .2s; width: 100%; margin-top: auto; }
+    .btn-book:hover { background: #1d4ed8; }
+
+    /* ============ PAGINATION ============ */
+    .pagination { display: flex; justify-content: center; align-items: center; gap: .4rem; margin-top: 2rem; flex-wrap: wrap; }
+    .page-btn { padding: .45rem .75rem; border: 1px solid #d1d5db; background: #fff; border-radius: 4px; font-size: .9rem; cursor: pointer; color: #374151; text-decoration: none; transition: all .15s; }
+    .page-btn:hover { background: #f1f5f9; border-color: #94a3b8; }
+    .page-btn.active { background: #2563eb; color: #fff; border-color: #2563eb; font-weight: 700; }
+    .page-btn.disabled { opacity: .4; cursor: not-allowed; pointer-events: none; }
+    .page-ellipsis { color: #94a3b8; padding: .45rem .3rem; }
+
+    /* ============ BREADCRUMB ============ */
+    .breadcrumb-nav { background: #f0f9ff; border-bottom: 1px solid #bfdbfe; padding: 1.25rem 0; margin: 2rem 0; position: relative; z-index: 5; }
+    .breadcrumb-container { max-width: 1200px; margin: 0 auto; padding: 0 1.5rem; }
+    .breadcrumb-list { display: flex; align-items: center; gap: 1rem; list-style: none; margin: 0; padding: 0.5rem 0; flex-wrap: wrap; justify-content: flex-start; }
+    .breadcrumb-item { display: flex; align-items: center; gap: 0.5rem; }
+    .breadcrumb-item a { color: #2563eb; text-decoration: none; font-weight: 600; font-size: .95rem; transition: color .2s; display: flex; align-items: center; gap: 0.35rem; }
+    .breadcrumb-item a:hover { color: #1e40af; text-decoration: underline; }
+    .breadcrumb-item.active { color: #1a3a2a; font-weight: 700; font-size: .95rem; display: flex; align-items: center; gap: 0.35rem; }
+    .breadcrumb-item.completed a { color: #16a34a; }
+    .breadcrumb-item.completed a:hover { color: #15803d; }
+    .breadcrumb-separator { color: #94a3b8; font-weight: 600; margin: 0 0.25rem; }
+    .breadcrumb-badge { display: inline-flex; align-items: center; justify-content: center; width: 24px; height: 24px; border-radius: 50%; font-size: .75rem; font-weight: 700; flex-shrink: 0; min-width: 24px; }
+    .breadcrumb-item.active .breadcrumb-badge { background: #2563eb; color: #fff; }
+    .breadcrumb-item.completed .breadcrumb-badge { background: #16a34a; color: #fff; }
+    @media (max-width: 768px) { .breadcrumb-list { gap: 0.5rem; font-size: 0.85rem; } .breadcrumb-badge { width: 20px; height: 20px; font-size: 0.7rem; } .breadcrumb-item a, .breadcrumb-item.active { font-size: 0.85rem; } }
+    
+    /* ============ EMPTY STATE ============ */
+    .empty-state { text-align: center; padding: 3rem 1rem; color: #64748b; grid-column: 1/-1; }
+    .empty-state h3 { font-size: 1.2rem; margin-bottom: .5rem; color: #374151; }
+
+    /* ============ MODAL BASE ============ */
+    .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.55); z-index: 1000; align-items: center; justify-content: center; padding: 1rem; }
+    .modal-overlay.open { display: flex; }
+    .modal { background: #fff; border-radius: 12px; max-width: 600px; width: 100%; max-height: 90vh; overflow-y: auto; position: relative; box-shadow: 0 20px 60px rgba(0,0,0,.3); animation: modalIn .2s ease; }
+    @keyframes modalIn { from { opacity: 0; transform: translateY(-20px) scale(.97); } to { opacity: 1; transform: none; } }
+    .modal-close { position: absolute; top: 1rem; right: 1rem; background: rgba(0,0,0,.08); border: none; border-radius: 50%; width: 32px; height: 32px; font-size: 1.2rem; cursor: pointer; display: flex; align-items: center; justify-content: center; line-height: 1; color: #374151; transition: background .2s; z-index: 2; }
+    .modal-close:hover { background: rgba(0,0,0,.15); }
+
+    /* ============ PROFILE MODAL ============ */
+    .profile-header { background: linear-gradient(135deg, #1a3a2a, #2563eb); padding: 2rem; display: flex; align-items: flex-start; gap: 1.25rem; border-radius: 12px 12px 0 0; }
+    .profile-avatar { width: 80px; height: 80px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.8rem; font-weight: 700; color: #fff; flex-shrink: 0; border: 3px solid rgba(255,255,255,.3); }
+    .profile-title h2 { color: #fff; font-size: 1.4rem; margin-bottom: .25rem; }
+    .profile-title p { color: rgba(255,255,255,.8); font-size: 1rem; }
+    .profile-body { padding: 1.5rem 2rem; }
+    .profile-row { display: flex; align-items: flex-start; gap: .75rem; margin-bottom: .75rem; font-size: .9rem; }
+    .profile-row .icon { font-size: 1rem; color: #2563eb; flex-shrink: 0; margin-top: 2px; }
+    .profile-row strong { display: block; font-size: .75rem; color: #64748b; text-transform: uppercase; letter-spacing: .5px; margin-bottom: .1rem; }
+    .section-title { font-size: .75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: #64748b; margin-bottom: .75rem; padding-bottom: .4rem; border-bottom: 1px solid #e2e8f0; }
+    .profile-section { margin-bottom: 1.5rem; }
+    .profile-bio { font-size: .9rem; color: #374151; line-height: 1.7; }
+    .edu-list { list-style: none; }
+    .edu-list li { font-size: .875rem; color: #374151; padding: .35rem 0; padding-left: 1.25rem; position: relative; }
+    .edu-list li::before { content: '🎓'; position: absolute; left: 0; font-size: .8rem; }
+    .profile-footer { padding: 1rem 2rem 1.5rem; border-top: 1px solid #e2e8f0; }
+    .btn-request { background: #2563eb; color: #fff; border: none; padding: .8rem 2rem; border-radius: 6px; font-size: 1rem; font-weight: 700; cursor: pointer; width: 100%; text-transform: uppercase; letter-spacing: .5px; transition: background .2s; }
+    .btn-request:hover { background: #1d4ed8; }
+
+    /* ============ BOOKING MODAL ============ */
+    .booking-header { background: #1a3a2a; padding: 1.5rem 2rem; border-radius: 12px 12px 0 0; }
+    .booking-header h2 { color: #fff; font-size: 1.2rem; font-weight: 700; letter-spacing: .5px; text-transform: uppercase; }
+    .booking-header p { color: rgba(255,255,255,.75); font-size: .9rem; margin-top: .25rem; }
+    .booking-header p span { color: #60a5fa; font-weight: 600; }
+    .booking-body { padding: 1.5rem 2rem; }
+    .form-group { margin-bottom: 1.25rem; }
+    .form-group label { display: block; font-size: .85rem; font-weight: 600; color: #374151; margin-bottom: .4rem; }
+    .form-group label .req { color: #dc2626; margin-left: 2px; }
+    .form-control { width: 100%; padding: .65rem .9rem; border: 1px solid #d1d5db; border-radius: 5px; font-size: .95rem; color: #1a202c; outline: none; transition: border-color .2s; font-family: inherit; }
+    .form-control:focus { border-color: #2563eb; box-shadow: 0 0 0 3px rgba(37,99,235,.12); }
+    .form-control.error { border-color: #dc2626; }
+    .error-msg { color: #dc2626; font-size: .8rem; margin-top: .3rem; }
+    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+    .privacy-note { font-size: .78rem; color: #64748b; margin-top: 1rem; text-align: center; }
+    .privacy-note a { color: #2563eb; }
+    .btn-confirm { background: #16a34a; color: #fff; border: none; padding: .8rem; border-radius: 6px; font-size: 1rem; font-weight: 700; cursor: pointer; width: 100%; text-transform: uppercase; letter-spacing: .5px; margin-top: 1rem; transition: background .2s; }
+    .btn-confirm:hover { background: #15803d; }
+    .btn-confirm:disabled { background: #94a3b8; cursor: not-allowed; }
+
+    /* ============ SUCCESS STATE ============ */
+    .success-state { text-align: center; padding: 2.5rem 2rem; }
+    .success-icon { font-size: 3.5rem; margin-bottom: 1rem; }
+    .success-state h3 { font-size: 1.3rem; color: #065f46; margin-bottom: .75rem; }
+    .success-state p { font-size: .95rem; color: #374151; line-height: 1.6; }
+    .btn-done { background: #16a34a; color: #fff; border: none; padding: .75rem 2rem; border-radius: 6px; font-weight: 700; cursor: pointer; margin-top: 1.5rem; font-size: .95rem; transition: background .2s; }
+    .btn-done:hover { background: #15803d; }
+
+    /* ============ RESPONSIVE ============ */
+    @media (max-width: 768px) {
+        .main { grid-template-columns: 1fr; }
+        .filters { display: none; }
+        .filters.open { display: block; }
+        .hero h1 { font-size: 1.6rem; }
+        .form-row { grid-template-columns: 1fr; }
+    }
+</style>
+
+
+<!-- ===== HERO SEARCH ===== -->
+<section class="hero" aria-label="Search for doctors">
+    <h1>Find Diaspora-Friendly Doctors</h1>
+    <p>Search our vetted network of medical professionals who understand your culture and history.</p>
+    <form class="search-form" method="GET" action="{% url 'main:find_doctors' %}" role="search" aria-label="Doctor search">
+        <input type="text" name="specialty" value="{{ specialty_q }}" placeholder="Specialty (e.g., Cardiologist, Dentist)" aria-label="Specialty">
+        <input type="text" name="location" value="{{ location_q }}" placeholder="Location (City or Country)" aria-label="Location">
+        <button type="submit" class="btn-search">Search Now</button>
+    </form>
+</section>
+
+<!-- ===== BREADCRUMB NAVIGATION ===== -->
+<nav class="breadcrumb-nav" aria-label="Healthcare progress steps">
+    <div class="breadcrumb-container">
+        <ul class="breadcrumb-list">
+            <li class="breadcrumb-item active">
+                <span class="breadcrumb-badge">1</span>
+                <span>Find Doctors</span>
+            </li>
+            <li class="breadcrumb-item">
+                <span class="breadcrumb-separator">→</span>
+            </li>
+            <li class="breadcrumb-item">
+                <a href="{% url 'main:insurance_support' %}">
+                    <span class="breadcrumb-badge">2</span>
+                    <span>Insurance Support</span>
+                </a>
+            </li>
+        </ul>
+    </div>
+</nav>
+
+<!-- ===== MAIN CONTENT ===== -->
+<div class="main">
+
+    <!-- FILTERS -->
+    <aside class="filters" id="filters-panel" aria-label="Filter results">
+        <form id="filter-form" method="GET" action="{% url 'main:find_doctors' %}">
+            <input type="hidden" name="specialty" value="{{ specialty_q }}">
+            <input type="hidden" name="location" value="{{ location_q }}">
+            <input type="hidden" name="sort" value="{{ sort_by }}">
+
+            <div class="filter-group">
+                <div class="filter-title">Categories</div>
+                {% for key, label in category_choices %}
+                <div class="filter-item">
+                    <input type="checkbox" id="cat_{{ key }}" name="categories" value="{{ key }}"
+                           {% if key in selected_categories %}checked{% endif %}
+                           onchange="document.getElementById('filter-form').submit()">
+                    <label for="cat_{{ key }}">{{ label }}</label>
+                </div>
+                {% endfor %}
+            </div>
+
+            <div class="filter-group">
+                <div class="filter-title">Language</div>
+                {% for key, label in language_choices %}
+                <div class="filter-item">
+                    <input type="checkbox" id="lang_{{ key }}" name="languages" value="{{ key }}"
+                           {% if key in selected_languages %}checked{% endif %}
+                           onchange="document.getElementById('filter-form').submit()">
+                    <label for="lang_{{ key }}">{{ label }}</label>
+                </div>
+                {% endfor %}
+            </div>
+        </form>
+    </aside>
+
+    <!-- RESULTS -->
+    <main aria-label="Doctor results">
+        <div class="results-header">
+            <h2 class="results-count">Available Specialists ({{ total_count }})</h2>
+            <div class="sort-wrap">
+                <label for="sort-select">Sort by:</label>
+                <select class="sort-select" id="sort-select" aria-label="Sort results" onchange="applySort(this.value)">
+                    {% for val, label in sort_options %}
+                    <option value="{{ val }}" {% if val == sort_by %}selected{% endif %}>{{ label }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+        </div>
+
+        {% if page_obj %}
+        <div class="cards-grid" id="cards-grid">
+            {% for doc in page_obj %}
+            <article class="doctor-card" onclick="openProfile({{ doc.pk }})"
+                     role="button" tabindex="0" aria-label="View profile of {{ doc.name }}"
+                     onkeydown="if(event.key==='Enter'||event.key===' ')openProfile({{ doc.pk }})">
+                <div class="card-top">
+                    <div class="avatar" style="background:{{ doc.avatar_color }}">{{ doc.avatar_initials }}</div>
+                    <div class="card-info">
+                        <div class="card-name">{{ doc.name }}</div>
+                        <div class="card-specialty">{{ doc.title }}</div>
+                    </div>
+                </div>
+                <div class="card-badges">
+                    {% if doc.available %}
+                    <span class="badge badge-available">Available</span>
+                    {% else %}
+                    <span class="badge badge-unavailable">Unavailable</span>
+                    {% endif %}
+                    {% if doc.telehealth %}
+                    <span class="badge badge-telehealth">Telehealth Only</span>
+                    {% endif %}
+                </div>
+                <div class="card-detail">
+                    <span class="icon">📍</span>
+                    <span>{{ doc.full_location }}{% if doc.clinic_name %} ({{ doc.clinic_name }}){% endif %}</span>
+                </div>
+                <div class="card-detail">
+                    <span class="icon">💬</span>
+                    <span>{{ doc.get_language_display_list|join:", " }}</span>
+                </div>
+                <div class="card-rating">
+                    <span class="stars">★</span>
+                    <strong>{{ doc.rating }}</strong>
+                    <span style="color:#94a3b8">({{ doc.review_count }} reviews)</span>
+                </div>
+                <button class="btn-book" onclick="event.stopPropagation(); openBookingDirect({{ doc.pk }}, '{{ doc.name }}')" aria-label="Book appointment with {{ doc.name }}">
+                    Book Appointment
+                </button>
+            </article>
+            {% endfor %}
+        </div>
+
+        <!-- PAGINATION -->
+        {% if page_obj.paginator.num_pages > 1 %}
+        <nav class="pagination" aria-label="Results pagination">
+            {% if page_obj.has_previous %}
+            <a class="page-btn" href="?specialty={{ specialty_q }}&location={{ location_q }}&sort={{ sort_by }}{% for c in selected_categories %}&categories={{ c }}{% endfor %}{% for l in selected_languages %}&languages={{ l }}{% endfor %}&page={{ page_obj.previous_page_number }}" aria-label="Previous page">Prev</a>
+            {% else %}
+            <span class="page-btn disabled" aria-disabled="true">Prev</span>
+            {% endif %}
+
+            {% for p in page_range %}
+                {% if p == page_obj.number %}
+                <span class="page-btn active" aria-current="page">{{ p }}</span>
+                {% elif p == '…' %}
+                <span class="page-ellipsis">…</span>
+                {% else %}
+                <a class="page-btn" href="?specialty={{ specialty_q }}&location={{ location_q }}&sort={{ sort_by }}{% for c in selected_categories %}&categories={{ c }}{% endfor %}{% for l in selected_languages %}&languages={{ l }}{% endfor %}&page={{ p }}">{{ p }}</a>
+                {% endif %}
+            {% endfor %}
+
+            {% if page_obj.has_next %}
+            <a class="page-btn" href="?specialty={{ specialty_q }}&location={{ location_q }}&sort={{ sort_by }}{% for c in selected_categories %}&categories={{ c }}{% endfor %}{% for l in selected_languages %}&languages={{ l }}{% endfor %}&page={{ page_obj.next_page_number }}" aria-label="Next page">Next</a>
+            {% else %}
+            <span class="page-btn disabled" aria-disabled="true">Next</span>
+            {% endif %}
+        </nav>
+        {% endif %}
+
+        {% else %}
+        <div class="empty-state">
+            <h3>No doctors found</h3>
+            <p>Try adjusting your search or filters to find a provider.</p>
+        </div>
+        {% endif %}
+    </main>
+</div>
+
+<!-- ===== PROFILE MODAL ===== -->
+<div class="modal-overlay" id="profile-modal" role="dialog" aria-modal="true" aria-labelledby="profile-name">
+    <div class="modal" id="profile-modal-inner">
+        <button class="modal-close" id="profile-close" aria-label="Close profile">&times;</button>
+        <div class="profile-header" id="profile-header">
+            <div class="profile-avatar" id="profile-avatar"></div>
+            <div class="profile-title">
+                <h2 id="profile-name"></h2>
+                <p id="profile-title-text"></p>
+                <div class="card-badges" id="profile-badges" style="margin-top:.5rem"></div>
+            </div>
+        </div>
+        <div class="profile-body">
+            <div class="profile-section">
+                <div class="profile-row">
+                    <span class="icon">📍</span>
+                    <div><strong>Location</strong><span id="profile-location"></span></div>
+                </div>
+                <div class="profile-row">
+                    <span class="icon">💬</span>
+                    <div><strong>Languages</strong><span id="profile-languages"></span></div>
+                </div>
+                <div class="profile-row">
+                    <span class="icon">⭐</span>
+                    <div><strong>Rating</strong><span id="profile-rating"></span></div>
+                </div>
+            </div>
+            <div class="profile-section">
+                <div class="section-title">About the Provider</div>
+                <p class="profile-bio" id="profile-bio"></p>
+            </div>
+            <div class="profile-section">
+                <div class="section-title">Education &amp; Certifications</div>
+                <ul class="edu-list" id="profile-edu"></ul>
+            </div>
+        </div>
+        <div class="profile-footer">
+            <button class="btn-request" id="btn-request-appt">Request Appointment</button>
+        </div>
+    </div>
+</div>
+
+<!-- ===== BOOKING MODAL ===== -->
+<div class="modal-overlay" id="booking-modal" role="dialog" aria-modal="true" aria-labelledby="booking-title">
+    <div class="modal" id="booking-modal-inner">
+        <button class="modal-close" id="booking-close" aria-label="Close booking form">&times;</button>
+        <div class="booking-header">
+            <h2 id="booking-title">Booking Request</h2>
+            <p id="booking-subtitle"></p>
+        </div>
+        <div class="booking-body" id="booking-body">
+            <form id="booking-form" novalidate>
+                {% csrf_token %}
+                <input type="text" name="honeypot" style="display:none" tabindex="-1" autocomplete="off">
+                <div class="form-group">
+                    <label for="b-name">Full Name <span class="req">*</span></label>
+                    <input type="text" id="b-name" name="full_name" class="form-control" placeholder="Your full name" required autocomplete="name">
+                    <div class="error-msg" id="err-name"></div>
+                </div>
+                <div class="form-group">
+                    <label for="b-email">Email Address <span class="req">*</span></label>
+                    <input type="email" id="b-email" name="email" class="form-control" placeholder="your@email.com" required autocomplete="email">
+                    <div class="error-msg" id="err-email"></div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="b-date">Preferred Date <span class="req">*</span></label>
+                        <input type="date" id="b-date" name="preferred_date" class="form-control" required>
+                        <div class="error-msg" id="err-date"></div>
+                    </div>
+                    <div class="form-group">
+                        <label for="b-time">Preferred Time <span class="req">*</span></label>
+                        <select id="b-time" name="preferred_time" class="form-control" required>
+                            <option value="">Select time…</option>
+                            <option value="morning">Morning (8am–12pm)</option>
+                            <option value="afternoon">Afternoon (12pm–5pm)</option>
+                            <option value="evening">Evening (5pm–8pm)</option>
+                        </select>
+                        <div class="error-msg" id="err-time"></div>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="b-reason">Reason for Visit <span class="req">*</span></label>
+                    <textarea id="b-reason" name="reason" class="form-control" rows="4" placeholder="Briefly describe your reason for the appointment..." required></textarea>
+                    <div class="error-msg" id="err-reason"></div>
+                </div>
+                <button type="submit" class="btn-confirm" id="btn-confirm">Confirm Request</button>
+                <p class="privacy-note">Your information is confidential and will only be shared with the selected provider. <a href="#" id="privacy-link-form">Privacy Policy</a></p>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+// ============ STATE ============
+let currentDoctorId = null;
+let currentDoctorName = '';
+let profileOpener = null;
+let bookingOpener = null;
+
+// ============ SORT ============
+function applySort(val) {
+    const url = new URL(window.location);
+    url.searchParams.set('sort', val);
+    url.searchParams.set('page', '1');
+    window.location = url;
+}
+
+// ============ MODAL FOCUS TRAP ============
+function trapFocus(modal) {
+    const focusable = modal.querySelectorAll('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])');
+    const first = focusable[0], last = focusable[focusable.length - 1];
+    modal.addEventListener('keydown', function trap(e) {
+        if (e.key !== 'Tab') return;
+        if (e.shiftKey) { if (document.activeElement === first) { e.preventDefault(); last.focus(); } }
+        else { if (document.activeElement === last) { e.preventDefault(); first.focus(); } }
+    });
+}
+
+function openModal(overlay) {
+    overlay.classList.add('open');
+    document.body.style.overflow = 'hidden';
+    overlay.setAttribute('aria-hidden', 'false');
+}
+
+function closeModal(overlay, returnFocus) {
+    overlay.classList.remove('open');
+    document.body.style.overflow = '';
+    overlay.setAttribute('aria-hidden', 'true');
+    if (returnFocus) returnFocus.focus();
+}
+
+// Close on overlay click
+document.getElementById('profile-modal').addEventListener('click', function(e) {
+    if (e.target === this) closeModal(this, profileOpener);
+});
+document.getElementById('booking-modal').addEventListener('click', function(e) {
+    if (e.target === this) closeModal(this, profileOpener);
+});
+
+// Close on Esc
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') {
+        if (document.getElementById('booking-modal').classList.contains('open')) {
+            closeModal(document.getElementById('booking-modal'), profileOpener);
+        } else if (document.getElementById('profile-modal').classList.contains('open')) {
+            closeModal(document.getElementById('profile-modal'), profileOpener);
+        }
+    }
+});
+
+document.getElementById('profile-close').addEventListener('click', () => closeModal(document.getElementById('profile-modal'), profileOpener));
+document.getElementById('booking-close').addEventListener('click', () => closeModal(document.getElementById('booking-modal'), profileOpener));
+
+// ============ OPEN PROFILE ============
+async function openProfile(doctorId) {
+    profileOpener = document.activeElement;
+    currentDoctorId = doctorId;
+
+    try {
+        const res = await fetch(`/api/doctor/${doctorId}/`);
+        const doc = await res.json();
+        currentDoctorName = doc.name;
+
+        // Populate profile modal
+        document.getElementById('profile-avatar').textContent = doc.avatar_initials;
+        document.getElementById('profile-avatar').style.background = doc.avatar_color;
+        document.getElementById('profile-name').textContent = doc.name;
+        document.getElementById('profile-title-text').textContent = doc.title;
+        document.getElementById('profile-location').textContent = doc.location + (doc.clinic ? ` (${doc.clinic})` : '');
+        document.getElementById('profile-languages').textContent = doc.languages.join(', ');
+        document.getElementById('profile-rating').textContent = `★ ${doc.rating} (${doc.review_count} reviews)`;
+        document.getElementById('profile-bio').textContent = doc.bio;
+
+        const badges = document.getElementById('profile-badges');
+        badges.innerHTML = '';
+        if (doc.available) badges.innerHTML += '<span class="badge badge-available">Available</span>';
+        else badges.innerHTML += '<span class="badge badge-unavailable">Unavailable</span>';
+        if (doc.telehealth) badges.innerHTML += '<span class="badge badge-telehealth">Telehealth</span>';
+
+        const eduList = document.getElementById('profile-edu');
+        eduList.innerHTML = doc.education.map(e => `<li>${e}</li>`).join('');
+
+        openModal(document.getElementById('profile-modal'));
+        trapFocus(document.getElementById('profile-modal-inner'));
+        document.getElementById('profile-close').focus();
+
+    } catch(err) {
+        alert('Could not load profile. Please try again.');
+    }
+}
+
+// ============ OPEN BOOKING (from profile modal) ============
+document.getElementById('btn-request-appt').addEventListener('click', function() {
+    closeModal(document.getElementById('profile-modal'), null);
+    showBookingModal(currentDoctorId, currentDoctorName);
+});
+
+// ============ OPEN BOOKING DIRECTLY (from card button) ============
+async function openBookingDirect(doctorId, doctorName) {
+    profileOpener = document.activeElement;
+    currentDoctorId = doctorId;
+    currentDoctorName = doctorName;
+    showBookingModal(doctorId, doctorName);
+}
+
+function showBookingModal(doctorId, doctorName) {
+    document.getElementById('booking-subtitle').innerHTML = `Booking with <span>${doctorName}</span>`;
+    document.getElementById('booking-body').innerHTML = getBookingFormHTML();
+    bindBookingForm();
+    const today = new Date().toISOString().split('T')[0];
+    document.getElementById('b-date').min = today;
+    openModal(document.getElementById('booking-modal'));
+    trapFocus(document.getElementById('booking-modal-inner'));
+    document.getElementById('booking-close').focus();
+}
+
+function getBookingFormHTML() {
+    const csrf = document.querySelector('[name=csrfmiddlewaretoken]').value;
+    return `
+    <form id="booking-form" novalidate>
+        <input type="hidden" name="csrfmiddlewaretoken" value="${csrf}">
+        <input type="text" name="honeypot" style="display:none" tabindex="-1" autocomplete="off">
+        <div class="form-group">
+            <label for="b-name">Full Name <span class="req" style="color:#dc2626">*</span></label>
+            <input type="text" id="b-name" name="full_name" class="form-control" placeholder="Your full name" required autocomplete="name">
+            <div class="error-msg" id="err-name"></div>
+        </div>
+        <div class="form-group">
+            <label for="b-email">Email Address <span class="req" style="color:#dc2626">*</span></label>
+            <input type="email" id="b-email" name="email" class="form-control" placeholder="your@email.com" required autocomplete="email">
+            <div class="error-msg" id="err-email"></div>
+        </div>
+        <div class="form-row">
+            <div class="form-group">
+                <label for="b-date">Preferred Date <span class="req" style="color:#dc2626">*</span></label>
+                <input type="date" id="b-date" name="preferred_date" class="form-control" required>
+                <div class="error-msg" id="err-date"></div>
+            </div>
+            <div class="form-group">
+                <label for="b-time">Preferred Time <span class="req" style="color:#dc2626">*</span></label>
+                <select id="b-time" name="preferred_time" class="form-control" required>
+                    <option value="">Select time…</option>
+                    <option value="morning">Morning (8am–12pm)</option>
+                    <option value="afternoon">Afternoon (12pm–5pm)</option>
+                    <option value="evening">Evening (5pm–8pm)</option>
+                </select>
+                <div class="error-msg" id="err-time"></div>
+            </div>
+        </div>
+        <div class="form-group">
+            <label for="b-reason">Reason for Visit <span class="req" style="color:#dc2626">*</span></label>
+            <textarea id="b-reason" name="reason" class="form-control" rows="4" placeholder="Briefly describe your reason for the appointment..." required></textarea>
+            <div class="error-msg" id="err-reason"></div>
+        </div>
+        <button type="submit" class="btn-confirm" id="btn-confirm">Confirm Request</button>
+        <p class="privacy-note">Your information is confidential and will only be shared with the selected provider. <a href="#">Privacy Policy</a></p>
+    </form>`;
+}
+
+function bindBookingForm() {
+    const form = document.getElementById('booking-form');
+    form.addEventListener('submit', async function(e) {
+        e.preventDefault();
+        clearErrors();
+
+        const btn = document.getElementById('btn-confirm');
+        btn.disabled = true;
+        btn.textContent = 'Submitting…';
+
+        const data = new FormData(form);
+
+        try {
+            const res = await fetch(`/api/doctor/${currentDoctorId}/book/`, {
+                method: 'POST',
+                body: data,
+                headers: { 'X-CSRFToken': data.get('csrfmiddlewaretoken') }
+            });
+            const result = await res.json();
+
+            if (result.success) {
+                document.getElementById('booking-body').innerHTML = `
+                    <div class="success-state">
+                        <div class="success-icon">✅</div>
+                        <h3>Request Submitted!</h3>
+                        <p>${result.message}</p>
+                        <button class="btn-done" onclick="closeModal(document.getElementById('booking-modal'), profileOpener)">Done</button>
+                    </div>`;
+            } else {
+                if (result.errors) {
+                    const map = { full_name: 'name', email: 'email', preferred_date: 'date', preferred_time: 'time', reason: 'reason' };
+                    for (const [field, errs] of Object.entries(result.errors)) {
+                        const el = document.getElementById(`err-${map[field] || field}`);
+                        if (el) el.textContent = errs[0];
+                        const input = form.querySelector(`[name="${field}"]`);
+                        if (input) input.classList.add('error');
+                    }
+                }
+                btn.disabled = false;
+                btn.textContent = 'Confirm Request';
+            }
+        } catch(err) {
+            alert('Something went wrong. Please try again.');
+            btn.disabled = false;
+            btn.textContent = 'Confirm Request';
+        }
+    });
+}
+
+function clearErrors() {
+    document.querySelectorAll('.error-msg').forEach(el => el.textContent = '');
+    document.querySelectorAll('.form-control.error').forEach(el => el.classList.remove('error'));
+}
+
+// Init trapFocus on booking
+trapFocus(document.getElementById('booking-modal-inner'));
+</script>
+
+{% endblock content %}

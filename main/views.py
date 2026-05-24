@@ -1,12 +1,16 @@
 import json
+import csv
 from django.shortcuts import redirect, render, get_object_or_404
 from django.urls import reverse
-from django.http import JsonResponse
+from django.http import JsonResponse, HttpResponse
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.views.generic import (
     CreateView,
     UpdateView,
 )
+from django.views.decorators.http import require_POST
+from django.core.paginator import Paginator
+from django.core.mail import send_mail
 from .models import * #Assets,Description, News, Page, Service, SubService,Team
 from accounts.models import CustomerUser
 from .utils import generate_chatbot_response
@@ -721,3 +725,381 @@ def legal_immigration_guidance(request):
         'title': 'Legal and Immigration Guidance',
     }
     return render(request, 'main/legal_and_immigration_guidance.html', context)
+
+
+# ============================================
+# HEALTHCARE INFORMATION
+# ============================================
+
+def healthcare_info(request):
+    hero = {
+        'title': 'FINANCIAL SERVICES',
+        'subtitle': 'Secure your wealth, invest smart, and manage your cross-border finances with confidence.',
+        'cta_text': 'BOOK A FINANCIAL CONSULTATION',
+        'hero_image': 'main/img/healthcare/doctor.svg',
+    }
+
+    mission = {
+        'heading': 'Empowering Your Global Financial Future',
+        'paragraph': 'International finance, investments, and repatriating funds can be complex. Our platform provides trusted tools and expert guidance to help you manage wealth across borders with confidence and compliance.'
+    }
+
+    sections = [
+        {
+            'number': '1',
+            'title': 'Banking and Investment',
+            'description': 'Access strategic advice on managing assets both locally and in Kenya. Connect with trusted partners for banking, real estate, and portfolio growth opportunities.',
+            'bullets': [
+                'Diaspora-focused mortgage and loan referrals',
+                'Investment advisory for Kenyan stocks, bonds, and real estate',
+                'Guidance on setting up international and Kenyan bank accounts',
+                'Tax consultation and dual residency compliance',
+            ],
+            'cta_text': 'Explore Investment Portfolios',
+            'image': 'main/img/healthcare/patient.svg',
+            'align': 'left',
+        },
+        {
+            'number': '2',
+            'title': 'Remittances and Currency Exchange',
+            'description': 'Ensure your money gets home quickly, safely, and cost-effectively. We compare and vet providers for the best rates and lowest fees.',
+            'bullets': [
+                'Real-time currency exchange comparisons',
+                'Verified low-fee remittance partners',
+                'Guidance on large fund transfers and declarations',
+                'Alerts on economic and regulatory changes affecting transfers',
+            ],
+            'cta_text': 'View Remittance Calculator',
+            'image': 'main/img/healthcare/doctor.svg',
+            'align': 'right',
+        }
+    ]
+
+    contact_cta = {
+        'heading': 'URGENT MEDICAL ADVISORY',
+        'description': "For life-threatening emergencies, always dial your host country's local emergency number first.",
+        'cta_text': 'View Emergency Contacts by Country',
+    }
+
+    context = {
+        'hero': hero,
+        'mission': mission,
+        'sections': sections,
+        'contact_cta': contact_cta,
+    }
+
+    return render(request, 'main/data/healthcare_info.html', context)
+
+
+def medical_resource_form(request):
+    if request.method == 'POST':
+        name = request.POST.get('name')
+        email = request.POST.get('email')
+        message = request.POST.get('message')
+        MedicalResourceInquiry.objects.create(name=name, email=email, message=message)
+        return redirect('main:healthcare_info')
+    return render(request, 'main/data/medical_resource_form.html')
+
+
+# ============================================
+# INSURANCE SUPPORT & FIND DOCTORS
+# ============================================
+
+DOCTORS_PER_PAGE = getattr(settings, 'DOCTORS_PER_PAGE', 6)
+
+
+def find_doctors(request):
+    from .forms import SearchForm, AppointmentRequestForm
+    form = SearchForm(request.GET)
+    doctors = Doctor.objects.all()
+
+    specialty_q = request.GET.get('specialty', '').strip()
+    location_q = request.GET.get('location', '').strip()
+    categories = request.GET.getlist('categories')
+    languages = request.GET.getlist('languages')
+    sort_by = request.GET.get('sort', 'recommended')
+
+    if specialty_q:
+        doctors = doctors.filter(specialty__icontains=specialty_q) | \
+                  doctors.filter(title__icontains=specialty_q) | \
+                  doctors.filter(name__icontains=specialty_q)
+
+    if location_q:
+        doctors = doctors.filter(location_city__icontains=location_q) | \
+                  doctors.filter(location_country__icontains=location_q)
+
+    if categories:
+        filtered_ids = []
+        for doc in doctors:
+            if any(cat in doc.categories for cat in categories):
+                filtered_ids.append(doc.pk)
+        doctors = doctors.filter(pk__in=filtered_ids)
+
+    if languages:
+        filtered_ids = []
+        for doc in doctors:
+            if any(lang in doc.languages for lang in languages):
+                filtered_ids.append(doc.pk)
+        doctors = doctors.filter(pk__in=filtered_ids)
+
+    if sort_by == 'rating':
+        doctors = doctors.order_by('-rating', '-review_count')
+    elif sort_by == 'reviews':
+        doctors = doctors.order_by('-review_count', '-rating')
+    elif sort_by == 'name':
+        doctors = doctors.order_by('name')
+    else:
+        doctors = doctors.order_by('-rating', '-review_count')
+
+    total_count = doctors.count()
+
+    paginator = Paginator(doctors, DOCTORS_PER_PAGE)
+    page_number = request.GET.get('page', 1)
+    page_obj = paginator.get_page(page_number)
+
+    context = {
+        'form': form,
+        'page_obj': page_obj,
+        'total_count': total_count,
+        'specialty_q': specialty_q,
+        'location_q': location_q,
+        'selected_categories': categories,
+        'selected_languages': languages,
+        'sort_by': sort_by,
+        'category_choices': Doctor.CATEGORY_CHOICES,
+        'language_choices': Doctor.LANGUAGE_CHOICES,
+        'sort_options': [
+            ('recommended', 'Recommended'),
+            ('rating', 'Highest Rated'),
+            ('reviews', 'Most Reviews'),
+            ('name', 'Name (A-Z)'),
+        ],
+        'page_range': paginator.get_elided_page_range(page_obj.number, on_each_side=2, on_ends=1),
+    }
+    return render(request, 'main/find_doctors.html', context)
+
+
+def doctor_profile_api(request, pk):
+    doctor = get_object_or_404(Doctor, pk=pk)
+    data = {
+        'id': doctor.pk,
+        'name': doctor.name,
+        'title': doctor.title,
+        'specialty': doctor.specialty,
+        'location': doctor.full_location,
+        'clinic': doctor.clinic_name,
+        'languages': doctor.get_language_display_list(),
+        'telehealth': doctor.telehealth,
+        'available': doctor.available,
+        'rating': str(doctor.rating),
+        'review_count': doctor.review_count,
+        'bio': doctor.bio,
+        'education': doctor.education,
+        'avatar_color': doctor.avatar_color,
+        'avatar_initials': doctor.avatar_initials or doctor.name[:2].upper(),
+    }
+    return JsonResponse(data)
+
+
+@require_POST
+def book_appointment(request, pk):
+    from .forms import AppointmentRequestForm
+    doctor = get_object_or_404(Doctor, pk=pk)
+
+    session_key = f'booking_attempts_{pk}'
+    attempts = request.session.get(session_key, 0)
+    if attempts >= 5:
+        return JsonResponse({'success': False, 'error': 'Too many requests. Please try again later.'}, status=429)
+
+    form = AppointmentRequestForm(request.POST)
+
+    if form.is_valid():
+        appointment = form.save(commit=False)
+        appointment.doctor = doctor
+        appointment.save()
+
+        request.session[session_key] = attempts + 1
+
+        try:
+            send_mail(
+                subject=f'New Appointment Request - {doctor.name}',
+                message=f'New appointment request from {appointment.full_name} for {appointment.preferred_date}',
+                from_email=settings.DEFAULT_FROM_EMAIL,
+                recipient_list=[settings.DEFAULT_FROM_EMAIL],
+                fail_silently=True,
+            )
+        except Exception:
+            pass
+
+        return JsonResponse({
+            'success': True,
+            'message': f'Your appointment request with {doctor.name} has been submitted successfully!'
+        })
+    else:
+        errors = {field: list(errs) for field, errs in form.errors.items()}
+        return JsonResponse({'success': False, 'errors': errors}, status=400)
+
+
+def insurance_support(request):
+    insurance_plans = InsurancePlan.objects.filter(
+        is_active=True
+    ).order_by('display_order', '-score')
+
+    featured_plans = insurance_plans[:3]
+    total_plans = insurance_plans.count()
+    highest_score = insurance_plans.first().score if total_plans > 0 else 0
+
+    context = {
+        'insurance_plans': insurance_plans,
+        'featured_plans': featured_plans,
+        'total_plans': total_plans,
+        'highest_score': highest_score,
+        'page_title': 'Insurance Support',
+    }
+
+    return render(request, 'main/healthcare/insurance_support.html', context)
+
+
+@require_POST
+def ai_recommendation_api(request):
+    try:
+        data = json.loads(request.body)
+        age = data.get('age')
+        residence = data.get('residence')
+        priority = data.get('priority')
+
+        rule = AIRecommendationRule.objects.filter(
+            age_bracket=age,
+            residence=residence,
+            priority=priority,
+            is_active=True
+        ).select_related('recommended_plan').first()
+
+        if rule:
+            plan = rule.recommended_plan
+            response_data = {
+                'success': True,
+                'plan_name': f"{plan.provider_name} {plan.plan_name}",
+                'recommendation_text': rule.recommendation_text,
+                'plan_id': plan.id,
+                'score': float(plan.score),
+                'network': plan.network,
+                'evacuation': plan.evacuation
+            }
+        else:
+            alternative_plan = InsurancePlan.objects.filter(
+                is_active=True
+            ).order_by('-score').first()
+
+            if alternative_plan:
+                rec_text = generate_recommendation_text(age, residence, priority, alternative_plan)
+                response_data = {
+                    'success': True,
+                    'plan_name': f"{alternative_plan.provider_name} {alternative_plan.plan_name}",
+                    'recommendation_text': rec_text,
+                    'plan_id': alternative_plan.id,
+                    'score': float(alternative_plan.score),
+                    'network': alternative_plan.network,
+                    'evacuation': alternative_plan.evacuation
+                }
+            else:
+                response_data = {
+                    'success': False,
+                    'error': 'No insurance plans available'
+                }
+
+        return JsonResponse(response_data)
+
+    except json.JSONDecodeError:
+        return JsonResponse({'success': False, 'error': 'Invalid JSON'}, status=400)
+    except Exception as e:
+        return JsonResponse({'success': False, 'error': str(e)}, status=500)
+
+
+def generate_recommendation_text(age, residence, priority, plan):
+    age_text = {
+        'young': 'young professionals',
+        'mid': 'established professionals',
+        'senior': 'seniors'
+    }.get(age, 'individuals')
+
+    residence_text = {
+        'usa': 'in the USA',
+        'europe': 'in Europe',
+        'other': 'internationally'
+    }.get(residence, '')
+
+    priority_text = {
+        'budget': 'budget-conscious',
+        'comprehensive': 'comprehensive',
+        'emergency': 'emergency-focused'
+    }.get(priority, '')
+
+    base_text = f"Based on your inputs, we recommend the {plan.provider_name} {plan.plan_name} plan for {age_text} {residence_text} seeking {priority_text} coverage. "
+
+    if plan.score >= 9.5:
+        base_text += f"This top-rated plan offers {plan.network.lower()} coverage with {plan.evacuation.lower()} evacuation benefits. "
+    elif plan.score >= 9.0:
+        base_text += f"This excellent plan provides {plan.network.lower()} coverage and {plan.evacuation.lower()} evacuation. "
+    else:
+        base_text += f"This plan offers solid {plan.network.lower()} coverage with {plan.evacuation.lower()} evacuation options. "
+
+    if 'Included' in plan.evacuation:
+        base_text += "Emergency evacuation is included for peace of mind."
+    else:
+        base_text += "Evacuation coverage is available as an optional add-on."
+
+    return base_text
+
+
+@require_POST
+def submit_expert_inquiry(request):
+    try:
+        data = json.loads(request.body)
+
+        inquiry = ExpertInquiry.objects.create(
+            full_name=data.get('full_name'),
+            email=data.get('email'),
+            phone=data.get('phone', ''),
+            question=data.get('question'),
+            interested_plan_id=data.get('plan_id') if data.get('plan_id') else None
+        )
+
+        return JsonResponse({
+            'success': True,
+            'message': 'Your request has been submitted successfully. An expert will contact you within 24 hours.'
+        })
+
+    except json.JSONDecodeError:
+        return JsonResponse({'success': False, 'error': 'Invalid JSON'}, status=400)
+    except Exception as e:
+        return JsonResponse({'success': False, 'error': str(e)}, status=500)
+
+
+def download_comparison_csv(request):
+    response = HttpResponse(content_type='text/csv')
+    response['Content-Disposition'] = 'attachment; filename="insurance_comparison.csv"'
+
+    plans = InsurancePlan.objects.filter(is_active=True).order_by('display_order', '-score')
+
+    writer = csv.writer(response)
+    writer.writerow([
+        'Provider',
+        'Plan Name',
+        'Global Network',
+        'Max Benefit',
+        'Evacuation Coverage',
+        'Rating (out of 10)'
+    ])
+
+    for plan in plans:
+        writer.writerow([
+            plan.provider_name,
+            plan.plan_name,
+            plan.network,
+            plan.max_benefit,
+            plan.evacuation,
+            f"{plan.score}/10"
+        ])
+
+    return response
