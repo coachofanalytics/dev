@@ -1,0 +1,237 @@
+{% extends "main/base_templates/base.html" %}
+{% load static %}
+
+{% block title %}Investment Directory{% endblock %}
+{% load crispy_forms_tags %}
+
+{% block content %}
+<style>
+    section { display: block !important; }
+    /* --- KEEPING ALL YOUR ORIGINAL STYLES EXACTLY --- */
+    .hero { background: #0a926d; color: white; padding: 70px 0; }
+    .hero-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; align-items: center; }
+    .hero-text h1 { font-size: 42px; margin-bottom: 20px; font-weight: 800; }
+    .hero-text p { margin-bottom: 30px; font-size: 18px; color: #d1fae5; }
+    .btn-hero { background: white; color: #2563eb; padding: 14px 24px; font-weight: bold; text-decoration: none; border-radius: 8px; display: inline-block; }
+    .hero-image { height: 400px; width: 100%; overflow: hidden; border-radius: 12px; }
+    .hero-image img { width: 100%; height: 100%; object-fit: cover; display: block; }
+    .breadcrumbs { padding: 20px 0; background: #f9fafb; }
+    .breadcrumbs a { color: #0a926d; text-decoration: none; font-weight: 500; }
+    .section-title { font-size: 32px; font-weight: 800; margin-bottom: 15px; }
+    .section-description { color: #4b5563; margin-bottom: 30px; max-width: 700px; }
+    .directory-section { padding: 60px 0; }
+    .empty-state { padding: 40px; background: #f3f4f6; border-radius: 12px; text-align: center; color: #6b7280; }
+    .listing-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 25px; }
+    .listing-card { background: #f9fafb; padding: 25px; border-radius: 16px; box-shadow: 0 6px 20px rgba(0,0,0,0.05); }
+    .card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
+    /* FIXED: Changed title color to dark for visibility against #f9fafb card background */
+    .card-header h3 { font-size: 22px; margin: 0; color: #111827; } 
+    .badge { background: #dc2626; color: white; padding: 5px 12px; border-radius: 20px; font-size: 12px; font-weight: 600; }
+    .subscription-card { background: #eff6ff; border: 2px solid #2563eb; padding: 40px; border-radius: 16px; margin-top: 50px; text-align: center; }
+    .subscription-card h3 { color: #2563eb; font-size: 26px; margin-bottom: 15px; }
+    .subscription-form { display: flex; gap: 10px; justify-content: center; margin-top: 20px; margin-bottom: 20px; }
+    .subscription-form input { padding: 12px; border: 1px solid #d1d5db; border-radius: 8px; width: 300px; }
+    .btn-subscribe { background: #dc2626; color: white; border: none; padding: 12px 20px; border-radius: 8px; font-weight: bold; cursor: pointer; }
+    .submission-section { padding: 70px 0; border-top: 1px solid #e5e7eb; }
+    .submission-container { display: flex; justify-content: center; }
+    .submission-card { background: white; padding: 30px; border-radius: 16px; box-shadow: 0 5px 15px rgba(0,0,0,0.08); width: 100%; max-width: 1000px; }
+    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+    .form-container { display: flex; justify-content: center; padding: 40px 20px; }
+    .form-group { margin-bottom: 20px; }
+    .form-group label { font-weight: 600; display: block; margin-bottom: 8px; }
+    .form-group input, .form-group textarea, .form-group select { width: 100%; padding: 12px; border-radius: 8px; border: 1px solid #d1d5db; font-size: 15px; }
+    .form-group textarea { resize: none; height: 100px; }
+    .btn-submit { background: #0a926d; color: white; padding: 12px 25px; border: none; border-radius: 8px; font-weight: 700; cursor: pointer; width: 100%; }
+    .btn-submit:hover { opacity: 0.9; }
+    #newsletter-message {
+        margin-top: 15px;
+        font-weight: 600;
+        font-size: 14px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+    }
+
+    /* LOADING SPINNER */
+    .spinner {
+        width: 18px;
+        height: 18px;
+        border: 2px solid rgba(0,0,0,0.1);
+        border-top: 2px solid #0a926d;
+        border-radius: 50%;
+        animation: spin 0.8s linear infinite;
+        display: inline-block;
+    }
+
+    @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+    /* --- ADDED: ALERT MESSAGE STYLING --- */
+    .alert-box {
+        padding: 15px 25px;
+        margin-bottom: 25px;
+        border-radius: 8px;
+        font-weight: 600;
+        text-align: center;
+    }
+    .alert-success { background: #dcfce7; color: #166534; border: 1px solid #166534; }
+    .alert-error { background: #fee2e2; color: #991b1b; border: 1px solid #991b1b; }
+</style>
+
+<section class="hero">
+    <div class="container hero-grid">
+        <div class="hero-text">
+            <h1>DIASPORA INVESTMENT DIRECTORY</h1>
+            <p>Real-time, vetted opportunities in Real Estate, Saccos, and Bonds, updated by the community.</p>
+            <a href="#submission-form-section" class="btn-hero">Submit New Opportunity</a>
+        </div>
+        <div class="hero-image">
+            <img src="{% static 'main/img/finance/directory.png' %}" alt="Investment Directory Hero Image">
+        </div>
+    </div>
+</section>
+
+<section class="breadcrumbs">
+    <div class="container">
+        <nav>
+            <a href="{% url 'finance:homepage' %}">Home</a> /
+            <a href="#">Services</a> /
+            <span>Investment Directory</span>
+        </nav>
+    </div>
+</section>
+
+<section class="directory-section">
+    <div class="container">
+        
+        {% if messages %}
+            {% for message in messages %}
+                <div class="alert-box alert-{{ message.tags }}">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        {% endif %}
+
+        <h2 class="section-title">Current Opportunities ({{ count }})</h2>
+        <p class="section-description">
+            Below is a real-time list of investment opportunities crowdsourced by the Diaspora County 48 community. Exercise due diligence before investing.
+        </p>
+
+        {% if opportunities %}
+        <div class="listing-grid">
+            {% for opp in opportunities %}
+                <div class="listing-card">
+                    <div class="card-header">
+                        <h3>{{ opp.title }}</h3>
+                        <span class="badge">{{ opp.type }}</span>
+                    </div>
+                    <p>{{ opp.description }}</p>
+                    <p><strong>Contact:</strong> {{ opp.contact }}</p>
+                    <p><strong>Date:</strong> {{ opp.created_at|date:"m/d/Y" }}</p>
+                </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="empty-state">
+            <p>No opportunities listed yet. Be the first to add one!</p>
+        </div>
+        {% endif %}
+
+        <div class="subscription-card">
+            <h3>Don't Miss the Next Big Opportunity!</h3>
+            <p>Subscribe and receive alerts when new vetted opportunities are posted to the directory.</p>
+            <form id="newsletter-form" class="subscription-form" method="POST" action="{% url 'finance:subscribe_newsletter' %}">
+                {% csrf_token %}
+                <input type="email" name="email" placeholder="Enter your email address" required>
+                <button type="submit" class="btn-subscribe">Subscribe Now</button>
+            </form>
+            <div id="newsletter-message"></div>
+        </div>
+    </div>
+</section>
+
+<section id="submission-form-section" class="submission-section">
+    <div class="form-container submission-container">
+        <div class="submission-card">
+            <form method="POST">
+                {% csrf_token %}
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="id_title">Opportunity Name</label>
+                        {{ form.title }}
+                    </div>
+                    <div class="form-group">
+                        <label for="id_type">Type (e.g., Real Estate, Sacco, Bond)</label>
+                        {{ form.type }}
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="id_contact">Contact/Link (Website, Phone, Email)</label>
+                    {{ form.contact }}
+                </div>
+                <div class="form-group">
+                    <label for="id_description">Brief Description</label>
+                    {{ form.description }}
+                </div>
+                <button type="submit" class="btn-submit">SUBMIT OPPORTUNITY</button>
+            </form>
+        </div>
+    </div>
+</section>
+<script>
+document.getElementById("newsletter-form").addEventListener("submit", function(e) {
+    e.preventDefault();
+    const form = e.target;
+    const emailInput = form.querySelector("input[name='email']");
+    const csrfToken = form.querySelector("[name=csrfmiddlewaretoken]").value;
+    const messageEl = document.getElementById("newsletter-message");
+
+    // 1. Show Loading State
+    messageEl.style.display = "flex";
+    messageEl.style.color = "#4b5563"; 
+    messageEl.innerHTML = '<div class="spinner"></div> Checking...';
+
+    // Fetch using the named route directly
+    fetch("{% url 'finance:subscribe_newsletter' %}", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/x-www-form-urlencoded",
+            "X-CSRFToken": csrfToken
+        },
+        body: new URLSearchParams({ email: emailInput.value })
+    })
+    .then(response => {
+        // --- IMPROVED ERROR CATCHING ---
+        // If the server crashed (500), this prevents the JSON error
+        if (!response.ok) {
+            return response.text().then(text => {
+                throw new Error("Server crashed. Check your Python terminal.");
+            });
+        }
+        return response.json();
+    })
+    .then(data => {
+        // 2. Handle Response Icons
+        if (data.exists) {
+            messageEl.style.color = "#dc2626"; 
+            messageEl.innerHTML = '<span>✘</span> ' + data.message;
+            emailInput.style.borderColor = "#dc2626";
+        } else if (data.success) {
+            messageEl.style.color = "#0a926d";
+            messageEl.innerHTML = '<span>✔</span> ' + data.message;
+            emailInput.style.borderColor = "#0a926d";
+            emailInput.value = ""; 
+        } else {
+            messageEl.style.color = "#991b1b";
+            messageEl.innerText = data.message;
+        }
+    })
+    .catch(error => { 
+        // This will now catch the "Server crashed" error explicitly
+        console.error("Debug Details:", error);
+        messageEl.style.color = "#dc2626";
+        messageEl.innerText = error.message || "Connection error. Please try again.";
+    });
+});
+</script>
+{% endblock %}

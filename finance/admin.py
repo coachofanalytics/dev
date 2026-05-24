@@ -48,3 +48,5 @@ class PaymentAdmin(admin.ModelAdmin):
 # admin.site.register(Budget)
 admin.site.register(Pricing)
 admin.site.register(Payment, PaymentAdmin)
+admin.site.register(Opportunity)
+admin.site.register(NewsLetterSubscriber)
