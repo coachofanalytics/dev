@@ -262,6 +262,34 @@ class History(models.Model):
         return f"{self.year}: {self.title}"
 
 
+class EmergencyHotline(models.Model):
+    name = models.CharField(
+        max_length=100, help_text="Display label, e.g., Global Hotline"
+    )
+    number = models.CharField(
+        max_length=32, help_text="E.164 like +15551234567 or local format"
+    )
+    is_active = models.BooleanField(default=True)
+    sort_order = models.PositiveIntegerField(default=0)
+
+    class Meta:
+        ordering = ["sort_order", "id"]
+
+    def __str__(self):
+        return f"{self.name} ({self.number})"
+
+
+class StaffContact(models.Model):
+    name = models.CharField(max_length=100)
+    email = models.EmailField(blank=True, null=True)
+    phone = models.CharField(max_length=32, blank=True, null=True)
+    notify_via_email = models.BooleanField(default=True)
+    is_active = models.BooleanField(default=True)
+
+    def __str__(self):
+        return self.name
+
+
 class ConsularAssistancePage(models.Model):
     title = models.CharField(max_length=255)
     slug = models.SlugField(max_length=255, unique=True)
@@ -277,10 +305,6 @@ class ConsularAssistancePage(models.Model):
 
 
 class LegalService(models.Model):
-    """
-    Model to store legal & immigration guidance services.
-    Used on the Legal and Immigration Guidance dedicated page.
-    """
     CATEGORY_CHOICES = [
         ('visa', 'Visa and Residency Services'),
         ('citizenship', 'Citizenship and Naturalization'),

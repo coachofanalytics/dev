@@ -1,5 +1,7 @@
+import json
 from django.shortcuts import redirect, render, get_object_or_404
 from django.urls import reverse
+from django.http import JsonResponse
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.views.generic import (
     CreateView,
@@ -587,57 +589,32 @@ def contact_us(request):
 
 
 # ============================================
-# CONSULAR ASSISTANCE - MAIN PAGES
+# CONSULAR ASSISTANCE
 # ============================================
 
 def consular_assistance(request):
     page = ConsularAssistancePage.objects.first()
-    context = { 'page': page, }
-    return render(request, "main/consular_assistance.html", context)
+    hotlines = EmergencyHotline.objects.filter(is_active=True).order_by("sort_order", "id")
+    context = {
+        'page': page,
+        'hotlines': hotlines,
+        'title': 'Consular Assistance',
+    }
+    return render(request, 'main/consular_assistance.html', context)
 
 
 def consular_information_updates(request):
-    """
-    Render the Consular Assistance → Information and Updates page.
-    Follows the project's page/description pattern if available.
-    """
-    # Ensure a Page exists for this content (keeps behavior consistent with other pages)
     page_instance, _ = Page.objects.get_or_create(page_name='Consular - Information and Updates')
-    description = Description.objects.filter(page=page_instance)
-
     context = {
-        'description': description,
+        'description': Description.objects.filter(page=page_instance),
         'title': 'Information and Updates',
     }
-
     return render(request, 'main/consular/information_updates.html', context)
 
 
-def legal_immigration_guidance(request):
-    from .models import LegalService
-
-    services = LegalService.objects.filter(is_active=True).order_by('order')
-
-    context = {
-        'page_title': 'Legal & Immigration Guidance',
-        'page_description': 'Expert guidance and trusted referrals to help you navigate the complexities of international law and immigration processes.',
-        'services': services,
-    }
-    return render(request, 'main/legal_and_immigration_guidance.html', context)
-
-
-# ============================================
-# CONSULAR ASSISTANCE - SUB-PAGES
-# ============================================
-
 def consular_press_releases(request):
-    """
-    Render Press Releases sub-page within Consular Assistance.
-    Built-in static content for now - can be extended with database later.
-    """
     page_instance, _ = Page.objects.get_or_create(page_name='Consular - Press Releases')
 
-    # Sample press releases data structure (can be enhanced with database later)
     press_releases = [
         {
             'date': 'September 25, 2025',
@@ -660,12 +637,8 @@ def consular_press_releases(request):
 
 
 def consular_embassy_news(request):
-    """
-    Render Embassy & Government News sub-page within Consular Assistance.
-    """
     page_instance, _ = Page.objects.get_or_create(page_name='Consular - Embassy News')
 
-    # Sample embassy news data
     embassy_news = [
         {
             'date': 'October 1, 2025',
@@ -690,12 +663,8 @@ def consular_embassy_news(request):
 
 
 def consular_community_updates(request):
-    """
-    Render Community & General Updates sub-page within Consular Assistance.
-    """
     page_instance, _ = Page.objects.get_or_create(page_name='Consular - Community Updates')
 
-    # Sample community updates data
     community_updates = [
         {
             'date': 'September 18, 2025',
@@ -720,11 +689,7 @@ def consular_community_updates(request):
 
 
 def consular_all_updates(request):
-    """
-    Render consolidated all updates page combining all consular news categories.
-    """
     page_instance, _ = Page.objects.get_or_create(page_name='Consular - All Updates')
-
     context = {
         'title': 'All Updates',
         'page': page_instance,
@@ -733,19 +698,9 @@ def consular_all_updates(request):
 
 
 def book_consular_consultation(request):
-    """
-    Render the Book Consultation form page.
-    """
     if request.method == 'POST':
-        # Handle AJAX form submission
-        import json
         try:
             data = json.loads(request.body)
-
-            # Here you would save the consultation request to database
-            # For now, we'll just return success
-            # In production, create a ConsultationRequest model and save it
-
             return JsonResponse({
                 'success': True,
                 'message': 'Your consultation request has been submitted. We will contact you shortly.'
@@ -756,7 +711,14 @@ def book_consular_consultation(request):
                 'error': str(e)
             }, status=400)
 
-    context = {
-        'title': 'Book a Consultation',
-    }
+    context = {'title': 'Book a Consultation'}
     return render(request, 'main/consular/book_consultation.html', context)
+
+
+def legal_immigration_guidance(request):
+    legal_services = LegalService.objects.filter(is_active=True).order_by('order')
+    context = {
+        'legal_services': legal_services,
+        'title': 'Legal and Immigration Guidance',
+    }
+    return render(request, 'main/legal_and_immigration_guidance.html', context)

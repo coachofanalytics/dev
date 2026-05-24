@@ -20,7 +20,6 @@ class DescriptionGovernance(admin.ModelAdmin):
 
 
 class LegalServiceAdmin(admin.ModelAdmin):
-    """Admin interface for managing Legal & Immigration Services"""
     list_display = ['title', 'category', 'is_active', 'order', 'created_at']
     list_filter = ['category', 'is_active', 'created_at']
     search_fields = ['title', 'description']
@@ -57,6 +56,10 @@ admin.site.register(ContactUs)
 admin.site.register(GetHelp)
 admin.site.register(Governance, DescriptionGovernance)
 #admin.site.register(DonationOrganization)
+admin.site.register(ConsularAssistancePage)
+admin.site.register(EmergencyHotline)
+admin.site.register(StaffContact)
+admin.site.register(LegalService, LegalServiceAdmin)
 
 # Consular Assistance & Legal Services
 admin.site.register(ConsularAssistancePage)
