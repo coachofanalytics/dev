@@ -60,7 +60,3 @@ admin.site.register(ConsularAssistancePage)
 admin.site.register(EmergencyHotline)
 admin.site.register(StaffContact)
 admin.site.register(LegalService, LegalServiceAdmin)
-
-# Consular Assistance & Legal Services
-admin.site.register(ConsularAssistancePage)
-admin.site.register(LegalService, LegalServiceAdmin)
