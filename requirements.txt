@@ -1,7 +1,5 @@
-<<<<<<< HEAD
 chromedriver-py==140.0.7339.82
 python-dotenv==1.1.1
-=======
 #====Frameworks:Flask,Django=====
 Django==3.2.6
 django-allauth==0.58.2
@@ -173,4 +171,4 @@ wrapt==1.12.1
 yarl==1.9.2
 # yfinance==0.1.63
 zope.interface==5.4.0
->>>>>>> e79fe45578418c384fbb84ca7760d91bef020a33
+
