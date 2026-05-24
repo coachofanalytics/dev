@@ -46,9 +46,11 @@ urlpatterns = [
     path('ourhistory',views.ourhistory, name ='ourhistory'),
     path('contact_us',views.contact_us, name ='contact_us'),
 
-  
-    
-    
+    # ===== Crisis Management =====
+    path('crisis_page/', views.crisis_page, name='crisis_page'),
+    path('subscribe_alerts/', views.subscribe_alerts, name='subscribe_alerts'),
+    path('activate_helpline/', views.activate_helpline, name='activate_helpline'),
+
    #==============ERRORS==============================================
     path('400Error/', views.error400, name='400error'),
     path('403Error/', views.error403, name='403error'),
