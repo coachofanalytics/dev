@@ -190,3 +190,154 @@ class TrackerRegressionTest(TestCase):
         )
 
         self.assertTrue(tracker.duration > 0)
+
+
+
+
+        from decimal import Decimal
+
+from django.test import TestCase
+from django.contrib.auth import get_user_model
+from django.utils import timezone
+
+from accounts.models import Transaction
+
+
+class TransactionRegressionTest(TestCase):
+    """
+    Regression tests for Transaction.
+
+    These tests protect against old bugs coming back, such as:
+    1. Transaction amount saving incorrectly.
+    2. Transaction cost being ignored.
+    3. Null amount breaking total_amount.
+    4. Empty department causing errors.
+    5. Payment method default not applying.
+    """
+
+    def setUp(self):
+        User = get_user_model()
+
+        self.user = User.objects.create_user(
+            username="regressionuser",
+            email="regression@example.com",
+            password="Testpass123"
+        )
+
+    def test_transaction_cost_is_added_to_total_amount(self):
+        transaction = Transaction.objects.create(
+            sender=self.user,
+            department="Finance",
+            receiver="Brenda",
+            phone="254712345001",
+            type="Income",
+            activity_date=timezone.now(),
+            qty=Decimal("1.00"),
+            amount=Decimal("15000.00"),
+            transaction_cost=Decimal("50.00"),
+            description="Testing total amount calculation",
+            payment_method="MPESA"
+        )
+
+        self.assertEqual(transaction.total_amount, Decimal("15050.00"))
+
+    def test_transaction_total_amount_does_not_fail_when_amount_is_null(self):
+        transaction = Transaction.objects.create(
+            sender=self.user,
+            department="Finance",
+            receiver="Angel",
+            phone="254712345002",
+            type="Expense",
+            activity_date=timezone.now(),
+            qty=Decimal("1.00"),
+            amount=None,
+            transaction_cost=Decimal("100.00"),
+            description="Testing null amount",
+            payment_method="Cash"
+        )
+
+        self.assertEqual(transaction.total_amount, Decimal("100.00"))
+
+    def test_transaction_total_amount_does_not_fail_when_transaction_cost_is_null(self):
+        transaction = Transaction.objects.create(
+            sender=self.user,
+            department="Finance",
+            receiver="Samuel",
+            phone="254712345003",
+            type="Income",
+            activity_date=timezone.now(),
+            qty=Decimal("1.00"),
+            amount=Decimal("5000.00"),
+            transaction_cost=None,
+            description="Testing null transaction cost",
+            payment_method="Bank"
+        )
+
+        self.assertEqual(transaction.total_amount, Decimal("5000.00"))
+
+    def test_transaction_can_save_without_department(self):
+        transaction = Transaction.objects.create(
+            sender=self.user,
+            department=None,
+            receiver="Judy",
+            phone="254712345004",
+            type="Advance",
+            activity_date=timezone.now(),
+            qty=Decimal("1.00"),
+            amount=Decimal("2500.00"),
+            transaction_cost=Decimal("0.00"),
+            description="Testing empty department",
+            payment_method="Cash"
+        )
+
+        self.assertIsNone(transaction.department)
+        self.assertEqual(transaction.amount, Decimal("2500.00"))
+
+    def test_payment_method_defaults_to_cash(self):
+        transaction = Transaction.objects.create(
+            sender=self.user,
+            department="Training",
+            receiver="Mercy",
+            phone="254712345005",
+            type="Income",
+            activity_date=timezone.now(),
+            qty=Decimal("1.00"),
+            amount=Decimal("7000.00"),
+            transaction_cost=Decimal("0.00"),
+            description="Testing default payment method"
+        )
+
+        self.assertEqual(transaction.payment_method, "Cash")
+
+    def test_transaction_type_defaults_to_other(self):
+        transaction = Transaction.objects.create(
+            sender=self.user,
+            department="Operations",
+            receiver="Brian",
+            phone="254712345006",
+            activity_date=timezone.now(),
+            qty=Decimal("1.00"),
+            amount=Decimal("3000.00"),
+            transaction_cost=Decimal("0.00"),
+            description="Testing default transaction type",
+            payment_method="MPESA"
+        )
+
+        self.assertEqual(transaction.type, "Other")
+
+    def test_transaction_string_format_does_not_change(self):
+        transaction = Transaction.objects.create(
+            sender=self.user,
+            department="IT",
+            receiver="Developer Team",
+            phone="254712345007",
+            type="Expense",
+            activity_date=timezone.now(),
+            qty=Decimal("1.00"),
+            amount=Decimal("8000.00"),
+            transaction_cost=Decimal("200.00"),
+            description="Testing string format",
+            payment_method="PayPal"
+        )
+
+        self.assertEqual(str(transaction), "Expense - 8000.00 - PayPal")

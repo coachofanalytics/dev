@@ -233,3 +233,94 @@ class TrackerPerformanceTest(TestCase):
         print(f"\nBulk update took: {duration} seconds")
 
         self.assertTrue(duration < 2)
+
+
+        from decimal import Decimal
+from django.test import TestCase
+from django.contrib.auth import get_user_model
+from django.utils import timezone
+from django.db import connection
+from django.test.utils import CaptureQueriesContext
+
+from accounts.models import Transaction
+
+
+class TransactionPerformanceTest(TestCase):
+    """
+    Performance tests for the Transaction model.
+
+    These tests check:
+    1. Bulk creation speed
+    2. Query efficiency
+    3. Filtering performance
+    4. Database query count
+    """
+
+    @classmethod
+    def setUpTestData(cls):
+        User = get_user_model()
+
+        cls.user = User.objects.create_user(
+            username="performanceuser",
+            email="performance@example.com",
+            password="Testpass123"
+        )
+
+        transactions = []
+
+        for i in range(1000):
+            transactions.append(
+                Transaction(
+                    sender=cls.user,
+                    department="Finance",
+                    receiver=f"Receiver {i}",
+                    phone=f"25471234{i:04d}",
+                    type="Income" if i % 2 == 0 else "Expense",
+                    activity_date=timezone.now(),
+                    receipt_link=f"https://example.com/receipt/{i}",
+                    qty=Decimal("1.00"),
+                    amount=Decimal("1000.00"),
+                    transaction_cost=Decimal("50.00"),
+                    description=f"Performance transaction record {i}",
+                    payment_method="MPESA" if i % 2 == 0 else "Cash",
+                )
+            )
+
+        Transaction.objects.bulk_create(transactions)
+
+    def test_bulk_transactions_created_successfully(self):
+        total_transactions = Transaction.objects.count()
+        self.assertEqual(total_transactions, 1000)
+
+    def test_filter_transactions_by_type_performance(self):
+        income_transactions = Transaction.objects.filter(type="Income")
+        self.assertEqual(income_transactions.count(), 500)
+
+    def test_filter_transactions_by_payment_method_performance(self):
+        mpesa_transactions = Transaction.objects.filter(payment_method="MPESA")
+        self.assertEqual(mpesa_transactions.count(), 500)
+
+    def test_transaction_list_query_count(self):
+        """
+        This checks that listing transactions does not create too many queries.
+        select_related('sender') helps avoid repeated user queries.
+        """
+
+        with CaptureQueriesContext(connection) as context:
+            transactions = list(
+                Transaction.objects.select_related("sender").all()[:100]
+            )
+
+            for transaction in transactions:
+                _ = transaction.sender.username
+
+        self.assertLessEqual(len(context), 2)
+
+    def test_total_amount_property_performance(self):
+        transactions = Transaction.objects.all()[:100]
+
+        for transaction in transactions:
+            self.assertEqual(
+                transaction.total_amount,
+                Decimal("1050.00")
+            )

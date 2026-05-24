@@ -6,16 +6,16 @@ from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 
 from django_countries.fields import CountryField
-<<<<<<< HEAD
-from accounts.choices import CategoryChoices,SubCategoryChoices, GenderChoices
+
+# from accounts.choices import CategoryChoices,SubCategoryChoices, GenderChoices
 from django.conf import settings
 from django.db import models
 from django.utils import timezone
-=======
-from accounts.choices import CategoryChoices,SubCategoryChoices
+
+# from accounts.choices import CategoryChoices,SubCategoryChoices
 
 
->>>>>>> e79fe45578418c384fbb84ca7760d91bef020a33
+
 # Create your models here.
 
 class UserGroups(Group):
@@ -26,7 +26,31 @@ class UserGroups(Group):
     class Meta:
         verbose_name_plural = "User Groups"
 
+from django.db import models
+from django.contrib.auth.models import AbstractUser
+
+
+class SubCategoryChoices(models.TextChoices):
+    STUDENT = "Student", "Student"
+    STAFF = "Staff", "Staff"
+    CLIENT = "Client", "Client"
+    TRAINER = "Trainer", "Trainer"
+    MANAGER = "Manager", "Manager"
+    OTHER = "Other", "Other"
+
+
 class CustomerUser(AbstractUser):
+    # your other fields here
+
+    sub_category = models.CharField(
+        max_length=50,
+        choices=SubCategoryChoices.choices,
+        blank=True,
+        null=True
+    )
+
+    def __str__(self):
+        return self.username
     def get_category_display_name(self):
         return dict(CategoryChoices.choices).get(self.category, 'Unknown')    
 
@@ -50,7 +74,7 @@ class CustomerUser(AbstractUser):
     state = models.CharField(blank=True, null=True, max_length=255)
     zipcode = models.CharField(blank=True, null=True, max_length=255)
     country = CountryField(blank=True, null=True)
-    category = models.IntegerField(choices=CategoryChoices.choices, default=999)
+    # category = models.IntegerField(choices=CategoryChoices.choices, default=999)
     # added this column here
     sub_category = models.IntegerField(
         choices=SubCategoryChoices.choices, blank=True, null=True
@@ -83,7 +107,6 @@ class CustomerUser(AbstractUser):
         return (timezone.now().date() - self.date_joined.date()).days
     
 
-<<<<<<< HEAD
     from django.db import models
 
 class UserGroups(models.Model):
@@ -245,7 +268,7 @@ class Tracker(models.Model):
 
 
         
-=======
+
 
 class LoginHistory (models.Model):
     user = models.ForeignKey('CustomerUser', on_delete=models.CASCADE)
@@ -261,4 +284,108 @@ class LoginHistory (models.Model):
         return f"{self.user.username} - {self.login_time} to {self.logout_time}"
     
 
->>>>>>> e79fe45578418c384fbb84ca7760d91bef020a33
+
+from django.db import models
+from django.conf import settings
+from django.utils import timezone
+
+
+class Transaction(models.Model):
+    PAY_CHOICES = [
+        ("Cash", "Cash"),
+        ("MPESA", "MPESA"),
+        ("PayPal", "PayPal"),
+        ("Stripe", "Stripe"),
+        ("Bank", "Bank"),
+        ("Zelle", "Zelle"),
+        ("CashApp", "CashApp"),
+        ("Venmo", "Venmo"),
+        ("Other", "Other"),
+    ]
+
+    TYPE_CHOICES = [
+        ("Income", "Income"),
+        ("Expense", "Expense"),
+        ("Transfer", "Transfer"),
+        ("Advance", "Advance"),
+        ("Refund", "Refund"),
+        ("Other", "Other"),
+    ]
+
+    sender = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="sent_transactions"
+    )
+
+    department = models.CharField(
+    max_length=100,
+    null=True,
+    blank=True
+)
+    
+
+    receiver = models.CharField(max_length=100, null=True, blank=True)
+    phone = models.CharField(max_length=50, null=True, blank=True)
+
+    type = models.CharField(
+        max_length=100,
+        choices=TYPE_CHOICES,
+        default="Other",
+        null=True,
+        blank=True
+    )
+
+    activity_date = models.DateTimeField(default=timezone.now)
+
+    receipt_link = models.CharField(max_length=255, null=True, blank=True)
+
+    qty = models.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        null=True,
+        blank=True
+    )
+
+    amount = models.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        null=True,
+        blank=True
+    )
+
+    transaction_cost = models.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        default=0
+    )
+
+    description = models.TextField(null=True, blank=True)
+
+    payment_method = models.CharField(
+        max_length=50,
+        choices=PAY_CHOICES,
+        default="Cash"
+    )
+
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = "Transaction"
+        verbose_name_plural = "Transactions"
+        ordering = ["-activity_date", "-created_at"]
+
+    def __str__(self):
+        return f"{self.type} - {self.amount} - {self.payment_method}"
+
+    @property
+    def total_amount(self):
+        """
+        Total amount including transaction cost.
+        """
+        amount = self.amount or 0
+        cost = self.transaction_cost or 0
+        return amount + cost

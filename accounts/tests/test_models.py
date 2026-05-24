@@ -244,3 +244,70 @@ class TrackerModelTest(TestCase):
         """Test __str__ method"""
         expected = f"{self.tracker.employee} - {self.tracker.category} - {self.tracker.login_date}"
         self.assertEqual(str(self.tracker), expected)
+
+
+        from decimal import Decimal
+
+from django.test import TestCase
+from django.contrib.auth import get_user_model
+from django.utils import timezone
+
+from .models import Transaction
+
+
+class TransactionModelTest(TestCase):
+
+    def setUp(self):
+        User = get_user_model()
+
+        self.user = User.objects.create_user(
+            username="testuser",
+            email="testuser@example.com",
+            password="Testpass123"
+        )
+
+        self.transaction = Transaction.objects.create(
+            sender=self.user,
+            department="Finance",
+            receiver="Brenda",
+            phone="254712345001",
+            type="Income",
+            activity_date=timezone.now(),
+            receipt_link="https://example.com/receipt/001",
+            qty=Decimal("1.00"),
+            amount=Decimal("15000.00"),
+            transaction_cost=Decimal("50.00"),
+            description="Student training fee payment",
+            payment_method="MPESA"
+        )
+
+    def test_transaction_created_successfully(self):
+        self.assertEqual(Transaction.objects.count(), 1)
+
+    def test_transaction_sender(self):
+        self.assertEqual(self.transaction.sender, self.user)
+
+    def test_transaction_department(self):
+        self.assertEqual(self.transaction.department, "Finance")
+
+    def test_transaction_receiver(self):
+        self.assertEqual(self.transaction.receiver, "Brenda")
+
+    def test_transaction_amount(self):
+        self.assertEqual(self.transaction.amount, Decimal("15000.00"))
+
+    def test_transaction_cost(self):
+        self.assertEqual(self.transaction.transaction_cost, Decimal("50.00"))
+
+    def test_transaction_payment_method(self):
+        self.assertEqual(self.transaction.payment_method, "MPESA")
+
+    def test_transaction_type(self):
+        self.assertEqual(self.transaction.type, "Income")
+
+    def test_total_amount_property(self):
+        self.assertEqual(self.transaction.total_amount, Decimal("15050.00"))
+
+    def test_transaction_string_method(self):
+        expected = "Income - 15000.00 - MPESA"
+        self.assertEqual(str(self.transaction), expected)

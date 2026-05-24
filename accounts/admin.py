@@ -1,10 +1,17 @@
 from django.contrib import admin
-from django.contrib.auth.afrom django.contrib.auth.admin import UserAdmin
+from django.contrib.auth.admin import UserAdmin
 from django.contrib.auth.forms import UserChangeForm, UserCreationForm
+# <<<<<<< HEAD
+from .models import CustomerUser
 from django.contrib import admin
+from .models import PaymentHistory
+from .models import Transaction
+# =======
+from .models import CustomerUser, LoginHistory
+# >>>>>>> e79fe45578418c384fbb84ca7760d91bef020a33
 
-from .models import CustomerUser, PaymentHistory, LoginHistory
-mport Tracker
+
+from .models import Tracker
 
 # admin.site.register(CustomerUser)
 class CustomerAdmin(UserAdmin):
@@ -73,7 +80,7 @@ admin.site.register(CustomerUser, CustomerAdmin)
 # admin.site.register(CustomerUser)
 
 # Register your models here.
-<<<<<<< HEAD
+# <<<<<<< HEAD
 
 
 
@@ -139,6 +146,52 @@ class PaymentHistoryAdmin(admin.ModelAdmin):
             "fields": ("created_at", "updated_at")
         }),
     )
-=======
+# =======
 admin.site.register(LoginHistory, LoginHistoryAdmin)
->>>>>>> e79fe45578418c384fbb84ca7760d91bef020a33
+# >>>>>>> e79fe45578418c384fbb84ca7760d91bef020a33
+
+
+
+@admin.register(Transaction)
+class TransactionAdmin(admin.ModelAdmin):
+    list_display = (
+        "id",
+        "sender",
+        "department",
+        "receiver",
+        "phone",
+        "type",
+        "amount",
+        "transaction_cost",
+        "payment_method",
+        "activity_date",
+        "created_at",
+    )
+
+    list_filter = (
+        "type",
+        "payment_method",
+        "department",
+        "activity_date",
+        "created_at",
+    )
+
+    search_fields = (
+        "receiver",
+        "phone",
+        "description",
+        "sender__email",
+        "sender__username",
+    )
+
+    readonly_fields = (
+        "created_at",
+        "updated_at",
+    )
+
+    ordering = (
+        "-activity_date",
+        "-created_at",
+    )
+
+    date_hierarchy = "activity_date"
