@@ -1,5 +1,8 @@
 import os
-from openai import OpenAI
+try:
+    from openai import OpenAI
+except ImportError:
+    OpenAI = None
 import requests
 from coda_project.settings import SITEURL
 from .models import Assets

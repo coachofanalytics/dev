@@ -1,8 +1,14 @@
 import os
 import json
 import logging
-import paypalrestsdk
-import stripe
+try:
+    import paypalrestsdk
+except ImportError:
+    paypalrestsdk = None
+try:
+    import stripe
+except ImportError:
+    stripe = None
 from datetime import datetime
 
 from django.conf import settings
@@ -696,7 +702,8 @@ def paypal_return(request):
     
 
 
-stripe.api_key = settings.STRIPE_SECRET_KEY
+if stripe:
+    stripe.api_key = settings.STRIPE_SECRET_KEY
 
 @csrf_exempt
 def stripe_checkout(request):
