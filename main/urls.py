@@ -45,7 +45,8 @@ urlpatterns = [
     path('document-services/support/', views.document_services_support_help, name='document_services_support_help'),
 
     # path('gallery/', views.gallery_list, name='gallery_list'),  # View does not exist
-    # path('news/', views.news_list, name='news_list'),  # View does not exist
+    path('news/<int:id>/', views.news_detail, name='news_detail'),
+    path('news/', views.news_list, name='news_list'),
     # path('contract-us/', views.contact_us_list, name='contact_us_list'),  # View does not exist
     path('about/', AboutView.as_view(), name='about'),
     # path('send_email/', views.send_notification, name='send_email'),  # View does not exist

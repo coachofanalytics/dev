@@ -92,6 +92,7 @@ urlpatterns = [
 
  
   
+    path('', include('main.news_urls', namespace='news')),
     path("", include("main.urls", namespace="main")),
     path("accounts/", include("accounts.urls")),
     path("finance/", include("finance.urls"), name="finance"),
