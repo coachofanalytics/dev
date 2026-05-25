@@ -1,0 +1,440 @@
+{% extends 'main/base_templates/base.html' %}
+{% load static %}
+
+{% block content %}
+
+<!-- Include Tailwind CDN and Inter font locally in the page to match the requested UI -->
+<script src="https://cdn.tailwindcss.com"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+    section { display: block !important; }
+    body { font-family: 'Inter', sans-serif; background-color: #f0f4f8; color: #1f2937; }
+    .text-brand-blue { color: #1e40af; }
+    .bg-brand-blue { background-color: #041858; }
+    .text-brand-green { color: #0a926d; }
+    .bg-brand-green { background-color: #0a926d; }
+    .text-brand-red { color: #cc0000; }
+    .bg-brand-red { background-color: #cc0000; }
+    .main-heading { font-weight: 900; }
+    .service-block { margin-bottom: 4rem; padding-top: 2rem; padding-bottom: 2rem; }
+    .service-list li { position: relative; padding-left: 1.5rem; margin-bottom: 0.5rem; }
+    .service-list li::before { content: ''; position: absolute; left: 0; top: 0.5rem; width: 0.5rem; height: 0.5rem; background-color: #1e40af; border-radius: 50%; }
+    .loading-placeholder { min-height: 280px; background-color: #e5e7eb; display: flex; align-items: center; justify-content: center; color: #6b7280; font-weight: 600; }
+    @keyframes pulse { 0%,100%{opacity:1;} 50%{opacity:0.5;} }
+    .animate-pulse-custom { animation: pulse 2s cubic-bezier(0.4,0,0.6,1) infinite; }
+    .hero-image-container { overflow: hidden; display:flex; align-items:center; justify-content:center; }
+    .hero-image-container img { width:100%; height:100%; object-fit:cover; }
+
+    .course-card { transition: all 0.3s ease; }
+    .course-card:hover { transform: translateY(-4px); box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);}
+    .enrollment-badge { font-size: 0.75rem; font-weight: 600; padding: 0.25rem 0.75rem; border-radius: 9999px; }
+    .badge-open { background-color: #0a926d; color: white; }
+    .badge-closed { background-color: #6b7280; color: white;}
+    .badge-closing-soon { background-color: #cc0000; color: white;}
+    
+    /* Pagination styles */
+    .pagination {
+        display: flex;
+        justify-content: center;
+        gap: 0.5rem;
+        margin-top: 2rem;
+    }
+    .pagination a, .pagination span {
+        padding: 0.5rem 1rem;
+        border-radius: 0.5rem;
+        text-decoration: none;
+        transition: all 0.2s;
+    }
+    .pagination a {
+        background-color: white;
+        color: #1e40af;
+        border: 1px solid #e5e7eb;
+    }
+    .pagination a:hover {
+        background-color: #1e40af;
+        color: white;
+        border-color: #1e40af;
+    }
+    .pagination .current {
+        background-color: #1e40af;
+        color: white;
+        border: 1px solid #1e40af;
+    }
+    .pagination .disabled {
+        color: #9ca3af;
+        background-color: #f3f4f6;
+        cursor: not-allowed;
+    }
+</style>
+
+<div id="education-app" class="antialiased">
+    <main class="mx-auto pb-16">
+        <!-- Mentorship success modal -->
+        <div id="mentorship-success-modal" role="dialog" aria-modal="true" aria-labelledby="mentorship-success-title" style="display:none;">
+            <div class="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
+                <div class="bg-white rounded-lg shadow-lg max-w-lg w-full p-6 mx-4">
+                    <h2 id="mentorship-success-title" class="text-xl font-semibold text-gray-900 mb-2">Thank you</h2>
+                    <p class="text-gray-700 mb-4">Thank you for your request — we will review it and get back to you shortly.</p>
+                    <div class="text-right">
+                        <button id="mentorship-success-close" class="bg-brand-blue text-white px-4 py-2 rounded">Close</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <header class="relative h-64 bg-gray-900">
+            <img src="{% static 'main/img/education/training.jpg' %}"
+                 class="absolute inset-0 w-full h-full object-cover opacity-60">
+        
+            <div class="relative flex flex-col items-center justify-center h-full text-center text-white">
+                <h1 class="text-4xl md:text-5xl font-extrabold tracking-wide">
+                    Skills & Professional Development
+                </h1>
+                <p class="mt-2 text-lg text-white">
+                    Certified courses for the global workforce.
+                </p>
+                <br>
+                {% if user.is_authenticated %}
+                    <a href="{% url 'main:course_crud' %}"
+                       class="bg-green-600 text-white px-6 py-3 rounded-full font-semibold hover:bg-green-700 transition">
+                        + Add Course
+                    </a>
+                {% else %}
+                    <a href="{% url 'accounts:account-login' %}?next={{ request.path }}"
+                       class="bg-green-600 text-white px-6 py-3 rounded-full font-semibold hover:bg-green-700 transition">
+                        Login to Add Course
+                    </a>
+                {% endif %}
+            </div>
+        </header>
+
+        <div class="max-w-6xl mx-auto px-6 mt-6">
+            <a href="{% url 'main:education_landing' %}"
+               class="text-brand-blue font-semibold no-underline hover:no-underline">
+                ← Back to Previous Page
+            </a>
+        </div>
+
+        <section class="max-w-6xl mx-auto px-6 py-10">
+            <div class="flex justify-between items-center mb-4">
+                <div>
+                    <h2 class="text-3xl font-bold text-brand-blue">
+                        Internal Training Programs
+                    </h2>
+                    <p class="text-gray-600 mt-1">
+                        Specially curated tracks for the Diaspora County 48 community.
+                    </p>
+                </div>
+                <div class="text-sm text-gray-500">
+                    Showing {{ page_obj.start_index }} - {{ page_obj.end_index }} of {{ paginator.count }} courses
+                </div>
+            </div>
+            
+            <!-- Search and Filter Section -->
+            <div class="bg-white rounded-xl shadow-md p-4 mb-8">
+                <form method="GET" action="" class="flex flex-col md:flex-row gap-4">
+                    <div class="flex-1">
+                        <input type="text" 
+                               name="search" 
+                               value="{{ search_query }}"
+                               placeholder="Search by title, category, or instructor..." 
+                               class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-brand-blue">
+                    </div>
+                    
+                    <div class="w-full md:w-48">
+                        <select name="category" class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-brand-blue">
+                            <option value="">All Categories</option>
+                            <option value="Tech" {% if category_filter == 'Tech' %}selected{% endif %}>Tech</option>
+                            <option value="Business" {% if category_filter == 'Business' %}selected{% endif %}>Business</option>
+                            <option value="Art" {% if category_filter == 'Art' %}selected{% endif %}>Art</option>
+                            <option value="Health" {% if category_filter == 'Health' %}selected{% endif %}>Health</option>
+                        </select>
+                    </div>
+                    
+                    <div class="w-full md:w-48">
+                        <select name="format" class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-brand-blue">
+                            <option value="">All Formats</option>
+                            <option value="Online" {% if format_filter == 'Online' %}selected{% endif %}>Online</option>
+                            <option value="Offline" {% if format_filter == 'Offline' %}selected{% endif %}>Offline</option>
+                            <option value="Hybrid" {% if format_filter == 'Hybrid' %}selected{% endif %}>Hybrid</option>
+                        </select>
+                    </div>
+                    
+                    <div class="w-full md:w-48">
+                        <select name="status" class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-brand-blue">
+                            <option value="">All Status</option>
+                            <option value="Upcoming" {% if status_filter == 'Upcoming' %}selected{% endif %}>Upcoming</option>
+                            <option value="Ongoing" {% if status_filter == 'Ongoing' %}selected{% endif %}>Ongoing</option>
+                            <option value="Completed" {% if status_filter == 'Completed' %}selected{% endif %}>Completed</option>
+                        </select>
+                    </div>
+                    
+                    <button type="submit" class="bg-brand-blue text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition">
+                        Filter
+                    </button>
+                    
+                    {% if search_query or category_filter or format_filter or status_filter %}
+                        <a href="{% url 'main:education_training' %}" class="bg-gray-500 text-white px-6 py-2 rounded-lg hover:bg-gray-600 transition">
+                            Clear
+                        </a>
+                    {% endif %}
+                </form>
+            </div>
+
+            {% if page_obj %}
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                    {% for course in page_obj %}
+                    <div class="course-card bg-white rounded-xl shadow-md p-6 hover:shadow-lg transition">
+                        <div class="flex justify-between items-start mb-3">
+                            <h3 class="font-bold text-lg">
+                                {{ course.title }}
+                            </h3>
+
+                            {% if course.enrollment == "Open" %}
+                                <span class="enrollment-badge badge-open">OPEN</span>
+                            {% elif course.enrollment == "Closed" %}
+                                <span class="enrollment-badge badge-closed">CLOSED</span>
+                            {% else %}
+                                <span class="enrollment-badge badge-closing-soon">CLOSING SOON</span>
+                            {% endif %}
+                        </div>
+
+                        <p class="text-sm text-gray-500 mb-4">
+                            {{ course.get_category_display }}
+                        </p>
+                        
+                        <div class="grid grid-cols-3 text-sm text-gray-600">
+                            <div>
+                                <p class="text-xs text-gray-400">DURATION</p>
+                                <p class="font-medium">{{ course.duration|default:"TBD" }}</p>
+                            </div>
+                            <div>
+                                <p class="text-xs text-gray-400">FORMAT</p>
+                                <p class="font-medium">{{ course.get_format_display }}</p>
+                            </div>
+                            <div>
+                                <p class="text-xs text-gray-400">STARTS</p>
+                                <p class="font-medium text-brand-green">{{ course.start_date|date:"M d, Y" }}</p>
+                            </div>
+                        </div>
+
+                        <div class="flex justify-between items-center mt-4">
+                            <span class="text-sm text-gray-500"> 
+                                <strong>{{ course.enrolled_students }}</strong> enrolled
+                                {% if course.max_students %} / {{ course.max_students }} {% endif %}
+                            </span>
+                            <a href="{% url 'main:course_register' %}?course_id={{ course.id }}"
+                               class="bg-brand-blue text-white px-4 py-2 rounded-md text-sm font-semibold hover:bg-blue-700 transition">
+                                Register Now
+                            </a>
+                        </div>
+                        
+                    </div>
+                    {% endfor %}
+                </div>
+
+                <!-- Pagination -->
+                {% if page_obj.has_other_pages %}
+                <div class="pagination">
+                    {% if page_obj.has_previous %}
+                        <a href="?page=1{% if search_query %}&search={{ search_query }}{% endif %}{% if category_filter %}&category={{ category_filter }}{% endif %}{% if format_filter %}&format={{ format_filter }}{% endif %}{% if status_filter %}&status={{ status_filter }}{% endif %}">&laquo; First</a>
+                        <a href="?page={{ page_obj.previous_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}{% if category_filter %}&category={{ category_filter }}{% endif %}{% if format_filter %}&format={{ format_filter }}{% endif %}{% if status_filter %}&status={{ status_filter }}{% endif %}">Previous</a>
+                    {% else %}
+                        <span class="disabled">&laquo; First</span>
+                        <span class="disabled">Previous</span>
+                    {% endif %}
+
+                    {% for num in page_obj.paginator.page_range %}
+                        {% if page_obj.number == num %}
+                            <span class="current">{{ num }}</span>
+                        {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                            <a href="?page={{ num }}{% if search_query %}&search={{ search_query }}{% endif %}{% if category_filter %}&category={{ category_filter }}{% endif %}{% if format_filter %}&format={{ format_filter }}{% endif %}{% if status_filter %}&status={{ status_filter }}{% endif %}">{{ num }}</a>
+                        {% endif %}
+                    {% endfor %}
+
+                    {% if page_obj.has_next %}
+                        <a href="?page={{ page_obj.next_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}{% if category_filter %}&category={{ category_filter }}{% endif %}{% if format_filter %}&format={{ format_filter }}{% endif %}{% if status_filter %}&status={{ status_filter }}{% endif %}">Next</a>
+                        <a href="?page={{ page_obj.paginator.num_pages }}{% if search_query %}&search={{ search_query }}{% endif %}{% if category_filter %}&category={{ category_filter }}{% endif %}{% if format_filter %}&format={{ format_filter }}{% endif %}{% if status_filter %}&status={{ status_filter }}{% endif %}">Last &raquo;</a>
+                    {% else %}
+                        <span class="disabled">Next</span>
+                        <span class="disabled">Last &raquo;</span>
+                    {% endif %}
+                </div>
+                {% endif %}
+            {% else %}
+                <div class="bg-white rounded-xl shadow p-8 text-center">
+                    <p class="text-gray-500">
+                        No training courses available at the moment.
+                    </p>
+                </div>
+            {% endif %}
+        </section>
+
+        <section class="max-w-6xl mx-auto px-6 py-16">
+            <div class="bg-white rounded-2xl shadow-xl p-8">
+                <div class="flex flex-col md:flex-row md:items-center md:justify-between mb-8">
+                    <div>
+                        <h2 class="text-3xl font-extrabold text-brand-green">
+                            AI Course Discovery
+                        </h2>
+                        <p class="text-gray-600">
+                            Free online courses from MIT, Harvard, and Stanford populated in real-time.
+                        </p>
+                    </div>
+                    <button id="refresh-ai-courses" class="mt-4 md:mt-0 bg-brand-blue text-white px-6 py-3 rounded-full font-semibold hover:bg-blue-700 transition">
+                        Refresh AI List
+                    </button>
+                </div>
+
+                <div id="ai-course-container" class="grid grid-cols-1 md:grid-cols-2 gap-8 min-h-[300px]">
+                </div>
+            </div>
+        </section>
+    </main>
+</div>   
+
+<script>
+    async function loadAICourses(){
+        const container = document.getElementById('ai-course-container');
+
+        const steps = [
+            "Scanning MIT OpenCourseWare...",
+            "Checking Harvard course catalog...",
+            "Analyzing Stanford learning platform...",
+            "Ranking the best free courses..."
+        ];
+
+        container.innerHTML = `
+        <div class="col-span-2 text-center py-12 ">
+            <p id="ai-status" class ="text-lg font-semibold text-brand-blue animate-pulse">
+            Initializing AI Course discovery    
+            </p>
+            <p class="text-gray-500 mt-2">
+            Finding Free University courses worldwide
+            </p>
+        </div>
+        `;
+
+        const status = document.getElementById("ai-status");
+
+        for (let step of steps){
+            if (status) status.textContent = step;
+            await new Promise(resolve => setTimeout(resolve, 900));
+        }
+
+        try{
+            const response = await fetch("{% url 'main:ai_course_discovery' %}");
+
+            if(!response.ok){
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+
+            const data = await response.json();
+
+            container.innerHTML = "";
+
+            if (data.courses && data.courses.length > 0){
+                data.courses.forEach(course => {
+                    const card = document.createElement("div");
+                    card.className = "bg-gray-50 border rounded-xl p-6 shadow-sm hover:shadow-lg transition transform hover:scale-105";
+
+                    card.innerHTML = `
+                    <div class="flex items-start gap-4 mb-4">
+                        <div class="bg-gray-200 rounded-lg p-3 text-2xl"></div>
+                        <div>
+                            <h3 class="font-bold text-lg">
+                            ${escapeHtml(course.title || 'Untitled Course')}
+                            </h3>
+                            <p class="text-brand-green text-sm font-semibold">
+                                ${escapeHtml(course.university || 'University')}
+                            </p>
+                        </div>
+                    </div>
+                    <div class="flex flex-wrap justify-between text-sm text-gray-600 mb-4">
+                        <span>Platform:
+                          <strong>
+                             ${escapeHtml(course.platform || 'Online')} 
+                          </strong>
+                        </span>
+                        <span>Duration:
+                        <strong>
+                             ${escapeHtml(course.duration || 'Self-paced')} 
+                          </strong>
+                        </span>
+                    </div>
+                    <a href="${escapeHtml(course.url || '#')}" target="_blank" rel="noopener noreferrer"
+                    class="block text-center bg-white border rounded-lg py-2 font-semibold text-brand-blue hover:bg-gray-100 transition"
+                    >
+                     Visit Course
+                    </a>
+                    `;
+                    container.appendChild(card);
+                });
+            } else {
+                container.innerHTML = `
+                <div class="col-span-2 text-center py-12">
+                    <p class="text-gray-500">
+                        No AI discovered Courses available at the moment.
+                    </p>
+                </div>
+                `;
+            }
+        }catch(error){
+            console.error('Error loading AI courses:', error);
+            container.innerHTML = `
+            <div class="col-span-2 text-center py-12">
+                <p class="text-red-500 font-semibold">
+                    AI Failed to load courses
+                </p>
+                <p class="text-gray-500 mt-2">
+                 Please try again later.
+                </p>
+            </div>
+            `;
+        }
+    }
+
+    function escapeHtml(unsafe){
+        if(!unsafe) return '';
+        return unsafe
+           .replace(/&/g, "&amp;")
+           .replace(/</g, "&lt;")
+           .replace(/>/g, "&gt;")
+           .replace(/"/g, "&quot;")
+           .replace(/'/g, "&#039;")
+    }
+
+    document.addEventListener('DOMContentLoaded', function(){
+        const modal = document.getElementById('mentorship-success-modal');
+        const closeBtn = document.getElementById('mentorship-success-close');
+
+        if (closeBtn){
+            closeBtn.addEventListener('click', function(){
+                modal.style.display = 'none';
+            });
+        }
+
+        if (modal){
+            modal.addEventListener('click', function(e){
+                if (e.target === modal){
+                    modal.style.display = 'none';
+                }
+            });
+        }
+    });
+   
+    const refreshBtn = document.getElementById('refresh-ai-courses');
+    if (refreshBtn) {
+        refreshBtn.addEventListener("click", loadAICourses);
+    }
+
+    window.addEventListener("DOMContentLoaded", loadAICourses);
+</script>
+
+{% endblock %}
+
+
+
+
+
+
