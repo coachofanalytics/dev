@@ -1,8 +1,5 @@
 import os
-try:
-    from openai import OpenAI
-except ImportError:
-    OpenAI = None
+import openai
 import requests
 from coda_project.settings import SITEURL
 from .models import Assets
@@ -55,8 +52,7 @@ def generate_chatbot_response(user_message, user_message_dict=None):
         ]
     else:
         messages = user_message_dict
-    # client = openai.OpenAI(api_key=os.environ.get('OPENAI_API_KEY'))
-    client = OpenAI(api_key=os.environ.get('OPENAI_API_KEY'))
+    client = openai.OpenAI(api_key=os.environ.get('OPENAI_API_KEY'))
 
     response = client.chat.completions.create(
     # response = openai.completions.create(
@@ -107,6 +103,51 @@ def download_image(url):
     else:
         print("Image Couldn't be retrieved")
     return image_path
+
+
+# ============= COMMUNITIES EMAIL UTILITIES =============
+from django.core.mail import EmailMultiAlternatives
+from django.template.loader import render_to_string
+from django.utils.html import strip_tags
+from django.conf import settings as django_settings
+
+def send_email(subject, recipient_list, context, html_template, plain_template):
+    """
+    Sends an email with both HTML and plain text versions.
+    Used by communities app for welcome and contact emails.
+
+    :param subject: The subject of the email
+    :param recipient_list: List of recipient email addresses
+    :param context: Context data for rendering the template
+    :param html_template: Path to the HTML template
+    :param plain_template: Path to the plain text version
+    """
+    try:
+        # Render templates
+        html_message = render_to_string(html_template, context)
+        plain_message = render_to_string(plain_template, context)
+        
+        # Fallback: if plain template is empty, strip HTML
+        if not plain_message.strip():
+            plain_message = strip_tags(html_message)
+
+        # Create the multi-part email
+        email = EmailMultiAlternatives(
+            subject=subject,
+            body=plain_message,
+            from_email=django_settings.EMAIL_HOST_USER,
+            to=recipient_list
+        )
+
+        # Attach the HTML version
+        email.attach_alternative(html_message, "text/html")
+
+        # Send it
+        email.send(fail_silently=False)
+        print(f"✅ Email sent to {recipient_list}")
+
+    except Exception as e:
+        print(f"❌ Error sending email: {e}")
 
 #===============Processing Images from Database==================
 def image_view(request):
