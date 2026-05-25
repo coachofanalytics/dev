@@ -1,0 +1,52 @@
+{% extends "main/base_templates/base.html" %}
+{% block content %}
+
+<main class="max-w-7xl mx-auto py-16 px-6">
+
+    <!-- Hero Section for Create Post -->
+    <header class="bg-brand-blue text-white shadow-xl overflow-hidden mb-12">
+        <div class="max-w-7xl mx-auto text-center py-12">
+            <h1 class="text-5xl font-extrabold mb-4">Create a New Post in {{ category.name }}</h1>
+            <p class="text-xl font-medium text-gray-200">
+                Share your insights and contribute to the discussions in the {{ category.name }} category.
+            </p>
+        </div>
+    </header>
+
+    <!-- Post Creation Form -->
+    <section class="bg-white shadow-lg rounded-lg p-6">
+        <h2 class="text-3xl font-bold text-brand-blue mb-6">Create a New Post</h2>
+
+        <form method="POST" action="{% url 'communities:create_post' category.slug %}" class="space-y-4">
+            {% csrf_token %}
+            
+            <!-- Title -->
+            <div class="mb-4">
+                <label for="title" class="block text-lg font-medium text-gray-700">Title</label>
+                <input type="text" name="title" id="title" class="w-full p-4 border rounded-lg" placeholder="Enter post title" required>
+            </div>
+
+            <!-- Content -->
+            <div class="mb-4">
+                <label for="content" class="block text-lg font-medium text-gray-700">Content</label>
+                <textarea name="content" id="content" rows="6" class="w-full p-4 border rounded-lg" placeholder="Write your post content here..." required></textarea>
+            </div>
+
+            <!-- Category (Optional) -->
+            <div class="mb-4">
+                <label for="category" class="block text-lg font-medium text-gray-700">Category</label>
+                <input type="text" name="category" id="category" value="{{ category.name }}" class="w-full p-4 border rounded-lg" readonly>
+            </div>
+
+            <!-- Submit Button -->
+            <div class="mt-6">
+                <button type="submit" class="bg-brand-green text-white py-3 px-6 rounded-lg hover:bg-[#086a4f] transition duration-300 w-full">
+                    Submit Post
+                </button>
+            </div>
+        </form>
+    </section>
+
+</main>
+
+{% endblock content %}

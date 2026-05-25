@@ -1,0 +1,53 @@
+{% extends "main/base_templates/base.html" %}
+{% block content %}
+
+<main class="max-w-7xl mx-auto py-16 px-6">
+
+    <!-- Hero Section for Viewing Post -->
+    <header class="bg-brand-blue text-white shadow-xl overflow-hidden mb-12">
+        <div class="max-w-7xl mx-auto text-center py-12">
+            <h1 class="text-5xl font-extrabold mb-4">{{ post.title }}</h1>
+            <p class="text-xl font-medium text-gray-200">
+                Posted on {{ post.created_at|date:"F j, Y, H:i" }} by {{ post.author.username }}
+            </p>
+        </div>
+    </header>
+
+    <!-- Post Content Section -->
+    <section class="bg-white shadow-lg rounded-lg p-6">
+        <h3 class="text-2xl font-bold text-brand-blue mb-4">Post Content</h3>
+        <p class="text-gray-600">{{ post.content }}</p>
+    </section>
+
+    <!-- Comment Section (Optional) -->
+    <section class="mt-16">
+        <h2 class="text-3xl font-extrabold text-brand-blue mb-6">Comments</h2>
+        {% if post.comments.exists %}
+            <div class="space-y-6">
+                {% for comment in post.comments.all %}
+                    <div class="bg-white shadow-lg rounded-lg p-6">
+                        <p class="text-gray-700">{{ comment.content }}</p>
+                        <p class="text-gray-500 text-sm">Commented on: {{ comment.created_at|date:"F j, Y, H:i" }} by {{ comment.author.username }}</p>
+                    </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <p>No comments yet. Be the first to comment!</p>
+        {% endif %}
+    </section>
+
+    <!-- Comment Form (Optional) -->
+    <section class="mt-16">
+        <h3 class="text-3xl font-extrabold text-brand-blue mb-4">Add a Comment</h3>
+        <form method="POST" action="{% url 'communities:add_comment' post.id %}" class="space-y-4">
+            {% csrf_token %}
+            <textarea name="content" rows="4" class="w-full p-4 border rounded-lg" placeholder="Write your comment here..."></textarea>
+            <button type="submit" class="bg-brand-green text-white py-3 px-6 rounded-lg hover:bg-[#086a4f] transition duration-300">
+                Submit Comment
+            </button>
+        </form>
+    </section>
+
+</main>
+
+{% endblock content %}

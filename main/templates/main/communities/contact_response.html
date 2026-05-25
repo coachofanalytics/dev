@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Thank You for Contacting Us</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      background-color: #f4f4f4;
+    }
+    .wrapper {
+      width: 100%;
+      padding: 20px 0;
+      background-color: #f4f4f4;
+    }
+    .container {
+      max-width: 600px;
+      background: #fff;
+      margin: 0 auto;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+      overflow: hidden;
+    }
+    .header {
+      background-color: #0a926d;
+      color: #ffffff;
+      text-align: center;
+      padding: 20px;
+    }
+    .content {
+      padding: 25px;
+      color: #333333;
+      line-height: 1.6;
+    }
+    .content p {
+      margin: 12px 0;
+    }
+    .message-box {
+      background-color: #f9f9f9;
+      border-left: 4px solid #0a926d;
+      padding: 15px;
+      margin-top: 15px;
+      border-radius: 4px;
+      white-space: pre-wrap;
+    }
+    .button {
+      display: inline-block;
+      background-color: #0a926d;
+      color: #ffffff;
+      padding: 12px 25px;
+      text-decoration: none;
+      border-radius: 6px;
+      font-weight: bold;
+      margin-top: 20px;
+    }
+    .button:hover {
+      background-color: #087254;
+    }
+    .footer {
+      text-align: center;
+      font-size: 13px;
+      color: #888888;
+      background-color: #f9f9f9;
+      padding: 12px 20px;
+      border-top: 1px solid #eeeeee;
+    }
+  </style>
+</head>
+<body>
+  <div class="wrapper">
+    <div class="container">
+      <div class="header">
+        <h2>Thank You for Contacting Us</h2>
+      </div>
+
+      <div class="content">
+        <p>Dear {{ name }},</p>
+
+        <p>We’ve received your message and truly appreciate you taking the time to reach out. One of our team members will get back to you shortly.</p>
+
+        <p><strong>Your message:</strong></p>
+        <div class="message-box">
+          {{ message }}
+        </div>
+
+        <p>If you need immediate assistance, you can reply directly to this email or visit our website using the button below:</p>
+
+        <p>
+          <a href="{% url 'communities:home' %}" class="button">Visit Our Website</a>
+        </p>
+
+        <p>Warm regards,<br><strong>CODA Team Rwanda</strong></p>
+      </div>
+
+      <div class="footer">
+        © 2025 CODANALYTICS Rwanda. All rights reserved.<br>
+        <a href="https://www.codanalytics.net/" style="color: #0a926d; text-decoration: none;">CODANALYTICS</a>
+      </div>
+    </div>
+  </div>
+</body>
+</html>
