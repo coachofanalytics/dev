@@ -29,6 +29,21 @@ urlpatterns = [
     path('find-doctors/', views.find_doctors, name='find_doctors'),
     path('api/doctor/<int:pk>/', views.doctor_profile_api, name='doctor_profile_api'),
     path('api/doctor/<int:pk>/book/', views.book_appointment, name='book_appointment'),
+
+    # ===== Document Services =====
+    path('document-services/', views.document_services_dashboard, name='document_services_dashboard'),
+    path('document-services/drafts/', views.document_services_drafts, name='document_services_drafts'),
+    path('document-services/documents/', views.document_services_documents, name='document_services_documents'),
+    path('document-services/history/', views.document_services_history, name='document_services_history'),
+    path('document-services/application/', views.document_services_application_form, name='document_services_application_form'),
+    path('document-services/summary/', views.document_services_summary, name='document_services_summary'),
+    path('document-services/payment-summary/', views.document_services_payment_summary, name='document_services_payment_summary'),
+    path('document-services/notifications/', views.document_services_notifications, name='document_services_notifications'),
+    path('document-services/notification-preferences/', views.document_services_notification_preferences, name='document_services_notification_preferences'),
+    path('document-services/profile/', views.document_services_profile, name='document_services_profile'),
+    path('document-services/settings/', views.document_services_settings, name='document_services_settings'),
+    path('document-services/support/', views.document_services_support_help, name='document_services_support_help'),
+
     # path('gallery/', views.gallery_list, name='gallery_list'),  # View does not exist
     # path('news/', views.news_list, name='news_list'),  # View does not exist
     # path('contract-us/', views.contact_us_list, name='contact_us_list'),  # View does not exist
