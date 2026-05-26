@@ -28,9 +28,17 @@ urlpatterns = [
     path('ourhistory',views.ourhistory, name ='ourhistory'),
     path('contact_us',views.contact_us, name ='contact_us'),
 
-  
-    
-    
+    # ===== Healthcare Information =====
+    path('data/healthcare-info/', views.healthcare_info, name='healthcare_info'),
+    path('data/medical-resource-form/', views.medical_resource_form, name='medical_resource_form'),
+    path('healthcare/insurance-support/', views.insurance_support, name='insurance_support'),
+    path('healthcare/insurance-support/api/recommend/', views.ai_recommendation_api, name='ai_recommendation_api'),
+    path('healthcare/insurance-support/api/inquiry/', views.submit_expert_inquiry, name='submit_expert_inquiry'),
+    path('healthcare/insurance-support/download-csv/', views.download_comparison_csv, name='download_comparison_csv'),
+    path('find-doctors/', views.find_doctors, name='find_doctors'),
+    path('api/doctor/<int:pk>/', views.doctor_profile_api, name='doctor_profile_api'),
+    path('api/doctor/<int:pk>/book/', views.book_appointment, name='book_appointment'),
+
    #==============ERRORS==============================================
     path('400Error/', views.error400, name='400error'),
     path('403Error/', views.error403, name='403error'),
