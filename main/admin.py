@@ -35,5 +35,29 @@ admin.site.register(GetHelp)
 admin.site.register(Governance, DescriptionGovernance)
 #admin.site.register(DonationOrganization)
 
+# Consular Assistance
+from .models import ConsularAssistancePage, LegalService
+admin.site.register(ConsularAssistancePage)
 
-
+@admin.register(LegalService)
+class LegalServiceAdmin(admin.ModelAdmin):
+    """Admin interface for managing Legal & Immigration Services"""
+    list_display = ['title', 'category', 'is_active', 'order', 'created_at']
+    list_filter = ['category', 'is_active', 'created_at']
+    search_fields = ['title', 'description']
+    fieldsets = (
+        ('Basic Information', {
+            'fields': ('title', 'category', 'description', 'order')
+        }),
+        ('Media & Content', {
+            'fields': ('image_url', 'features')
+        }),
+        ('Call-to-Action', {
+            'fields': ('cta_button_text', 'cta_button_url')
+        }),
+        ('Status', {
+            'fields': ('is_active', 'created_at', 'updated_at'),
+            'classes': ('collapse',)
+        }),
+    )
+    readonly_fields = ['created_at', 'updated_at']

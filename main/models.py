@@ -260,3 +260,53 @@ class History(models.Model):
 
     def __str__(self):
         return f"{self.year}: {self.title}"
+
+
+# ============================================
+# CONSULAR ASSISTANCE MODELS
+# ============================================
+
+class ConsularAssistancePage(models.Model):
+    title = models.CharField(max_length=255)
+    slug = models.SlugField(max_length=255, unique=True)
+    content = models.TextField(blank=True, null=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = "Consular Assistance Page"
+        verbose_name_plural = "Consular Assistance Pages"
+
+    def __str__(self):
+        return self.title
+
+
+class LegalService(models.Model):
+    """
+    Model to store legal & immigration guidance services.
+    Used on the Legal and Immigration Guidance dedicated page.
+    """
+    CATEGORY_CHOICES = [
+        ('visa', 'Visa and Residency Services'),
+        ('citizenship', 'Citizenship and Naturalization'),
+        ('legal_referral', 'Legal Representation & Referrals'),
+    ]
+
+    title = models.CharField(max_length=200)
+    category = models.CharField(max_length=50, choices=CATEGORY_CHOICES)
+    description = models.TextField()
+    image_url = models.URLField(blank=True, null=True)
+    features = models.JSONField(default=list)  # List of bullet points
+    cta_button_text = models.CharField(max_length=100, default='Learn More')
+    cta_button_url = models.URLField(blank=True)
+    order = models.IntegerField(default=0)  # Display order
+    is_active = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['order']
+        verbose_name = 'Legal Service'
+        verbose_name_plural = 'Legal Services'
+
+    def __str__(self):
+        return self.title

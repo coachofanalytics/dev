@@ -28,9 +28,16 @@ urlpatterns = [
     path('ourhistory',views.ourhistory, name ='ourhistory'),
     path('contact_us',views.contact_us, name ='contact_us'),
 
-  
-    
-    
+    # ===== Consular Assistance =====
+    path('consular-assistance/', views.consular_assistance, name='consular_assistance'),
+    path('consular-assistance/book-consultation/', views.book_consular_consultation, name='book_consular_consultation'),
+    path('data/consular/information-updates/', views.consular_information_updates, name='consular_information_updates'),
+    path('data/consular/press-releases/', views.consular_press_releases, name='consular_press_releases'),
+    path('data/consular/embassy-news/', views.consular_embassy_news, name='consular_embassy_news'),
+    path('data/consular/community-updates/', views.consular_community_updates, name='consular_community_updates'),
+    path('data/consular/all-updates/', views.consular_all_updates, name='consular_all_updates'),
+    path('legal-immigration-guidance/', views.legal_immigration_guidance, name='legal_immigration_guidance'),
+
    #==============ERRORS==============================================
     path('400Error/', views.error400, name='400error'),
     path('403Error/', views.error403, name='403error'),
