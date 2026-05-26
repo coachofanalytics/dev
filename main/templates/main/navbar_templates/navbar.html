@@ -184,7 +184,7 @@
       {% if user.is_authenticated %}
       <li><a href="{% url 'finance:pay_online' %}" class="navLin">MEMBERSHIP</a></li>
       {% endif %}
-      <li><a href="https://diaspora.go.ke/news" class="navLin">NEWS</a></li>
+      <li><a href="{% url 'main:news_list' %}" class="navLin">NEWS</a></li>
       <li><a href="{% url 'main:layout' %}#contact-us" class="navLin">CONTACT US</a></li>
       <li class="dropdown">
         <a href="#" class="navLin">SUPPORT</a>

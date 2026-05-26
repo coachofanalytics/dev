@@ -1,0 +1,284 @@
+{% extends "main/base_templates/base.html" %}
+{% load static %}
+{% block content %}
+
+<style>
+    .hero-overlay {
+        min-height: 350px;
+        background: linear-gradient(135deg, #1a3a2a 0%, #2563eb 100%);
+        background-size: cover;
+        background-position: center;
+    }
+    .category-nav {
+        display: flex;
+        gap: 1rem;
+        flex-wrap: wrap;
+        margin: 2rem 0;
+    }
+    .category-btn {
+        padding: 0.5rem 1.5rem;
+        border: 2px solid #e2e8f0;
+        background: white;
+        border-radius: 20px;
+        cursor: pointer;
+        transition: all 0.3s;
+        font-weight: 600;
+        text-decoration: none;
+        color: #666;
+    }
+    .category-btn:hover {
+        border-color: #2563eb;
+        color: #2563eb;
+    }
+    .category-btn.active {
+        background: #2563eb;
+        color: white;
+        border-color: #2563eb;
+    }
+    .news-card {
+        background: white;
+        border-radius: 12px;
+        overflow: hidden;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        transition: all 0.3s;
+        display: flex;
+        flex-direction: column;
+        margin-bottom: 2rem;
+    }
+    .news-card:hover {
+        box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+        transform: translateY(-4px);
+    }
+    .news-card-image {
+        width: 100%;
+        height: 250px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        object-fit: cover;
+    }
+    .news-card-content {
+        padding: 2rem;
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+    }
+    .news-badge {
+        display: inline-block;
+        padding: 0.5rem 1rem;
+        border-radius: 20px;
+        font-size: 0.75rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        margin-bottom: 0.5rem;
+        width: fit-content;
+    }
+    .news-badge.press {
+        background: #fef3c7;
+        color: #b45309;
+    }
+    .news-badge.embassy {
+        background: #dcfce7;
+        color: #15803d;
+    }
+    .news-badge.community {
+        background: #e0e7ff;
+        color: #4338ca;
+    }
+    .news-badge.other {
+        background: #f3e8ff;
+        color: #7e22ce;
+    }
+    .news-card h3 {
+        font-size: 1.3rem;
+        margin: 0.5rem 0;
+        color: #1f2937;
+        line-height: 1.4;
+    }
+    .news-meta {
+        font-size: 0.85rem;
+        color: #6b7280;
+        margin: 0.5rem 0;
+    }
+    .news-excerpt {
+        color: #4b5563;
+        line-height: 1.6;
+        margin: 1rem 0;
+        flex: 1;
+    }
+    .news-footer {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-top: 1.5rem;
+        padding-top: 1rem;
+        border-top: 1px solid #e5e7eb;
+    }
+    .read-more {
+        color: #2563eb;
+        text-decoration: none;
+        font-weight: 600;
+        transition: color 0.3s;
+    }
+    .read-more:hover {
+        color: #1d4ed8;
+    }
+    .featured-section {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 2rem;
+        border-radius: 12px;
+        margin-bottom: 3rem;
+    }
+    .featured-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 2rem;
+        margin-top: 1.5rem;
+    }
+    .featured-card {
+        background: rgba(255,255,255,0.1);
+        backdrop-filter: blur(10px);
+        padding: 1.5rem;
+        border-radius: 8px;
+        border: 1px solid rgba(255,255,255,0.2);
+    }
+    .featured-card h4 {
+        margin: 0.5rem 0;
+        font-size: 1.1rem;
+    }
+    .featured-card p {
+        font-size: 0.9rem;
+        opacity: 0.95;
+    }
+    .add-news-btn {
+        background: #2563eb;
+        color: white;
+        padding: 0.75rem 1.5rem;
+        border-radius: 8px;
+        text-decoration: none;
+        font-weight: 600;
+        display: inline-block;
+        transition: background 0.3s;
+    }
+    .add-news-btn:hover {
+        background: #1d4ed8;
+    }
+    .empty-state {
+        text-align: center;
+        padding: 3rem 1rem;
+        color: #6b7280;
+    }
+    .empty-state h3 {
+        color: #1f2937;
+        margin-bottom: 1rem;
+    }
+</style>
+
+<main class="mx-auto pb-16">
+
+    <!-- HERO SECTION -->
+    <header class="relative text-white shadow-xl overflow-hidden mb-12 mt-0 bg-blue-800 hero-overlay">
+        <div class="relative z-10 flex flex-col items-center justify-center text-center px-4" style="min-height: 350px;">
+            <h1 class="text-5xl main-heading mb-4">{{ category_name }}</h1>
+            <h2 class="text-xl font-medium text-gray-100 mb-4" style="max-width: 600px;">
+                {% if category == 'press' %}
+                Official announcements, partnerships, and operational updates
+                {% elif category == 'embassy' %}
+                Critical updates on consular services and government policies
+                {% elif category == 'community' %}
+                Community alerts, events, and diaspora resources
+                {% else %}
+                Stay informed with the latest news and updates
+                {% endif %}
+            </h2>
+            <a href="{% url 'main:news_create' %}" class="add-news-btn">+ ADD NEWS</a>
+        </div>
+    </header>
+
+    <!-- Breadcrumb -->
+    <nav class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 mb-6 text-sm text-gray-500">
+        <a href="{% url 'main:layout' %}" class="text-brand-blue hover:underline">Home</a>
+        <span class="mx-2">/</span>
+        <a href="{% url 'main:consular_assistance' %}" class="text-brand-blue hover:underline">Consular Assistance</a>
+        <span class="mx-2">/</span>
+        <span class="text-brand-green font-semibold">News & Updates</span>
+    </nav>
+
+    <!-- Main Content -->
+    <section class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+
+        <!-- Category Filter -->
+        <div class="category-nav justify-center mb-8">
+            <a href="{% url 'main:news_list' %}" class="category-btn {% if not category %}active{% endif %}">All News</a>
+            {% for cat_value, cat_name in categories %}
+                <a href="{% url 'main:news_list' %}?category={{ cat_value }}" 
+                   class="category-btn {% if category == cat_value %}active{% endif %}">
+                    {{ cat_name }}
+                </a>
+            {% endfor %}
+        </div>
+
+        <!-- Featured News Section -->
+        {% if featured_news %}
+        <div class="featured-section">
+            <h2 style="margin-top: 0;">📌 Featured Updates</h2>
+            <div class="featured-grid">
+                {% for news in featured_news %}
+                <a href="{% url 'main:news_detail' news.id %}" class="featured-card" style="text-decoration: none; color: white;">
+                    <h4>{{ news.title }}</h4>
+                    <p>{{ news.get_excerpt }}</p>
+                    <small style="opacity: 0.8;">{{ news.published_date|date:"M d, Y" }}</small>
+                </a>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- News List -->
+        {% if all_news %}
+        <h2 class="text-2xl font-bold mb-6" style="color: #1f2937;">Latest Updates</h2>
+        
+        <div class="news-grid">
+            {% for news in all_news %}
+            <div class="news-card">
+                {% if news.image %}
+                    <img src="{{ news.image.url }}" alt="{{ news.title }}" class="news-card-image">
+                {% else %}
+                    <div class="news-card-image"></div>
+                {% endif %}
+                
+                <div class="news-card-content">
+                    <div>
+                        <span class="news-badge {{ news.category }}">
+                            {% if news.is_event %}📅 EVENT - {% endif %}
+                            {{ news.get_category_display }}
+                        </span>
+                        <h3>{{ news.title }}</h3>
+                        <div class="news-meta">
+                            <strong>{{ news.author }}</strong> • {{ news.published_date|date:"M d, Y" }}
+                        </div>
+                        <p class="news-excerpt">{{ news.get_excerpt }}</p>
+                    </div>
+                    
+                    <div class="news-footer">
+                        <a href="{% url 'main:news_detail' news.id %}" class="read-more">Read Full Article →</a>
+                        <div>
+                            <a href="{% url 'main:news_edit' news.id %}" style="color: #6b7280; text-decoration: none; margin-right: 1rem;">✏️ Edit</a>
+                            <a href="{% url 'main:news_delete' news.id %}" style="color: #dc2626; text-decoration: none;">🗑️ Delete</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="empty-state">
+            <h3>No updates found in this category</h3>
+            <p>Check back soon or explore other categories</p>
+        </div>
+        {% endif %}
+
+    </section>
+
+</main>
+
+{% endblock %}

@@ -1,5 +1,5 @@
 from django import forms
-from .models import Feedback, GetHelp, Governance
+from .models import Feedback, GetHelp, Governance, NewsArticle
 
 class ContactForm(forms.ModelForm):
     class Meta:
@@ -38,11 +38,18 @@ class GetHelpForm(forms.ModelForm):
 class GovernanceForm(forms.ModelForm):
     class Meta:
         model = Governance
-        fields = ['governance_category', 'title', 'description','members', 'region', 'chapter']       
+        fields = ['governance_category', 'title', 'description','members', 'region', 'chapter']
 
 
-
-        
-    
-
-
+class ArticleForm(forms.ModelForm):
+    class Meta:
+        model = NewsArticle
+        fields = [
+            'category', 'title', 'slug', 'author',
+            'featured_image', 'content', 'ai_summary',
+            'is_breaking', 'status', 'views'
+        ]
+        widgets = {
+            'content': forms.Textarea(attrs={'rows': 10}),
+            'ai_summary': forms.Textarea(attrs={'rows': 3}),
+        }

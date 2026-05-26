@@ -34,6 +34,6 @@ admin.site.register(ContactUs)
 admin.site.register(GetHelp)
 admin.site.register(Governance, DescriptionGovernance)
 #admin.site.register(DonationOrganization)
-
-
-
+admin.site.register(Category)
+admin.site.register(NewsArticle)
+admin.site.register(Subscriber)

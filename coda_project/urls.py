@@ -95,6 +95,7 @@ urlpatterns = [
     path("", include("main.urls", namespace="main")),
     path("accounts/", include("accounts.urls")),
     path("finance/", include("finance.urls"), name="finance"),
+    path('', include('main.news_urls', namespace='news')),
 
     path('accounts/social/custom_login/', account_views.custom_social_login, name='custom_social_login'),
     path('social_accounts/signup/', account_views.join),

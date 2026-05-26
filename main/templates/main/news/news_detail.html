@@ -1,0 +1,241 @@
+{% extends "main/base_templates/base.html" %}
+{% load static %}
+{% block content %}
+
+<style>
+    .article-hero {
+        background: linear-gradient(135deg, #1a3a2a 0%, #2563eb 100%);
+        color: white;
+        padding: 3rem 2rem;
+        margin-bottom: 2rem;
+    }
+    .article-badge {
+        display: inline-block;
+        padding: 0.5rem 1rem;
+        border-radius: 20px;
+        font-size: 0.75rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        margin-bottom: 1rem;
+        background: rgba(255,255,255,0.2);
+    }
+    .article-headline {
+        font-size: 2.5rem;
+        margin: 1rem 0;
+        line-height: 1.2;
+    }
+    .article-meta {
+        display: flex;
+        gap: 2rem;
+        margin-top: 1.5rem;
+        font-size: 0.95rem;
+        opacity: 0.95;
+    }
+    .article-actions {
+        display: flex;
+        gap: 1rem;
+        margin-top: 1.5rem;
+    }
+    .action-btn {
+        padding: 0.5rem 1rem;
+        border-radius: 6px;
+        text-decoration: none;
+        font-weight: 600;
+        font-size: 0.9rem;
+        transition: all 0.3s;
+        border: 2px solid rgba(255,255,255,0.3);
+        color: white;
+    }
+    .action-btn:hover {
+        background: rgba(255,255,255,0.2);
+        border-color: white;
+    }
+    .article-container {
+        max-width: 800px;
+        margin: 0 auto;
+    }
+    .article-image {
+        width: 100%;
+        max-height: 500px;
+        object-fit: cover;
+        border-radius: 12px;
+        margin-bottom: 2rem;
+    }
+    .article-content {
+        font-size: 1.1rem;
+        line-height: 1.8;
+        color: #374151;
+    }
+    .article-content p {
+        margin-bottom: 1.5rem;
+    }
+    .article-content h2 {
+        font-size: 1.8rem;
+        margin: 2rem 0 1rem 0;
+        color: #1f2937;
+    }
+    .article-content h3 {
+        font-size: 1.4rem;
+        margin: 1.5rem 0 1rem 0;
+        color: #374151;
+    }
+    .share-section {
+        background: #f3f4f6;
+        padding: 2rem;
+        border-radius: 12px;
+        margin: 3rem 0 2rem 0;
+    }
+    .share-buttons {
+        display: flex;
+        gap: 1rem;
+        margin-top: 1rem;
+    }
+    .share-btn {
+        padding: 0.5rem 1rem;
+        border-radius: 6px;
+        text-decoration: none;
+        font-weight: 600;
+        transition: all 0.3s;
+        background: white;
+        border: 2px solid #e5e7eb;
+    }
+    .share-btn:hover {
+        background: #2563eb;
+        color: white;
+        border-color: #2563eb;
+    }
+    .related-section {
+        margin-top: 3rem;
+        padding-top: 2rem;
+        border-top: 2px solid #e5e7eb;
+    }
+    .related-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 2rem;
+        margin-top: 1.5rem;
+    }
+    .related-card {
+        background: white;
+        border: 1px solid #e5e7eb;
+        border-radius: 8px;
+        overflow: hidden;
+        transition: all 0.3s;
+        text-decoration: none;
+        color: inherit;
+    }
+    .related-card:hover {
+        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        transform: translateY(-2px);
+    }
+    .related-card h4 {
+        padding: 1rem;
+        margin: 0;
+        color: #1f2937;
+    }
+    .breadcrumb {
+        font-size: 0.9rem;
+        color: #6b7280;
+        margin-bottom: 1rem;
+    }
+    .breadcrumb a {
+        color: #2563eb;
+        text-decoration: none;
+    }
+</style>
+
+<main class="mx-auto pb-16">
+
+    <!-- Breadcrumb -->
+    <nav class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 mt-4 breadcrumb">
+        <a href="{% url 'main:layout' %}">Home</a>
+        <span> / </span>
+        <a href="{% url 'main:consular_assistance' %}">Consular Assistance</a>
+        <span> / </span>
+        <a href="{% url 'main:news_list' %}?category={{ news.category }}">{{ news.get_category_display }}</a>
+        <span> / </span>
+        <span>{{ news.title }}</span>
+    </nav>
+
+    <!-- Article Hero -->
+    <div class="article-hero">
+        <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+            <span class="article-badge">
+                {% if news.is_event %}📅 EVENT • {% endif %}{{ news.get_category_display }}
+            </span>
+            
+            <h1 class="article-headline">{{ news.title }}</h1>
+            
+            <div class="article-meta">
+                <div>
+                    <strong>Author:</strong> {{ news.author }}
+                </div>
+                <div>
+                    <strong>Published:</strong> {{ news.published_date|date:"F d, Y" }}
+                </div>
+                {% if news.updated_date != news.published_date %}
+                <div>
+                    <strong>Updated:</strong> {{ news.updated_date|date:"F d, Y" }}
+                </div>
+                {% endif %}
+            </div>
+            
+            <div class="article-actions">
+                <a href="{% url 'main:news_edit' news.id %}" class="action-btn">✏️ Edit</a>
+                <a href="{% url 'main:news_delete' news.id %}" class="action-btn" style="border-color: #fca5a5;">🗑️ Delete</a>
+                <a href="{% url 'main:news_list' %}?category={{ news.category }}" class="action-btn">← Back to News</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Article Content -->
+    <article class="article-container px-4 sm:px-6 lg:px-8 mx-auto">
+        
+        {% if news.image %}
+        <img src="{{ news.image.url }}" alt="{{ news.title }}" class="article-image">
+        {% endif %}
+
+        <div class="article-content">
+            {{ news.content|linebreaks }}
+        </div>
+
+        <!-- Share Section -->
+        <div class="share-section">
+            <h3 style="margin-top: 0;">Share This Update</h3>
+            <div class="share-buttons">
+                <a href="https://www.facebook.com/sharer/sharer.php?u=http://127.0.0.1:8000{% url 'main:news_detail' news.id %}" 
+                   class="share-btn" target="_blank">Facebook</a>
+                <a href="https://twitter.com/intent/tweet?url=http://127.0.0.1:8000{% url 'main:news_detail' news.id %}&text={{ news.title }}" 
+                   class="share-btn" target="_blank">Twitter</a>
+                <a href="https://www.linkedin.com/sharing/share-offsite/?url=http://127.0.0.1:8000{% url 'main:news_detail' news.id %}" 
+                   class="share-btn" target="_blank">LinkedIn</a>
+                <a href="mailto:?subject={{ news.title }}&body=Check this out: http://127.0.0.1:8000{% url 'main:news_detail' news.id %}" 
+                   class="share-btn">Email</a>
+            </div>
+        </div>
+
+        {% if news.link %}
+        <div style="background: #eff6ff; border-left: 4px solid #2563eb; padding: 1rem; border-radius: 4px; margin-bottom: 2rem;">
+            <p style="margin: 0;"><strong>Official Link:</strong> <a href="{{ news.link }}" target="_blank" style="color: #2563eb;">View Official Resource →</a></p>
+        </div>
+        {% endif %}
+
+    </article>
+
+    <!-- Related News -->
+    {% if related_news %}
+    <section class="related-section max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+        <h2 style="color: #1f2937;">Related Updates in {{ news.get_category_display }}</h2>
+        <div class="related-grid">
+            {% for item in related_news %}
+            <a href="{% url 'main:news_detail' item.id %}" class="related-card">
+                <h4>{{ item.title }}</h4>
+            </a>
+            {% endfor %}
+        </div>
+    </section>
+    {% endif %}
+
+</main>
+
+{% endblock %}

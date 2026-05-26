@@ -1,18 +1,24 @@
-from django.shortcuts import redirect, render
-from django.urls import reverse
+from django.shortcuts import redirect, render, get_object_or_404
+from django.urls import reverse, reverse_lazy
+from django.http import JsonResponse
+from django.db.models import Q
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.views.generic import (
     CreateView,
     UpdateView,
+    ListView,
+    DetailView,
+    DeleteView,
+    TemplateView,
 )
 from .models import * #Assets,Description, News, Page, Service, SubService,Team
 from accounts.models import CustomerUser
 from .utils import generate_chatbot_response
-from main.forms import ContactForm, GetHelpForm, GovernanceForm
+from main.forms import ContactForm, GetHelpForm, GovernanceForm, ArticleForm
 from django.contrib.auth import get_user_model
 
 from mail.custom_email import send_email
-from django.core.mail import EmailMessage
+from django.core.mail import EmailMessage, send_mail
 from django.template.loader import render_to_string
 from coda_project import settings
 from django.contrib import messages
@@ -583,3 +589,184 @@ def contact_us(request):
         return redirect('main:layout')
 
     return render(reqest, "main/home_templates/home.html")
+
+
+# ============================================
+# NEWS VIEWS
+# ============================================
+
+class LandingPageView(TemplateView):
+    template_name = 'main/news/home.html'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['latest_news'] = NewsArticle.objects.filter(status='PUBLISHED').order_by('created_at')[:3]
+        context['categories'] = Category.objects.all()
+        return context
+
+
+class ArticleHomeView(ListView):
+    model = NewsArticle
+    template_name = 'main/news/news_listing.html'
+    context_object_name = 'articles'
+    paginate_by = 7
+
+    def get_queryset(self):
+        queryset = NewsArticle.objects.filter(status='PUBLISHED').order_by('created_at')
+
+        query = self.request.GET.get('q')
+        if query:
+            queryset = queryset.filter(
+                Q(title__icontains=query) |
+                Q(content__icontains=query)
+            )
+
+        return queryset
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['categories'] = Category.objects.all()
+
+        all_articles = context['articles']
+        if all_articles:
+            context['hero_article'] = all_articles[0]
+            context['grid_articles'] = all_articles[1:]
+        return context
+
+
+class ArticleDetailView(DetailView):
+    model = NewsArticle
+    template_name = 'main/news/article_detail.html'
+    context_object_name = 'article'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['related_articles'] = NewsArticle.objects.filter(
+            category=self.object.category
+        ).exclude(
+            id=self.object.id
+        )[:3]
+        return context
+
+
+class ArticleCreateView(LoginRequiredMixin, CreateView):
+    model = NewsArticle
+    form_class = ArticleForm
+    template_name = 'main/news/article_form.html'
+    success_url = reverse_lazy('news:dashboard')
+
+    def form_valid(self, form):
+        if not form.instance.author:
+            form.instance.author = self.request.user
+        return super().form_valid(form)
+
+
+class ArticleEditView(LoginRequiredMixin, UpdateView):
+    model = NewsArticle
+    form_class = ArticleForm
+    template_name = 'main/news/article_form.html'
+    success_url = reverse_lazy('news:dashboard')
+
+
+class ArticleDeleteView(LoginRequiredMixin, DeleteView):
+    model = NewsArticle
+    template_name = 'main/news/article_confirm_delete.html'
+    success_url = reverse_lazy('news:dashboard')
+
+
+# Category Views
+class CategoryArticleListView(ListView):
+    model = NewsArticle
+    template_name = 'main/news/category_articles.html'
+    context_object_name = 'articles'
+    paginate_by = 6
+
+    def get_queryset(self):
+        self.category = get_object_or_404(Category, slug=self.kwargs['slug'])
+        return NewsArticle.objects.filter(category=self.category, status='PUBLISHED').order_by('-created_at')
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['category'] = self.category
+        return context
+
+
+class CategoryCreateView(LoginRequiredMixin, CreateView):
+    model = Category
+    fields = ['name', 'description']
+    template_name = 'main/news/category_form.html'
+    success_url = reverse_lazy('news:dashboard')
+
+
+class CategoryEditView(LoginRequiredMixin, UpdateView):
+    model = Category
+    fields = ['name', 'description']
+    template_name = 'main/news/category_form.html'
+    success_url = reverse_lazy('news:dashboard')
+
+
+class CategoryDeleteView(LoginRequiredMixin, DeleteView):
+    model = Category
+    template_name = 'main/news/category_confirm_delete.html'
+    success_url = reverse_lazy('news:dashboard')
+
+
+class AdminDashboardView(LoginRequiredMixin, TemplateView):
+    template_name = 'main/news/dashboard.html'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        query = self.request.GET.get('q')
+        articles = NewsArticle.objects.all()
+
+        if query:
+            recent_articles = articles.filter(
+                Q(title__icontains=query) |
+                Q(category__name__icontains=query)
+            ).order_by('-created_at')
+        else:
+            recent_articles = articles.order_by('-created_at')[:10]
+
+        context['total_count'] = articles.count()
+        context['published_count'] = articles.filter(status='PUBLISHED').count()
+        context['draft_count'] = articles.filter(status='DRAFT').count()
+        context['subscriber_count'] = Subscriber.objects.filter(confirmed=True).count()
+        context['categories'] = Category.objects.all()
+        context['recent_articles'] = recent_articles
+        context['query'] = query
+
+        return context
+
+
+def subscribe(request):
+    if request.method == "POST":
+        email = request.POST.get('email')
+        if email:
+            sub, created = Subscriber.objects.get_or_create(email=email)
+            if created:
+                verify_url = request.build_absolute_uri(
+                    reverse('news:confirm_email', args=[sub.conf_token])
+                )
+
+                send_mail(
+                    "Action Required: Confirm your subscription",
+                    f"Thanks for signing up! please Verify your email here: {verify_url}",
+                    "noreply@dc48kcoda.dev",
+                    [email]
+                )
+
+                return JsonResponse({"status": "success", "msg": "Check your email to confirm!"})
+            return JsonResponse({"status": "exists", "msg": "you're already on the list."})
+        return JsonResponse({"status": "error", "msg": "Invalid Request"})
+
+    return JsonResponse({"status": "error", "msg": "Only POST allowed"}, status=405)
+
+
+def confirm_email(request, token):
+    subscriber = get_object_or_404(Subscriber, conf_token=token)
+    subscriber.confirmed = True
+    subscriber.save()
+
+    return render(request, 'main/news/subscription_confirmed.html', {
+        'email': subscriber.email
+    })

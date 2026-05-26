@@ -1,0 +1,121 @@
+{% extends "main/base_templates/base.html" %}
+
+{% block content %}
+<style>
+    :root {
+        --bg-gray: #f8fafc;
+        --card-shadow: 0 4px 20px rgba(0,0,0,0.05);
+        --primary-blue: #2563eb;
+        --danger-red: #ef4444;
+    }
+
+    body { background-color: var(--bg-gray); font-family: 'Inter', sans-serif; }
+
+    .delete-wrapper {
+        max-width: 600px;
+        margin: 100px auto;
+        padding: 0 20px;
+    }
+
+    .delete-card {
+        background: white;
+        border-radius: 20px;
+        padding: 50px 40px;
+        box-shadow: var(--card-shadow);
+        text-align: center;
+        border-top: 6px solid var(--danger-red);
+    }
+
+    .delete-icon {
+        font-size: 4rem;
+        margin-bottom: 20px;
+        display: block;
+    }
+
+    .delete-title {
+        font-size: 1.8rem;
+        font-weight: 800;
+        color: #0f172a;
+        margin-bottom: 15px;
+    }
+
+    .delete-subtitle {
+        color: #64748b;
+        font-size: 1rem;
+        line-height: 1.6;
+        margin-bottom: 10px;
+    }
+
+    .delete-warning {
+        background: #fef2f2;
+        border: 1px solid #fecaca;
+        border-radius: 10px;
+        padding: 12px 20px;
+        color: #991b1b;
+        font-size: 0.9rem;
+        font-weight: 600;
+        margin: 20px 0 35px;
+    }
+
+    .btn-group {
+        display: flex;
+        gap: 15px;
+        justify-content: center;
+        align-items: center;
+    }
+
+    .btn-delete {
+        background: var(--danger-red);
+        color: white;
+        padding: 14px 35px;
+        border: none;
+        border-radius: 10px;
+        font-weight: 700;
+        cursor: pointer;
+        font-size: 1rem;
+        transition: opacity 0.2s;
+    }
+
+    .btn-delete:hover { opacity: 0.85; }
+
+    .btn-cancel {
+        background: #f1f5f9;
+        color: #475569;
+        padding: 14px 35px;
+        border-radius: 10px;
+        font-weight: 700;
+        text-decoration: none;
+        font-size: 1rem;
+        transition: background 0.2s;
+    }
+
+    .btn-cancel:hover { background: #e2e8f0; }
+</style>
+
+<div class="delete-wrapper">
+    <div class="delete-card">
+        <span class="delete-icon">🗂️</span>
+        <h2 class="delete-title">Delete Category</h2>
+        <p class="delete-subtitle">
+            You are about to delete the category:
+        </p>
+        <p style="font-size: 1.3rem; font-weight: 800; color: #8b5cf6; margin-bottom: 5px;">
+            "{{ object.name }}"
+        </p>
+        <div class="delete-warning">
+            ⚠️ This will permanently delete all articles inside this category.
+        </div>
+        <form method="post">
+            {% csrf_token %}
+            <div class="btn-group">
+                <button type="submit" class="btn-delete">
+                    🗑️ Yes, Delete
+                </button>
+                <a href="{% url 'news:dashboard' %}" class="btn-cancel">
+                    Cancel
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

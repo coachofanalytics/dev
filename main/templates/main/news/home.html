@@ -1,0 +1,217 @@
+{% extends "main/base_templates/base.html" %}
+{% load static %}
+
+{% block content %}
+
+<style>
+.news-section-wrapper{
+    padding: 80px;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.section-header{
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    margin-bottom: 40px;
+}
+
+.news-grid-home{
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 30px;
+
+}
+.news-card-home{
+    background: #fff;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 40px 15px rgba(0,0,0,0.05);
+    transition: transform 0.4s ease;
+    display: flex;
+    flex-direction: column; 
+    height: 100%;
+    align-items: center;
+}
+
+.news-card-home:hover{
+    transition: transform translateY(-5px);
+
+}
+.news-card-home img{
+    width: 100%;
+    height: 200px;
+    object-fit:cover;
+
+}
+.card-content{
+    padding: 20px;
+    display:flex;
+    flex-direction: column;
+    flex-grow: 1;
+}
+.card-date{
+    color: #64748b;
+    font-size: 0.85rem;
+    font-weight: 800;
+    margin-bottom: 8px;
+}
+
+.card-title-home{
+    font-size: 1.2rem;
+    font-weight: 800;
+    color: #1e293b;
+    margin-bottom: 8px;
+}
+
+.card-snippet-home{
+    color: #475569;
+    font-size: 0.95;
+    line-height: 1.6;
+    margin-bottom: 20px;
+}
+
+.btn-view-all{
+    background: #2563eb;
+    color: white;
+    padding: 12px 24px;
+    border-radius: 8px;
+    text-decoration: none;
+    font-weight: 800;
+    transition: opacity 0.2s;
+}
+
+.hero-slider{
+    position: relative;
+    width: 100%;
+    height: 500px;
+    overflow: hidden;
+    background: #0f172a;
+}
+
+.slide-container{
+    display: flex;
+    width: 200%;
+    height:100%;
+    animation: slideTransition 12s infinite;
+}
+
+.slide{
+    width: 50%;
+    height: 100%;
+    position: relative;
+    background-size: cover;
+    background-position: center;
+}
+
+.slide-overlay{
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(to-top, rgba(15,23,42,0.9) transparent);
+    display: flex;
+    align-items: flex-end;
+    padding: 60px;
+}
+
+.slide-content{
+    max-width: 800px;
+    color: white;
+}
+
+.slide-tag{
+    background: #2563eb;
+    padding: 5px 12px;
+    border-radius: 5px;
+    font-size: 0.8rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    margin-bottom: 15px;
+    display: inline-block;
+}
+@keyframes slideTransition {
+    0%, 45% { transform: translateX(0); }
+    50%, 95% { transform: translateX(-50%); }
+    100% { transform: translateX(0); }
+}
+
+.admin-quick-link{
+    position: fixed;
+    bottom: 30px;
+    right: 30px;
+    background: #0f172a;
+    color: white;
+    padding: 15px 25px;
+    border-radius: 50px;
+    text-decoration: none;
+    font-weight: 700;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    transition: transform 0.3s;
+}
+
+.admin-quick-link:hover{
+    transform: scale(1.05);
+    background: #12aa70;
+    color: black;
+    text-decoration: none;
+}
+
+</style>
+
+
+<section class="hero-slider">
+    <div class="slide-container">
+        {% for article in latest_news|slice:":2" %}
+        <div class="slide" style="background-image: url('{{ article.featured_image.url }}');">
+            <div class=" slide-overlay">
+                <div class="slide-content">
+                    <span class="slide-tag">{{ article.category.name }}</span>
+                    <h1 style="font-size: 3rem; margin-bottom: 20px; font-weight: 900;">{{ article.title }}</h1>
+                    <p style="font-size: 1.1rem; opacity: 0.9; margin-bottom: 30px;">{{ article.ai_summary|truncatechars:150 }}</p>
+                    <a href="{% url 'news:article_detail' article.slug %}" class="btn-view-all">Read Full Story</a>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</section>
+
+<section class="news-section-wrapper">
+    <div class="section-header">
+        <div>
+            <h2 style="font-size: 2rem; font-weight:800; color: #0f172a;">Latest Updates</h2>
+            <p style="color: #64748b; ">stay informed with our most recent news and policy</p>
+
+        </div>
+        <a href="{% url 'news:news_listing' %}" class="btn-view-all">View all News</a>
+
+    </div>
+
+    <div class="news-grid-home">
+        {% for article in latest_news %}
+        <article class="news-card-home">
+            {% if article.featured_image %}
+            <img src="{{ article.featured_image.url }}" alt="{{ article.title }}">
+            {% endif %}
+            <div class="card-content">
+                <span class="card-date">{{ article.created_at|date:"M d, Y" }}</span>
+                <h3 class="card-title-home">{{ article.title | truncatechars:60 }}</h3>
+                <p class="card-snippet-home">{{ article.ai_summary | truncatechars:100 }}</p>
+                <a style="text-decoration: none;" href="{% url 'news:article_detail' article.slug %}">Read More</a>
+            </div>
+        </article>
+        {% endfor %}
+    </div>
+</section>
+
+{% if user.is_staff %}
+<a href="{% url 'news:dashboard' %}" class="admin-quick-link">
+    <span>Admin Dashboard</span>
+</a>
+{% endif %}
+
+{% endblock %}

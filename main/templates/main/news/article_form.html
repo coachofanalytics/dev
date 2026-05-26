@@ -1,0 +1,64 @@
+{% extends "main/base_templates/base.html" %}
+{% block content %}
+<style>
+    .admin-form-container {
+        max-width: 900px;
+        margin: 40px auto;
+        background: #fff;
+        padding: 30px;
+        border-radius: 8px;
+        box-shadow: var(--card-shadow);
+    }
+    .form-row {
+        display: flex;
+        padding: 15px 0;
+        border-bottom: 1px solid #eee;
+    }
+    .form-row label {
+        width: 200px;
+        font-weight: 700;
+        color: #666;
+        font-size: 0.9rem;
+    }
+    .form-field-area { flex: 1; }
+    .form-field-area input, .form-field-area select, .form-field-area textarea {
+        width: 100%;
+        padding: 8px;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+    }
+    .help-text { font-size: 0.75rem; color: #999; margin-top: 5px; display: block; }
+    .checkbox-row { display: flex; align-items: center; gap: 10px; }
+    .checkbox-row input { width: auto; }
+</style>
+
+<div class="admin-form-container">
+    <h2 style="margin-bottom: 20px; font-weight: 800; border-bottom: 2px solid var(--primary-blue); padding-bottom: 10px;">
+        {% if object %}Edit{% else %}Add{% endif %} News Article
+    </h2>
+
+    <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        
+        {% for field in form %}
+        <div class="form-row">
+            <label for="{{ field.id_for_label }}">{{ field.label }}:</label>
+            <div class="form-field-area">
+                {{ field }}
+                {% if field.help_text %}
+                    <span class="help-text">{{ field.help_text }}</span>
+                {% endif %}
+                {% if field.errors %}
+                    <div style="color: red; font-size: 0.8rem;">{{ field.errors }}</div>
+                {% endif %}
+            </div>
+        </div>
+        {% endfor %}
+
+        <div style="margin-top: 30px; background: #f8fafc; padding: 20px; border-radius: 0 0 8px 8px; text-align: right;">
+            <a href="{% url 'news:dashboard' %}" style="margin-right: 20px; color: #666; text-decoration: none;">Cancel</a>
+            <button type="submit" class="btn-action btn-add-blue" style="padding: 12px 30px;">Save Article</button>
+        </div>
+    </form>
+</div>
+{% endblock %}
