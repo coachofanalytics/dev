@@ -27,6 +27,10 @@ admin.site.register(Scholarship)
 admin.site.register(TrainingCourse)
 admin.site.register(Testimonial)
 admin.site.register(Governance)
+admin.site.register(Gallery)
+admin.site.register(GetHelp)
+admin.site.register(Faq)
+admin.site.register(DonationOrganization)
 
 
 # admin.site.register(Testimonial)

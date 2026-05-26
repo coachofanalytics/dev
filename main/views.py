@@ -37,7 +37,8 @@ from django.contrib.auth import get_user_model
 #<<<<<<< 25.10_DC48_UAT_UO
 from django.views.decorators.http import require_POST
 from django.http import JsonResponse, HttpResponse
-from django.core.mail import send_mail
+from django.core.mail import send_mail, EmailMessage
+from django.template.loader import render_to_string
 from django.utils.html import strip_tags
 from django.utils import timezone
 from django.contrib.auth import get_user_model
@@ -49,11 +50,13 @@ from .models import (
     InsurancePlan, AIRecommendationRule, ExpertInquiry,
     ConsularAssistancePage, NewsArticle, Category, Subscriber,
     Scholarship, ContactMessage, Testimonial, TrainingCourse,
-    Donation_organization, MedicalResourceInquiry, Governance
+    Donation_organization, MedicalResourceInquiry, Governance,
+    Gallery, GetHelp, DonationOrganization, History, ContactUs
 )
 from accounts.models import CustomerUser
 from .utils import image_view, path_values
-from .forms import ContactForm, DonorForm, MessageForm, ScholarshipSearchForm, GovernanceForm, ArticleForm, ScholarshipForm,TrainingCourseForm
+from .forms import ContactForm, DonorForm, MessageForm, ScholarshipSearchForm, GovernanceForm, ArticleForm, ScholarshipForm,TrainingCourseForm, GetHelpForm
+from mail.custom_email import send_email
 
 import csv
 import feedparser
@@ -206,11 +209,14 @@ def History(request):
     page_instance, _ = Page.objects.get_or_create(page_name='About')
     description = Description.objects.filter(page = page_instance)
     context={
-            
+
             'description': description,
-            
+
         }
     return render(request, "main/about_templates/history.html",context)
+
+# Lowercase alias for URL pattern compatibility
+history = History
 
 class ImageCreateView(LoginRequiredMixin, CreateView):
     model = Assets
@@ -447,6 +453,176 @@ def contact_us_list(request):
 
     # Render the template with the context
     return render(request, 'main/snippets_templates/table/contact_us_list.html', {'contact_us_list': contact_us_list})
+
+
+def contact_us(request):
+    if request.method == "POST":
+        name = request.POST.get('name')
+        email = request.POST.get('email')
+        message = request.POST.get('message')
+        print (name,email,message)
+        contact_message = ContactUs.objects.create(
+            name = name,
+            email = email,
+            message = message
+        )
+        contact_message.save
+
+        messages.success(request, "Thank You For Contacting Us We Will Get To You As Soon As Possible.")
+        return redirect('main:layout')
+
+    return render(request, "main/home_templates/home.html")
+
+
+def gallery_list(request):
+    images = Gallery.objects.all()
+    return render(request, 'main/Gallery/gallery.html', {'images': images})
+
+
+# Send a welcome email to a new user
+
+def send_notification(request):
+    url = 'email/welcome.html'
+    new_user = CustomerUser.objects.all().order_by('-id').first()
+    print(new_user)
+
+    print(new_user)
+    print(new_user.id, new_user.first_name, new_user.category, new_user.member_number, new_user.email)
+
+
+    user_category = "Ordinary"
+    first_name = new_user.first_name
+    last_name = new_user.last_name
+    user_id = new_user.member_number
+    user_email = new_user.email
+    subject = "Welcome To DC48K"
+
+    print(new_user.id)
+
+    context = {
+        'user_category': user_category,
+        'first_name': first_name,
+        'last_name': last_name,
+        'user_id': user_id,
+        'subject': subject
+    }
+    try:
+        send_email(
+            category=user_category,
+            to_email=[user_email],
+            subject=subject,
+            html_template=url,
+            context=context
+        )
+
+        print("EMAIL SENT")
+    except Exception as e:
+        error_message = (
+            f'Hi {request.user.first_name}, Your message to '
+            f'{request.user.email} was unsuccessful. '
+            f'Please try again or contact info@diasporacounty48.org. Thank You. '
+            f'Error: {e}'
+        )
+        return render(request, 'main/messages/message.html', {"message": error_message})
+
+
+def send_welcome_email(user_id=None):
+    url = 'email/welcome.html'
+    user_information = CustomerUser.objects.get(id=user_id)
+    user_category = user_information.category
+    first_name = user_information.first_name
+    last_name = user_information.last_name
+    user_id = user_information.id
+    user_email = user_information.email
+    subject = "Welcome To DC48K"
+
+
+    context = {
+        'user_category': user_category,
+        'first_name': first_name,
+        'last_name': last_name,
+        'user_id': user_id
+    }
+    html_message = render_to_string(url, context)
+
+    email = EmailMessage(
+        subject=subject,
+        body = html_message,
+        from_email = settings.EMAIL_HOST_USER,
+        to = [user_email]
+    )
+    email.content_subtype = 'html'
+    email.send()
+    print('Email Sent Successfully')
+
+
+
+def gethelp_list(request):
+    helps = GetHelp.objects.all()
+    context = {
+        'helps': helps
+    }
+
+    return render(request, 'main/gethelp_list.html', context)
+
+
+
+def gethelp_update(request, pk):
+
+    gethelp = get_object_or_404(GetHelp, pk=pk)
+
+
+    if request.method == 'POST':
+        form = GetHelpForm(request.POST, instance=gethelp)
+        if form.is_valid():
+            form.save()
+            return redirect('main:gethelp')
+
+    else:
+        form = GetHelpForm(instance=gethelp)
+
+    return render(request, 'main/gethelp_update.html', {'form':form})
+
+
+
+
+def gethelp_create(request):
+    if request.method == 'POST':
+        form = GetHelpForm(request.POST)
+        if form.is_valid():
+            form.save()
+            return redirect('main:gethelp')
+
+    else:
+        form = GetHelpForm()
+
+    return render(request, 'main/gethelp_create.html',{'form':form})
+
+
+
+def gethelp_delete(request, pk):
+
+    gethelp = get_object_or_404(GetHelp, pk=pk)
+
+    if request.method == 'POST':
+
+        gethelp.delete()
+        return redirect('main:gethelp')
+
+    return render(request, 'main/gethelp_confirm_delete.html', {'gethelp':gethelp})
+
+
+def organization_list_view(request):
+    organizations = DonationOrganization.objects.all()
+    return render(request, 'main/snippets_templates/table/donation_list.html', {'organizations':organizations})
+
+
+def ourhistory(request):
+    history_years = History.objects.all()
+    context = {
+        "history_years": history_years
+    }
+    return render(request, "main/ourhistory.html", context)
 
 
 from django.views.generic import TemplateView
@@ -1158,8 +1334,7 @@ def governance_list(request):
         'records': records,
         'title': 'Governance Records'
     }
-    # Changed from 'list.html' to 'governance_list.html'
-    return render(request, 'main/governance/governance_list.html', context)
+    return render(request, 'main/governance_list.html', context)
 
 # Create new governance record
 # REPLACE your entire governance_create function with this:

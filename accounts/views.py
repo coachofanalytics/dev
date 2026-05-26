@@ -32,7 +32,7 @@ from .forms import (
     ChapterForm
 )
 import logging
-# from main.views import send_notification  # Function not available
+from main.views import send_notification
 from mail.custom_email import send_email
 
 from django.contrib.auth.tokens import default_token_generator
@@ -261,7 +261,7 @@ def join(request):
                 user = form.save()
 
                 # Send a welcoming email
-                # send_notification(request)  # Function not available
+                send_notification(request)
 
                 # Provide the backend parameter when logging in the user
                 login(

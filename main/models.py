@@ -561,6 +561,68 @@ class Governance(models.Model):
 
 
 
+class Gallery(models.Model):
+    title = models.CharField(max_length=100)
+    description = models.TextField(blank=True, null=True)
+    image = models.ImageField(upload_to='gallery/')
+    uploaded_at = models.DateTimeField(auto_now_add=True)
+    event_date = models.DateField()
+
+    def __str__(self):
+        return self.title
+
+
+class Faq(models.Model):
+    CategoryChoices = [
+        ('general', 'General'),
+        ('technical', 'Technical'),
+        ('billing', 'Billing'),
+        ('account', 'Account'),
+        ('other', 'Other'),
+    ]
+    question = models.CharField(max_length=255)
+    answer = models.TextField()
+    category = models.CharField(max_length=255, choices=CategoryChoices, default=999)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return self.question
+
+
+class GetHelp(models.Model):
+    title = models.CharField(max_length=255,null=False,blank=False)
+    content = models.TextField(null=False,blank=False)
+    link = models.URLField(null=True,blank=False,max_length=100)
+    is_active = models.BooleanField(default=True)
+    created_at = models.DateTimeField(null=False,blank=False,auto_now_add=True)
+    updated_at = models.DateTimeField(null=False,blank=False,auto_now=True)
+
+    def __str__(self):
+        return self.title
+
+
+class DonationOrganization(models.Model):
+    name = models.CharField(max_length=255)
+    contact_email = models.EmailField()
+    linked_profile = models.OneToOneField(User, on_delete=models.CASCADE)
+    def __str__(self):
+        return self.name
+
+class History(models.Model):
+    year = models.IntegerField()
+    title = models.CharField(max_length=200)
+    description = models.TextField()
+    image = models.ImageField(upload_to="history_images/", blank=True, null=True)
+    order = models.PositiveIntegerField(default=0)
+
+    class Meta:
+        ordering = ['-year', 'order']
+
+    def __str__(self):
+        return f"{self.year}: {self.title}"
+
+
 class ConsularAssistancePage(models.Model):
     title = models.CharField(max_length=255)
     slug = models.SlugField(max_length=255, unique=True)

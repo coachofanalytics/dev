@@ -5,8 +5,15 @@ from .models import AppointmentRequest
 # Feedback / Contact Form
 
 from .models import (
-    ContactMessage, Scholarship, Governance, NewsArticle,TrainingCourse
+    ContactMessage, Scholarship, Governance, NewsArticle,TrainingCourse, GetHelp
 )
+
+
+class GetHelpForm(forms.ModelForm):
+    class Meta:
+        model = GetHelp
+        fields = ['title', 'content','link']
+
 
 class GovernanceForm(forms.ModelForm):
     """
