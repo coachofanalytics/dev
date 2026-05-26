@@ -1,0 +1,283 @@
+{% extends "main/base_templates/base.html" %}
+{% load static %}
+
+{% block title %}Finance Services{% endblock %}
+
+{% block content %}
+<style>
+   section { display: block !important; }
+   *{
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Inter', sans-serif;
+   }
+   .hero{
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    align-items: center;
+    min-height: 60vh;
+    background: #0a926d;
+    color: white;
+    padding: 0px 8%;
+   }
+   .hero-content h1{
+    font-size: 3.3rem;
+    margin-bottom: 20px;
+    font-weight: 900;
+   }
+   .hero-content p{
+    font-size: 1.1rem;
+    margin-bottom: 30px;
+    line-height: 1.8;
+
+   }
+   .hero-buttons{
+    display: flex;
+    gap: 20px
+   }
+   .btn{
+    text-decoration: none;
+    color: #fff;
+    text-transform: uppercase;
+    padding: 4px 32px;
+    font-size: 15px;
+    text-align: center;
+    border-radius: 6px;
+
+   }
+    .hero-buttons a:hover{
+        color: #fff
+    }
+
+   .primary{
+    background: #ca0606;
+    color: #fff;
+   }
+
+   .secondary{
+    background: #2e46b6;
+    color: #fff;
+   }
+
+   .hero-image img{
+    width: 100%;
+
+   }
+
+    .financial-info{
+        background: #fff;
+        min-height: 60vh;
+        padding: 60px 8%;
+        align-items: center;
+       padding: 60px 8%;
+    }   
+
+    .financial-nav{
+        margin-bottom: 20px;
+    }
+
+    .financial-nav a{
+       text-decoration: none;
+       color: #2e46b6;
+       font-weight: 800;
+
+    }
+    .financial-nav .info-span{
+        color: #0a926d;
+    }
+
+    .financial-header{
+         margin-bottom: 80px;
+    }
+    .financial-header h1{
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 2.2rem;
+        font-weight: 800;
+        margin-bottom: 10px;
+    }
+
+    .financial-header p{
+        text-align: center;
+        font-size: 1.2rem;
+        font-weight: 500;
+        line-height: 1.6;
+        
+    }
+
+    
+.financial-card {
+    display: flex;
+    align-items: center;
+    gap: 40px;
+   
+}
+
+.financial-card.reverse {
+    flex-direction: row-reverse;
+
+}
+
+.financial-image img {
+    width: 100%;
+    height: auto;
+}
+
+.financial-image,
+.financial-content {
+    flex: 1;
+}
+.financial-content h3{
+    font-size: 1.5rem;
+    font-weight: 800;
+    padding-bottom: 2%;
+    color: #2e46b6;
+
+} 
+.financial-content p{
+    font-size: 1.1rem;
+    line-height: 1.8;
+    margin-bottom: 20px;
+}
+.financial-button a{
+    padding: 10px 16px;
+    font-weight: 600;
+
+}
+.financial-button a:hover{
+    color: #fff;
+}
+
+.financial-legacy{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 60px 8%;
+    min-height: 30vh;
+}
+.legacy-content{
+    background: #2e46b6;
+    padding: 40px 60px;
+    color: #fff;
+    border-radius: 12px;
+}
+.legacy-content h1{
+    font-size: 2.2rem;
+    font-weight: 800;
+    text-align: center;
+    margin-bottom: 20px;
+}
+.legacy-content p{
+    text-align: center;
+    font-size: 1.3rem;
+    line-height: 1.8;
+    margin-bottom: 20px;
+    font-weight: 500;
+}
+.legacy-button{
+    display: flex;
+    justify-content: center;
+}
+.legacy-button a{
+    text-decoration: none;
+    padding: 16px 40px;
+    background-color: #ca0606;
+    color: #fff;
+    border-radius: 20px;
+}
+
+</style>
+<section class="hero">
+    <div class="hero-content">
+        <h1>FINANCIAL<br>INFORMATION</h1>
+        <p>
+            Secure your wealth, invest smart, and manage your
+            cross-border finances with confidence.
+        </p>
+
+        <div class="hero-buttons">
+            <a href="{% url 'finance:homepage' %}#banking-section" class="btn primary">Explore Banking <br>Solutions</a>
+            <a href="{% url 'finance:directory' %}" class="btn secondary">View Investment <br>Directory</a>
+        </div>
+    </div>
+
+    <div class="hero-image">
+        <img src="{% static 'main/img/finance/finance-hero.png' %}" alt="Finance Image">
+    </div>
+</section>
+
+<section class="financial-info">
+    <nav class="financial-nav">
+        <a href="{% url 'main:layout' %}">Home</a>
+        <span>/</span>
+        <a href="{% url 'main:layout' %}">Services</a>
+        <span>/</span>
+        <span class="info-span">Financial Information</span>
+    </nav>
+
+    <header class="financial-header">
+    <h1>Empowering Your Global Financial Future</h1>
+    <p>
+        Navigating international finance, investments, and repatriating funds can be complex.
+     We<br>provide reliable guidance and verified tools to help you build and manage wealth across <br> borders.
+    </p>
+    </header>
+   
+
+    <div class="financial-grids">
+        <div class="financial-card" id="banking-section">
+        <div class="financial-image">
+            <img src="{% static 'main/img/finance/opportunities.png' %}" alt="Banking and Investing Solutions" srcset="">
+        </div>
+        <div class="financial-content">
+            <h3 class="">1. Banking and Investing</h3>
+        <p>
+            Explore comprehensive solutions for managing your assets,<br> 
+            from setting up bank accounts to strategic investments in <br>real estate, stocks, and bonds across borders.
+        </p>
+        <div class="financial-button">
+            <a href="{% url 'finance:solutions' %}" class="btn secondary">VIEW DETAILED SOLUTION</a>
+        </div>
+
+        </div>
+        
+        </div>
+
+        <!-- grid 2 -->
+        <div class="financial-card reverse">
+        <div class="financial-image">
+            <img src="{% static 'main/img/finance/investment.png' %}" alt="Investment Opportunities Directory" srcset="">
+        </div>
+        
+        <div class="financial-content">
+           <h3>2. Investment Opportunities <br>Directory</h3> 
+            <p>
+            Discover vetted investment opportunities in Kenya. 
+            Our real-<br>time directory is updated daily with chances in Real Estate,<br>Saccos, Bonds, and private equity projects.
+        </p>
+        <div class="financial-button">
+            <a href="{% url 'finance:directory' %}" class="btn primary">BROWSE OPPORTUNITIES</a>
+        </div>
+        
+        </div>
+        
+        </div>
+</section>
+
+<section class="financial-legacy">
+    <div class="legacy-content">
+        <h1>SECURE YOUR LEGACY</h1>
+            <p>
+                Speak to an advisor about long-term wealth management, inheritance planning, 
+                and<br> investment diversification tailored for the diaspora.
+            </p>
+            <div class="legacy-button">
+                <a href="{% url 'main:contact_us_list' %}">SCHEDULE ADVISORY SESSION</a>
+            </div>
+    </div>
+            
+</section>
+
+{% endblock %}

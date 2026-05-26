@@ -5,6 +5,7 @@ from accounts.models import Department
 from .models import (
     Budget,
     Transaction,
+    Opportunity,
 )
 
 
@@ -101,3 +102,14 @@ class PaymentForm(forms.Form):
     last_name = forms.CharField(label="", max_length=30, required=True)
     payment_purpose = forms.CharField(label="", max_length=100, required=True)
     phone = forms.CharField(label="", max_length=17, required=False)
+
+
+class OpportunityForm(forms.ModelForm):
+    class Meta:
+        model = Opportunity
+        fields = [
+            'title',
+            'type',
+            'contact',
+            'description'
+        ]
