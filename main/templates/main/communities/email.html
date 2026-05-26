@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Thank you for joining the community!</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f4;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background-color: #ffffff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        .header {
+            background-color: #0a926d;
+            color: white;
+            padding: 20px;
+            text-align: center;
+            border-radius: 8px 8px 0 0;
+        }
+        .content {
+            padding: 20px;
+            color: #333333;
+        }
+        .footer {
+            padding: 10px;
+            background-color: #eeeeee;
+            text-align: center;
+            color: #888888;
+            font-size: 12px;
+            border-radius: 0 0 8px 8px;
+        }
+        .button {
+            background-color: #0a926d;
+            color: white;
+            padding: 12px 25px;
+            text-decoration: none;
+            border-radius: 5px;
+            text-align: center;
+            display: inline-block;
+            font-weight: bold;
+            margin-top: 20px;
+        }
+        .button:hover {
+            background-color: #086a4f;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h2>Welcome to the Community!</h2>
+        </div>
+        <div class="content">
+            <p>Dear {{ name }},</p>
+            <p>Thank you for joining our community! We are excited to have you with us.</p>
+            <p>If you have any questions or suggestions, feel free to contact us anytime.</p>
+            <p>
+                <a href="{% url 'communities:home' %}" class="button">Visit Your Dashboard</a>
+            </p>
+        </div>
+        <div class="footer">
+            <p>&copy; 2025 Community Team. All rights reserved.</p>
+        </div>
+    </div>
+</body>
+</html>

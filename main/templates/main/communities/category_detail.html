@@ -1,0 +1,62 @@
+{% extends "main/base_templates/base.html" %}
+{% load static %}
+
+{% block content %}
+
+<main class="max-w-7xl mx-auto py-16 px-6">
+
+    <!-- Hero Section for Digital Forum Category -->
+    <header class="bg-brand-blue text-white shadow-xl overflow-hidden mb-12">
+        <div class="max-w-7xl mx-auto text-center py-12">
+            <h1 class="text-5xl font-extrabold mb-4">{{ category.name }}</h1>
+            <p class="text-xl font-medium text-gray-200">
+                {{ category.description }}
+            </p>
+        </div>
+    </header>
+
+    <!-- Forum Posts -->
+    <section class="mb-16">
+        <h2 class="text-3xl font-extrabold text-brand-blue mb-6 text-center">Recent Posts in {{ category.name }}</h2>
+        <div class="space-y-6">
+            {% for post in posts %}
+            <div class="bg-white shadow-lg rounded-lg p-6">
+                <h3 class="text-2xl font-bold text-brand-blue mb-4">
+                    <a href="{% url 'communities:view_post' post.id %}">{{ post.title }}</a>
+                </h3>
+                <p class="text-gray-600 mb-4">{{ post.content|truncatewords:30 }}</p>
+                <a href="{% url 'communities:view_post' post.id %}" class="text-brand-green font-semibold">Read More</a>
+            </div>
+            {% empty %}
+                <p class="text-gray-600">No posts available in this category yet. Be the first to contribute!</p>
+            {% endfor %}
+        </div>
+
+        <!-- Pagination -->
+        <div class="flex justify-center mt-6">
+            {% if posts.has_previous %}
+                <a href="?page=1" class="bg-brand-green text-white py-2 px-4 rounded-lg hover:bg-[#086a4f]">First</a>
+                <a href="?page={{ posts.previous_page_number }}" class="bg-brand-green text-white py-2 px-4 rounded-lg hover:bg-[#086a4f]">Previous</a>
+            {% endif %}
+
+            <span class="px-4 py-2">{{ posts.number }} of {{ posts.paginator.num_pages }}</span>
+
+            {% if posts.has_next %}
+                <a href="?page={{ posts.next_page_number }}" class="bg-brand-green text-white py-2 px-4 rounded-lg hover:bg-[#086a4f]">Next</a>
+                <a href="?page={{ posts.paginator.num_pages }}" class="bg-brand-green text-white py-2 px-4 rounded-lg hover:bg-[#086a4f]">Last</a>
+            {% endif %}
+        </div>
+
+    </section>
+
+    <!-- Create a Post Section -->
+    <section class="mb-16 text-center">
+        <a href="{% url 'communities:create_post' category.slug %}" class="bg-brand-green text-white py-3 px-6 rounded-lg hover:bg-[#086a4f] transition duration-300">
+            Create a New Post in {{ category.name }}
+        </a>
+    </section>
+
+</main>
+
+{% endblock content %}
+

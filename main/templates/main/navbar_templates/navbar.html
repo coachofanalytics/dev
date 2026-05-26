@@ -136,10 +136,10 @@
 
           <!-- Community Support -->
           <div class="sub-dropdown">
-            <a href="https://diaspora.go.ke/jobs-in-germany.html" target="_blank" >Community Support</a>
+            <a href="{% url 'communities:home' %}">Community Support</a>
             <div class="sub-dropdown-content">
-              <a href="#">Forums and Networking</a>
-              <a href="https://diaspora.go.ke/jobs-in-germany.html" target="_blank" >Community Events</a>
+              <a href="{% url 'communities:forum_home' %}">Forums and Networking</a>
+              <a href="{% url 'communities:event_calendar' %}">Community Events</a>
             </div>
           </div>
 

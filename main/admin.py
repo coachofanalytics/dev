@@ -34,6 +34,10 @@ admin.site.register(ContactUs)
 admin.site.register(GetHelp)
 admin.site.register(Governance, DescriptionGovernance)
 #admin.site.register(DonationOrganization)
-
-
-
+admin.site.register(CommunityMember)
+admin.site.register(DirectoryProfile)
+admin.site.register(ForumCategory)
+admin.site.register(CommunityPost)
+admin.site.register(CommentP)
+admin.site.register(EventCalendar)
+admin.site.register(ContactMessage)
