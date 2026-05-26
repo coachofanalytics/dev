@@ -3,6 +3,7 @@ from django.db import models
 from django.contrib.auth import get_user_model
 from accounts.models import CustomerUser, Region, Chapter
 from django.utils.text import slugify
+from django.conf import settings as django_settings
 
 
 
@@ -260,3 +261,47 @@ class History(models.Model):
 
     def __str__(self):
         return f"{self.year}: {self.title}"
+
+
+# ============================================
+# CRISIS MANAGEMENT MODELS
+# ============================================
+
+class SafetyAlertSubscription(models.Model):
+    email = models.EmailField(unique=True)
+    user = models.ForeignKey(
+        django_settings.AUTH_USER_MODEL, null=True, blank=True, on_delete=models.SET_NULL
+    )
+    is_active = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return self.email
+
+
+class EmergencyHotline(models.Model):
+    name = models.CharField(
+        max_length=100, help_text="Display label, e.g., Global Hotline"
+    )
+    number = models.CharField(
+        max_length=32, help_text="E.164 like +15551234567 or local format"
+    )
+    is_active = models.BooleanField(default=True)
+    sort_order = models.PositiveIntegerField(default=0)
+
+    class Meta:
+        ordering = ["sort_order", "id"]
+
+    def __str__(self):
+        return f"{self.name} ({self.number})"
+
+
+class StaffContact(models.Model):
+    name = models.CharField(max_length=100)
+    email = models.EmailField(blank=True, null=True)
+    phone = models.CharField(max_length=32, blank=True, null=True)
+    notify_via_email = models.BooleanField(default=True)
+    is_active = models.BooleanField(default=True)
+
+    def __str__(self):
+        return self.name

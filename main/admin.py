@@ -35,5 +35,7 @@ admin.site.register(GetHelp)
 admin.site.register(Governance, DescriptionGovernance)
 #admin.site.register(DonationOrganization)
 
-
-
+# Crisis Management
+admin.site.register(SafetyAlertSubscription)
+admin.site.register(EmergencyHotline)
+admin.site.register(StaffContact)
