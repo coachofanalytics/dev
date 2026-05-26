@@ -172,10 +172,10 @@
 
           <!-- Education and Training -->
           <div class="sub-dropdown">
-            <a href="https://www.publicservice.go.ke/internship/" target="_blank" >Education and Training</a>
+            <a href="{% url 'main:education_landing' %}">Education and Training</a>
             <div class="sub-dropdown-content">
-              <a href="https://diaspora.go.ke/scholarships" target="_blank" >Scholarships</a>
-              <a href="https://www.publicservice.go.ke/internship/" target="_blank" >Training Sessions</a>
+              <a href="{% url 'main:scholarship_search' %}">Scholarships</a>
+              <a href="{% url 'main:education_training' %}">Training Sessions</a>
             </div>
           </div>
         </div>

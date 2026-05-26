@@ -1,0 +1,556 @@
+{% extends "main/base_templates/base.html" %}
+{% load static %}
+{% block content %}
+    <title>Scholarship Search Database | Diaspora County 48</title>
+    
+    <style>
+        section { display: block !important; }
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f0f4f8;
+            color: #1f2937;
+        }
+        .text-brand-blue { color: #1e40af; }
+        .bg-brand-blue { background-color: #1e40af; }
+        .text-brand-green { color: #0a926d; }
+        .bg-brand-green { background-color: #0a926d; }
+        .text-brand-red { color: #cc0000; }
+        .bg-brand-red { background-color: #cc0000; }
+        
+        .filter-hidden {
+            display: none;
+        }
+        @media (min-width: 1024px) {
+            .filter-hidden {
+                display: block !important;
+            }
+        }
+        
+        /* Amount styling */
+        .amount-full-tuition {
+            color: #0a926d;
+            font-weight: 700;
+        }
+        .currency-usd { color: #2563eb; }
+        .currency-kes { color: #059669; }
+        .currency-eur { color: #7c3aed; }
+        .currency-gbp { color: #b91c1c; }
+        
+        /* Active filter badges */
+        .filter-badge {
+            transition: all 0.2s ease;
+        }
+        .filter-badge:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+    </style>
+
+     <header class="relative h-64 bg-gray-900">
+        <img src="{% static 'main/img/education/training.jpg' %}"
+             class="absolute inset-0 w-full h-full object-cover opacity-60">
+    
+        <div class="relative flex flex-col items-center justify-center h-full text-center text-white">
+            <h1 class="text-4xl md:text-5xl font-extrabold tracking-wide">
+                
+                         AI SCHOLARSHIP DISCOVERY
+            </h1>
+            <p>Our AI constantly scans the web for the latest funding opportunities.</p>
+            <br>
+            <!-- Buttons on same horizontal line -->
+    <div class="flex gap-4 mt-4">
+        <button id="refresh-ai-search"
+            class="bg-green-600 text-white px-6 py-2 rounded-full font-semibold hover:bg-green-700 transition">
+            Refresh AI Research
+        </button>
+
+        <button onclick="openAddModal()"
+            class="bg-blue-600 text-white px-6 py-2 rounded-full font-semibold hover:bg-blue-700 transition">
+            Add New Scholarship
+        </button>
+    </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        <!-- Breadcrumb -->
+        <nav class="text-gray-500 text-base mb-6" aria-label="Breadcrumb">
+            <ol class="list-none p-0 inline-flex">
+                <li class="flex items-center">
+                     <div class="max-w-6xl mx-auto px-6 mt-6">
+       <a href="{% url 'main:education_landing' %}" 
+          class="text-brand-blue font-semibold hover:no-underline">
+           ← Back to Previous Page
+       </a>
+    </div>
+                </li>
+                
+            </ol>
+        </nav>
+
+        <div class="lg:grid lg:grid-cols-4 lg:gap-8">
+            <!-- Filter Sidebar -->
+            <div id="filter-sidebar" class="lg:col-span-1 bg-white p-6 rounded-xl shadow-lg mb-8 lg:mb-0 filter-hidden">
+                <button type="button" class="lg:hidden absolute top-3 right-3 text-gray-500 hover:text-gray-700" onclick="toggleFilters()">
+                    <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </button>
+                <h2 class="text-2xl font-bold text-gray-800 mb-6 border-b pb-2">Filter Scholarships</h2>
+
+                <form method="get" id="search-form">
+                    <div class="space-y-6">
+                        <!-- Keyword Search -->
+                        <div class="relative">
+                            <label for="{{ form.search_keyword.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">Keyword Search</label>
+                            {{ form.search_keyword }}
+                        </div>
+
+                        <!-- Level Filter -->
+                        <div class="relative">
+                            <label for="{{ form.filter_level.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">Study Level</label>
+                            {{ form.filter_level }}
+                        </div>
+
+                        <!-- Field Filter -->
+                        <div class="relative">
+                            <label for="{{ form.filter_field.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">Field of Study</label>
+                            {{ form.filter_field }}
+                        </div>
+
+                        <!-- Location Filter -->
+                        <div class="relative">
+                            <label for="{{ form.filter_location.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">Study Location</label>
+                            {{ form.filter_location }}
+                        </div>
+
+                        <!-- Currency Filter - FIXED: Using Django form rendering -->
+                        <div class="relative">
+                            <label for="{{ form.filter_currency.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">Currency</label>
+                            {{ form.filter_currency }}
+                        </div>
+
+                        <!-- Status Checkbox -->
+                     <div class="flex items-center pt-2">
+                         {{ form.filter_status }}
+                         <label for="{{ form.filter_status.id_for_label }}" class="ml-3 block text-sm font-medium text-gray-700">
+                             Show only "Closing Soon"
+                         </label>
+                     </div>
+                        
+                        <button type="submit" class="w-full bg-brand-blue text-white font-bold py-2 px-4 rounded-lg hover:bg-[#183693] transition duration-300">
+                            Apply Filters
+                        </button>
+                        <button type="button" onclick="resetFilters()" class="w-full bg-gray-200 text-gray-700 font-bold py-2 px-4 rounded-lg hover:bg-gray-300 transition duration-300 mt-2">
+                            Reset Filters
+                        </button>
+                    </div>
+                </form>
+            </div>
+            
+            <!-- Results Section -->
+            <div class="lg:col-span-3">
+                <div class="flex justify-between items-center mb-6 border-b pb-3">
+                    <h2 class="text-3xl font-extrabold text-brand-blue">Scholarship Results</h2>
+                    <span class="text-xl font-semibold text-gray-600">
+                        <span id="result-count" class="text-brand-green">{{ result_count }}</span> Results
+                    </span>
+                </div>
+
+                <!-- Active Filters Display - NEW -->
+                {% if form.filter_currency.value or form.filter_level.value or form.filter_field.value or form.filter_location.value or form.filter_status.value or form.search_keyword.value %}
+                <div class="bg-blue-50 p-4 rounded-lg mb-6">
+                    <div class="flex flex-wrap items-center gap-2">
+                        <span class="text-sm font-medium text-gray-700 mr-2">Active filters:</span>
+                        
+                        {% if form.search_keyword.value %}
+                        <span class="filter-badge inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
+                            Keyword: "{{ form.search_keyword.value }}"
+                            <a href="?{% for key, value in request.GET.items %}{% if key != 'search_keyword' %}{{ key }}={{ value }}&{% endif %}{% endfor %}" class="ml-2 text-gray-600 hover:text-gray-800 font-bold">×</a>
+                        </span>
+                        {% endif %}
+                        
+                        {% if form.filter_currency.value %}
+                        <span class="filter-badge inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                            Currency: 
+                            {% for value, label in form.filter_currency.field.choices %}
+                                {% if value == form.filter_currency.value %}
+                                    {{ label }}
+                                {% endif %}
+                            {% endfor %}
+                            <a href="?{% for key, value in request.GET.items %}{% if key != 'filter_currency' %}{{ key }}={{ value }}&{% endif %}{% endfor %}" class="ml-2 text-blue-600 hover:text-blue-800 font-bold">×</a>
+                        </span>
+                        {% endif %}
+                        
+                        {% if form.filter_level.value %}
+                        <span class="filter-badge inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                            Level: 
+                            {% for value, label in form.filter_level.field.choices %}
+                                {% if value == form.filter_level.value %}
+                                    {{ label }}
+                                {% endif %}
+                            {% endfor %}
+                            <a href="?{% for key, value in request.GET.items %}{% if key != 'filter_level' %}{{ key }}={{ value }}&{% endif %}{% endfor %}" class="ml-2 text-green-600 hover:text-green-800 font-bold">×</a>
+                        </span>
+                        {% endif %}
+                        
+                        {% if form.filter_field.value %}
+                        <span class="filter-badge inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
+                            Field: 
+                            {% for value, label in form.filter_field.field.choices %}
+                                {% if value == form.filter_field.value %}
+                                    {{ label }}
+                                {% endif %}
+                            {% endfor %}
+                            <a href="?{% for key, value in request.GET.items %}{% if key != 'filter_field' %}{{ key }}={{ value }}&{% endif %}{% endfor %}" class="ml-2 text-purple-600 hover:text-purple-800 font-bold">×</a>
+                        </span>
+                        {% endif %}
+                        
+                        {% if form.filter_location.value %}
+                        <span class="filter-badge inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
+                            Location: 
+                            {% for value, label in form.filter_location.field.choices %}
+                                {% if value == form.filter_location.value %}
+                                    {{ label }}
+                                {% endif %}
+                            {% endfor %}
+                            <a href="?{% for key, value in request.GET.items %}{% if key != 'filter_location' %}{{ key }}={{ value }}&{% endif %}{% endfor %}" class="ml-2 text-yellow-600 hover:text-yellow-800 font-bold">×</a>
+                        </span>
+                        {% endif %}
+                        
+                        {% if form.filter_status.value %}
+                        <span class="filter-badge inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                            Closing Soon Only
+                            <a href="?{% for key, value in request.GET.items %}{% if key != 'filter_status' %}{{ key }}={{ value }}&{% endif %}{% endfor %}" class="ml-2 text-red-600 hover:text-red-800 font-bold">×</a>
+                        </span>
+                        {% endif %}
+                        
+                        <a href="{% url 'main:scholarship_search' %}" class="text-xs text-gray-500 hover:text-gray-700 ml-auto underline">
+                            Clear all filters
+                        </a>
+                    </div>
+                </div>
+                {% endif %}
+
+                <div id="scholarship-results" class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    {% for scholarship in scholarships %}
+                    <div class="bg-white p-6 rounded-xl shadow-lg hover:shadow-xl transition duration-300 border-t-4 {% if scholarship.status == 'Closing Soon' %}border-brand-red{% else %}border-brand-green{% endif %}">
+                        <div class="flex justify-between items-start mb-4">
+                            <h3 class="text-xl font-bold text-brand-blue leading-tight">{{ scholarship.title }}</h3>
+                            <span class="text-sm font-semibold px-3 py-1 rounded-full {% if scholarship.status == 'Closing Soon' %}bg-brand-red text-white{% else %}bg-brand-green text-white{% endif %}">
+                                {{ scholarship.status|upper }}
+                            </span>
+                        </div>
+                        <p class="text-sm text-gray-500 mb-4 font-medium">{{ scholarship.provider }}</p>
+                        
+                        <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 text-sm mb-6 border-b pb-4">
+                            <div class="flex flex-col">
+                                <span class="text-xs font-medium text-gray-500 uppercase">Level</span>
+                                <span class="font-semibold text-gray-800">{{ scholarship.level }}</span>
+                            </div>
+                            <div class="flex flex-col">
+                                <span class="text-xs font-medium text-gray-500 uppercase">Field</span>
+                                <span class="font-semibold text-gray-800">{{ scholarship.field }}</span>
+                            </div>
+                            <div class="flex flex-col">
+                                <span class="text-xs font-medium text-gray-500 uppercase">Location</span>
+                                <span class="font-semibold text-gray-800">{{ scholarship.location }}</span>
+                            </div>
+                            <div class="flex flex-col">
+                                <span class="text-xs font-medium text-gray-500 uppercase">Amount</span>
+                                <span class="font-semibold 
+                                    {% if scholarship.amount_description %}
+                                        {% if 'full tuition' in scholarship.amount_description|lower %}
+                                            amount-full-tuition
+                                        {% endif %}
+                                    {% elif scholarship.amount_currency == 'USD' %}
+                                        currency-usd
+                                    {% elif scholarship.amount_currency == 'KES' %}
+                                        currency-kes
+                                    {% elif scholarship.amount_currency == 'EUR' %}
+                                        currency-eur
+                                    {% elif scholarship.amount_currency == 'GBP' %}
+                                        currency-gbp
+                                    {% endif %}
+                                ">
+                                    {{ scholarship.amount }}
+                                </span>
+                                {% if scholarship.amount_value and not scholarship.amount_description %}
+                                    <span class="text-xs text-gray-500 mt-1">
+                                        ({{ scholarship.get_amount_currency_display }})
+                                    </span>
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        <div class="flex justify-between items-center">
+                            <p class="text-sm font-semibold text-gray-600">
+                                Deadline: <span class="text-brand-red">{{ scholarship.deadline|date:"m/d/Y" }}</span>
+                            </p>
+                            <a href="{% url 'main:course_register' %}?scholarship_id={{ scholarship.id }}" 
+                               class="bg-brand-blue text-white font-bold py-2 px-4 rounded-md text-sm hover:bg-[#183693] transition duration-300 shadow-md">
+                                Apply Now
+                            </a>
+                        </div>
+                    </div>
+                    {% empty %}
+                    <div class="p-8 text-center bg-white rounded-xl shadow-lg border border-gray-200">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 text-gray-400 mx-auto mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                        <p class="text-xl font-semibold text-gray-700">No Scholarships Found</p>
+                        <p class="text-gray-500 mt-2">Try broadening your search criteria or checking back later for updates.</p>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+        <!-- ADD SCHOLARSHIP MODAL -->
+<div id="addModal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-50">
+    <div class="bg-white rounded-xl shadow-lg p-6 w-full max-w-md">
+        <h2 class="text-xl font-bold text-gray-800 mb-4">Access Requirement</h2>
+
+        <form id="accessForm">
+            <div class="mb-4">
+                <label class="block text-sm font-medium text-gray-700">Membership Status</label>
+                <select id="memberStatus" class="w-full border rounded-lg p-2 mt-1">
+                    <option value="">-- Select --</option>
+                    <option value="active">Active Member</option>
+                    <option value="inactive">Not Active</option>
+                </select>
+            </div>
+
+            <div class="mb-4">
+                <label class="block text-sm font-medium text-gray-700">Donation Status</label>
+                <select id="donationStatus" class="w-full border rounded-lg p-2 mt-1">
+                    <option value="">-- Select --</option>
+                    <option value="yes">Donated</option>
+                    <option value="no">Not Yet</option>
+                </select>
+            </div>
+
+            <div class="flex justify-between mt-6">
+                <button type="button" onclick="closeAddModal()"
+                    class="bg-gray-300 px-4 py-2 rounded-lg">
+                    Cancel
+                </button>
+
+                <button type="button" onclick="validateAccess()"
+                    class="bg-blue-600 text-white px-4 py-2 rounded-lg">
+                    Continue
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+    </div>
+<script>
+
+function openAddModal() {
+    document.getElementById("addModal").classList.remove("hidden");
+}
+
+function closeAddModal() {
+    document.getElementById("addModal").classList.add("hidden");
+}
+
+function validateAccess() {
+    const member = document.getElementById("memberStatus").value;
+    const donation = document.getElementById("donationStatus").value;
+
+    if (member === "active" && donation === "yes") {
+        // ✅ Redirect to add scholarship page
+        window.location.href = "{% url 'main:add_scholarship' %}";
+    } else {
+        alert("❌ You must be an active member and have donated.");
+    }
+}
+
+function toggleFilters() {
+    const sidebar = document.getElementById('filter-sidebar');
+    sidebar.classList.toggle('filter-hidden');
+}
+
+function resetFilters() {
+    const form = document.getElementById('search-form');
+
+    form.querySelectorAll('input, select').forEach(el => {
+        if (el.type === 'checkbox' || el.type === 'radio') {
+            el.checked = false;
+        } else {
+            el.value = '';
+        }
+    });
+
+    form.submit();
+}
+
+// 🤖 AI REFRESH FUNCTION (CLEAN + SAFE + FAST)
+async function refreshAIResearch() {
+    const container = document.getElementById("scholarship-results");
+    const count = document.getElementById("result-count");
+
+    // 🔄 Loading UI
+    container.innerHTML = `
+        <div class="col-span-2 text-center py-16">
+            <p class="text-lg font-semibold text-brand-green animate-pulse">
+                🤖 AI is analyzing scholarships...
+            </p>
+            <p class="text-gray-500 mt-3">
+                Matching deadlines, funding, and your interests
+            </p>
+        </div>
+    `;
+
+    try {
+        const response = await fetch("{% url 'main:ai_refresh_scholarships' %}");
+        const data = await response.json();
+
+        count.textContent = data.count || 0;
+        container.innerHTML = "";
+
+        // 😕 Empty state
+        if (!data.scholarships || data.scholarships.length === 0) {
+            container.innerHTML = `
+                <div class="col-span-2 text-center py-10 text-gray-500">
+                    😕 No scholarships found right now
+                </div>
+            `;
+            return;
+        }
+
+        const fragment = document.createDocumentFragment();
+
+        data.scholarships.forEach(s => {
+            // 🧠 Safe fallback values
+            const status = (s.status || "Unknown").toLowerCase();
+
+            const borderColor = status.includes("closing")
+                ? "border-brand-red"
+                : "border-brand-green";
+
+            const statusColor = status.includes("closing")
+                ? "bg-brand-red text-white"
+                : "bg-brand-green text-white";
+
+            // 💰 Amount styling
+            let amountClass = "font-semibold text-gray-800";
+            if (s.amount && s.amount.toLowerCase().includes("full")) {
+                amountClass = "amount-full-tuition";
+            }
+
+            const card = document.createElement("div");
+            card.className = `bg-white p-6 rounded-xl shadow-lg hover:shadow-xl transition duration-300 border-t-4 ${borderColor}`;
+
+            card.innerHTML = `
+                <div class="flex justify-between items-start mb-4">
+                    <h3 class="text-xl font-bold text-brand-blue leading-tight">
+                        ${s.title || "No title"}
+                    </h3>
+                    <span class="text-sm font-semibold px-3 py-1 rounded-full ${statusColor}">
+                        ${(s.status || "Unknown").toUpperCase()}
+                    </span>
+                </div>
+
+                <p class="text-sm text-gray-500 mb-4 font-medium">
+                    ${s.provider || "Unknown provider"}
+                </p>
+
+                <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 text-sm mb-6 border-b pb-4">
+                    <div>
+                        <span class="text-xs text-gray-500 uppercase">Level</span>
+                        <p class="font-semibold">${s.level || "-"}</p>
+                    </div>
+                    <div>
+                        <span class="text-xs text-gray-500 uppercase">Field</span>
+                        <p class="font-semibold">${s.field || "-"}</p>
+                    </div>
+                    <div>
+                        <span class="text-xs text-gray-500 uppercase">Location</span>
+                        <p class="font-semibold">${s.location || "-"}</p>
+                    </div>
+                    <div>
+                        <span class="text-xs text-gray-500 uppercase">Amount</span>
+                        <p class="${amountClass}">${s.amount || "-"}</p>
+                    </div>
+                </div>
+
+                <div class="flex justify-between items-center">
+                    <p class="text-sm font-semibold text-gray-600">
+                        Deadline: <span class="text-brand-red">
+                            ${s.deadline || "N/A"}
+                        </span>
+                    </p>
+
+                    <button onclick="trackClick(${s.id})"
+                        class="bg-brand-blue text-white font-bold py-2 px-4 rounded-md text-sm hover:bg-[#183693] transition duration-300 shadow-md">
+                        Apply Now
+                    </button>
+                </div>
+            `;
+
+            fragment.appendChild(card);
+        });
+
+        container.appendChild(fragment);
+
+    } catch (error) {
+        console.error(error);
+
+        container.innerHTML = `
+            <div class="col-span-2 text-center py-10 text-red-500">
+                ⚠️ Failed to load scholarships
+            </div>
+        `;
+    }
+}
+
+// 🎯 APPLY FOR SCHOLARSHIP (redirect to registration)
+async function trackClick(id) {
+    try {
+        // Track the click for analytics
+        await fetch(`/track-click/${id}/`, {
+            method: "POST",
+            headers: {
+                "X-CSRFToken": getCSRFToken(),
+                "Content-Type": "application/json"
+            }
+        });
+    } catch (e) {
+        console.error("Tracking failed", e);
+    }
+    
+    // Redirect to course registration with scholarship_id
+    window.location.href = `/education/courses/register/?scholarship_id=${id}`;
+}
+
+// 🔐 CSRF TOKEN HELPER
+function getCSRFToken() {
+    return document.cookie
+        .split("; ")
+        .find(row => row.startsWith("csrftoken="))
+        ?.split("=")[1];
+}
+
+// 🚀 INIT
+document.addEventListener('DOMContentLoaded', function () {
+    const refreshBtn = document.getElementById('refresh-ai-search');
+    if (refreshBtn) {
+        refreshBtn.addEventListener('click', refreshAIResearch);
+    }
+
+    const form = document.getElementById('search-form');
+    if (form) {
+        const inputs = form.querySelectorAll(
+            'select, input[type="text"], input[type="search"], textarea, input[type="checkbox"], input[type="radio"]'
+        );
+
+        inputs.forEach(input => {
+            input.addEventListener('change', () => form.submit());
+        });
+    }
+});
+</script>
+{% endblock %}
+

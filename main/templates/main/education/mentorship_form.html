@@ -1,0 +1,29 @@
+{% extends 'main/base_templates/base.html' %}
+{% load crispy_forms_tags %}
+
+{% block content %}
+<style>section { display: block !important; }</style>
+
+<div class="max-w-4xl mx-auto py-12 px-4">
+  <div class="bg-white rounded-lg shadow-md p-8">
+    <h1 class="text-2xl font-bold mb-4">Request Mentorship</h1>
+    <p class="text-gray-600 mb-6">Describe the mentorship help you need. Our mentors will review and get back to you.</p>
+
+    <form method="POST" enctype="multipart/form-data" autocomplete="off">
+      {% csrf_token %}
+      {{ form.user.as_hidden }}
+      <div class="mb-4">
+        {{ form.topic|as_crispy_field }}
+      </div>
+      <div class="mb-4">
+        {{ form.description|as_crispy_field }}
+      </div>
+      <div class="mt-6">
+        <button type="submit" class="btn btn-primary btn-lg">Submit Request</button>
+        <a href="{% url 'main:education_landing' %}" class="btn btn-secondary ml-2">Cancel</a>
+      </div>
+    </form>
+  </div>
+</div>
+
+{% endblock %}

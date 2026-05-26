@@ -28,9 +28,19 @@ urlpatterns = [
     path('ourhistory',views.ourhistory, name ='ourhistory'),
     path('contact_us',views.contact_us, name ='contact_us'),
 
-  
-    
-    
+    # Education & Training
+    path('education/', views.education_landing, name='education_landing'),
+    path('education/scholarship/', views.scholarship_search, name='scholarship_search'),
+    path('education/training/', views.education_training, name='education_training'),
+    path('scholarship/', views.scholarship_search, name='scholarship_list'),
+    path('ai-courses/', views.ai_course_discovery, name='ai_course_discovery'),
+    path('education/courses/register/', views.course_register, name='course_register'),
+    path('education/request-mentorship/', views.request_mentorship, name='request_mentorship'),
+    path('ai_refresh_scholarships/', views.ai_refresh_scholarships, name='ai_refresh_scholarships'),
+    path('scholarship/add/', views.add_scholarship, name='add_scholarship'),
+    path('scholarship/edit/<int:pk>/', views.scholarship_edit, name='scholarship_edit'),
+    path('scholarship/delete/<int:pk>/', views.scholarship_delete, name='scholarship_delete'),
+
    #==============ERRORS==============================================
     path('400Error/', views.error400, name='400error'),
     path('403Error/', views.error403, name='403error'),

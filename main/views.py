@@ -1,5 +1,12 @@
 from django.shortcuts import redirect, render
-from django.urls import reverse
+from django.urls import reverse, reverse_lazy
+from django.http import JsonResponse
+from django.contrib.auth.decorators import login_required
+from django.db.models import Q
+from django.utils import timezone
+from django.core.paginator import Paginator
+import feedparser
+import random
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.views.generic import (
     CreateView,
@@ -8,7 +15,7 @@ from django.views.generic import (
 from .models import * #Assets,Description, News, Page, Service, SubService,Team
 from accounts.models import CustomerUser
 from .utils import generate_chatbot_response
-from main.forms import ContactForm, GetHelpForm, GovernanceForm
+from main.forms import ContactForm, GetHelpForm, GovernanceForm, ScholarshipSearchForm, ScholarshipForm, TrainingCourseForm
 from django.contrib.auth import get_user_model
 
 from mail.custom_email import send_email
@@ -583,3 +590,266 @@ def contact_us(request):
         return redirect('main:layout')
 
     return render(reqest, "main/home_templates/home.html")
+
+
+# ============================================
+# EDUCATION & TRAINING
+# ============================================
+
+def education_landing(request):
+    initial_view = request.GET.get('view', 'landing')
+    context = {'initial_view': initial_view}
+    return render(request, 'main/education/education.html', context)
+
+
+def request_mentorship(request):
+    if request.method == 'POST':
+        form = ContactForm(request.POST)
+        if form.is_valid():
+            instance = form.save(commit=False)
+            if request.user.is_authenticated:
+                instance.user = request.user
+            if not instance.topic:
+                instance.topic = 'Mentorship Request'
+            instance.save()
+            return redirect(reverse('main:education_landing') + '?view=landing&mentorship=success')
+    else:
+        initial = {'topic': 'Mentorship Request'}
+        form = ContactForm(initial=initial)
+    return render(request, 'main/education/mentorship_form.html', {'form': form})
+
+
+def course_register(request):
+    courses = [
+        {'id': 101, 'title': 'Modern Web Development (React & Node)', 'category': 'Digital Skills', 'duration': '12 Weeks', 'format': 'Online Live', 'price': 150.00},
+        {'id': 102, 'title': 'Financial Literacy for Diaspora Investors', 'category': 'Finance & Business', 'duration': '4 Weeks', 'format': 'Online Self-Paced', 'price': 40.00},
+        {'id': 103, 'title': 'Entrepreneurship & Small Business Management', 'category': 'Business', 'duration': '8 Weeks', 'format': 'Blended', 'price': 95.00},
+    ]
+
+    selected_object = None
+    selected_type = None
+
+    course_id = request.GET.get('course_id', None)
+    if course_id:
+        try:
+            selected_object = TrainingCourse.objects.get(id=int(course_id))
+            selected_type = 'course'
+        except (TrainingCourse.DoesNotExist, ValueError):
+            selected_object = None
+
+    scholarship_id = request.GET.get('scholarship_id', None)
+    if scholarship_id and not selected_object:
+        try:
+            selected_object = Scholarship.objects.get(id=int(scholarship_id))
+            selected_type = 'scholarship'
+        except (Scholarship.DoesNotExist, ValueError):
+            selected_object = None
+
+    if request.GET.get('partial') == '1':
+        return render(request, 'main/education/course_register_fragment.html', {
+            'courses': courses, 'selected_object': selected_object, 'selected_type': selected_type,
+        })
+
+    return render(request, 'main/education/course_register.html', {
+        'courses': courses, 'selected_object': selected_object, 'selected_type': selected_type,
+    })
+
+
+def scholarship_search(request):
+    scholarships = Scholarship.objects.all()
+    form = ScholarshipSearchForm(request.GET or None)
+
+    if form.is_valid():
+        data = form.cleaned_data
+        keyword = data.get("search_keyword")
+        if keyword:
+            scholarships = scholarships.filter(Q(title__icontains=keyword) | Q(provider__icontains=keyword))
+
+        currency = data.get("filter_currency")
+        if currency:
+            scholarships = scholarships.filter(amount_value__isnull=False, amount_currency=currency)
+
+        level = data.get("filter_level")
+        if level:
+            scholarships = scholarships.filter(level=level)
+
+        field = data.get("filter_field")
+        if field:
+            scholarships = scholarships.filter(field=field)
+
+        location = data.get("filter_location")
+        if location:
+            scholarships = scholarships.filter(location=location)
+
+        if data.get("filter_status"):
+            scholarships = scholarships.filter(status=Scholarship.Status.CLOSING_SOON)
+
+    context = {
+        'scholarships': scholarships,
+        'form': form,
+        'result_count': scholarships.count(),
+    }
+    return render(request, 'scholarship_app/scholarship_search.html', context)
+
+
+@login_required
+def add_scholarship(request):
+    if request.method == "POST":
+        form = ScholarshipForm(request.POST)
+        if form.is_valid():
+            obj = form.save(commit=False)
+            obj.created_by = request.user
+            obj.save()
+            return redirect('main:scholarship_search')
+    else:
+        form = ScholarshipForm()
+    return render(request, "scholarship_app/add_scholarship.html", {"form": form})
+
+
+@login_required
+def scholarship_edit(request, pk):
+    scholarship = get_object_or_404(Scholarship, pk=pk, created_by=request.user)
+    if request.method == "POST":
+        form = ScholarshipForm(request.POST, instance=scholarship)
+        if form.is_valid():
+            form.save()
+            return redirect('main:add_scholarship')
+    else:
+        form = ScholarshipForm(instance=scholarship)
+    return render(request, 'scholarship_app/scholarship_edit.html', {'form': form})
+
+
+@login_required
+def scholarship_delete(request, pk):
+    scholarship = get_object_or_404(Scholarship, pk=pk, created_by=request.user)
+    if request.method == "POST":
+        scholarship.delete()
+        return redirect('main:add_scholarship')
+    return render(request, 'scholarship_app/scholarship_delete.html', {'scholarship': scholarship})
+
+
+def ai_refresh_scholarships(request):
+    today = timezone.now().date()
+    scholarships = Scholarship.objects.all()
+    scored = []
+
+    for s in scholarships:
+        score = 0
+        if not s.deadline:
+            continue
+        days_left = (s.deadline - today).days
+        if days_left < 0:
+            continue
+        if days_left <= 7:
+            score += 5
+        elif days_left <= 30:
+            score += 3
+        if s.status and s.status.lower() == "open":
+            score += 3
+        if isinstance(s.amount, str) and "full" in s.amount.lower():
+            score += 4
+        scored.append((score, s))
+
+    scored.sort(reverse=True, key=lambda x: x[0])
+    top_pool = scored[:25]
+    selected = random.sample(top_pool, min(6, len(top_pool)))
+    best = [s for score, s in selected]
+
+    data = []
+    for s in best:
+        data.append({
+            "title": s.title, "provider": s.provider, "level": s.level,
+            "field": s.field, "location": s.location, "amount": s.amount,
+            "deadline": s.deadline.strftime("%Y-%m-%d") if s.deadline else None,
+            "status": s.status
+        })
+
+    return JsonResponse({"scholarships": data, "count": len(data)})
+
+
+def education_training(request):
+    courses = TrainingCourse.objects.all()
+
+    search_query = request.GET.get('search', '')
+    if search_query:
+        courses = courses.filter(
+            Q(title__icontains=search_query) | Q(course_code__icontains=search_query) |
+            Q(description__icontains=search_query) | Q(instructor__icontains=search_query)
+        )
+
+    category_filter = request.GET.get('category', '')
+    if category_filter:
+        courses = courses.filter(category=category_filter)
+
+    format_filter = request.GET.get('format', '')
+    if format_filter:
+        courses = courses.filter(format=format_filter)
+
+    status_filter = request.GET.get('status', '')
+    if status_filter:
+        courses = courses.filter(status=status_filter)
+
+    paginator = Paginator(courses, 6)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+
+    context = {
+        'page_obj': page_obj, 'paginator': paginator,
+        'search_query': search_query, 'category_filter': category_filter,
+        'format_filter': format_filter, 'status_filter': status_filter,
+    }
+    return render(request, 'main/education/training_skills.html', context)
+
+
+def ai_course_discovery(request):
+    courses = []
+    seen = set()
+
+    mit_feeds = [
+        "https://ocw.mit.edu/courses/rss.xml",
+        "https://ocw.mit.edu/courses/new-courses/feed",
+    ]
+
+    for url in mit_feeds:
+        feed = feedparser.parse(url)
+        for entry in feed.entries:
+            title = entry.title.strip()
+            if title in seen:
+                continue
+            seen.add(title)
+            courses.append({
+                "title": title, "university": "MIT", "platform": "MIT OpenCourseWare",
+                "duration": "Self-paced", "url": entry.link, "is_free": True
+            })
+
+    harvard_courses = [
+        {"title": "CS50: Introduction to Computer Science", "university": "Harvard University", "platform": "edX", "duration": "12 Weeks", "url": "https://www.edx.org/cs50", "is_free": True},
+        {"title": "Data Science: Machine Learning", "university": "Harvard University", "platform": "edX", "duration": "8 Weeks", "url": "https://www.edx.org/course/data-science-machine-learning", "is_free": True},
+    ]
+
+    youtube_courses = [
+        {"title": "Python Full Course for Beginners", "university": "FreeCodeCamp", "platform": "Youtube", "duration": "Self-paced", "url": "https://www.youtube.com/watch?v=rfscVS0vtbw", "is_free": True},
+        {"title": "JavaScript Full Course", "university": "FreeCodeCamp", "platform": "Youtube", "duration": "Self-paced", "url": "https://www.youtube.com/watch?v=jS4aFq5-91M", "is_free": True},
+    ]
+
+    stanford_courses = [
+        {"title": "Machine Learning", "university": "Stanford University", "platform": "Coursera", "duration": "10 Weeks", "url": "https://www.coursera.org/learn/machine-learning"},
+    ]
+
+    futurelearn_courses = [
+        {"title": "Digital Skills: Web Analytics", "university": "Accenture", "platform": "FutureLearn", "duration": "4 Weeks", "url": "https://www.futurelearn.com/courses/digital-skills-web-analytics", "is_free": True},
+    ]
+
+    courses.extend(harvard_courses)
+    courses.extend(stanford_courses)
+    courses.extend(youtube_courses)
+    courses.extend(futurelearn_courses)
+
+    if len(courses) < 6:
+        return JsonResponse({"courses": courses, "count": len(courses)})
+
+    random.shuffle(courses)
+    pool = courses[:20]
+    selected = random.sample(pool, min(6, len(pool)))
+
+    return JsonResponse({"courses": selected, "count": len(selected)})
