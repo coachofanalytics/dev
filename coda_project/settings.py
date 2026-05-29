@@ -338,16 +338,19 @@ LOGIN_URL = "accounts:account-login"
 
 # Azure configuration --> To host images used especially for the governance structure
 
-DEFAULT_FILE_STORAGE = 'storages.backends.azure_storage.AzureStorage'
-
 AZURE_ACCOUNT_NAME = os.getenv('AZURE_STORAGE_ACCOUNT_NAME')
 AZURE_ACCOUNT_KEY = os.getenv('AZURE_STORAGE_ACCOUNT_KEY')
 AZURE_CONTAINER = 'web-dev-media'
 AZURE_URL_EXPIRATION_SECS = None
 
-
-# Optional: Configure the URL
-MEDIA_URL = f'https://{AZURE_ACCOUNT_NAME}.blob.core.windows.net/{AZURE_CONTAINER}/'
+if AZURE_ACCOUNT_NAME and AZURE_ACCOUNT_KEY:
+    # Production: use Azure Blob Storage
+    DEFAULT_FILE_STORAGE = 'storages.backends.azure_storage.AzureStorage'
+    MEDIA_URL = f'https://{AZURE_ACCOUNT_NAME}.blob.core.windows.net/{AZURE_CONTAINER}/'
+else:
+    # Local dev: serve media files from local filesystem
+    DEFAULT_FILE_STORAGE = 'django.core.files.storage.FileSystemStorage'
+    MEDIA_URL = '/media/'
 
 SECURE_SSL_REDIRECT = False
 
