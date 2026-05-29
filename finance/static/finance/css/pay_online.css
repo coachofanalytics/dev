@@ -10,7 +10,7 @@ body {
   padding: 0;
 }
 
-section {
+section.payment-wrapper {
   display: flex;
   justify-content: center;
   align-items: center;

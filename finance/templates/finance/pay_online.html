@@ -2,7 +2,8 @@
 {% load static %}
 
 {% block content %}
-<section>
+<link rel="stylesheet" type="text/css" href="{% static 'finance/css/pay_online.css' %}">
+<section class="payment-wrapper">
   <!-- JSON URLs used by pay_online.js -->
   <script id="payment-urls" type="application/json">
   {
