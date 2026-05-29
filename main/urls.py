@@ -57,6 +57,7 @@ urlpatterns = [
     path('education/', views.education_landing, name='education_landing'),
     path('education/scholarship/', views.education_landing, name='education_scholarship'),
     path('education/training/', views.education_training, name='education_training'),
+    path('education/courses/manage/', views.course_crud, name='course_crud'),
     path('scholarship/', views.scholarship_search, name='scholarship_search'),
     path('ai-courses/', views.ai_course_discovery, name='ai_course_discovery'),
     path('education/courses/register/', views.course_register, name='course_register'),
