@@ -3,7 +3,7 @@
 {% load static %}
  {% block content %}
 
-   
+
     <main class="mx-auto pb-16">
 
         <!-- HERO SECTION - Community Support Focus (Matching Legal/Document Design) -->
@@ -32,7 +32,7 @@
 
         <!-- Mission/Introduction Section -->
         <section class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 mb-16 text-center">
-            <h3 class="text-4xl main-heading text-gray-800 mb-4">Finding Your Home Away From Home</h3>
+            <h3 class="text-4xl main-heading text-gray-900 mb-4">Finding Your Home Away From Home</h3>
             <p class="text-xl text-gray-600 max-w-4xl mx-auto">
                 We believe a strong diaspora is a connected diaspora. Our community support initiatives are designed to foster belonging, facilitate knowledge sharing, and promote cultural exchange.
             </p>
@@ -40,7 +40,7 @@
 
 
         <!-- SERVICES DETAILED BLOCKS (Alternating Layout) -->
-        <section class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+        <section class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col">
             
             <!-- 1. Forums and Networking (Image Left) -->
             <div id="forums-networking" class="service-block grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
@@ -116,5 +116,7 @@ data-src="{% static 'community/img/img2.png' %}"
 
     </main>
 
+<!-- Load Community-Specific JavaScript -->
+<script src="{% static 'community/js/script.js' %}"></script>
 
     {% endblock content %}
