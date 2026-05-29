@@ -343,7 +343,7 @@ class ArticleForm(forms.ModelForm):
     class Meta:
         model = NewsArticle
         fields = [
-            'category', 'title', 'slug', 'author',
+            'category', 'title', 'author',
             'featured_image', 'content', 'ai_summary',
             'is_breaking', 'status',
         ]
