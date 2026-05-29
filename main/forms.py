@@ -345,12 +345,18 @@ class ArticleForm(forms.ModelForm):
         fields = [
             'category', 'title', 'slug', 'author',
             'featured_image', 'content', 'ai_summary',
-            'is_breaking', 'status', 'views'
+            'is_breaking', 'status',
         ]
         widgets = {
             'content': forms.Textarea(attrs={'rows': 10}),
             'ai_summary': forms.Textarea(attrs={'rows': 3}),
         }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        from .models import Category as NewsCategory
+        self.fields['category'].queryset = NewsCategory.objects.all()
+        self.fields['category'].empty_label = '-- Select a category --'
 
 
 # ============================================
