@@ -1,4 +1,5 @@
 from django.shortcuts import redirect, render, get_object_or_404
+from django.templatetags.static import static
 from datetime import datetime,date,timedelta
 from dateutil.relativedelta import relativedelta
 from django.contrib.auth.decorators import login_required
@@ -423,6 +424,10 @@ def healthcare_info(request):
         'mission': mission,
         'sections': sections,
         'contact_cta': contact_cta,
+        # Static image URLs expected directly by the template
+        'hero_image_url': static('main/img/healthcare/doctor.svg'),
+        'services_image_url': static('main/img/healthcare/patient.svg'),
+        'insurance_image_url': static('main/img/healthcare/doctor.svg'),
     }
 
     return render(request, 'main/data/healthcare_info.html', context)
