@@ -111,6 +111,7 @@ except ImportError:
 
 # Add Phase 1, Phase 2, and Phase 3 views to exports
 __all__ = [
+    "BackgroundCheckListView",
     # Phase 1
     "activity_summary_api",
     "activity_analytics_api",

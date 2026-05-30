@@ -260,8 +260,6 @@ else:
         print("      ✅ SAFE: Using cloned database (isolated from production)")
 
 print("   " + "=" * 50)
-# Email settings for local development
-EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
 
 
 # Allauth settings for local development - no email verification required
@@ -285,6 +283,9 @@ X_FRAME_OPTIONS = "SAMEORIGIN"
 SECURE_REFERRER_POLICY = None
 
 
+AUTHENTICATION_BACKENDS = [
+    'accounts.custom_backend.EmailOrUsernameModelBackend',
+]
 # Local development URLs
 SITEURL = "http://127.0.0.1:8000"
 
@@ -345,8 +346,8 @@ CACHES = {
 
 
 # Email settings for local development
-DEFAULT_FROM_EMAIL = "noreply@localhost"
-SERVER_EMAIL = "noreply@localhost"
+# DEFAULT_FROM_EMAIL = "info@codanalytics.net"
+# SERVER_EMAIL = "info@codanalytics.net"
 
 
 # Performance settings for local development

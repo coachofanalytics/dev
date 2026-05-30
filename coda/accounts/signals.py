@@ -113,3 +113,22 @@ def send_applicant_email_on_activation(sender, instance, **kwargs):
         print(f"Conditions not met for sending email to {instance.email}") 
 
 
+@receiver(post_save, sender=CustomerUser)
+def send_user_verification_email(sender, instance, created, **kwargs):
+    if created and not instance.email_verified and instance.verification_token:
+        logger.info(f'Signal handler: Sending verification email to {instance.email}')
+        try:
+            from account.utilis import send_verification_email
+
+            success = send_verification_email(
+                request=None,
+                user=instance,
+                password=None
+            )
+
+            if success:
+                logger.info(f'Signal handler: verification email sent successfully to {instance.email}')
+            else:
+                logger.warning(f'Signal handler: Failed to send verification email to  {instance.email}')
+        except Exception as e:
+            logger.error(f"Signal handler: Exception while sending verification email to {instance.email}: {str(e)}", exc_info=True)

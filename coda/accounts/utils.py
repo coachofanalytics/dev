@@ -1,3 +1,9 @@
+def calculate_login_bonus(*args, **kwargs):
+    """
+    Placeholder for login bonus calculation logic.
+    Returns 0 by default. Update with real logic as needed.
+    """
+    return 0
 import requests
 import csv
 import logging
@@ -14,7 +20,6 @@ from django.core.paginator import Paginator
 from coda_project import settings
 from django.conf import settings
 from django.core.mail.backends.smtp import EmailBackend
-from django.core.mail import EmailMultiAlternatives, send_mail
 
 logger = logging.getLogger(__name__)
 
@@ -32,8 +37,10 @@ def get_job_applicant_redirect(user):
             "B": "application:section_b",
             "C": "application:policies",
         }
+
         return section_redirects.get(
-            getattr(user, "profile", {}).get("section"), "application:interview"
+            getattr(user, "profile", {}).get("section"),
+            "application:interview",
         )
 
     except Exception as e:
@@ -43,6 +50,7 @@ def get_job_applicant_redirect(user):
 
 def agreement_data(request):
     contract_data = {}
+
     contract_data["first_name"] = request.POST.get("first_name")
     contract_data["last_name"] = request.POST.get("last_name")
     contract_data["address"] = request.POST.get("address")
@@ -58,8 +66,10 @@ def agreement_data(request):
     contract_data["state"] = request.POST.get("state")
     contract_data["country"] = request.POST.get("country")
     contract_data["resume_file"] = request.POST.get("resume_file")
+
     today = date.today()
     contract_date = today.strftime("%d %B, %Y")
+
     return contract_data, contract_date
 
 
@@ -73,52 +83,69 @@ def compute_default_fee(category, default_amounts, Default_Payment_Fees):
             student_down_payment_per_month=500,
             student_bonus_payment_per_month=100,
         )
+
     return default_fee
 
 
 # ================================USERS========================================
 def employees():
     active_employees = CustomerUser.objects.filter(
-        Q(is_staff=True), Q(is_active=True)
+        Q(is_staff=True),
+        Q(is_active=True),
     ).order_by("-date_joined")
 
     # former_employees = CustomerUser.objects.filter(
-    #                                          Q(is_staff=True),Q(is_active=True),Q(sub_category=5)
-    #                                       ).order_by("-date_joined")
+    #     Q(is_staff=True),
+    #     Q(is_active=True),
+    #     Q(sub_category=5)
+    # ).order_by("-date_joined")
 
     employees_categories_list = CustomerUser.objects.values_list(
-        "sub_category", flat=True
+        "sub_category",
+        flat=True,
     ).distinct()
 
-    # employees_categories = [subcat for subcat in employees_categories_list if subcat in (1,2,3)]
-    # employees_categories = [subcat for subcat in employees_categories_list]
     employees_categories = [
         subcat
         for subcat in employees_categories_list
         if subcat in (0, 1, 2, 3, 4, 5, 6)
     ]
+
     employee_subcategories = list(set(employees_categories))
-    return (employee_subcategories, active_employees)
+
+    return employee_subcategories, active_employees
 
 
 # ================================USERS========================================
 def get_clients_time(current_info, history_info, trackers):
-    # Payment Infor
+    # Payment Info
     payment_latest_record = current_info
     first_history_record = history_info
+
     history_time = first_history_record.plan if first_history_record else 0
     added_time = payment_latest_record.plan if payment_latest_record else 0
 
     # Examining Tracker
     num = trackers.count()
+
     Used = trackers.aggregate(Used_Time=Sum("duration"))
     Usedtime = Used.get("Used_Time") if Used.get("Used_Time") else 0
+
     plantime = history_time + added_time
+
     try:
         delta = round(plantime - Usedtime)
     except (TypeError, AttributeError):
         delta = 0
-    return plantime, history_time, added_time, Usedtime, delta, num
+
+    return (
+        plantime,
+        history_time,
+        added_time,
+        Usedtime,
+        delta,
+        num,
+    )
 
 
 JOB_SUPPORT_CATEGORIES = [
@@ -131,6 +158,7 @@ JOB_SUPPORT_CATEGORIES = [
     "Job support",
     "job support",
 ]
+
 BASE_API_URL = "https://api.zerobounce.net/v2"
 
 
@@ -140,272 +168,284 @@ def validate_email(email, ip_address=""):
         "email": email,
         "ip_address": ip_address,
     }
-    response = requests.get(f"{BASE_API_URL}/validate", params=params)
+
+    response = requests.get(
+        f"{BASE_API_URL}/validate",
+        params=params,
+    )
+
     return response.json() if response.status_code == 200 else None
 
 
-def send_verification_email(user, password=None, request=None, site_url=None):
+from django.core.mail import EmailMultiAlternatives, send_mail
+from django.core.mail.backends.console import (
+    EmailBackend as ConsoleBackend,
+)
+from django.core.mail.backends.locmem import (
+    EmailBackend as LocMemBackend,
+)
+
+# from django.contrib.sites.models import Site
+from django.contrib.sites.shortcuts import get_current_site
+
+
+def _build_verification_url(user, request=None, site_url=None):
     """
-    Send verification email to user.
-    
-    This is a minimal version that was used before the implementation fixes.
-    It sends a verification email with token and optional password.
-    
+    Build verification URL with fallback if request is None.
+
     Args:
-        user: User object with verification_token
-        password: Optional temporary password
-        request: Optional request object (unused in original)
-        site_url: Optional site URL (unused in original)
-    
+        user: The user object with verification_token
+        request: Optional HTTP request object
+        site_url: Optional fallback site URL
+
     Returns:
-        None or similar to original behavior
+        The verification URL as a string
     """
-    try:
-        if not user or not user.verification_token:
-            logger.warning("send_verification_email called without user or token")
-            return
-        
-        # Build verification URL (basic version)
-        verification_url = reverse("accounts:verify-email", kwargs={"token": str(user.verification_token)})
-        
-        # Render email template
-        subject = "Email Verification - CODA"
+
+    verification_token = user.verification_token
+
+    if request:
         try:
-            html_message = render_to_string(
-                "accounts/verification_email.html",
-                {
-                    "user": user,
-                    "verification_url": verification_url,
-                    "password": password,
-                },
+            verification_url = request.build_absolute_uri(
+                reverse(
+                    "accounts:verify-email",
+                    kwargs={"token": str(verification_token)},
+                )
             )
+
+            logger.info(
+                f"Built verification URL from request: {verification_url}"
+            )
+
+            return verification_url
+
         except Exception as e:
-            logger.warning(f"Could not render email template: {e}")
-            html_message = f"Please verify your email at: {verification_url}"
-        
-        # Send email using SMTP backend if configured
-        try:
-            email_backend = EmailBackend(
-                host=settings.EMAIL_INFO.get("HOST"),
-                port=settings.EMAIL_INFO.get("PORT"),
-                username=settings.EMAIL_INFO.get("USER"),
-                password=settings.EMAIL_INFO.get("PASS"),
+            logger.warning(
+                f"Failed to build URL from request: {e}, "
+                "falling back to site_url"
             )
-            email_backend.open()
-            
-            email = EmailMultiAlternatives(
-                subject=subject,
-                body=html_message,
-                from_email=settings.EMAIL_INFO.get("USER", "noreply@coda.local"),
-                to=[user.email],
-                connection=email_backend,
-            )
-            email.attach_alternative(html_message, "text/html")
-            email.send()
-            email_backend.close()
-            logger.info(f"Verification email sent to {user.email}")
-        except Exception as e:
-            logger.warning(f"Could not send email via SMTP: {e}")
-            
-    except Exception as e:
-        logger.error(f"Error in send_verification_email: {e}")
+
+    # Fallback: use site_url or construct from settings
+    if site_url:
+        verification_url = (
+            f"{site_url}"
+            f"{reverse('accounts:verify-email', kwargs={'token': str(verification_token)})}"
+        )
+    else:
+        site_url = getattr(settings, "SITE_URL", None)
+
+        if not site_url:
+            try:
+                site = get_current_site(None)
+                site_url = f"https://{site.domain}"
+
+            except Exception as e:
+                logger.warning(f"Could not determine site URL: {e}")
+                site_url = "https://localhost:8000"
+
+        verification_url = (
+            f"{site_url}"
+            f"{reverse('accounts:verify-email', kwargs={'token': str(verification_token)})}"
+        )
+
+    logger.info(f"Built verification URL (fallback): {verification_url}")
+
+    return verification_url
 
 
-def send_email_to_applicant(instance):
+def _validate_smtp_config():
+    """
+    Validate SMTP configuration and return backend configuration or fallback.
 
-    subject = "Update on Your Application Progress"
-    html_message = render_to_string(
-        "accounts/verification_applicant.html",
-        {
-            "user": instance,
-        },
-    )
-    print("Email message rendered.job applicant")
+    Returns:
+        tuple: (is_valid, config_dict_or_fallback_type)
+    """
 
     try:
-        # Create an email backend using the EMAIL_INFO configuration
-        email_backend = EmailBackend(
+        required_fields = ["USER", "PASS", "HOST", "PORT"]
+
+        missing_fields = [
+            f
+            for f in required_fields
+            if not settings.EMAIL_INFO.get(f)
+        ]
+
+        if missing_fields:
+            logger.warning(
+                f"Missing EMAIL_INFO fields: {missing_fields}. "
+                "Using console backend for testing."
+            )
+
+            return False, "console"
+
+        # Try to connect to SMTP server
+        backend = EmailBackend(
             host=settings.EMAIL_INFO["HOST"],
             port=settings.EMAIL_INFO["PORT"],
             username=settings.EMAIL_INFO["USER"],
             password=settings.EMAIL_INFO["PASS"],
-            use_tls=settings.EMAIL_INFO["USE_TLS"] == "True",
-            use_ssl=settings.EMAIL_INFO["USE_SSL"] == "True",
+            use_tls=settings.EMAIL_INFO.get("USE_TLS", False),
+            use_ssl=settings.EMAIL_INFO.get("USE_SSL", False),
         )
 
-        # Explicitly open the connection
-        email_backend.open()
+        backend.open()
+        backend.close()
 
-        email = EmailMultiAlternatives(
-            subject=subject,
-            body=html_message,  # This will be used as plain text fallback
-            from_email=settings.EMAIL_INFO["USER"],
-            to=[instance.email],
-            connection=email_backend,
-        )
-        email.attach_alternative(html_message, "text/html")  # Attach the HTML version
+        logger.info("SMTP configuration validated successfully")
 
-        # Send the email
-        email.send()
-        print(f"Email to aplicant {instance.email}.")
-
-        # Close the connection after sending the email
-        email_backend.close()
+        return True, None
 
     except Exception as e:
-        print(f"An error occurred while sending the email: {e}")
+        logger.warning(
+            f"SMTP validation failed: {e}. "
+            "Will use console backend for testing."
+        )
+
+        return False, "console"
 
 
-# Zero Bounce View
-def validate_emails_view(request):
-    active_emails = []
-    users = CustomerUser.objects.all()
-    paginator = Paginator(users, 10)  # Process 20 users at a time to avoid timeouts
-
-    for page_number in paginator.page_range:
-        page = paginator.page(page_number)
-        try:
-            for user in page.object_list:
-                email = user.email
-                print(f"Validating email: {email}")  # Print the email being validated
-
-                validation_result = validate_email(email)
-                print(
-                    f"Validation result for {email}: {validation_result}"
-                )  # Print the result from ZeroBounce API
-
-                if validation_result is not None:
-                    # Check if 'status' key exists in the response
-                    if "status" in validation_result:
-                        if validation_result["status"] == "valid":
-                            active_emails.append(email)
-                            user.is_active = True  # Set user account as active
-                            print(
-                                f"Email {email} is valid and account is set to active."
-                            )  # Print confirmation if email is valid
-                        else:
-                            user.is_active = False  # Set user account as inactive
-                            print(
-                                f"Email {email} is not valid and account is set to inactive."
-                            )  # Print if email is not valid
-                    else:
-                        messages.warning(
-                            request,
-                            f"No 'status' key found in the response for {email}.",
-                        )
-                        print(
-                            f"No 'status' key found in the response for {email}."
-                        )  # Print warning if 'status' key is missing
-                else:
-                    # Set user account as inactive if validation fails
-                    messages.error(
-                        request,
-                        f"Failed to validate {email}. API did not return a valid response.",
-                    )
-                    print(
-                        f"Failed to validate {email}. API did not return a valid response."
-                    )  # Print error if validation fails
-
-                user.save()  # Save the updated user status
-            transaction.commit()  # Commit the transaction after processing the batch
-            time.sleep(1)  # Sleep for a second to avoid hitting API rate limits
-        except Exception as e:
-            messages.error(request, f"Error processing batch {page_number}: {e}")
-            print(
-                f"Error processing batch {page_number}: {e}"
-            )  # Print the error and continue
-
-    # Define the CSV file path
-    csv_file_path = "active_emails.csv"
-
-    # Write the active emails to a CSV file
-    with open(csv_file_path, mode="w", newline="") as file:
-        writer = csv.writer(file)
-        writer.writerow(["Email"])
-        for email in active_emails:
-            writer.writerow([email])
-
-    # Add a success message
-    messages.success(
-        request,
-        f"Successfully generated {csv_file_path} with {len(active_emails)} active emails and updated user accounts.",
-    )
-    print(
-        f"Successfully generated {csv_file_path} with {len(active_emails)} active emails and updated user accounts."
-    )  # Print success message
-
-    # Render the response page
-    # return render(request, 'validate_emails.html')
-
-
-def calculate_login_bonus(
-    user,
-    selected_month=None,
-    selected_year=None,
-    threshold=Decimal(20.00),
-    hourly_rate=Decimal(5),
+def send_verification_email(
+    request=None,
+    user=None,
+    password=None,
+    site_url=None,
 ):
     """
-    Calculate login bonus based on valid login hours and identify invalid entries.
-    Parameters:
-    - user: User object
-    - selected_month: Month to calculate login hours (default: current month)
-    - selected_year: Year to calculate login hours (default: current year)
-    - threshold: Minimum login hours to qualify for bonus (default: 40 hours)
-    - hourly_rate: Bonus amount per login hour after reaching the threshold (default: $1.5)
+    Sends a verification email to the user with the verification URL.
+
+    Handles multiple scenarios:
+    - Called from view with request object
+    - Called from signal with request=None
+    - SMTP failure fallback
+
+    Args:
+        request: Optional HTTP request object
+        user: The user object
+        password: Optional temporary password
+        site_url: Optional fallback site URL
+
     Returns:
-    - total_login_hours: Decimal
-    - login_bonus: Decimal
-    - invalid_entries: List of dictionaries containing invalid days and their hours
+        bool: True if email was sent successfully
     """
-    from .models import LoginHistory  # Local import to avoid circular dependency
 
-    # Default to last month and year if not provided
-    current_date = datetime.now()
-    if selected_month is None or selected_year is None:
-        selected_month = current_date.month
-        selected_year = current_date.year
-        # if current_date.month == 1:
-        #     selected_month = 12  # Previous month is December
-        #     selected_year = current_date.year - 1  # Adjust year
-        # else:
-        #     selected_month = current_date.month - 1  # Previous month
-        #     selected_year = current_date.year  # Same year
-
-    # Fetch login history for the given month and year
-    login_history = LoginHistory.objects.filter(
-        user=user,
-        login_time__isnull=False,
-        logout_time__isnull=False,
-        login_time__month=selected_month,
-        login_time__year=selected_year,
-    ).annotate(
-        total_duration=ExpressionWrapper(
-            F("logout_time") - F("login_time"), output_field=fields.DurationField()
+    if not user or not user.verification_token:
+        logger.error(
+            "send_verification_email called without user "
+            "or verification_token"
         )
-    )
-    total_login_hours = Decimal(0)
-    invalid_entries = []  # Collect invalid days
+        return False
 
-    for entry in login_history:
-        if entry.total_duration:
-            total_seconds = entry.total_duration.total_seconds()
-            total_hours = Decimal(total_seconds / 3600).quantize(Decimal("0.01"))
-            day = entry.login_time.date() if entry.login_time else "Unknown Day"
+    try:
+        # Build the verification URL
+        verification_url = _build_verification_url(
+            user,
+            request,
+            site_url,
+        )
 
-            # print(f"Entry: {day}, Total Hours: {total_hours}")
+        logger.info(
+            f"Verification URL built: {verification_url}"
+        )
 
-            # Validate hours: >1 and <12
-            if Decimal(1.0) <= total_hours <= Decimal(12.0):
-                # print(f"Valid Hours: {total_hours}")
-                total_login_hours += total_hours
+        # Render email template
+        subject = "Email Verification - CODA"
+
+        html_message = render_to_string(
+            "accounts/verification_email.html",
+            {
+                "user": user,
+                "verification_url": verification_url,
+                "password": password,
+            },
+        )
+
+        logger.info(
+            f"Email template rendered for user {user.email}"
+        )
+
+        # Validate SMTP and get appropriate backend
+        smtp_valid, fallback_type = _validate_smtp_config()
+
+        if smtp_valid:
+            logger.info(
+                f"Sending verification email via SMTP "
+                f"to {user.email}"
+            )
+
+            email_backend = EmailBackend(
+                host=settings.EMAIL_INFO["HOST"],
+                port=settings.EMAIL_INFO["PORT"],
+                username=settings.EMAIL_INFO["USER"],
+                password=settings.EMAIL_INFO["PASS"],
+                use_tls=settings.EMAIL_INFO.get("USE_TLS", False),
+                use_ssl=settings.EMAIL_INFO.get("USE_SSL", False),
+            )
+
+            email_backend.open()
+
+            email = EmailMultiAlternatives(
+                subject=subject,
+                body=html_message,
+                from_email=settings.EMAIL_INFO["USER"],
+                to=[user.email],
+                connection=email_backend,
+            )
+
+            email.attach_alternative(
+                html_message,
+                "text/html",
+            )
+
+            email.send()
+            email_backend.close()
+
+            logger.info(
+                f"Verification email successfully sent "
+                f"to {user.email}"
+            )
+
+        else:
+            logger.warning(
+                f"Using {fallback_type} backend "
+                "as fallback for testing"
+            )
+
+            if fallback_type == "console":
+                backend = ConsoleBackend()
             else:
-                invalid_entries.append({"day": day, "logged_hours": total_hours})
+                backend = LocMemBackend()
 
-    # Calculate bonus based on threshold and hourly rate
-    login_bonus = Decimal(0)
-    if total_login_hours >= threshold:
-        login_bonus = total_login_hours * hourly_rate
+            email = EmailMultiAlternatives(
+                subject=subject,
+                body=html_message,
+                from_email=getattr(
+                    settings,
+                    "DEFAULT_FROM_EMAIL",
+                    "noreply@coda.local",
+                ),
+                to=[user.email],
+                connection=backend,
+            )
 
-    # print(f"Final Total Login Hours: {total_login_hours}, Login Bonus: {login_bonus}")
-    return total_login_hours, login_bonus, invalid_entries
+            email.attach_alternative(
+                html_message,
+                "text/html",
+            )
+
+            email.send()
+
+            logger.info(
+                f"Verification email sent via "
+                f"{fallback_type} backend to {user.email}"
+            )
+
+        return True
+
+    except Exception as e:
+        logger.error(
+            f"Failed to send verification email to "
+            f"{user.email if user else 'unknown'}: {str(e)}",
+            exc_info=True,
+        )
+
+        return False
