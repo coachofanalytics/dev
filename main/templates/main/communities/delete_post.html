@@ -1,0 +1,185 @@
+{% extends "main/base_templates/base.html" %}
+{% load static %}
+{% block title %}Delete Forum Post - Confirmation{% endblock %}
+{% block content %}
+<style>
+    :root {
+        --success-green: #0d9f6e;
+        --dark-green: #0b8a60;
+        --navy: #041858;
+        --danger-red: #dc2626;
+    }
+    .delete-container {
+        max-width: 600px;
+        margin: 60px auto;
+        padding: 0 20px;
+    }
+    .delete-card {
+        background: white;
+        border-radius: 12px;
+        padding: 40px;
+        box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+        border-top: 4px solid var(--danger-red);
+    }
+    .delete-icon {
+        text-align: center;
+        margin-bottom: 24px;
+    }
+    .delete-icon i {
+        font-size: 48px;
+        color: var(--danger-red);
+    }
+    .delete-header {
+        text-align: center;
+        margin-bottom: 24px;
+    }
+    .delete-header h1 {
+        font-size: 24px;
+        font-weight: 700;
+        color: var(--navy);
+        margin: 0 0 8px 0;
+    }
+    .delete-subtitle {
+        font-size: 14px;
+        color: #666;
+        margin: 0;
+    }
+    .warning-box {
+        background: #fef2f2;
+        border-left: 4px solid var(--danger-red);
+        padding: 16px;
+        border-radius: 8px;
+        margin: 24px 0;
+    }
+    .warning-box p {
+        color: #7f1d1d;
+        font-size: 13px;
+        margin: 0;
+        line-height: 1.6;
+    }
+    .post-preview {
+        background: #f5f7fb;
+        border-radius: 10px;
+        padding: 16px;
+        margin: 24px 0;
+        border-left: 4px solid var(--navy);
+    }
+    .preview-label {
+        font-size: 12px;
+        color: #999;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin-bottom: 6px;
+    }
+    .preview-title {
+        font-size: 16px;
+        font-weight: 700;
+        color: #111;
+        margin-bottom: 8px;
+    }
+    .preview-meta {
+        font-size: 13px;
+        color: #666;
+        margin-bottom: 8px;
+    }
+    .preview-content {
+        font-size: 13px;
+        color: #555;
+        line-height: 1.6;
+        white-space: pre-wrap;
+        word-wrap: break-word;
+        max-height: 150px;
+        overflow-y: auto;
+    }
+    .action-buttons {
+        display: flex;
+        gap: 12px;
+        margin-top: 28px;
+    }
+    .btn {
+        flex: 1;
+        padding: 12px 24px;
+        border: none;
+        border-radius: 8px;
+        font-weight: 600;
+        font-size: 14px;
+        cursor: pointer;
+        transition: all 0.3s;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+    }
+    .btn-delete {
+        background: var(--danger-red);
+        color: white;
+    }
+    .btn-delete:hover {
+        background: #b91c1c;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(220, 38, 38, 0.3);
+    }
+    .btn-cancel {
+        background: #f3f4f6;
+        color: #666;
+    }
+    .btn-cancel:hover {
+        background: #e5e7eb;
+        color: #333;
+    }
+    .confirmation-note {
+        text-align: center;
+        margin-top: 20px;
+        font-size: 12px;
+        color: #999;
+    }
+</style>
+
+<div class="delete-container">
+    <div class="delete-card">
+        <div class="delete-icon">
+            <i class="fas fa-exclamation-triangle"></i>
+        </div>
+
+        <div class="delete-header">
+            <h1>Delete Post?</h1>
+            <p class="delete-subtitle">This action cannot be undone.</p>
+        </div>
+
+        <div class="warning-box">
+            <p>
+                <strong>⚠️ Warning:</strong> Deleting this post will permanently remove it from the forum.
+                All comments and replies will also be deleted. This cannot be reversed.
+            </p>
+        </div>
+
+        <div class="post-preview">
+            <div class="preview-label">Post to Delete</div>
+            <div class="preview-title">{{ post.title }}</div>
+            <div class="preview-meta">
+                by <strong>{{ post.author.get_full_name|default:post.author.username }}</strong>
+                · {{ post.category.name }}
+            </div>
+            <div class="preview-content">{{ post.content|truncatechars:300 }}</div>
+        </div>
+
+        <form method="post">
+            {% csrf_token %}
+            <div class="action-buttons">
+                <button type="submit" class="btn btn-delete">
+                    <i class="fas fa-trash-alt"></i> Delete Permanently
+                </button>
+                <a href="{% url 'communities:view_post' post.id %}" class="btn btn-cancel">
+                    <i class="fas fa-arrow-left"></i> Keep Post
+                </a>
+            </div>
+        </form>
+
+        <div class="confirmation-note">
+            <i class="fas fa-info-circle"></i> Only administrators can delete posts.
+        </div>
+    </div>
+</div>
+{% endblock %}

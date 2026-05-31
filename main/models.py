@@ -1672,8 +1672,12 @@ class CommunityPost(models.Model):
     """Forum post model (named CommunityPost to avoid clashes with other Post models)"""
     title = models.CharField(max_length=255)
     content = models.TextField()
-    category = models.ForeignKey(ForumCategory, on_delete=models.CASCADE)
+    category = models.ForeignKey(ForumCategory, on_delete=models.CASCADE, related_name='posts')
+    author = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True, related_name='forum_posts'
+    )
     created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
 
     def __str__(self):
         return self.title

@@ -2721,6 +2721,7 @@ def communities_view_post(request, post_id):
     return render(request, 'main/communities/view_post.html', {'post': post, 'comments': comments, 'form': form})
 
 
+@login_required
 def communities_create_post(request, slug):
     category = get_object_or_404(ForumCategory, slug=slug)
     if request.method == 'POST':
@@ -2728,6 +2729,7 @@ def communities_create_post(request, slug):
         if form.is_valid():
             post = form.save(commit=False)
             post.category = category
+            post.author = request.user
             post.save()
             return redirect('communities:category_detail', slug=category.slug)
     else:
@@ -2747,6 +2749,55 @@ def communities_add_comment(request, post_id):
             comment.save()
             return redirect('communities:view_post', post_id=post.id)
     return redirect('communities:view_post', post_id=post.id)
+
+
+@login_required
+def communities_edit_post(request, post_id):
+    """Edit a forum post. Only superuser/staff can edit."""
+    post = get_object_or_404(CommunityPost, id=post_id)
+
+    # Permission check: only superuser/staff can edit
+    if not request.user.is_superuser and not request.user.is_staff:
+        messages.error(request, 'Only administrators can edit posts.')
+        return redirect('communities:view_post', post_id=post.id)
+
+    if request.method == 'POST':
+        form = CommunityPostForm(request.POST, instance=post)
+        if form.is_valid():
+            post = form.save()
+            messages.success(request, f'Post "{post.title}" updated successfully!')
+            return redirect('communities:view_post', post_id=post.id)
+    else:
+        form = CommunityPostForm(instance=post)
+
+    context = {
+        'form': form,
+        'post': post,
+        'is_edit': True,
+    }
+    return render(request, 'main/communities/edit_post.html', context)
+
+
+@login_required
+def communities_delete_post(request, post_id):
+    """Delete a forum post. Only superuser/staff can delete."""
+    post = get_object_or_404(CommunityPost, id=post_id)
+    category_slug = post.category.slug
+
+    # Permission check: only superuser/staff can delete
+    if not request.user.is_superuser and not request.user.is_staff:
+        messages.error(request, 'Only administrators can delete posts.')
+        return redirect('communities:view_post', post_id=post.id)
+
+    if request.method == 'POST':
+        post.delete()
+        messages.success(request, 'Post deleted successfully!')
+        return redirect('communities:category_detail', slug=category_slug)
+
+    context = {
+        'post': post,
+    }
+    return render(request, 'main/communities/delete_post.html', context)
 
 
 def communities_event_calendar(request):
