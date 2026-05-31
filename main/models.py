@@ -1561,7 +1561,7 @@ class LegalService(models.Model):
 
 class CommunityMember(models.Model):
     name = models.CharField(max_length=100)
-    email = models.EmailField(unique=True)
+    email = models.EmailField(blank=True, default='')
     phone = models.CharField(max_length=15, blank=True, null=True)
     
     # Profile fields
