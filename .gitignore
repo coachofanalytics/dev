@@ -165,3 +165,11 @@ cython_debug/
 accounts/migrations/
 finance/migrations/
 main/migrations/
+
+# Claude Code tooling
+.claude/
+
+# Git identity cleanup backups
+backups/
+.git-rewrite/
+rewrite_commits.py
