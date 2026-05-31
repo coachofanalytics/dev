@@ -1,15 +1,14 @@
 {% extends "main/base_templates/base.html" %}
 {% load static %}
 
-{% block content %}
-   <section class="relative bg-cover bg-center h-[500px] sm:h-[400px]" style="background-image: url('{% static 'images/hero-image.jpg' %}'); background-color: #F3F4F6;">
-    <div class="absolute inset-0 bg-black opacity-50"></div>
-    <div class="relative z-10 container mx-auto text-center text-white py-24 sm:py-16">
-        <h1 class="text-5xl font-extrabold leading-tight sm:text-4xl">Legal & Immigration Guidance</h1>
-        <p class="text-lg mt-4 sm:text-base">Expert guidance and trusted referrals to help you navigate the complexities of international law and immigration processes.</p>
-        <a href="#booking" class="mt-8 inline-block px-6 py-3 bg-red-600 text-white text-xl font-semibold rounded-full hover:bg-red-500 transition duration-300">Book a Legal Consultation</a>
-    </div>
-</section>
 
-    <!-- Add additional sections like Services, Legal Safeguards, Footer here -->
-{% endblock %}
+{% block content %}
+<!-- Hero Section -->
+<section class="relative bg-cover bg-center h-[600px]" style="background-image: url('{{ hero_image }}');">
+  <div class="absolute inset-0 bg-black bg-opacity-50 flex flex-col justify-center items-center text-center text-white">
+    <h1 class="text-5xl font-bold mb-4">{{ hero_title }}</h1>
+    <p class="text-xl mb-6">{{ hero_subtitle }}</p>
+    <a href="#services" class="bg-red-700 hover:bg-red-800 px-6 py-3 rounded-lg">{{ cta_text }}</a>
+  </div>
+</section>
+{% endblock content %}

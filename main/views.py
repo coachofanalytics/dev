@@ -1444,5 +1444,12 @@ def download_comparison_csv(request):
 
     from django.shortcuts import render
 
+# views.py
 def legal_guidance_landing_page(request):
-    return render(request, 'main/legal_guidance_landing_page.html')
+    context = {
+        'hero_title': "Legal & Immigration Guidance",
+        'hero_subtitle': "Expert guidance and trusted referrals to help you navigate the complexities of international law and immigration processes.",
+        'cta_text': "Book a Legal Consultation",
+        'hero_image': "/static/img/legal-hero.jpg",  # Replace with your actual image path
+    }
+    return render(request, 'main/legal_guidance_landing_page.html', context)
