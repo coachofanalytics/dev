@@ -33,6 +33,7 @@ django-celery-results
 django-countries
 django-crispy-forms
 crispy-bootstrap4
+feedparser
 django-crontab
 django-filter
 django-heroku
