@@ -263,16 +263,13 @@ def team_list(request):
 @require_POST
 @csrf_protect
 def subscribe_alerts(request):
+    import logging
+    logger = logging.getLogger(__name__)
+
     email = request.POST.get('email', '').strip().lower()
     if not email:
         return JsonResponse({'success': False, 'message': 'Email is required.'}, status=400)
 
-    subject = "DC48K Safety Alerts Subscription"
-    html_message = """
-      <p>Thank you for subscribing to DC48K Safety Alerts.</p>
-      <p>You will receive updates about advisories and safety information.</p>
-    """
-    plain_message = strip_tags(html_message)
     # Check if already subscribed
     existing = SafetyAlertSubscription.objects.filter(email=email).first()
     if existing and existing.is_active:
@@ -288,19 +285,38 @@ def subscribe_alerts(request):
             is_active=True,
         )
 
-    # Attempt to send confirmation email
+    # Also create ServiceRequest entry for admin tracking
     try:
-        send_mail(
-            subject,
-            plain_message,
-            None,  # uses DEFAULT_FROM_EMAIL
-            [email],
-            html_message=html_message,
+        service_request = ServiceRequest.objects.create(
+            service_type='crisis',
+            full_name=request.POST.get('name', 'Safety Alert Subscriber').strip(),
+            email=email,
+            consultation_type='Safety Alert Subscription',
+            question='User subscribed to safety alerts',
+            additional_notes='Automatic subscription to DC48K Safety Alerts via crisis page',
         )
-        return JsonResponse({'success': True, 'message': 'Subscribed! A confirmation email has been sent.'})
-    except Exception:
-        # Gracefully succeed even if email backend is unavailable
-        return JsonResponse({'success': True, 'message': 'Subscribed! (Email could not be sent right now.)'})
+
+        # Send confirmation email using send_email utility
+        try:
+            send_email(
+                category=0,
+                to_email=[service_request.email],
+                subject='Safety Alert Subscription Confirmed - DC48K',
+                html_template='email/safety_alert_confirmation.html',
+                context={
+                    'full_name': service_request.full_name,
+                    'reference_number': f'SA-{service_request.id:05d}',
+                    'created_at': service_request.created_at,
+                },
+                from_name="Diaspora County 048 - Safety & Crisis Team"
+            )
+            return JsonResponse({'success': True, 'message': 'Subscribed! A confirmation email has been sent.'})
+        except Exception as e:
+            logger.error(f'Failed to send safety alert confirmation email: {e}')
+            return JsonResponse({'success': True, 'message': 'Subscribed! (Confirmation email could not be sent right now.)'})
+    except Exception as e:
+        logger.error(f'Failed to create ServiceRequest for safety alert: {e}')
+        return JsonResponse({'success': True, 'message': 'Subscribed! Your subscription is active.'})
 
 
 
@@ -2858,23 +2874,84 @@ def communities_contact_view(request):
         form = CommunityContactForm(request.POST)
         if form.is_valid():
             contact = form.save()
-            context = {'name': contact.name, 'email': contact.email, 'message': contact.message}
-            subject = f'Hello {contact.name}, thank you for contacting us!'
-            recipient_list = [contact.email]
+
+            # Save to ServiceRequest for admin tracking and management
+            service_request = ServiceRequest.objects.create(
+                service_type='community',
+                full_name=contact.name,
+                email=contact.email,
+                consultation_type='General Inquiry',
+                question=contact.message,
+                additional_notes=f'Community Contact Form Submission',
+            )
+
+            # Send confirmation email using existing send_email utility
             try:
                 send_email(
-                    subject=subject,
-                    recipient_list=recipient_list,
-                    context=context,
-                    html_template='main/communities/contact_response.html',
-                    plain_template='main/communities/contact_response.txt'
+                    category=0,
+                    to_email=[service_request.email],
+                    subject='Community Contact Request Received - DC48K',
+                    html_template='email/community_contact_confirmation.html',
+                    context={
+                        'full_name': service_request.full_name,
+                        'reference_number': f'CC-{service_request.id:05d}',
+                        'created_at': service_request.created_at,
+                    },
+                    from_name="Diaspora County 048 - Community Team"
                 )
-            except Exception:
-                pass  # Don't fail if email can't be sent
+            except Exception as e:
+                logger.error(f'Failed to send community contact email to {service_request.email}: {e}')
+
+            messages.success(request, 'Thank you for contacting us! We will review your message shortly.')
             return redirect('communities:home')
     else:
         form = CommunityContactForm()
     return render(request, 'main/communities/contact_form.html', {'form': form})
+
+
+def emergency_help_line(request):
+    """Handle emergency help line requests"""
+    import logging
+    logger = logging.getLogger(__name__)
+
+    if request.method == 'POST':
+        form = EmergencyHelpForm(request.POST)
+        if form.is_valid():
+            # Create ServiceRequest for emergency help
+            service_request = ServiceRequest.objects.create(
+                service_type='crisis',
+                full_name=form.cleaned_data['full_name'],
+                email=form.cleaned_data['email'],
+                phone=form.cleaned_data['phone'],
+                consultation_type='Emergency Help Line',
+                question=form.cleaned_data['description'],
+                urgency=form.cleaned_data['urgency'],
+                additional_notes='Emergency Help Line Request - REQUIRES IMMEDIATE ATTENTION',
+            )
+
+            # Send urgent confirmation email
+            try:
+                send_email(
+                    category=0,
+                    to_email=[service_request.email],
+                    subject='🚨 URGENT: Emergency Help Request Received - DC48K',
+                    html_template='email/emergency_help_confirmation.html',
+                    context={
+                        'full_name': service_request.full_name,
+                        'reference_number': f'EH-{service_request.id:05d}',
+                        'created_at': service_request.created_at,
+                    },
+                    from_name="Diaspora County 048 - Emergency Response Team"
+                )
+            except Exception as e:
+                logger.error(f'Failed to send emergency help email: {e}')
+
+            messages.success(request, 'Your emergency request has been submitted. Our team is being notified.')
+            return redirect('crisis_page')
+    else:
+        form = EmergencyHelpForm()
+
+    return render(request, 'main/emergency_help.html', {'form': form})
 
 
 # ============================================

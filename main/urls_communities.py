@@ -28,6 +28,7 @@ from main.views import (
     communities_edit_event as edit_event,
     communities_delete_event as delete_event,
     communities_contact_view as contact_view,
+    emergency_help_line,
     communities_message_compose as message_compose,
     communities_message_inbox as message_inbox,
     communities_message_sent as message_sent,
@@ -67,6 +68,7 @@ urlpatterns = [
     
     # Contact
     path('contact/', contact_view, name='contact'),
+    path('emergency-help/', emergency_help_line, name='emergency_help_line'),
 
     # Messaging
     path('messages/inbox/', message_inbox, name='message_inbox'),

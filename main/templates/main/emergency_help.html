@@ -1,0 +1,277 @@
+{% extends "main/base_templates/base.html" %}
+{% load static %}
+
+{% block title %}Emergency Help Line - DC48K{% endblock %}
+
+{% block content %}
+<style>
+    :root {
+        --emergency-red: #d32f2f;
+        --dark-red: #b71c1c;
+        --light-red: #ffebee;
+        --navy: #041858;
+        --gray-light: #f5f5f5;
+    }
+
+    .emergency-hero {
+        background: linear-gradient(135deg, var(--emergency-red) 0%, var(--dark-red) 100%);
+        color: white;
+        padding: 60px 20px;
+        text-align: center;
+    }
+
+    .emergency-hero h1 {
+        font-size: 42px;
+        font-weight: 700;
+        margin-bottom: 16px;
+    }
+
+    .emergency-hero p {
+        font-size: 18px;
+        margin-bottom: 24px;
+    }
+
+    .emergency-container {
+        max-width: 700px;
+        margin: 40px auto;
+        padding: 0 20px;
+    }
+
+    .emergency-card {
+        background: white;
+        border-radius: 12px;
+        box-shadow: 0 4px 16px rgba(211, 47, 47, 0.15);
+        padding: 40px;
+        border-left: 6px solid var(--emergency-red);
+    }
+
+    .warning-banner {
+        background: var(--light-red);
+        border-left: 4px solid var(--emergency-red);
+        padding: 16px;
+        border-radius: 8px;
+        margin-bottom: 28px;
+    }
+
+    .warning-banner p {
+        color: #7f1d1d;
+        margin: 0;
+        font-size: 14px;
+        line-height: 1.6;
+    }
+
+    .form-group {
+        margin-bottom: 20px;
+    }
+
+    .form-group label {
+        display: block;
+        font-weight: 600;
+        color: var(--navy);
+        margin-bottom: 8px;
+        font-size: 14px;
+    }
+
+    .form-group input,
+    .form-group textarea {
+        width: 100%;
+        padding: 12px 14px;
+        border: 1px solid #ddd;
+        border-radius: 6px;
+        font-family: inherit;
+        font-size: 14px;
+        box-sizing: border-box;
+    }
+
+    .form-group textarea {
+        resize: vertical;
+        min-height: 120px;
+    }
+
+    .form-group input:focus,
+    .form-group textarea:focus {
+        outline: none;
+        border-color: var(--emergency-red);
+        box-shadow: 0 0 0 3px rgba(211, 47, 47, 0.1);
+    }
+
+    .urgency-options {
+        display: flex;
+        gap: 16px;
+        margin-top: 12px;
+    }
+
+    .urgency-option {
+        flex: 1;
+    }
+
+    .urgency-option input[type="radio"] {
+        display: none;
+    }
+
+    .urgency-option label {
+        display: block;
+        padding: 12px 16px;
+        border: 2px solid #ddd;
+        border-radius: 6px;
+        text-align: center;
+        cursor: pointer;
+        font-weight: 500;
+        font-size: 13px;
+        margin-bottom: 0;
+        transition: all 0.3s;
+    }
+
+    .urgency-option input[type="radio"]:checked + label {
+        border-color: var(--emergency-red);
+        background: var(--light-red);
+        color: var(--dark-red);
+    }
+
+    .submit-btn {
+        width: 100%;
+        padding: 14px;
+        background: var(--emergency-red);
+        color: white;
+        border: none;
+        border-radius: 6px;
+        font-size: 16px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s;
+    }
+
+    .submit-btn:hover {
+        background: var(--dark-red);
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(211, 47, 47, 0.3);
+    }
+
+    .form-errors {
+        background: var(--light-red);
+        border: 1px solid #ef5350;
+        border-radius: 6px;
+        padding: 14px;
+        margin-bottom: 20px;
+    }
+
+    .form-errors li {
+        color: #7f1d1d;
+        font-size: 13px;
+        margin-bottom: 6px;
+    }
+
+    .info-box {
+        background: #f5f5f5;
+        border-left: 4px solid var(--navy);
+        padding: 16px;
+        border-radius: 8px;
+        margin-top: 28px;
+        font-size: 13px;
+        color: #555;
+        line-height: 1.6;
+    }
+
+    .info-box strong {
+        color: var(--navy);
+    }
+</style>
+
+<div class="emergency-hero">
+    <h1>🚨 Emergency Help Line</h1>
+    <p>If you or someone you know is in immediate danger, contact local emergency services immediately.</p>
+    <p style="font-size: 16px; opacity: 0.9;">This form is for connecting with our emergency response team for urgent assistance.</p>
+</div>
+
+<div class="emergency-container">
+    <div class="emergency-card">
+        {% if form.non_field_errors %}
+        <div class="form-errors">
+            <ul>
+                {% for error in form.non_field_errors %}
+                <li>{{ error }}</li>
+                {% endfor %}
+            </ul>
+        </div>
+        {% endif %}
+
+        <div class="warning-banner">
+            <p>
+                <strong>⚠️ Important:</strong> This form is monitored by our emergency response team. 
+                Provide as much detail as possible about your situation so we can better assist you.
+            </p>
+        </div>
+
+        <form method="POST">
+            {% csrf_token %}
+
+            <div class="form-group">
+                <label for="{{ form.full_name.id_for_label }}">{{ form.full_name.label }}</label>
+                {{ form.full_name }}
+                {% if form.full_name.errors %}
+                <div style="color: #d32f2f; font-size: 12px; margin-top: 4px;">
+                    {{ form.full_name.errors.0 }}
+                </div>
+                {% endif %}
+            </div>
+
+            <div class="form-group">
+                <label for="{{ form.email.id_for_label }}">{{ form.email.label }}</label>
+                {{ form.email }}
+                {% if form.email.errors %}
+                <div style="color: #d32f2f; font-size: 12px; margin-top: 4px;">
+                    {{ form.email.errors.0 }}
+                </div>
+                {% endif %}
+            </div>
+
+            <div class="form-group">
+                <label for="{{ form.phone.id_for_label }}">{{ form.phone.label }}</label>
+                {{ form.phone }}
+                {% if form.phone.errors %}
+                <div style="color: #d32f2f; font-size: 12px; margin-top: 4px;">
+                    {{ form.phone.errors.0 }}
+                </div>
+                {% endif %}
+            </div>
+
+            <div class="form-group">
+                <label for="{{ form.description.id_for_label }}">{{ form.description.label }}</label>
+                {{ form.description }}
+                {% if form.description.errors %}
+                <div style="color: #d32f2f; font-size: 12px; margin-top: 4px;">
+                    {{ form.description.errors.0 }}
+                </div>
+                {% endif %}
+            </div>
+
+            <div class="form-group">
+                <label>{{ form.urgency.label }}</label>
+                <div class="urgency-options">
+                    {% for value, label in form.urgency.field.choices %}
+                    <div class="urgency-option">
+                        {{ form.urgency }}
+                        <label for="{{ form.urgency.id_for_label }}_{{ forloop.counter0 }}">{{ label }}</label>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% if form.urgency.errors %}
+                <div style="color: #d32f2f; font-size: 12px; margin-top: 4px;">
+                    {{ form.urgency.errors.0 }}
+                </div>
+                {% endif %}
+            </div>
+
+            <button type="submit" class="submit-btn">
+                <i class="fas fa-exclamation-triangle"></i> Submit Emergency Request
+            </button>
+        </form>
+
+        <div class="info-box">
+            <strong>Response Time:</strong> Our emergency response team aims to acknowledge all requests within 15 minutes during business hours. 
+            For life-threatening emergencies, please call 911 or your local emergency number immediately.
+        </div>
+    </div>
+</div>
+
+{% endblock %}
