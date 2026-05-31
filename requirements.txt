@@ -32,6 +32,7 @@ django-celery-beat
 django-celery-results
 django-countries
 django-crispy-forms
+crispy-bootstrap4
 django-crontab
 django-filter
 django-heroku
