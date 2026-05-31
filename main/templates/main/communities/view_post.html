@@ -34,9 +34,9 @@
     <!-- Comment Section (Optional) -->
     <section class="mt-16">
         <h2 class="text-3xl font-extrabold text-brand-blue mb-6">Comments</h2>
-        {% if post.comments.exists %}
+        {% if post.comments_p.exists %}
             <div class="space-y-6">
-                {% for comment in post.comments.all %}
+                {% for comment in post.comments_p.all %}
                     <div class="bg-white shadow-lg rounded-lg p-6">
                         <p class="text-gray-700">{{ comment.content }}</p>
                         <p class="text-gray-500 text-sm">Commented on: {{ comment.created_at|date:"F j, Y, H:i" }} by {{ comment.author.username }}</p>
