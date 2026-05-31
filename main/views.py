@@ -53,11 +53,11 @@ from .models import (
     Scholarship, ContactMessage, Testimonial, TrainingCourse,
     Donation_organization, MedicalResourceInquiry, Governance,
     Gallery, GetHelp, DonationOrganization, History, ContactUs,
-    ServiceRequest
+    ServiceRequest, CommunityMessage
 )
 from accounts.models import CustomerUser
 from .utils import image_view, path_values
-from .forms import ContactForm, DonorForm, MessageForm, ScholarshipSearchForm, GovernanceForm, ArticleForm, ScholarshipForm,TrainingCourseForm, GetHelpForm
+from .forms import ContactForm, DonorForm, MessageForm, ScholarshipSearchForm, GovernanceForm, ArticleForm, ScholarshipForm,TrainingCourseForm, GetHelpForm, CommunityMessageForm
 from mail.custom_email import send_email
 
 import csv
@@ -2515,7 +2515,8 @@ def communities_join(request):
             email=email,
             is_public_directory=agree_to_directory,
             profession="To be updated",
-            region="Global"
+            region="Global",
+            user=request.user if request.user.is_authenticated else None,
         )
 
         subject = 'Welcome to Our Community!'
@@ -2537,6 +2538,13 @@ def communities_join(request):
         return redirect('communities:member_directory')
 
     return render(request, 'main/communities/join.html')
+
+
+def _get_community_member_for_user(user):
+    """Get the CommunityMember linked to the authenticated user, or None."""
+    if not user or not user.is_authenticated:
+        return None
+    return CommunityMember.objects.filter(user=user).first()
 
 
 def communities_member_directory(request):
@@ -2564,6 +2572,12 @@ def communities_member_directory(request):
     for member in members:
         member.is_premium = member.id % 3 == 0
 
+    # Unread message count for inbox badge
+    unread_count = 0
+    current_member = _get_community_member_for_user(request.user)
+    if current_member:
+        unread_count = CommunityMessage.objects.filter(recipient=current_member, is_read=False).count()
+
     context = {
         'members': members,
         'search_query': search_query,
@@ -2571,7 +2585,9 @@ def communities_member_directory(request):
         'profession_filter': profession_filter,
         'unique_regions': unique_regions,
         'unique_professions': unique_professions,
-        'total_members': members.count()
+        'total_members': members.count(),
+        'unread_count': unread_count,
+        'current_member': current_member,
     }
     return render(request, 'main/communities/member_directory.html', context)
 
@@ -2587,13 +2603,20 @@ def communities_join_directory(request, member_id):
 
 
 def communities_join_directory_form(request):
-    member_id = request.session.get('joined_member_id')
     member = None
-    if member_id:
-        try:
-            member = CommunityMember.objects.get(id=member_id)
-        except CommunityMember.DoesNotExist:
-            pass
+
+    # Priority 1: If user is authenticated, find their linked CommunityMember
+    if request.user.is_authenticated:
+        member = CommunityMember.objects.filter(user=request.user).first()
+
+    # Priority 2: Fall back to session-based member
+    if not member:
+        member_id = request.session.get('joined_member_id')
+        if member_id:
+            try:
+                member = CommunityMember.objects.get(id=member_id)
+            except CommunityMember.DoesNotExist:
+                pass
 
     if request.method == 'POST':
         name = request.POST.get('name', '').strip()
@@ -2618,7 +2641,9 @@ def communities_join_directory_form(request):
 
         if not member:
             member = CommunityMember.objects.create(
-                name=name, profession=profession, region=region, is_public_directory=True
+                name=name, profession=profession, region=region,
+                is_public_directory=True,
+                user=request.user if request.user.is_authenticated else None,
             )
             request.session['joined_member_id'] = member.id
         else:
@@ -2626,6 +2651,9 @@ def communities_join_directory_form(request):
             member.profession = profession
             member.region = region
             member.is_public_directory = True
+            # Link to user if not already linked
+            if request.user.is_authenticated and member.user is None:
+                member.user = request.user
             member.save()
 
         DirectoryProfile.objects.update_or_create(
@@ -2639,10 +2667,24 @@ def communities_join_directory_form(request):
         messages.success(request, f'Profile updated for {name}!')
         return redirect('communities:member_directory')
 
+    # Pre-fill from existing member or from user account
+    if member:
+        default_name = member.name
+        default_profession = member.profession
+        default_region = member.region
+    elif request.user.is_authenticated:
+        default_name = f"{request.user.first_name} {request.user.last_name}".strip() or request.user.username
+        default_profession = ''
+        default_region = ''
+    else:
+        default_name = ''
+        default_profession = ''
+        default_region = ''
+
     context = {
-        'name': member.name if member else '',
-        'profession': member.profession if member else '',
-        'region': member.region if member else '',
+        'name': default_name,
+        'profession': default_profession,
+        'region': default_region,
         'categories': ['Tech & IT', 'Legal', 'Finance', 'Healthcare', 'Education', 'Business', 'Creative & Media', 'Engineering', 'Other']
     }
     return render(request, 'main/communities/join_directory_form.html', context)
@@ -2782,3 +2824,150 @@ def communities_contact_view(request):
     else:
         form = CommunityContactForm()
     return render(request, 'main/communities/contact_form.html', {'form': form})
+
+
+# ============================================
+# COMMUNITY MESSAGING VIEWS
+# ============================================
+
+@login_required
+def communities_message_compose(request, recipient_id):
+    """Send a message to a community member."""
+    sender = _get_community_member_for_user(request.user)
+    if not sender:
+        messages.warning(request, 'You need a community profile to send messages. Please join the directory first.')
+        return redirect('communities:join_directory_form')
+
+    recipient = get_object_or_404(CommunityMember, id=recipient_id)
+
+    if sender == recipient:
+        messages.error(request, 'You cannot send a message to yourself.')
+        return redirect('communities:member_directory')
+
+    if request.method == 'POST':
+        form = CommunityMessageForm(request.POST)
+        if form.is_valid():
+            msg = form.save(commit=False)
+            msg.sender = sender
+            msg.recipient = recipient
+            msg.save()
+            messages.success(request, f'Message sent to {recipient.name}!')
+            return redirect('communities:message_inbox')
+    else:
+        form = CommunityMessageForm()
+
+    context = {
+        'form': form,
+        'recipient': recipient,
+    }
+    return render(request, 'main/communities/message_compose.html', context)
+
+
+@login_required
+def communities_message_inbox(request):
+    """View received messages."""
+    member = _get_community_member_for_user(request.user)
+    if not member:
+        messages.warning(request, 'You need a community profile to view messages. Please join the directory first.')
+        return redirect('communities:join_directory_form')
+
+    inbox_messages = CommunityMessage.objects.filter(recipient=member).order_by('-created_at')
+    unread_count = inbox_messages.filter(is_read=False).count()
+
+    context = {
+        'inbox_messages': inbox_messages,
+        'unread_count': unread_count,
+        'active_tab': 'inbox',
+    }
+    return render(request, 'main/communities/message_inbox.html', context)
+
+
+@login_required
+def communities_message_sent(request):
+    """View sent messages."""
+    member = _get_community_member_for_user(request.user)
+    if not member:
+        messages.warning(request, 'You need a community profile to view messages. Please join the directory first.')
+        return redirect('communities:join_directory_form')
+
+    sent_messages = CommunityMessage.objects.filter(sender=member).order_by('-created_at')
+
+    context = {
+        'sent_messages': sent_messages,
+        'active_tab': 'sent',
+    }
+    return render(request, 'main/communities/message_sent.html', context)
+
+
+@login_required
+def communities_message_detail(request, message_id):
+    """Read a single message."""
+    member = _get_community_member_for_user(request.user)
+    if not member:
+        messages.warning(request, 'You need a community profile to view messages.')
+        return redirect('communities:join_directory_form')
+
+    msg = get_object_or_404(CommunityMessage, id=message_id)
+
+    # Authorization: only sender or recipient can view
+    if msg.sender != member and msg.recipient != member:
+        messages.error(request, 'You do not have permission to view this message.')
+        return redirect('communities:message_inbox')
+
+    # Mark as read if recipient is viewing
+    if msg.recipient == member and not msg.is_read:
+        msg.is_read = True
+        msg.save(update_fields=['is_read'])
+
+    # Get thread: replies to this message
+    replies = CommunityMessage.objects.filter(parent_message=msg).order_by('created_at')
+
+    context = {
+        'msg': msg,
+        'replies': replies,
+        'is_recipient': msg.recipient == member,
+    }
+    return render(request, 'main/communities/message_detail.html', context)
+
+
+@login_required
+def communities_message_reply(request, message_id):
+    """Reply to a received message."""
+    member = _get_community_member_for_user(request.user)
+    if not member:
+        messages.warning(request, 'You need a community profile to reply to messages.')
+        return redirect('communities:join_directory_form')
+
+    original = get_object_or_404(CommunityMessage, id=message_id)
+
+    # Authorization: only sender or recipient can reply
+    if original.sender != member and original.recipient != member:
+        messages.error(request, 'You do not have permission to reply to this message.')
+        return redirect('communities:message_inbox')
+
+    # Reply goes to the other party
+    reply_to = original.sender if original.recipient == member else original.recipient
+
+    if request.method == 'POST':
+        form = CommunityMessageForm(request.POST)
+        if form.is_valid():
+            reply_msg = form.save(commit=False)
+            reply_msg.sender = member
+            reply_msg.recipient = reply_to
+            reply_msg.parent_message = original
+            if not reply_msg.subject and original.subject:
+                reply_msg.subject = f"Re: {original.subject}"
+            reply_msg.save()
+            messages.success(request, f'Reply sent to {reply_to.name}!')
+            return redirect('communities:message_detail', message_id=original.id)
+    else:
+        initial_subject = f"Re: {original.subject}" if original.subject else ''
+        form = CommunityMessageForm(initial={'subject': initial_subject})
+
+    context = {
+        'form': form,
+        'recipient': reply_to,
+        'original': original,
+        'is_reply': True,
+    }
+    return render(request, 'main/communities/message_compose.html', context)

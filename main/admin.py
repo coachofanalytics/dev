@@ -405,13 +405,14 @@ class AIRecommendationRuleAdmin(admin.ModelAdmin):
 
 @admin.register(CommunityMember)
 class CommunityMemberAdmin(admin.ModelAdmin):
-    list_display = ['name', 'email', 'profession', 'region', 'is_verified', 'is_public_directory', 'date_joined']
+    list_display = ['name', 'email', 'user', 'profession', 'region', 'is_verified', 'is_public_directory', 'date_joined']
     list_filter = ['is_verified', 'is_public_directory', 'region', 'date_joined']
     search_fields = ['name', 'email', 'profession', 'specialization', 'region']
     readonly_fields = ['date_joined', 'last_updated']
+    raw_id_fields = ['user']
     fieldsets = (
         ('Personal Information', {
-            'fields': ('name', 'email', 'phone', 'profession')
+            'fields': ('name', 'email', 'phone', 'user', 'profession')
         }),
         ('Profile Details', {
             'fields': ('region', 'specialization', 'bio', 'website', 'profile_picture')
@@ -496,6 +497,26 @@ class EventCalendarAdmin(admin.ModelAdmin):
         }),
         ('Duration', {
             'fields': ('start_date', 'end_date')
+        }),
+    )
+
+
+@admin.register(CommunityMessage)
+class CommunityMessageAdmin(admin.ModelAdmin):
+    list_display = ['sender', 'recipient', 'subject', 'is_read', 'created_at']
+    list_filter = ['is_read', 'created_at']
+    search_fields = ['sender__name', 'recipient__name', 'subject', 'body']
+    readonly_fields = ['created_at']
+    raw_id_fields = ['sender', 'recipient', 'parent_message']
+    fieldsets = (
+        ('Participants', {
+            'fields': ('sender', 'recipient')
+        }),
+        ('Content', {
+            'fields': ('subject', 'body', 'parent_message')
+        }),
+        ('Status', {
+            'fields': ('is_read', 'created_at')
         }),
     )
 

@@ -273,6 +273,8 @@
             align-items: center;
             justify-content: center;
             gap: 8px;
+            text-decoration: none;
+            cursor: pointer;
         }
 
         .message-btn:hover {
@@ -370,8 +372,18 @@
 
     <!-- ===== HEADER ===== -->
     <div class="directory-header">
-        <h1>Verified Member Directory</h1>
-        <p class="directory-subtitle">Connect with trusted professionals in our community</p>
+        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;">
+            <div>
+                <h1>Verified Member Directory</h1>
+                <p class="directory-subtitle">Connect with trusted professionals in our community</p>
+            </div>
+            {% if user.is_authenticated and current_member %}
+            <a href="{% url 'communities:message_inbox' %}" style="background: linear-gradient(135deg, #0d9f6e, #0b8a60); color: white; padding: 10px 20px; border-radius: 8px; text-decoration: none; font-weight: 600; display: inline-flex; align-items: center; gap: 8px; font-size: 14px;">
+                <i class="fas fa-inbox"></i> My Messages
+                {% if unread_count %}<span style="background: #dc2626; color: white; border-radius: 50%; padding: 2px 7px; font-size: 11px; margin-left: 4px;">{{ unread_count }}</span>{% endif %}
+            </a>
+            {% endif %}
+        </div>
         
         <!-- Search Form -->
         <div class="search-form-container">
@@ -503,9 +515,15 @@
                     </div>
                     
                     <!-- GREEN Send Message Button -->
-                    <button class="message-btn">
-                        <i class="fas fa-envelope"></i> Send Message
-                    </button>
+                    {% if user.is_authenticated %}
+                        <a href="{% url 'communities:message_compose' member.id %}" class="message-btn">
+                            <i class="fas fa-envelope"></i> Send Message
+                        </a>
+                    {% else %}
+                        <a href="{% url 'accounts:account-login' %}?next={% url 'communities:member_directory' %}" class="message-btn">
+                            <i class="fas fa-envelope"></i> Send Message
+                        </a>
+                    {% endif %}
                 </div>
             </div>
         </div>
@@ -586,26 +604,6 @@
         [regionSelect, professionSelect].forEach(select => {
             select.addEventListener('change', function() {
                 searchForm.submit();
-            });
-        });
-        
-        // GREEN Message button functionality
-        document.querySelectorAll('.message-btn').forEach(button => {
-            button.addEventListener('click', function() {
-                const card = this.closest('.member-card');
-                const memberName = card.querySelector('.member-name').textContent;
-                const memberProfession = card.querySelector('.member-title').textContent;
-                
-                // Visual feedback
-                const originalText = this.innerHTML;
-                this.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Opening...';
-                this.disabled = true;
-                
-                setTimeout(() => {
-                    alert(`Message interface would open for:\n\n${memberName}\n${memberProfession}\n\nThis would connect to a messaging system in production.`);
-                    this.innerHTML = originalText;
-                    this.disabled = false;
-                }, 800);
             });
         });
         

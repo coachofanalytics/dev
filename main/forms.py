@@ -362,7 +362,7 @@ class ArticleForm(forms.ModelForm):
 # ============================================
 # COMMUNITIES APP FORMS (MERGED FROM communities app)
 # ============================================
-from .models import CommunityMember, DirectoryProfile, CommunityPost, CommentP, EventCalendar
+from .models import CommunityMember, DirectoryProfile, CommunityPost, CommentP, EventCalendar, CommunityMessage
 
 
 class CommunityJoinForm(forms.ModelForm):
@@ -513,3 +513,25 @@ class CommunityContactForm(forms.ModelForm):
     class Meta:
         model = ContactMessage
         fields = ['name', 'email', 'message']
+
+
+class CommunityMessageForm(forms.ModelForm):
+    """Form for sending messages between community directory members."""
+    class Meta:
+        model = CommunityMessage
+        fields = ['subject', 'body']
+        widgets = {
+            'subject': forms.TextInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'Subject (optional)',
+            }),
+            'body': forms.Textarea(attrs={
+                'class': 'form-control',
+                'rows': 6,
+                'placeholder': 'Write your message...',
+            }),
+        }
+        labels = {
+            'subject': 'Subject',
+            'body': 'Message',
+        }
