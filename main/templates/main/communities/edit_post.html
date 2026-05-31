@@ -159,7 +159,7 @@
 
         <div class="post-info">
             <div class="post-info-label">Posted by</div>
-            <div class="post-info-value">{{ post.author.get_full_name|default:post.author.username }}</div>
+            <div class="post-info-value">{% if post.author %}{{ post.author.get_full_name|default:post.author.username }}{% else %}Anonymous{% endif %}</div>
             <div style="margin-top: 12px;">
                 <div class="post-info-label">Category</div>
                 <div class="post-info-value">{{ post.category.name }}</div>
