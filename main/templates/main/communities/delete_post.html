@@ -159,7 +159,7 @@
             <div class="preview-label">Post to Delete</div>
             <div class="preview-title">{{ post.title }}</div>
             <div class="preview-meta">
-                by <strong>{{ post.author.get_full_name|default:post.author.username }}</strong>
+                by <strong>{% if post.author %}{{ post.author.get_full_name|default:post.author.username }}{% else %}Anonymous{% endif %}</strong>
                 · {{ post.category.name }}
             </div>
             <div class="preview-content">{{ post.content|truncatechars:300 }}</div>
