@@ -34,6 +34,8 @@ django-countries
 django-crispy-forms
 crispy-bootstrap4
 feedparser
+fuzzywuzzy
+python-Levenshtein
 django-crontab
 django-filter
 django-heroku
