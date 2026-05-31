@@ -2504,7 +2504,7 @@ def confirm_email(request, token):
 # COMMUNITIES APP VIEWS (MERGED FROM communities app)
 # ============================================
 from .models import CommunityMember, DirectoryProfile, ForumCategory, CommunityPost, CommentP, EventCalendar
-from .forms import CommunityCommentForm, CommunityPostForm, CommunityEventForm, CommunityContactForm
+from .forms import CommunityCommentForm, CommunityPostForm, CommunityEventForm, CommunityContactForm, EmergencyHelpForm
 from .utils import send_email
 
 
