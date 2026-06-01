@@ -63,6 +63,9 @@ from mail.custom_email import send_email
 import csv
 import feedparser
 import random
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 # Details Donation View
@@ -2505,7 +2508,7 @@ def confirm_email(request, token):
 # ============================================
 from .models import CommunityMember, DirectoryProfile, ForumCategory, CommunityPost, CommentP, EventCalendar
 from .forms import CommunityCommentForm, CommunityPostForm, CommunityEventForm, CommunityContactForm, EmergencyHelpForm
-from .utils import send_email
+from .utils import send_email as send_email_util
 
 
 def communities_home(request):
@@ -2540,7 +2543,7 @@ def communities_join(request):
         context = {'name': name}
 
         try:
-            send_email(
+            send_email_util(
                 subject,
                 recipient_list,
                 context,
