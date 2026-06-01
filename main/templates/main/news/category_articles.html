@@ -1,4 +1,5 @@
 {% extends "main/base_templates/base.html" %}
+{% load static %}
 
 {% block content %}
 <style>
@@ -133,7 +134,7 @@
             <article class="news-card">
                 <div class="card-img-wrapper">
                     {% if article.featured_image %}
-                        <img src="{{ article.featured_image.url }}" class="card-img" alt="{{ article.title }}">
+                        <img src="{{ article.featured_image.url }}" class="card-img" alt="{{ article.title }}" onerror="this.onerror=null;this.src='{% static 'main/img/info_updates/embassy_government_news.png' %}';">
                     {% else %}
                         <div style="width:100%; height:100%; background:#f1f5f9; display:flex; align-items:center; justify-content:center; color:#cbd5e1;">No Image</div>
                     {% endif %}
