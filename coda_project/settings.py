@@ -19,7 +19,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = os.environ.get("SECRET_KEY") or "!cxl7yhjsl00964n=#e-=xblp4u!hbajo2k8u#$v9&s6__5=xf"
 
 # Default to False unless explicitly enabled via environment variable.
-DEBUG = True  # development only
+DEBUG = os.environ.get("DEBUG", "False") == "True"
 
 SECURE_SSL_REDIRECT = False
 
@@ -67,13 +67,13 @@ INSTALLED_APPS = [
 
 ]
 
-# if DEBUG:
-#     try:
-#         import debug_toolbar
-#         INSTALLED_APPS += ['debug_toolbar']
-#         MIDDLEWARE += ['debug_toolbar.middleware.DebugToolbarMiddleware']
-#     except ImportError:
-#         pass # If it's not installed, just don't use it
+if DEBUG:
+    try:
+        import debug_toolbar
+        INSTALLED_APPS += ['debug_toolbar']
+        MIDDLEWARE += ['debug_toolbar.middleware.DebugToolbarMiddleware']
+    except ImportError:
+        pass # If it's not installed, just don't use it
 
 
 DEFAULT_AUTO_FIELD = "django.db.models.AutoField"
@@ -88,12 +88,6 @@ CRONJOBS = [
     ("* * * * *", "application.msg_send_cron.SendMsgApplicatUser"),
     ("*/5 * * * *", "management.cron.advertisement"),
 ]
-
-CACHES = {
-    'default': {
-        'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
-    }
-}
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
@@ -380,27 +374,21 @@ SOCIALACCOUNT_PROVIDERS = {
 }
 
 ACCOUNT_EMAIL_VERIFICATION = 'optional'  # or 'mandatory', depending on your setup
-ACCOUNT_EMAIL_REQUIRED = True
+ACCOUNT_SIGNUP_FIELDS = ['email*', 'username*', 'password1*', 'password2*']
 SOCIALACCOUNT_QUERY_EMAIL = True
 
 LOGIN_REDIRECT_URL = "main:layout"
 LOGIN_URL = "accounts:account-login"
 
-
-
-EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+# Email Configuration
+EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
-EMAIL_USE_SSL = False
-
-# Credentials pulled from your .env file
-EMAIL_HOST_USER = os.environ.get('HOST_USER')
-EMAIL_HOST_PASSWORD = os.environ.get('HOST_PASS')
-
-# Identity settings
-DEFAULT_FROM_EMAIL = '"DC48 Investment Team" <hello@demomailtrap.com>'
-ADMIN_EMAIL = 'your-email@gmail.com'  # Still use your real email here for admin alerts
+EMAIL_HOST_USER = 'your-email@gmail.com'  # Your full Gmail address
+EMAIL_HOST_PASSWORD = 'your-16-character-app-password'  # The app password you generated (remove spaces)
+DEFAULT_FROM_EMAIL = 'your-email@gmail.com'
+ADMIN_EMAIL = 'your-email@gmail.com'  # Send admin notifications to yourself for testing
 
 # Site URL for email links
 SITE_URL = 'http://127.0.0.1:8000'
