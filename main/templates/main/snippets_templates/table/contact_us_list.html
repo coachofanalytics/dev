@@ -115,7 +115,7 @@
 <div class="container">
 
     <!-- Contact Us Form -->
-    <form method="post" action="{% url 'finance:/finance/contract_form/' %}">
+    <form method="post" action="{% url 'main:contact_us' %}">
         {% csrf_token %}
         <div class="form-group">
             <label for="name">Name</label>
