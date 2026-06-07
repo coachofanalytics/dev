@@ -162,6 +162,12 @@ def medical_resource_form(request):
         except Exception as e:
             logger.error(f'Failed to create ServiceRequest for medical resource inquiry: {e}')
 
+        # Add success message for user notification
+        messages.success(
+            request,
+            f'Thank you for your medical resource request! We have received your submission and a confirmation email has been sent to {email}. Our healthcare support team will review your request and contact you shortly.'
+        )
+
         # Redirect using the named URL so it works regardless of include path
         return redirect('main:healthcare_info')
     return render(request, 'main/data/medical_resource_form.html')
