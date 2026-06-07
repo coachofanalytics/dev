@@ -149,7 +149,7 @@ def medical_resource_form(request):
                     category=0,
                     to_email=[service_request.email],
                     subject='Medical Resource Request Received - DC48K',
-                    html_template='email/medical_resource_confirmation.html',
+                    html_template='main/email/medical_resource_confirmation.html',
                     context={
                         'full_name': service_request.full_name,
                         'reference_number': f'MR-{service_request.id:05d}',
@@ -348,7 +348,7 @@ def subscribe_alerts(request):
                 category=0,
                 to_email=[service_request.email],
                 subject='Safety Alert Subscription Confirmed - DC48K',
-                html_template='email/safety_alert_confirmation.html',
+                html_template='main/email/safety_alert_confirmation.html',
                 context={
                     'full_name': service_request.full_name,
                     'reference_number': f'SA-{service_request.id:05d}',
@@ -2502,7 +2502,7 @@ def book_consular_consultation(request):
                     category=0,
                     to_email=[service_request.email],
                     subject='Your Consultation Request Has Been Received - DC48K',
-                    html_template='email/consultation_confirmation.html',
+                    html_template='main/email/consultation_confirmation.html',
                     context={
                         'purpose': 'consultation_confirmation',
                         'full_name': service_request.full_name,
@@ -2937,7 +2937,7 @@ def communities_contact_view(request):
                     category=0,
                     to_email=[service_request.email],
                     subject='Community Contact Request Received - DC48K',
-                    html_template='email/community_contact_confirmation.html',
+                    html_template='main/email/community_contact_confirmation.html',
                     context={
                         'full_name': service_request.full_name,
                         'reference_number': f'CC-{service_request.id:05d}',
@@ -2981,7 +2981,7 @@ def emergency_help_line(request):
                     category=0,
                     to_email=[service_request.email],
                     subject='🚨 URGENT: Emergency Help Request Received - DC48K',
-                    html_template='email/emergency_help_confirmation.html',
+                    html_template='main/email/emergency_help_confirmation.html',
                     context={
                         'full_name': service_request.full_name,
                         'reference_number': f'EH-{service_request.id:05d}',
