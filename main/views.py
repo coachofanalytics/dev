@@ -120,11 +120,48 @@ def template_errors(request):
 
 @csrf_exempt
 def medical_resource_form(request):
+    """Handle medical resource inquiry form with confirmation email"""
+    import logging
+    logger = logging.getLogger(__name__)
+
     if request.method == 'POST':
-        name = request.POST.get('name')
-        email = request.POST.get('email')
-        message = request.POST.get('message')
-        MedicalResourceInquiry.objects.create(name=name, email=email, message=message)
+        name = request.POST.get('name', '').strip()
+        email = request.POST.get('email', '').strip()
+        message = request.POST.get('message', '').strip()
+
+        # Create inquiry record
+        inquiry = MedicalResourceInquiry.objects.create(name=name, email=email, message=message)
+
+        # Also create ServiceRequest for admin tracking
+        try:
+            service_request = ServiceRequest.objects.create(
+                service_type='healthcare',
+                full_name=name,
+                email=email,
+                consultation_type='Medical Resource Request',
+                question=message,
+                additional_notes='Medical Resource Inquiry Form Submission',
+            )
+
+            # Send confirmation email using send_email utility
+            try:
+                send_email(
+                    category=0,
+                    to_email=[service_request.email],
+                    subject='Medical Resource Request Received - DC48K',
+                    html_template='email/medical_resource_confirmation.html',
+                    context={
+                        'full_name': service_request.full_name,
+                        'reference_number': f'MR-{service_request.id:05d}',
+                        'created_at': service_request.created_at,
+                    },
+                    from_name="Diaspora County 048 - Healthcare Support"
+                )
+            except Exception as e:
+                logger.error(f'Failed to send medical resource confirmation email to {service_request.email}: {e}')
+        except Exception as e:
+            logger.error(f'Failed to create ServiceRequest for medical resource inquiry: {e}')
+
         # Redirect using the named URL so it works regardless of include path
         return redirect('main:healthcare_info')
     return render(request, 'main/data/medical_resource_form.html')
