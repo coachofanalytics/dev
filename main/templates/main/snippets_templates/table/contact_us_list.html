@@ -1,174 +1,162 @@
 {% extends "main/base_templates/base.html" %}
 {% load static %}
+
 {% block content %}
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Contact form</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 0;
-            padding: 0;
-            background-color: #f4f4f9;
-        }
+<style>
+    .contact-page-wrapper {
+        background-color: #f4f4f9;
+        padding: 2rem 0 4rem 0;
+    }
 
-        header {
-            background-color: #35c7c7ea;
-            color: white;
-            padding: 1rem;
-            text-align: center;
-        }
+    .contact-page-wrapper .page-header {
+        background-color: #35c7c7ea;
+        color: white;
+        padding: 1rem;
+        text-align: center;
+        margin-bottom: 2rem;
+    }
 
-        h1 {
-            margin: 0;
-        }
+    .contact-page-wrapper .page-header h1 {
+        margin: 0;
+    }
 
-        .container {
-            width: 90%;
-            max-width: 1200px;
-            margin: 2rem auto;
-            background: white;
-            padding: 2rem;
-            border-radius: 8px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-        }
+    .contact-page-wrapper .container {
+        width: 90%;
+        max-width: 700px;
+        margin: 0 auto;
+        background-color: white;
+        padding: 2rem;
+        border-radius: 8px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
 
-        form {
-            margin-bottom: 2rem;
-        }
+    .contact-page-wrapper .form-group {
+        margin-bottom: 1.25rem;
+    }
 
-        form .form-group {
-            margin-bottom: 1rem;
-        }
+    .contact-page-wrapper label {
+        display: block;
+        margin-bottom: 0.5rem;
+        font-weight: bold;
+        color: #333;
+    }
 
-        form label {
-            display: block;
-            margin-bottom: 0.5rem;
-            font-weight: bold;
-        }
+    .contact-page-wrapper input,
+    .contact-page-wrapper textarea {
+        width: 100%;
+        padding: 0.6rem;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        box-sizing: border-box;
+        font-family: inherit;
+        font-size: 0.95rem;
+    }
 
-        form input, form textarea, form button {
-            width: 100%;
-            padding: 0.8rem;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-        }
+    .contact-page-wrapper textarea {
+        resize: vertical;
+        min-height: 110px;
+    }
 
-        form textarea {
-            resize: vertical;
-        }
+    .contact-page-wrapper button {
+        background-color: #35c7c7ea;
+        color: white;
+        border: none;
+        padding: 0.75rem 1.5rem;
+        font-size: 1rem;
+        font-weight: 600;
+        border-radius: 4px;
+        cursor: pointer;
+        transition: background-color 0.2s;
+    }
 
-        form button {
-            background-color: #2fd4a3;
-            color: white;
-            border: none;
-            cursor: pointer;
-            font-weight: bold;
-        }
+    .contact-page-wrapper button:hover {
+        background-color: #2bb0b0;
+    }
 
-        form button:hover {
-            background-color: #31a1b4;
-        }
+    .contact-page-wrapper table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 2rem;
+    }
 
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 1rem;
-        }
+    .contact-page-wrapper th,
+    .contact-page-wrapper td {
+        padding: 0.6rem;
+        text-align: left;
+        border-bottom: 1px solid #eee;
+    }
 
-        table th, table td {
-            padding: 1rem;
-            text-align: left;
-            border: 1px solid #ddd;
-        }
+    .contact-page-wrapper th {
+        background-color: #f8f9fa;
+        font-weight: 600;
+        color: #333;
+    }
 
-        table th {
-            background-color: #44beced0;
-            color: white;
-        }
+    .contact-page-wrapper .no-data {
+        text-align: center;
+        margin-top: 2rem;
+        font-size: 1.1rem;
+        color: #555;
+    }
+</style>
 
-        table tr:nth-child(even) {
-            background-color: #f9f9f9;
-        }
+<div class="contact-page-wrapper">
+    <div class="page-header">
+        <h1>Contact Form</h1>
+    </div>
 
-        table tr:hover {
-            background-color: #f1f1f1;
-        }
+    <div class="container">
+        <!-- Contact Us Form -->
+        <form method="post" action="{% url 'main:contact_us' %}">
+            {% csrf_token %}
+            <div class="form-group">
+                <label for="name">Name</label>
+                <input type="text" id="name" name="name" placeholder="Enter your name" required>
+            </div>
+            <div class="form-group">
+                <label for="email">Email</label>
+                <input type="email" id="email" name="email" placeholder="Enter your email" required>
+            </div>
+            <div class="form-group">
+                <label for="Phone">Phone</label>
+                <input type="text" id="Phone" name="Phone" placeholder="Enter your Phone" required>
+            </div>
+            <div class="form-group">
+                <label for="message">Message</label>
+                <textarea id="message" name="message" rows="4" placeholder="Enter your message" required></textarea>
+            </div>
+            <div class="form-group">
+                <button type="submit">Submit</button>
+            </div>
+        </form>
 
-        .no-data {
-            text-align: center;
-            margin-top: 2rem;
-            font-size: 1.2rem;
-            color: #555;
-        }
-    </style>
-</head>
-<body>
-
-<header>
-    <h1>Contact Form</h1>
-</header>
-
-<div class="container">
-
-    <!-- Contact Us Form -->
-    <form method="post" action="{% url 'main:contact_us' %}">
-        {% csrf_token %}
-        <div class="form-group">
-            <label for="name">Name</label>
-            <input type="text" id="name" name="name" placeholder="Enter your name" required>
-        </div>
-        <div class="form-group">
-            <label for="email">Email</label>
-            <input type="email" id="email" name="email" placeholder="Enter your email" required>
-        </div>
-        <div class="form-group">
-            <label for="Phone">Phone</label>
-            <input type="Phone" id="Phone" name="Phone" placeholder="Enter your Phone" required>
-        </div>    
-        <div class="form-group">
-            <label for="message">Message</label>
-            <textarea id="message" name="message" rows="4" placeholder="Enter your message" required></textarea>
-        </div>
-        <div class="form-group">
-            <button type="submit">Submit</button>
-        </div>
-    </form>
-
-    <!-- Contact Messages List -->
-    {% if contact_us_list %}
-        <table>
-            <thead>
-                <tr>
-                    <th>ID</th>
-                    <th>Name</th>
-                    <th>Email</th>
-                    <th>Message</th>
-                    <th>Date</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for contact in contact_us_list %}
+        <!-- Contact Messages List -->
+        {% if contact_us_list %}
+            <table>
+                <thead>
                     <tr>
-                        <td>{{ contact.id }}</td>
-                        <td>{{ contact.name }}</td>
-                        <td>{{ contact.email }}</td>
-                        <td>{{ contact.message }}</td>
-                        <td>{{ contact.date }}</td>
+                        <th>ID</th>
+                        <th>Name</th>
+                        <th>Email</th>
+                        <th>Message</th>
+                        <th>Date</th>
                     </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-    {% else %}
-        <p class="no-data">No contact messages available.</p>
-    {% endif %}
-
+                </thead>
+                <tbody>
+                    {% for contact in contact_us_list %}
+                        <tr>
+                            <td>{{ contact.id }}</td>
+                            <td>{{ contact.name }}</td>
+                            <td>{{ contact.email }}</td>
+                            <td>{{ contact.message }}</td>
+                            <td>{{ contact.date }}</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        {% else %}
+            <p class="no-data">No contact messages available.</p>
+        {% endif %}
+    </div>
 </div>
-
-</body>
-</html>
-
 {% endblock %}
