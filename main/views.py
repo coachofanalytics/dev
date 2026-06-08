@@ -911,23 +911,37 @@ def communities_delete_event(request, id):
 
 
 def communities_contact_view(request):
+    """Handle community contact form with branded confirmation email and success popup."""
+    import logging
+    logger = logging.getLogger(__name__)
+
     if request.method == 'POST':
         form = CommunityContactForm(request.POST)
         if form.is_valid():
             contact = form.save()
-            context = {'name': contact.name, 'email': contact.email, 'message': contact.message}
-            subject = f'Hello {contact.name}, thank you for contacting us!'
-            recipient_list = [contact.email]
+
+            # Send branded community contact confirmation email (non-blocking)
             try:
                 send_email(
-                    subject=subject,
-                    recipient_list=recipient_list,
-                    context=context,
-                    html_template='main/communities/contact_response.html',
-                    plain_template='main/communities/contact_response.txt'
+                    category=0,
+                    to_email=[contact.email],
+                    subject='Community Contact Request Received - DC48K',
+                    html_template='main/email/community_contact_confirmation.html',
+                    context={
+                        'full_name': contact.name,
+                        'reference_number': f'CC-{contact.id:05d}',
+                        'created_at': getattr(contact, 'created_at', None),
+                    },
+                    from_name="Diaspora County 048 - Community Team"
                 )
-            except Exception:
-                pass  # Don't fail if email can't be sent
+            except Exception as e:
+                logger.error(f'Failed to send community contact email to {contact.email}: {e}')
+
+            # Success notification popup after redirect
+            messages.success(
+                request,
+                f'Thank you for contacting us! A confirmation email has been sent to {contact.email}. We will review your message shortly.'
+            )
             return redirect('communities:home')
     else:
         form = CommunityContactForm()
