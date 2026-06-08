@@ -1,0 +1,77 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "https://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="https://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    </head>
+    <body style="margin: 0; padding: 0; background-color: #f4f4f4; font-family: Arial, sans-serif;">
+        <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #f4f4f4; padding: 20px 0;">
+            <tr>
+                <td align="center">
+                    <table width="600" cellpadding="0" cellspacing="0" style="background-color: #ffffff; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+                        <!-- Header -->
+                        <tr>
+                            <td style="background-color: #d32f2f; padding: 20px; text-align: center;">
+                                <img src="https://codanalytics.blob.core.windows.net/web-dev-media/img/governance/dc48k_logo.png" alt="DC48K Logo" style="width: 120px; height: auto;">
+                            </td>
+                        </tr>
+                        <!-- Title -->
+                        <tr>
+                            <td style="padding: 30px 30px 10px 30px; text-align: center;">
+                                <h2 style="margin: 0; font-size: 22px; font-weight: bold; color: #d32f2f;">Emergency Help Request Received</h2>
+                                <p style="margin: 8px 0 0 0; color: #888; font-size: 13px;">Reference: {{ reference_number }}</p>
+                            </td>
+                        </tr>
+                        <!-- Content -->
+                        <tr>
+                            <td style="padding: 20px 30px 30px 30px;">
+                                <p style="font-size: 16px; color: #333; margin: 0 0 15px 0;">Hello {{ full_name }},</p>
+                                <p style="font-size: 14px; color: #d32f2f; line-height: 1.6; margin: 0 0 20px 0; font-weight: bold;">
+                                    ⚠️ Your emergency help request has been received and marked as high priority.
+                                </p>
+                                <!-- Request Summary -->
+                                <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #ffebee; border-radius: 6px; margin: 0 0 20px 0; border-left: 4px solid #d32f2f;">
+                                    <tr>
+                                        <td style="padding: 18px;">
+                                            <p style="margin: 0 0 10px 0; font-size: 14px; font-weight: bold; color: #333;">Request Details</p>
+                                            <table width="100%" cellpadding="0" cellspacing="0">
+                                                <tr>
+                                                    <td style="padding: 4px 0; font-size: 13px; color: #666; width: 140px;">Type:</td>
+                                                    <td style="padding: 4px 0; font-size: 13px; color: #333; font-weight: bold;">Emergency Help Line</td>
+                                                </tr>
+                                                <tr>
+                                                    <td style="padding: 4px 0; font-size: 13px; color: #666;">Reference Number:</td>
+                                                    <td style="padding: 4px 0; font-size: 13px; color: #d32f2f; font-weight: bold;">{{ reference_number }}</td>
+                                                </tr>
+                                                <tr>
+                                                    <td style="padding: 4px 0; font-size: 13px; color: #666;">Status:</td>
+                                                    <td style="padding: 4px 0; font-size: 13px; color: #d32f2f; font-weight: bold;">URGENT</td>
+                                                </tr>
+                                            </table>
+                                        </td>
+                                    </tr>
+                                </table>
+                                <p style="font-size: 14px; color: #555; line-height: 1.6; margin: 0 0 15px 0;">
+                                    Our crisis response team has been notified and will contact you as soon as possible. Your safety and well-being are our top priority.
+                                </p>
+                                <p style="font-size: 14px; color: #555; line-height: 1.6; margin: 0 0 15px 0;">
+                                    <strong>If you are in immediate danger, please call the appropriate emergency services in your location.</strong>
+                                </p>
+                                <p style="font-size: 14px; color: #333; margin: 20px 0 0 0;">
+                                    Thank you,<br>
+                                    <strong>The DC48K Emergency Response Team</strong>
+                                </p>
+                            </td>
+                        </tr>
+                        <!-- Footer -->
+                        <tr>
+                            <td style="background-color: #f8f9fa; padding: 15px 30px; text-align: center; border-top: 1px solid #eee;">
+                                <p style="margin: 0; font-size: 11px; color: #999;">Diaspora County 48 Kenya | www.diasporacounty48.org</p>
+                            </td>
+                        </tr>
+                    </table>
+                </td>
+            </tr>
+        </table>
+    </body>
+</html>

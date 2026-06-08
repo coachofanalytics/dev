@@ -602,16 +602,15 @@ def crisis_page(request):
 @require_POST
 @csrf_protect
 def subscribe_alerts(request):
+    """Subscribe email to Safety Alerts and send branded confirmation email."""
+    import logging
+    logger = logging.getLogger(__name__)
+
     email = request.POST.get('email', '').strip().lower()
+    name = request.POST.get('name', '').strip() or 'Safety Alert Subscriber'
     if not email:
         return JsonResponse({'success': False, 'message': 'Email is required.'}, status=400)
 
-    subject = "DC48K Safety Alerts Subscription"
-    html_message = """
-      <p>Thank you for subscribing to DC48K Safety Alerts.</p>
-      <p>You will receive updates about advisories and safety information.</p>
-    """
-    plain_message = strip_tags(html_message)
     existing = SafetyAlertSubscription.objects.filter(email=email).first()
     if existing and existing.is_active:
         return JsonResponse({'success': True, 'message': 'You are already subscribed to Safety Alerts.'})
@@ -619,24 +618,71 @@ def subscribe_alerts(request):
     if existing and not existing.is_active:
         existing.is_active = True
         existing.save()
+        sub_id = existing.id
     else:
-        SafetyAlertSubscription.objects.create(
+        sub = SafetyAlertSubscription.objects.create(
             email=email,
             user=request.user if request.user.is_authenticated else None,
             is_active=True,
         )
+        sub_id = sub.id
 
+    # Send branded confirmation email (non-blocking)
     try:
-        send_mail(
-            subject,
-            plain_message,
-            None,
-            [email],
-            html_message=html_message,
+        send_email(
+            category=0,
+            to_email=[email],
+            subject='Safety Alert Subscription Confirmed - DC48K',
+            html_template='main/email/safety_alert_confirmation.html',
+            context={
+                'full_name': name,
+                'reference_number': f'SA-{sub_id:05d}',
+            },
+            from_name="Diaspora County 048 - Safety & Crisis Team"
         )
         return JsonResponse({'success': True, 'message': 'Subscribed! A confirmation email has been sent.'})
-    except Exception:
-        return JsonResponse({'success': True, 'message': 'Subscribed! (Email could not be sent right now.)'})
+    except Exception as e:
+        logger.error(f'Failed to send safety alert confirmation email to {email}: {e}')
+        return JsonResponse({'success': True, 'message': 'Subscribed! (Confirmation email could not be sent right now.)'})
+
+
+def emergency_help_line(request):
+    """Handle emergency help line requests with branded confirmation email."""
+    import logging
+    logger = logging.getLogger(__name__)
+
+    from main.forms import EmergencyHelpForm
+
+    if request.method == 'POST':
+        form = EmergencyHelpForm(request.POST)
+        if form.is_valid():
+            data = form.cleaned_data
+            # Send urgent confirmation email (non-blocking)
+            try:
+                send_email(
+                    category=0,
+                    to_email=[data['email']],
+                    subject='URGENT: Emergency Help Request Received - DC48K',
+                    html_template='main/email/emergency_help_confirmation.html',
+                    context={
+                        'full_name': data['full_name'],
+                        'reference_number': f'EH-{data["full_name"][:3].upper()}-001',
+                    },
+                    from_name="Diaspora County 048 - Emergency Response Team"
+                )
+            except Exception as e:
+                logger.error(f'Failed to send emergency help email to {data["email"]}: {e}')
+
+            messages.success(
+                request,
+                f'Your emergency request has been submitted. A confirmation email has been sent to {data["email"]}. Our team is being notified.'
+            )
+            return redirect('crisis_page')
+    else:
+        from main.forms import EmergencyHelpForm
+        form = EmergencyHelpForm()
+
+    return render(request, 'main/emergency_help.html', {'form': form})
 
 
 @require_POST
