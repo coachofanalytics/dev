@@ -3,6 +3,7 @@ from django.db import models
 from django.contrib.auth import get_user_model
 from accounts.models import CustomerUser, Region, Chapter
 from django.utils.text import slugify
+from django.utils import timezone
 
 
 
@@ -310,3 +311,109 @@ class LegalService(models.Model):
 
     def __str__(self):
         return self.title
+
+
+class ServiceRequest(models.Model):
+    """
+    Reusable service request model. Currently used for Consular Consultation
+    but designed with a service_type field to support Healthcare, Finance,
+    Crisis, Education, Community, and News requests in the future.
+    """
+
+    SERVICE_TYPE_CHOICES = [
+        ('consular', 'Consular Assistance'),
+        ('healthcare', 'Healthcare'),
+        ('finance', 'Finance'),
+        ('crisis', 'Crisis Support'),
+        ('education', 'Education'),
+        ('community', 'Community'),
+        ('news', 'News'),
+    ]
+
+    STATUS_CHOICES = [
+        ('new', 'New'),
+        ('in_review', 'In Review'),
+        ('responded', 'Responded'),
+        ('closed', 'Closed'),
+    ]
+
+    CONSULTATION_TYPE_CHOICES = [
+        ('Legal & Immigration', 'Legal & Immigration'),
+        ('Documentation', 'Documentation'),
+        ('Property & Estate', 'Property & Estate'),
+        ('Other', 'Other'),
+    ]
+
+    URGENCY_CHOICES = [
+        ('Not Urgent', 'Not Urgent'),
+        ('Moderately Urgent', 'Moderately Urgent'),
+        ('Very Urgent', 'Very Urgent'),
+        ('Emergency', 'Emergency'),
+    ]
+
+    # Core fields (matching the AJAX form submission)
+    service_type = models.CharField(max_length=30, choices=SERVICE_TYPE_CHOICES, default='consular')
+    full_name = models.CharField(max_length=200)
+    email = models.EmailField()
+    phone = models.CharField(max_length=30, blank=True, default='')
+    consultation_type = models.CharField(max_length=50, choices=CONSULTATION_TYPE_CHOICES)
+    preferred_language = models.CharField(max_length=50, default='English')
+    location = models.CharField(max_length=200, blank=True, default='')
+    question = models.TextField(help_text="User's main consultation description")
+    urgency = models.CharField(max_length=30, choices=URGENCY_CHOICES, default='Not Urgent')
+    additional_notes = models.TextField(blank=True, default='')
+
+    # Workflow / Admin fields
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='new')
+    admin_notes = models.TextField(blank=True, default='', help_text="Internal notes (timestamped)")
+    assigned_to = models.ForeignKey(
+        User,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='assigned_service_requests',
+        help_text="Staff member assigned to handle this request"
+    )
+    reply_message = models.TextField(blank=True, default='', help_text="Reply sent back to the user")
+    replied_at = models.DateTimeField(null=True, blank=True)
+
+    # Timestamps
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['-created_at']
+        verbose_name = "Service Request"
+        verbose_name_plural = "Service Requests"
+
+    def __str__(self):
+        return f"[{self.get_service_type_display()}] {self.full_name} - {self.consultation_type} ({self.created_at.strftime('%Y-%m-%d')})"
+
+    def add_note(self, note):
+        """Append a timestamped note to admin_notes."""
+        timestamp = timezone.now().strftime('%Y-%m-%d %H:%M')
+        entry = f"[{timestamp}] {note}"
+        if self.admin_notes:
+            self.admin_notes += f"\n{entry}"
+        else:
+            self.admin_notes = entry
+        self.save(update_fields=['admin_notes', 'updated_at'])
+
+    def mark_responded(self):
+        self.status = 'responded'
+        if not self.replied_at:
+            self.replied_at = timezone.now()
+        self.save(update_fields=['status', 'replied_at', 'updated_at'])
+        self.add_note("Status changed to Responded")
+
+    def mark_closed(self):
+        self.status = 'closed'
+        self.save(update_fields=['status', 'updated_at'])
+        self.add_note("Status changed to Closed")
+
+    def days_since_created(self):
+        delta = timezone.now() - self.created_at
+        return delta.days
+
+    def is_urgent(self):
+        return self.urgency in ('Very Urgent', 'Emergency')

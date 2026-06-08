@@ -724,16 +724,53 @@ def consular_all_updates(request):
 
 def book_consular_consultation(request):
     """
-    Render the Book Consultation form page.
+    Render the Book Consultation form page and handle AJAX POST submissions.
+    Saves consultation requests to database and sends confirmation email.
     """
     if request.method == 'POST':
         import json
+        import logging
+        logger = logging.getLogger(__name__)
         try:
             data = json.loads(request.body)
 
+            # Save the consultation request to database
+            service_request = ServiceRequest.objects.create(
+                service_type='consular',
+                full_name=data.get('full_name', '').strip(),
+                email=data.get('email', '').strip(),
+                phone=data.get('phone', '').strip(),
+                consultation_type=data.get('consultation_type', ''),
+                preferred_language=data.get('preferred_language', 'English'),
+                location=data.get('location', '').strip(),
+                question=data.get('question', '').strip(),
+                urgency=data.get('urgency', 'Not Urgent'),
+                additional_notes=data.get('additional_notes', '').strip(),
+            )
+
+            # Send confirmation email (non-blocking: SMTP failure won't crash the request)
+            try:
+                send_email(
+                    category=0,
+                    to_email=[service_request.email],
+                    subject='Your Consultation Request Has Been Received - DC48K',
+                    html_template='main/email/consultation_confirmation.html',
+                    context={
+                        'purpose': 'consultation_confirmation',
+                        'full_name': service_request.full_name,
+                        'consultation_type': service_request.consultation_type,
+                        'urgency': service_request.urgency,
+                        'reference_number': f'CR-{service_request.id:05d}',
+                        'created_at': service_request.created_at,
+                    },
+                    from_name="Diaspora County 048 - Consular Services"
+                )
+            except Exception as e:
+                logger.error(f'Failed to send consultation confirmation email to {service_request.email}: {e}')
+
             return JsonResponse({
                 'success': True,
-                'message': 'Your consultation request has been submitted. We will contact you shortly.'
+                'message': 'Your consultation request has been submitted. We will contact you shortly. A confirmation email has been sent.'
             })
         except Exception as e:
             return JsonResponse({
