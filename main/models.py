@@ -281,6 +281,13 @@ class CommunityMember(models.Model):
     name = models.CharField(max_length=100)
     email = models.EmailField(blank=True, default='')
     phone = models.CharField(max_length=15, blank=True, null=True)
+    user = models.ForeignKey(
+        django_settings.AUTH_USER_MODEL,
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name='community_member'
+    )
 
     # Profile fields
     profession = models.CharField(max_length=100, default="Not Specified")
@@ -303,6 +310,36 @@ class CommunityMember(models.Model):
 
     class Meta:
         ordering = ['-date_joined']
+        constraints = [
+            models.UniqueConstraint(
+                fields=['user'],
+                condition=models.Q(user__isnull=False),
+                name='unique_user_community_member'
+            ),
+        ]
+
+
+class CommunityMessage(models.Model):
+    """Simple messaging between community directory members."""
+    sender = models.ForeignKey(
+        CommunityMember, on_delete=models.CASCADE, related_name='sent_messages'
+    )
+    recipient = models.ForeignKey(
+        CommunityMember, on_delete=models.CASCADE, related_name='received_messages'
+    )
+    subject = models.CharField(max_length=200, blank=True, default='')
+    body = models.TextField()
+    parent_message = models.ForeignKey(
+        'self', null=True, blank=True, on_delete=models.SET_NULL, related_name='replies'
+    )
+    is_read = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"From {self.sender.name} to {self.recipient.name}: {self.subject or '(no subject)'}"
+
+    class Meta:
+        ordering = ['-created_at']
 
 
 class DirectoryProfile(models.Model):
@@ -378,7 +415,7 @@ class CommunityPost(models.Model):
     content = models.TextField()
     category = models.ForeignKey(ForumCategory, on_delete=models.CASCADE, related_name='posts')
     author = models.ForeignKey(
-        settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True, related_name='forum_posts'
+        django_settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True, related_name='forum_posts'
     )
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

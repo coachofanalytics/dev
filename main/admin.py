@@ -41,3 +41,23 @@ admin.site.register(CommunityPost)
 admin.site.register(CommentP)
 admin.site.register(EventCalendar)
 admin.site.register(ContactMessage)
+
+
+@admin.register(CommunityMessage)
+class CommunityMessageAdmin(admin.ModelAdmin):
+    list_display = ['sender', 'recipient', 'subject', 'is_read', 'created_at']
+    list_filter = ['is_read', 'created_at']
+    search_fields = ['sender__name', 'recipient__name', 'subject', 'body']
+    readonly_fields = ['created_at']
+    raw_id_fields = ['sender', 'recipient', 'parent_message']
+    fieldsets = (
+        ('Participants', {
+            'fields': ('sender', 'recipient')
+        }),
+        ('Content', {
+            'fields': ('subject', 'body', 'parent_message')
+        }),
+        ('Status', {
+            'fields': ('is_read', 'created_at')
+        }),
+    )

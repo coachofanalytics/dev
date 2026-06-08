@@ -28,6 +28,11 @@ from main.views import (
     communities_edit_event as edit_event,
     communities_delete_event as delete_event,
     communities_contact_view as contact_view,
+    communities_message_compose as message_compose,
+    communities_message_inbox as message_inbox,
+    communities_message_sent as message_sent,
+    communities_message_detail as message_detail,
+    communities_message_reply as message_reply,
 )
 
 app_name = 'communities'
@@ -62,4 +67,11 @@ urlpatterns = [
     
     # Contact
     path('contact/', contact_view, name='contact'),
+
+    # Messaging
+    path('messages/inbox/', message_inbox, name='message_inbox'),
+    path('messages/sent/', message_sent, name='message_sent'),
+    path('messages/compose/<int:recipient_id>/', message_compose, name='message_compose'),
+    path('messages/<int:message_id>/', message_detail, name='message_detail'),
+    path('messages/<int:message_id>/reply/', message_reply, name='message_reply'),
 ]

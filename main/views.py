@@ -10,7 +10,7 @@ from django.views.generic import (
 from .models import * #Assets,Description, News, Page, Service, SubService,Team
 from accounts.models import CustomerUser
 from .utils import generate_chatbot_response
-from main.forms import ContactForm, GetHelpForm, GovernanceForm, CommunityPostForm, CommunityCommentForm, CommunityEventForm, CommunityContactForm
+from main.forms import ContactForm, GetHelpForm, GovernanceForm, CommunityPostForm, CommunityCommentForm, CommunityEventForm, CommunityContactForm, CommunityMessageForm
 from django.contrib.auth import get_user_model
 
 from mail.custom_email import send_email
@@ -932,3 +932,157 @@ def communities_contact_view(request):
     else:
         form = CommunityContactForm()
     return render(request, 'main/communities/contact_form.html', {'form': form})
+
+
+# ============================================
+# COMMUNITY MESSAGING VIEWS
+# ============================================
+
+def _get_community_member_for_user(user):
+    """Get the CommunityMember linked to the authenticated user, or None."""
+    if not user or not user.is_authenticated:
+        return None
+    return CommunityMember.objects.filter(user=user).first()
+
+
+@login_required
+def communities_message_compose(request, recipient_id):
+    """Send a message to a community member."""
+    sender = _get_community_member_for_user(request.user)
+    if not sender:
+        messages.warning(request, 'You need a community profile to send messages. Please join the directory first.')
+        return redirect('communities:join_directory_form')
+
+    recipient = get_object_or_404(CommunityMember, id=recipient_id)
+
+    if sender == recipient:
+        messages.error(request, 'You cannot send a message to yourself.')
+        return redirect('communities:member_directory')
+
+    if request.method == 'POST':
+        form = CommunityMessageForm(request.POST)
+        if form.is_valid():
+            msg = form.save(commit=False)
+            msg.sender = sender
+            msg.recipient = recipient
+            msg.save()
+            messages.success(request, f'Message sent to {recipient.name}!')
+            return redirect('communities:message_inbox')
+    else:
+        form = CommunityMessageForm()
+
+    context = {
+        'form': form,
+        'recipient': recipient,
+    }
+    return render(request, 'main/communities/message_compose.html', context)
+
+
+@login_required
+def communities_message_inbox(request):
+    """View received messages."""
+    member = _get_community_member_for_user(request.user)
+    if not member:
+        messages.warning(request, 'You need a community profile to view messages. Please join the directory first.')
+        return redirect('communities:join_directory_form')
+
+    inbox_messages = CommunityMessage.objects.filter(recipient=member).order_by('-created_at')
+    unread_count = inbox_messages.filter(is_read=False).count()
+
+    context = {
+        'inbox_messages': inbox_messages,
+        'unread_count': unread_count,
+        'active_tab': 'inbox',
+    }
+    return render(request, 'main/communities/message_inbox.html', context)
+
+
+@login_required
+def communities_message_sent(request):
+    """View sent messages."""
+    member = _get_community_member_for_user(request.user)
+    if not member:
+        messages.warning(request, 'You need a community profile to view messages. Please join the directory first.')
+        return redirect('communities:join_directory_form')
+
+    sent_messages = CommunityMessage.objects.filter(sender=member).order_by('-created_at')
+
+    context = {
+        'sent_messages': sent_messages,
+        'active_tab': 'sent',
+    }
+    return render(request, 'main/communities/message_sent.html', context)
+
+
+@login_required
+def communities_message_detail(request, message_id):
+    """Read a single message."""
+    member = _get_community_member_for_user(request.user)
+    if not member:
+        messages.warning(request, 'You need a community profile to view messages.')
+        return redirect('communities:join_directory_form')
+
+    msg = get_object_or_404(CommunityMessage, id=message_id)
+
+    # Authorization: only sender or recipient can view
+    if msg.sender != member and msg.recipient != member:
+        messages.error(request, 'You do not have permission to view this message.')
+        return redirect('communities:message_inbox')
+
+    # Mark as read if recipient is viewing
+    if msg.recipient == member and not msg.is_read:
+        msg.is_read = True
+        msg.save(update_fields=['is_read'])
+
+    # Get thread: replies to this message
+    replies = CommunityMessage.objects.filter(parent_message=msg).order_by('created_at')
+
+    context = {
+        'msg': msg,
+        'replies': replies,
+        'is_recipient': msg.recipient == member,
+    }
+    return render(request, 'main/communities/message_detail.html', context)
+
+
+@login_required
+def communities_message_reply(request, message_id):
+    """Reply to a received message."""
+    member = _get_community_member_for_user(request.user)
+    if not member:
+        messages.warning(request, 'You need a community profile to reply to messages.')
+        return redirect('communities:join_directory_form')
+
+    original = get_object_or_404(CommunityMessage, id=message_id)
+
+    # Authorization: only sender or recipient can reply
+    if original.sender != member and original.recipient != member:
+        messages.error(request, 'You do not have permission to reply to this message.')
+        return redirect('communities:message_inbox')
+
+    # Reply goes to the other party
+    reply_to = original.sender if original.recipient == member else original.recipient
+
+    if request.method == 'POST':
+        form = CommunityMessageForm(request.POST)
+        if form.is_valid():
+            reply_msg = form.save(commit=False)
+            reply_msg.sender = member
+            reply_msg.recipient = reply_to
+            reply_msg.parent_message = original
+            if not reply_msg.subject and original.subject:
+                reply_msg.subject = f"Re: {original.subject}"
+            reply_msg.save()
+            messages.success(request, f'Reply sent to {reply_to.name}!')
+            return redirect('communities:message_detail', message_id=original.id)
+    else:
+        initial_subject = f"Re: {original.subject}" if original.subject else ''
+        form = CommunityMessageForm(initial={'subject': initial_subject})
+
+    context = {
+        'form': form,
+        'recipient': reply_to,
+        'original': original,
+        'is_reply': True,
+    }
+    return render(request, 'main/communities/message_compose.html', context)
