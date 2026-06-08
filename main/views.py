@@ -655,11 +655,40 @@ def healthcare_info(request):
 
 
 def medical_resource_form(request):
+    """Handle medical resource inquiry form with confirmation email and success notification."""
+    import logging
+    logger = logging.getLogger(__name__)
+
     if request.method == 'POST':
-        name = request.POST.get('name')
-        email = request.POST.get('email')
-        message = request.POST.get('message')
-        MedicalResourceInquiry.objects.create(name=name, email=email, message=message)
+        name = (request.POST.get('name') or '').strip()
+        email = (request.POST.get('email') or '').strip()
+        message = (request.POST.get('message') or '').strip()
+
+        # Save the inquiry
+        inquiry = MedicalResourceInquiry.objects.create(name=name, email=email, message=message)
+
+        # Send confirmation email using the shared send_email utility (non-blocking)
+        try:
+            send_email(
+                category=0,
+                to_email=[email],
+                subject='Medical Resource Request Received - DC48K',
+                html_template='main/email/medical_resource_confirmation.html',
+                context={
+                    'full_name': name,
+                    'reference_number': f'MR-{inquiry.id:05d}',
+                    'created_at': inquiry.created_at if hasattr(inquiry, 'created_at') else None,
+                },
+                from_name="Diaspora County 048 - Healthcare Support"
+            )
+        except Exception as e:
+            logger.error(f'Failed to send medical resource confirmation email to {email}: {e}')
+
+        # Success message popup after redirect
+        messages.success(
+            request,
+            f'Thank you for your medical resource request! A confirmation email has been sent to {email}. Our healthcare support team will review your request and contact you shortly.'
+        )
         return redirect('main:healthcare_info')
     return render(request, 'main/data/medical_resource_form.html')
 
