@@ -1,4 +1,4 @@
-/*global SelectBox, gettext, ngettext, interpolate, quickElement, SelectFilter*/
+/*global SelectBox, gettext, interpolate, quickElement, SelectFilter*/
 /*
 SelectFilter2 - Turns a multiple-select box into a filter interface.
 
@@ -15,7 +15,6 @@ Requires core.js and SelectBox.js.
             const from_box = document.getElementById(field_id);
             from_box.id += '_from'; // change its ID
             from_box.className = 'filtered';
-            from_box.setAttribute('aria-labelledby', field_id + '_from_title');
 
             for (const p of from_box.parentNode.getElementsByTagName('p')) {
                 if (p.classList.contains("info")) {
@@ -31,23 +30,23 @@ Requires core.js and SelectBox.js.
 
             // <div class="selector"> or <div class="selector stacked">
             const selector_div = quickElement('div', from_box.parentNode);
-            // Make sure the selector div is at the beginning so that the
-            // add link would be displayed to the right of the widget.
-            from_box.parentNode.prepend(selector_div);
             selector_div.className = is_stacked ? 'selector stacked' : 'selector';
 
             // <div class="selector-available">
             const selector_available = quickElement('div', selector_div);
             selector_available.className = 'selector-available';
-            const selector_available_title = quickElement('div', selector_available);
-            selector_available_title.id = field_id + '_from_title';
-            selector_available_title.className = 'selector-available-title';
-            quickElement('label', selector_available_title, interpolate(gettext('Available %s') + ' ', [field_name]), 'for', field_id + '_from');
+            const title_available = quickElement('h2', selector_available, interpolate(gettext('Available %s') + ' ', [field_name]));
             quickElement(
-                'p',
-                selector_available_title,
-                interpolate(gettext('Choose %s by selecting them and then select the "Choose" arrow button.'), [field_name]),
-                'class', 'helptext'
+                'span', title_available, '',
+                'class', 'help help-tooltip help-icon',
+                'title', interpolate(
+                    gettext(
+                        'This is the list of available %s. You may choose some by ' +
+                        'selecting them in the box below and then clicking the ' +
+                        '"Choose" arrow between the two boxes.'
+                    ),
+                    [field_name]
+                )
             );
 
             const filter_p = quickElement('p', selector_available, '', 'id', field_id + '_filter');
@@ -58,7 +57,7 @@ Requires core.js and SelectBox.js.
             quickElement(
                 'span', search_filter_label, '',
                 'class', 'help-tooltip search-label-icon',
-                'aria-label', interpolate(gettext("Type into this box to filter down the list of available %s."), [field_name])
+                'title', interpolate(gettext("Type into this box to filter down the list of available %s."), [field_name])
             );
 
             filter_p.appendChild(document.createTextNode(' '));
@@ -67,14 +66,8 @@ Requires core.js and SelectBox.js.
             filter_input.id = field_id + '_input';
 
             selector_available.appendChild(from_box);
-            const choose_all = quickElement(
-                'button',
-                selector_available,
-                interpolate(gettext('Choose all %s'), [field_name]),
-                'id', field_id + '_add_all',
-                'class', 'selector-chooseall',
-                'type', 'button'
-            );
+            const choose_all = quickElement('a', selector_available, gettext('Choose all'), 'title', interpolate(gettext('Click to choose all %s at once.'), [field_name]), 'href', '#', 'id', field_id + '_add_all_link');
+            choose_all.className = 'selector-chooseall';
 
             // <ul class="selector-chooser">
             const selector_chooser = quickElement('ul', selector_div);
@@ -131,7 +124,7 @@ Requires core.js and SelectBox.js.
 
             // Set up the JavaScript event handlers for the select box filter interface
             const move_selection = function(e, elem, move_func, from, to) {
-                if (!elem.hasAttribute('disabled')) {
+                if (elem.classList.contains('active')) {
                     move_func(from, to);
                     SelectFilter.refresh_icons(field_id);
                     SelectFilter.refresh_filtered_selects(field_id);
@@ -142,10 +135,10 @@ Requires core.js and SelectBox.js.
             choose_all.addEventListener('click', function(e) {
                 move_selection(e, this, SelectBox.move_all, field_id + '_from', field_id + '_to');
             });
-            add_button.addEventListener('click', function(e) {
+            add_link.addEventListener('click', function(e) {
                 move_selection(e, this, SelectBox.move, field_id + '_from', field_id + '_to');
             });
-            remove_button.addEventListener('click', function(e) {
+            remove_link.addEventListener('click', function(e) {
                 move_selection(e, this, SelectBox.move, field_id + '_to', field_id + '_from');
             });
             clear_all.addEventListener('click', function(e) {

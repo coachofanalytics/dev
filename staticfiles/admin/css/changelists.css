@@ -139,12 +139,6 @@
     margin: 0 0 0 30px;
 }
 
-@media (forced-colors: active) {
-  #changelist-filter {
-      border: 1px solid;
-  }
-}
-
 #changelist-filter h2 {
     font-size: 0.875rem;
     text-transform: uppercase;
@@ -269,19 +263,6 @@
 
 #changelist tbody tr:has(.action-select:checked) {
     background-color: var(--selected-row);
-}
-
-#changelist tbody tr:has(.action-select:checked) {
-    background-color: var(--selected-row);
-}
-
-@media (forced-colors: active) {
-    #changelist tbody tr.selected {
-        background-color: SelectedItem;
-    }
-    #changelist tbody tr:has(.action-select:checked) {
-        background-color: SelectedItem;
-    }
 }
 
 #changelist .actions {

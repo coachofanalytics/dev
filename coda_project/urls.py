@@ -21,10 +21,10 @@ from django.conf.urls import handler400
 from django.conf.urls.static import static
 from django.views.static import serve
 from django.contrib.auth import views as auth_views
-from django.urls import reverse_lazy
 
 from accounts import views as account_views
 from coda_project import settings
+
 
 # ===========ERROR HANDLING SECTION================
 handler400 = "main.views.hendler400"
@@ -98,31 +98,14 @@ urlpatterns = [
     path("finance/", include("finance.urls"), name="finance"),
     path('communities/', include('main.urls_communities')),
 
-    # Provide a minimal set of un-namespaced testimonial/find-doctors routes
-    # that match the available views in `main.views`.
-    path('testimonials/', main_views.testimonial_list, name='testimonial_list'),
-    path('testimonials/<int:pk>/delete/', main_views.testimonial_delete, name='testimonial_delete'),
-    # Legacy un-namespaced search route
-    path('find-doctors/', main_views.find_doctors, name='find_doctors'),
-
-
-    path('', include('main.news_urls', namespace='news')),
-    path('', include("main.urls", namespace="main")),
-    # path('member/', include('memberjoin.urls')),  # App not found - commented out
-    path("accounts/", include("accounts.urls", namespace="accounts")),
-    path("finance/", include("finance.urls", namespace="finance")),
     path('accounts/social/custom_login/', account_views.custom_social_login, name='custom_social_login'),
     path('social_accounts/signup/', account_views.join),
     path('social_accounts/login/', account_views.login_view),
     path('social_accounts/social/signup/', account_views.login_view),
     path('social_accounts/', include('allauth.urls')),
-    path('communities/', include('main.urls_communities')),
 ]
 
 if settings.DEBUG:
     urlpatterns += static(
         settings.MEDIA_URL, document_root=settings.MEDIA_ROOT
     ) + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
-
-if os.path.exists(settings.STATIC_ROOT):
-        urlpatterns += static('/staticfiles/', document_root=settings.STATIC_ROOT)

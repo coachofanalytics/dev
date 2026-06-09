@@ -55,12 +55,7 @@
         if (elem.classList.contains('vManyToManyRawIdAdminField') && elem.value) {
             elem.value += ',' + chosenId;
         } else {
-            elem.value = chosenId;
-        }
-        $(elem).trigger('change');
-        const index = relatedWindows.indexOf(win);
-        if (index > -1) {
-            relatedWindows.splice(index, 1);
+            document.getElementById(name).value = chosenId;
         }
         const index = relatedWindows.indexOf(win);
         if (index > -1) {
@@ -84,11 +79,9 @@
             siblings.each(function() {
                 const elm = $(this);
                 elm.attr('href', elm.attr('data-href-template').replace('__fk__', value));
-                elm.removeAttr('aria-disabled');
             });
         } else {
             siblings.removeAttr('href');
-            siblings.attr('aria-disabled', true);
         }
     }
 
@@ -141,18 +134,9 @@
             $(elem).trigger('change');
         } else {
             const toId = name + "_to";
-            const toElem = document.getElementById(toId);
             const o = new Option(newRepr, newId);
             SelectBox.add_to_cache(toId, o);
             SelectBox.redisplay(toId);
-            if (toElem && toElem.nodeName.toUpperCase() === 'SELECT') {
-                const skipIds = [name + "_from"];
-                updateRelatedSelectsOptions(toElem, win, null, newRepr, newId, skipIds);
-            }
-        }
-        const index = relatedWindows.indexOf(win);
-        if (index > -1) {
-            relatedWindows.splice(index, 1);
         }
         const index = relatedWindows.indexOf(win);
         if (index > -1) {

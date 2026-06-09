@@ -18,14 +18,7 @@ class CustomUserCreationForm(UserCreationForm):
 
 
 class CustomAuthenticationForm(AuthenticationForm):
-    username = forms.CharField(
-        label="Username or E-mail",
-        widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Enter username or email'})
-    )
-    password = forms.CharField(
-        label="Password",
-        widget=forms.PasswordInput(attrs={'class': 'form-control', 'placeholder': 'Enter password'})
-    )
+    username = forms.CharField(label="Username or E-mail")
     remember_me = forms.BooleanField(required=False, label="Keep me signed in")
 
 
@@ -74,8 +67,6 @@ class UserForm(forms.ModelForm):
     def clean(self):
         cleaned_data = super().clean()
         email = cleaned_data.get("email")
-        password1 = cleaned_data.get("password1")
-        password2 = cleaned_data.get("password2")
 
         # Validate email format
         if email:
@@ -83,14 +74,6 @@ class UserForm(forms.ModelForm):
                 validate_email(email)
             except forms.ValidationError:
                 self.add_error("email", "Invalid email address.")
-
-        # Validate passwords match
-        if password1 and password2 and password1 != password2:
-            self.add_error("password2", "Passwords do not match.")
-
-        # Password length validation
-        if password1 and len(password1) < 8:
-            self.add_error("password1", "Password must be at least 8 characters long.")
 
         # Check for disallowed names
         disallowed_names = ["test", "testing"]
@@ -142,10 +125,12 @@ class OTPForm(forms.Form):
 
 
 class LoginForms(forms.Form):
+    # username = forms.CharField(widget=forms.TextInput(attrs={"class": "form-control"}))
     email = forms.EmailField(widget=forms.EmailInput(attrs={"class": "form-control"}))
     password = forms.CharField(
         widget=forms.PasswordInput(attrs={"class": "form-control"})
     )
+
 
 class LoginForm(forms.Form):
     enter_your_username_or_email = forms.CharField(
@@ -156,6 +141,13 @@ class LoginForm(forms.Form):
     enter_your_password = forms.CharField(
         widget=forms.PasswordInput(attrs={"class": "form-control"})
     )
+    # def clean_enter_your_username_or_email(self):
+    #     username_or_email = self.cleaned_data.get('enter_your_username_or_email')
+    #     # Add your validation logic for email format here
+    #     # For example:
+    #     if '@' not in username_or_email:
+    #         raise forms.ValidationError("Please enter a valid email address.")
+    #     return username_or_email
 
     def clean(self):
         cleaned_data = super().clean()

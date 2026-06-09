@@ -195,72 +195,7 @@ def hendler500(request):
     return render(request, "main/errors/500.html")
     
 def test(request):
-    from .models import LegalService
-
-    if request.method == "POST":
-        features_raw = request.POST.get("features", "")
-        features = [item.strip() for item in features_raw.splitlines() if item.strip()]
-
-        LegalService.objects.create(
-            title=request.POST.get("title", "").strip(),
-            category=request.POST.get("category", "visa"),
-            description=request.POST.get("description", "").strip(),
-            image_url=request.POST.get("image_url", "").strip() or None,
-            features=features,
-            cta_button_text=request.POST.get("cta_button_text", "Learn More").strip() or "Learn More",
-            cta_button_url=request.POST.get("cta_button_url", "").strip(),
-            order=int(request.POST.get("order", 0) or 0),
-            is_active=(request.POST.get("is_active") == "on"),
-        )
-        messages.success(request, "Legal service created successfully.")
-        return redirect("main:legal_service_test")
-
-    services = LegalService.objects.all().order_by("order", "id")
-    context = {
-        "title": "Legal Services CRUD Test",
-        "services": services,
-        "categories": LegalService.CATEGORY_CHOICES,
-    }
-    return render(request, "main/test.html", context)
-
-
-@require_http_methods(["GET", "POST"])
-def test_edit(request, pk):
-    from .models import LegalService
-
-    service = get_object_or_404(LegalService, pk=pk)
-
-    if request.method == "POST":
-        features_raw = request.POST.get("features", "")
-        service.title = request.POST.get("title", "").strip()
-        service.category = request.POST.get("category", "visa")
-        service.description = request.POST.get("description", "").strip()
-        service.image_url = request.POST.get("image_url", "").strip() or None
-        service.features = [item.strip() for item in features_raw.splitlines() if item.strip()]
-        service.cta_button_text = request.POST.get("cta_button_text", "Learn More").strip() or "Learn More"
-        service.cta_button_url = request.POST.get("cta_button_url", "").strip()
-        service.order = int(request.POST.get("order", 0) or 0)
-        service.is_active = request.POST.get("is_active") == "on"
-        service.save()
-        messages.success(request, "Legal service updated successfully.")
-        return redirect("main:legal_service_test")
-
-    context = {
-        "title": "Edit Legal Service",
-        "service": service,
-        "categories": LegalService.CATEGORY_CHOICES,
-    }
-    return render(request, "main/test_edit.html", context)
-
-
-@require_POST
-def test_delete(request, pk):
-    from .models import LegalService
-
-    service = get_object_or_404(LegalService, pk=pk)
-    service.delete()
-    messages.success(request, "Legal service deleted successfully.")
-    return redirect("main:legal_service_test")
+    return render(request, "main/test.html", {"title": "test"})
 
 def checkout(request):
     return render(request, "main/checkout.html", {"title": "checkout"})
@@ -2590,6 +2525,7 @@ def book_consular_consultation(request):
                 'success': False,
                 'error': str(e)
             }, status=400)
+
     context = {
         'title': 'Book a Consultation',
     }

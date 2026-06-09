@@ -1,7 +1,6 @@
 from django import forms
 from django.forms import Textarea
 from accounts.models import Department
-from .models import Opportunity
 
 from .models import (
     Budget,

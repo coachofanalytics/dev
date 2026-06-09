@@ -91,6 +91,7 @@
             color: #ffffff;
         }
         .top-left-coloumn{
+            background-image: url(/static/data/img/banner1.png);
             background-repeat: no-repeat;
             background-size: cover;
         }
@@ -130,7 +131,7 @@
                         <div class="row">
                             <div style="background-color:#f8f8f8; border:1px solid #ccc; padding:20px;">
                                 <ul style="list-style:none; padding-left:0;">
-                                    <form  method="POST" action="{% url 'finance:pay' %}" class="form-group">
+                                    <form  method="POST" action="/finance/pay/" class="form-group">
                                         {% csrf_token %}
                                                 <input type="hidden" name="usr_data" value="first_name={{client_data.first_name}}&username={{client_data.username}}&last_name={{client_data.last_name}}&
                                                 email={{client_data.email}}&phone={{client_data.phone}}&gender={{client_data.gender}}&

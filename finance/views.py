@@ -11,11 +11,11 @@ except ImportError:
     stripe = None
 from datetime import datetime
 
-import logging
 from django.conf import settings
 from django.contrib import messages
+from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
-from django.core.mail import send_mail
+from django.contrib.auth import get_user_model
 from django.db.models import Sum
 from django.http import QueryDict, Http404, HttpResponse
 from django.shortcuts import redirect, render
@@ -72,12 +72,6 @@ def payment_details():
 # ===================== FINANCE REPORT =====================
 def finance_report(request):
     return render(request, "finance/reports/finance.html", {"title": "Finance"})
-
-
-# ===================== SOLUTIONS PAGE =====================
-def solutions(request):
-    """Display detailed banking and investment solutions"""
-    return render(request, "finance/solutions.html", {"title": "Solutions"})
 
 
 # ===================== CONTRACT FORM SUBMISSION =====================
@@ -160,12 +154,11 @@ def contract_form_submission(request):
 
 
 # ===================== PAYMENTS =====================
-
-@login_required
 def pay(request, service=None):
     if not request.user.is_authenticated:
         return redirect(reverse("accounts:account-login"))
 
+    payment_info = Payment_Information.objects.filter(customer_id=request.user).last()
     user = request.user
     print(user)
     membership = get_object_or_404(Membership, member=user)
@@ -182,6 +175,7 @@ def pay(request, service=None):
         "message": f"Hi {request.user}, you are yet to sign the contract with us. Kindly contact us at info@codanalytics.net.",
     }
     return render(request, "finance/payments/pay.html", context)
+
 
 class PaymentCreateView(CreateView):
     model = Payment_Information
@@ -300,7 +294,8 @@ def process_payment(request):
                     "finance:payment_page"
                 )  # Redirect back to payment page with error
 
-    return redirect("finance:pay")
+    return redirect("finance/payments/payment_page")
+
 
 def payment_success(request):
     return render(request, "finance/payments/payment_success.html")
@@ -542,10 +537,6 @@ def budget_projection(request, subtitle="summary", duration=2024):
     available_categories = budget_summary.values_list(
         "category__name", flat=True
     ).distinct()
-
-    budget_months = list(range(1, 13))  # Months 1-12
-    budget_years = [2024]  # Add relevant years
-    rate = 1.0  # Exchange rate or conversion factor
 
     context = {
         # "departments": departments,
@@ -1130,6 +1121,7 @@ def admin_send_newsletter(request):
     if request.method == 'POST':
         subject = request.POST.get('subject')
         message = request.POST.get('message')
+
         subscribers = NewsLetterSubscriber.objects.filter(is_verified=True)
         recipient_list = [s.email for s in subscribers]
 
@@ -1177,6 +1169,7 @@ def reject_opportunity(request, pk):
     opportunity.status = 'REJECTED'
     opportunity.save()
     return redirect('finance:moderation_queue')
+
 
 @staff_member_required
 def delete_opportunity(request, pk):

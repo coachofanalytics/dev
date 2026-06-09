@@ -1,128 +1,86 @@
+
 {% load crispy_forms_tags %}
 {% block content %}
 <style>
     body {
-        font-family: Arial, sans-serif;
-        background-color: #f0f2f5;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        height: 100vh;
-        margin: 0;
-    }
+    font-family: Arial, sans-serif;
+    background-color: #f0f2f5;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    margin: 0;
+}
 
-    .login-container {
-        background-color: white;
-        padding: 20px 40px;
-        border-radius: 8px;
-        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-        text-align: center;
-        width: 100%;
-        max-width: 400px;
-    }
+.login-container {
+    background-color: white;
+    padding: 20px 40px;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    text-align: center;
+    width: 100%;
+    max-width: 400px;
+}
 
-    h2 {
-        margin-bottom: 20px;
-        color: #333;
-    }
+h2 {
+    margin-bottom: 20px;
+    color: #333;
+}
 
-    .login-button {
-        background-color: #4CAF50;
-        color: white;
-        padding: 10px 20px;
-        border: none;
-        border-radius: 4px;
-        cursor: pointer;
-        transition: background-color 0.3s;
-        width: 100%;
-        margin-top: 15px;
-    }
+input[type="checkbox"] {
+    margin-right: 10px;
+}
 
-    .login-button:hover {
-        background-color: #45a049;
-    }
+.remember-me {
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
 
-    .form-group {
-        margin-bottom: 15px;
-        text-align: left;
-    }
+.login-button {
+    background-color: #4CAF50;
+    color: white;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+    width: 100%;
+}
 
-    .form-group label {
-        display: block;
-        margin-bottom: 5px;
-        font-weight: bold;
-    }
+.login-button:hover {
+    background-color: #45a049;
+}
 
-    .form-group input {
-        width: 100%;
-        padding: 10px;
-        border: 1px solid #ccc;
-        border-radius: 4px;
-        box-sizing: border-box;
-    }
+input, .remember-me label {
+    margin-bottom: 10px;
+    width: 100%;
+}
 
-    .form-group input:focus {
-        border-color: #4CAF50;
-        outline: none;
-    }
+input[type="text"], input[type="password"] {
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    box-sizing: border-box;
+}
 
-    .alert {
-        padding: 10px;
-        margin-bottom: 15px;
-        border-radius: 4px;
-    }
+input[type="text"]:focus, input[type="password"]:focus {
+    border-color: #4CAF50;
+    outline: none;
+}
 
-    .alert-error {
-        background-color: #f8d7da;
-        border: 1px solid #f5c6cb;
-        color: #721c24;
-    }
-
-    .alert-success {
-        background-color: #d4edda;
-        border: 1px solid #c3e6cb;
-        color: #155724;
-    }
-
-    .messages {
-        margin-bottom: 15px;
-    }
 </style>
-
-<div class="login-container">
-    <h2>Login</h2>
-    
-    <!-- Display messages -->
-    {% if messages %}
-        <div class="messages">
-            {% for message in messages %}
-                <div class="alert alert-{{ message.tags }}">
-                    {{ message }}
-                </div>
-            {% endfor %}
-        </div>
-    {% endif %}
-    
-    <form method="post">
-        {% csrf_token %}
+    <div class="login-container">
         
-        <div class="form-group">
-            <label for="id_username">Username or Email:</label>
-            <input type="text" name="username" id="id_username" class="form-control" 
-                   placeholder="Enter your username or email" required>
-        </div>
+        <h2>Login</h2>
+        <form method="post">
+            {% csrf_token %}
+            {{ form|crispy }}
+            <div class="remember-me">
+            </div>
+            <button type="submit" class="login-button">Login</button>
+        </form>
         
-        <div class="form-group">
-            <label for="id_password">Password:</label>
-            <input type="password" name="password" id="id_password" class="form-control" 
-                   placeholder="Enter your password" required>
-        </div>
-        
-        <button type="submit" class="login-button">Login</button>
-    </form>
-    
-    <div style="margin-top:20px;">
-        <p>Don't have an account? <a href="{% url 'accounts:joins' %}">Register</a></p>
     </div>
-</div>
 {% endblock %}

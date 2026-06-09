@@ -4,7 +4,6 @@
 
 ### Django ###
 *.log
-logs.log
 *.pot
 *.pyc
 __pycache__/
@@ -19,34 +18,8 @@ db.sqlite3-journal
 /gapi/creds/credentials.json
 # /gapi/stored_mails/*
 
- 
-
 ### Apps ###
-# Node.js packages (not used - Python/Django only)
-package.json
-package-lock.json
-node_modules/
-
-
-# Build/utility tools (not part of project)
-*.jar
-bfg-*.jar
-
-# Test files and directories
-test/
-tests/
-test_*.py
-*_test.py
-*/test/
-*/tests/
-BackendTests/
-
-# Report files and directories
-report/
-reports/
-*.report
-test_results_*.xml
-*_test_report.html
+#testing
 
 # If your build process includes running collectstatic, then you probably don't need or want to include staticfiles/
 # in your Git repository. Update and uncomment the following line accordingly.
@@ -158,14 +131,9 @@ celerybeat.pid
 .venv
 env/
 venv/
-dc48_venv/
 ENV/
 env.bak/
 venv.bak/
-node_modules/
-
-# Tests
-tests/
 
 # Spyder project settings
 .spyderproject

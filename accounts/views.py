@@ -45,45 +45,9 @@ from fuzzywuzzy import fuzz
 logger = logging.getLogger(__name__)
 # Create your views here..
 
-from .models import CustomerUser, Membership, Account
-from .forms import CustomUserCreationForm, CustomAuthenticationForm, UserForm, LoginForm, AccountForm
-from .choices import CategoryChoices
-from .utils import get_exchange_rate, send_verification_email
-from django.contrib.auth import logout
 
-# Define category fees directly here
-CATEGORY_FEES = {
-    1: 5000.00,   # ORDINARY_MEMBER
-    2: 10000.00,  # ACTIVE_MEMBER
-    3: 15000.00,  # EXECUTIVE_MEMBER
-    4: 20000.00,  # FBO_ORDINARY
-    5: 25000.00,  # ACTIVE_ORGANIZATION
-    6: 30000.00,  # ROYAL_ORGANIZATION
-}
-
-# Member CRUD views
-class MemberListView(ListView):
-    model = CustomerUser
-    template_name = 'accounts/member_list.html'
-    context_object_name = 'members'
-
-# Add missing CRUD view classes
-class MemberCreateView(CreateView):
-    model = CustomerUser
-    form_class = UserForm  # or CustomUserCreationForm depending on your needs
-    template_name = 'accounts/member_form.html'
-    success_url = reverse_lazy('accounts:member-list')
-
-class MemberUpdateView(UpdateView):
-    model = CustomerUser
-    form_class = UserForm
-    template_name = 'accounts/member_form.html'
-    success_url = reverse_lazy('accounts:member-list')
-
-class MemberDeleteView(DeleteView):
-    model = CustomerUser
-    template_name = 'accounts/member_confirm_delete.html'
-    success_url = reverse_lazy('accounts:member-list')
+# path_values
+# path_val,sub_title=path_values(request)
 
 
 # @allowed_users(allowed_roles=['admin'])
@@ -92,8 +56,11 @@ def home(request):
     print(password)
     return render(request, "main/home_templates/home.html")
 
+
+# @allowed_users(allowed_roles=['admin'])
 def thank(request):
     return render(request, "accounts/clients/thank.html")
+
 
 # ---------------ACCOUNTS VIEWS----------------------
 # @login_required
@@ -241,6 +208,7 @@ class CustomLoginView(LoginView):
 
 
 def join(request):
+    form = UserForm()  # Define form variable with initial value
     if request.method == "POST":
         user_email = request.POST.get("email")
         previous_user = CustomerUser.objects.filter(email__iexact=user_email)
@@ -331,6 +299,7 @@ def email_verification_notice(request, user_id):
 
 def verify_email(request, token):
     try:
+        # Attempt to find the user by the verification token
         user = get_object_or_404(CustomerUser, verification_token=token)
         if user.email_verified == True:
             print("email already verified")
@@ -346,7 +315,7 @@ def verify_email(request, token):
         else:
             # If the user is found, verify the email
             user.email_verified = True
-            user.is_active = True
+            user.is_active = True  # Activate the account
             user.save()
 
             # Render the success message
@@ -593,18 +562,6 @@ class UserUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
             return True
         return False
 
-def superuser_update_view(request, pk):
-    user = get_object_or_404(CustomerUser, pk=pk)
-    if not request.user.is_superuser:
-        return redirect('main:layout')
-    if request.method == 'POST':
-        form = UserForm(request.POST, instance=user)
-        if form.is_valid():
-            form.save()
-            return redirect('/accounts/users')
-    else:
-        form = UserForm(instance=user)
-    return render(request, 'accounts/admin/superuser_update.html', {'form': form, 'user': user})
 
 def select_category(request):
     if request.method == "POST":

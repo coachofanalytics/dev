@@ -165,7 +165,7 @@ h2.subhead {
 h3 {
     font-size: 0.875rem;
     margin: .8em 0 .3em 0;
-    color: var(--body-medium-color);
+    color: var(--body-quiet-color);
     font-weight: bold;
 }
 
@@ -173,7 +173,6 @@ h4 {
     font-size: 0.75rem;
     margin: 1em 0 .8em 0;
     padding-bottom: 3px;
-    color: var(--body-medium-color);
 }
 
 h5 {
@@ -218,10 +217,6 @@ fieldset {
     padding: 0;
     border: none;
     border-top: 1px solid var(--hairline-color);
-}
-
-details summary {
-    cursor: pointer;
 }
 
 blockquote {
@@ -320,7 +315,7 @@ td, th {
 }
 
 th {
-    font-weight: 500;
+    font-weight: 600;
     text-align: left;
 }
 
@@ -341,7 +336,7 @@ tfoot td {
 }
 
 thead th.required {
-    font-weight: bold;
+    color: var(--body-loud-color);
 }
 
 tr.alt {
@@ -489,13 +484,8 @@ textarea {
     vertical-align: top;
 }
 
-/*
-Minifiers remove the default (text) "type" attribute from "input" HTML tags.
-Add input:not([type]) to make the CSS stylesheet work the same.
-*/
-input:not([type]), input[type=text], input[type=password], input[type=email],
-input[type=url], input[type=number], input[type=tel], textarea, select,
-.vTextField {
+input[type=text], input[type=password], input[type=email], input[type=url],
+input[type=number], input[type=tel], textarea, select, .vTextField {
     border: 1px solid var(--border-color);
     border-radius: 4px;
     padding: 5px 6px;
@@ -504,13 +494,9 @@ input[type=url], input[type=number], input[type=tel], textarea, select,
     background-color: var(--body-bg);
 }
 
-/*
-Minifiers remove the default (text) "type" attribute from "input" HTML tags.
-Add input:not([type]) to make the CSS stylesheet work the same.
-*/
-input:not([type]):focus, input[type=text]:focus, input[type=password]:focus,
-input[type=email]:focus, input[type=url]:focus, input[type=number]:focus,
-input[type=tel]:focus, textarea:focus, select:focus, .vTextField:focus {
+input[type=text]:focus, input[type=password]:focus, input[type=email]:focus,
+input[type=url]:focus, input[type=number]:focus, input[type=tel]:focus,
+textarea:focus, select:focus, .vTextField:focus {
     border-color: var(--body-quiet-color);
 }
 
@@ -600,7 +586,7 @@ input[type=button][disabled].default {
     font-weight: 400;
     font-size: 0.8125rem;
     text-align: left;
-    background: var(--header-bg);
+    background: var(--primary);
     color: var(--header-link-color);
 }
 
@@ -736,11 +722,6 @@ div.breadcrumbs a:focus, div.breadcrumbs a:hover {
     background: url(../img/icon-viewlink.svg) 0 1px no-repeat;
 }
 
-.hidelink {
-    padding-left: 16px;
-    background: url(../img/icon-hidelink.svg) 0 1px no-repeat;
-}
-
 .addlink {
     padding-left: 16px;
     background: url(../img/icon-addlink.svg) 0 1px no-repeat;
@@ -850,6 +831,10 @@ a.deletelink:focus, a.deletelink:hover {
     height: 100%;
 }
 
+#container > div {
+    flex-shrink: 0;
+}
+
 #container > .main {
     display: flex;
     flex: 1 0 auto;
@@ -894,10 +879,9 @@ a.deletelink:focus, a.deletelink:hover {
     margin-right: -300px;
 }
 
-@media (forced-colors: active) {
-  #content-related {
-      border: 1px solid;
-  }
+#footer {
+    clear: both;
+    padding: 10px;
 }
 
 /* COLUMN TYPES */
@@ -935,6 +919,7 @@ a.deletelink:focus, a.deletelink:hover {
     padding: 10px 40px;
     background: var(--header-bg);
     color: var(--header-color);
+    overflow: hidden;
 }
 
 #header a:link, #header a:visited, #logout-form button {
@@ -945,17 +930,11 @@ a.deletelink:focus, a.deletelink:hover {
     text-decoration: underline;
 }
 
-@media (forced-colors: active) {
-  #header {
-      border-bottom: 1px solid;
-  }
-}
-
 #branding {
     display: flex;
 }
 
-#site-name {
+#branding h1 {
     padding: 0;
     margin: 0;
     margin-inline-end: 20px;

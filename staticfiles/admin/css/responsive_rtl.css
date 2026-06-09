@@ -28,10 +28,21 @@
         margin-left: 0;
     }
 
+    [dir="rtl"] .inline-group ul.tools a.add,
     [dir="rtl"] .inline-group div.add-row a,
     [dir="rtl"] .inline-group .tabular tr.add-row td a {
         padding: 8px 26px 8px 10px;
         background-position: calc(100% - 8px) 9px;
+    }
+
+    [dir="rtl"] .related-widget-wrapper-link + .selector {
+        margin-right: 0;
+        margin-left: 15px;
+    }
+
+    [dir="rtl"] .selector .selector-filter label {
+        margin-right: 0;
+        margin-left: 8px;
     }
 
     [dir="rtl"] .object-tools li {
