@@ -5,6 +5,7 @@
 
 <style>
     /* ============ RESET & BASE (page-specific) ============ */
+    section { display: block !important; }
     main { background: #f5f7fa; }
 
     /* ============ HERO ============ */
@@ -157,7 +158,7 @@
 <section class="hero" aria-label="Search for doctors">
     <h1>Find Diaspora-Friendly Doctors</h1>
     <p>Search our vetted network of medical professionals who understand your culture and history.</p>
-    <form class="search-form" method="GET" action="{% url 'find_doctors' %}" role="search" aria-label="Doctor search">
+    <form class="search-form" method="GET" action="{% url 'main:find_doctors' %}" role="search" aria-label="Doctor search">
         <input type="text" name="specialty" value="{{ specialty_q }}" placeholder="Specialty (e.g., Cardiologist, Dentist)" aria-label="Specialty">
         <input type="text" name="location" value="{{ location_q }}" placeholder="Location (City or Country)" aria-label="Location">
         <button type="submit" class="btn-search">Search Now</button>
@@ -190,7 +191,7 @@
 
     <!-- FILTERS -->
     <aside class="filters" id="filters-panel" aria-label="Filter results">
-        <form id="filter-form" method="GET" action="{% url 'find_doctors' %}">
+        <form id="filter-form" method="GET" action="{% url 'main:find_doctors' %}">
             <input type="hidden" name="specialty" value="{{ specialty_q }}">
             <input type="hidden" name="location" value="{{ location_q }}">
             <input type="hidden" name="sort" value="{{ sort_by }}">

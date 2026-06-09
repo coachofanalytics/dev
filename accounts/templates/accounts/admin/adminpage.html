@@ -9,15 +9,15 @@
           <th>username</th>
           <th>First</th>
           <th>Last</th>
-             <!-- <th>Full Name</th>
+           <th>Full Name</th>
           <th>Number</th>
           <th>Email</th>
-          <th>is_admin</th>
-          <th>is_client</th>
+          <th>member_number</th>
+          {% comment %} <th>is_client</th>
           <th>is_staff</th>
           <th>is_applicant</th>
           <th>is_active</th>
-          <th>is_staff</th> -->
+          <th>is_staff</th> --> {% endcomment %}
           <th>Update</th>
         </tr>
       </thead>
@@ -28,9 +28,10 @@
           <td>{{user.username}}</td>
           <td>{{user.first_name}}</td>
           <td>{{user.last_name}}</td>
-          <!-- <td>{{user.full_name}}</td>
+          <td>{{user.full_name}}</td>
           <td>{{user.phone}}</td>
-          <td>{{user.email}}</td> -->
+          <td>{{user.email}}</td> 
+          <td>{{user.member_number}}</td>
           <!-- <td>{{user.is_admin}}</td>
           <td>{{user.is_client}}</td>
           <td>{{user.is_staff}}</td>
@@ -38,7 +39,6 @@
           <td>{{user.is_active}}</td>
           <td>{{user.is_staff}}</td> -->
           <td> <a class="article-title" href="{% url 'accounts:user-update' user.id %}">Edit</a></td>
-          <!-- <td> <a class="article-title" href="{% url 'accounts:user-delete' user.id %}">Delete</a></td> -->
         </tr>
         {% endfor %}
       </tbody>

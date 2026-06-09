@@ -2,7 +2,7 @@
 {% block title %}Login{% endblock %}
 {% load crispy_forms_tags %}
 {% block content %}
-{% load socialaccount %}
+
 <style>
   /* Shared */
   .login-div {
@@ -110,7 +110,80 @@
  
 </style>
 
+
+
 <div class="login-div">
+  <div class="user_card">
+    <!-- <div class="d-flex justify-content-center">
+      <h4 id="form-title">LOGIN</h4>
+    </div> -->
+    <div class="d-flex justify-content-center">
+      <font size="3" color="white">{{ msg }}</font>
+    </div>
+    <div class="row">
+      <div class="col-md-6 form-div">
+        <div class="container">
+          <h2 style="color: #03b1af;">Login</h2>
+          <form method="post">
+            {% csrf_token %}
+            <div class="form-group">
+              <label for="">Enter Your Username/Email</label>
+              {{ form.enter_your_username_or_email.errors }}
+              {{ form.enter_your_username_or_email }}
+            </div>
+            <div class="form-group">
+              <label for="">Enter Your Password</label>
+              {{ form.password.errors }}
+              {{ form.enter_your_password }}
+            </div>
+            <input type="hidden" name="next" value="{{ next }}">
+            <div class="form-group form-checkbox d-flex mb-3">
+              <input type="checkbox" name="" id="" />
+              <label for="" class="align-items-center">Remember Me</label>
+            </div>
+            <div class="button-row">
+              <button type="submit" class="btn btn-primary" style="color: black; background-color: #03b1af;border: NONE;">LOG IN</button>
+              <p class="p-or" style="color: white;margin-left: 20px;margin-right: 20px;margin-top: 14px;">or</p>
+              {% comment %} <a id="google-signin-link" href="" style="color: black;" type='button' class="loginBtn loginBtn--google">
+								Login with Google
+							</a> {% endcomment %}
+              <p class="p-or" style="color: white;margin-left: 20px;margin-right: 20px;margin-top: 14px;">or</p>
+              <a id="otp" href="{% url 'otp_reset' %}" >
+								Login with One Time Code
+							</a>
+            </div>
+          </form>
+        </div>
+      </div>
+      <div class="col-md-6 other-detail">
+        <div class="container">
+          <h2 style="color: #03b1af;;">Need Help?</h2>
+          <h3 style="color: black;">Forgot Your Login Detail?</h3>
+          <p class="mb-2" style="color: black;">
+            Retrieve your <span style="color: #03b1af;">USERNAME</span>
+          </p>
+           <p style="color: black;">
+            Retrieve your
+            <a href="{% url 'password_reset' %}" style="color: #03b1af;">PASSWORD</a>
+          </p>
+          <div class="down-detail">
+            <p style="color: black;">NOT YET REGISTERED?</p>
+            <a href="{% url 'accounts:joins' %}" class="btn btn-primary" style="color: black;background-color: #03b1af;border: none;">SIGN UP</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock content %}
+
+
+
+
+
+
+
+{% comment %} <div class="login-div">
   <div class="user_card">
     <!-- <div class="d-flex justify-content-center">
       <h4 id="form-title">LOGIN</h4>
@@ -141,7 +214,7 @@
             <div class="button-row">
               <button type="submit" class="btn btn-primary" style="color: black; background-color: #03b1af;border: NONE;">LOG IN</button>
               <p class="p-or" style="color: white;margin-left: 20px;margin-right: 20px;margin-top: 14px;">or</p>
-              <a id="google-signin-link" href="{% provider_login_url 'google' %}" style="color: black;" type='button' class="loginBtn loginBtn--google">
+              <a id="google-signin-link" href="" style="color: black;" type='button' class="loginBtn loginBtn--google">
 								Login with Google
 							</a>
             </div>
@@ -168,4 +241,4 @@
     </div>
   </div>
 </div>
-{% endblock content %}
+{% endblock content %} {% endcomment %}

@@ -70,20 +70,4 @@
     [dir="rtl"] .aligned .vCheckboxLabel {
         padding: 1px 5px 0 0;
     }
-
-    [dir="rtl"] .selector-remove {
-        background-position: 0 0;
-    }
-
-    [dir="rtl"] :enabled.selector-remove:focus, :enabled.selector-remove:hover {
-        background-position: 0 -24px;
-    }
-
-    [dir="rtl"] .selector-add  {
-        background-position: 0 -48px;
-    }
-
-    [dir="rtl"] :enabled.selector-add:focus, :enabled.selector-add:hover {
-        background-position: 0 -72px;
-    }
 }

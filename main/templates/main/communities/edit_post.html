@@ -1,0 +1,203 @@
+{% extends "main/base_templates/base.html" %}
+{% load static %}
+{% block title %}Edit Forum Post{% endblock %}
+{% block content %}
+<style>
+    :root {
+        --success-green: #0d9f6e;
+        --dark-green: #0b8a60;
+        --navy: #041858;
+    }
+    .edit-container {
+        max-width: 700px;
+        margin: 40px auto;
+        padding: 0 20px;
+    }
+    .edit-card {
+        background: white;
+        border-radius: 12px;
+        padding: 30px;
+        box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+    }
+    .edit-header {
+        margin-bottom: 28px;
+        padding-bottom: 20px;
+        border-bottom: 2px solid #e5e7eb;
+    }
+    .edit-header h1 {
+        font-size: 28px;
+        font-weight: 700;
+        color: var(--navy);
+        margin: 0 0 8px 0;
+    }
+    .breadcrumb {
+        font-size: 13px;
+        color: #999;
+    }
+    .breadcrumb a {
+        color: var(--success-green);
+        text-decoration: none;
+        font-weight: 600;
+    }
+    .breadcrumb a:hover {
+        color: var(--dark-green);
+    }
+    .form-group {
+        margin-bottom: 20px;
+    }
+    .form-group label {
+        display: block;
+        font-weight: 600;
+        color: #333;
+        margin-bottom: 8px;
+        font-size: 14px;
+    }
+    .form-group input,
+    .form-group textarea {
+        width: 100%;
+        padding: 12px 14px;
+        border: 1px solid #d1d5db;
+        border-radius: 8px;
+        font-family: inherit;
+        font-size: 14px;
+        color: #333;
+        transition: border-color 0.2s;
+    }
+    .form-group input:focus,
+    .form-group textarea:focus {
+        outline: none;
+        border-color: var(--success-green);
+        box-shadow: 0 0 0 3px rgba(13, 159, 110, 0.1);
+    }
+    .form-group textarea {
+        resize: vertical;
+        min-height: 300px;
+    }
+    .form-actions {
+        display: flex;
+        gap: 12px;
+        margin-top: 28px;
+        padding-top: 20px;
+        border-top: 1px solid #e5e7eb;
+    }
+    .btn {
+        padding: 11px 24px;
+        border: none;
+        border-radius: 8px;
+        font-weight: 600;
+        font-size: 14px;
+        cursor: pointer;
+        transition: all 0.3s;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+    }
+    .btn-save {
+        background: linear-gradient(135deg, var(--success-green), var(--dark-green));
+        color: white;
+        flex: 1;
+    }
+    .btn-save:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(13, 159, 110, 0.3);
+    }
+    .btn-cancel {
+        background: #f3f4f6;
+        color: #666;
+        flex: 1;
+    }
+    .btn-cancel:hover {
+        background: #e5e7eb;
+        color: #333;
+    }
+    .info-box {
+        background: #f0fdf4;
+        border-left: 4px solid var(--success-green);
+        padding: 14px 16px;
+        border-radius: 6px;
+        margin-bottom: 20px;
+        font-size: 13px;
+        color: #166534;
+    }
+    .post-info {
+        background: #f5f7fb;
+        border-radius: 10px;
+        padding: 16px;
+        margin-bottom: 24px;
+        border-left: 4px solid var(--navy);
+    }
+    .post-info-label {
+        font-size: 12px;
+        color: #999;
+        font-weight: 600;
+        margin-bottom: 4px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+    .post-info-value {
+        font-size: 14px;
+        color: #333;
+        font-weight: 500;
+    }
+</style>
+
+<div class="edit-container">
+    <div class="edit-card">
+        <div class="edit-header">
+            <h1>✎ Edit Forum Post</h1>
+            <div class="breadcrumb">
+                <a href="{% url 'communities:forum_home' %}">Forums</a> &nbsp;/&nbsp;
+                <a href="{% url 'communities:category_detail' post.category.slug %}">{{ post.category.name }}</a> &nbsp;/&nbsp;
+                <a href="{% url 'communities:view_post' post.id %}">{{ post.title }}</a>
+            </div>
+        </div>
+
+        <div class="info-box">
+            <i class="fas fa-info-circle"></i> Only administrators can edit posts. Your changes will be saved immediately.
+        </div>
+
+        <div class="post-info">
+            <div class="post-info-label">Posted by</div>
+            <div class="post-info-value">{% if post.author %}{{ post.author.get_full_name|default:post.author.username }}{% else %}Anonymous{% endif %}</div>
+            <div style="margin-top: 12px;">
+                <div class="post-info-label">Category</div>
+                <div class="post-info-value">{{ post.category.name }}</div>
+            </div>
+        </div>
+
+        <form method="post">
+            {% csrf_token %}
+
+            <div class="form-group">
+                <label for="{{ form.title.id_for_label }}">Post Title</label>
+                {{ form.title }}
+                {% if form.title.errors %}
+                <div style="color: #dc2626; font-size: 13px; margin-top: 6px;">
+                    {{ form.title.errors.0 }}
+                </div>
+                {% endif %}
+            </div>
+
+            <div class="form-group">
+                <label for="{{ form.content.id_for_label }}">Post Content</label>
+                {{ form.content }}
+                {% if form.content.errors %}
+                <div style="color: #dc2626; font-size: 13px; margin-top: 6px;">
+                    {{ form.content.errors.0 }}
+                </div>
+                {% endif %}
+            </div>
+
+            <div class="form-actions">
+                <button type="submit" class="btn btn-save">
+                    <i class="fas fa-save"></i> Save Changes
+                </button>
+                <a href="{% url 'communities:view_post' post.id %}" class="btn btn-cancel">
+                    <i class="fas fa-times"></i> Cancel
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

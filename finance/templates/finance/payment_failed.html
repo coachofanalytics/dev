@@ -1,0 +1,13 @@
+{% extends "main/base_templates/base.html" %}
+{% block content %}
+<div style="text-align: center; padding: 50px;">
+    <h2 style="color: red;">🚫 Payment Failed</h2>
+    <p>Unfortunately, your payment could not be processed at this time.</p>
+    <p>Please try again, use a different payment method, or contact us if the problem persists.</p>
+    <a href="{% url 'finance:donation' %}" 
+       style="margin-top: 20px; display: inline-block; text-decoration: none; 
+              padding: 10px 20px; background: #dc3545; color: white; border-radius: 5px;">
+        Try Again
+    </a>
+</div>
+{% endblock %}

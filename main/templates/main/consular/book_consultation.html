@@ -3,6 +3,7 @@
 {% block content %}
 
 <style>
+    section { display: block !important; }
     .hero-overlay {
         min-height: 370px;
         background: linear-gradient(135deg, #1a3a2a 0%, #2563eb 100%);
@@ -401,7 +402,7 @@
         };
 
         console.log('Data to submit:', data);
-        const submitUrl = '{% url "main:submit_expert_inquiry" %}';
+        const submitUrl = '{% url "main:book_consular_consultation" %}';
         console.log('Submission URL:', submitUrl);
 
         // Send request via AJAX

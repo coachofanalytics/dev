@@ -10,6 +10,7 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&display=swap" rel="stylesheet">
     <style>
+        section { display: block !important; }
         * {
             margin: 0;
             padding: 0;
@@ -20,14 +21,14 @@
             background-color: #f9fafb;
             color: #1f2937;
         }
-        .text-brand-blue { color: #2e46b6; } 
-        .bg-brand-blue { background-color: #2e46b6; } 
-        .text-brand-green { color: #0a926d; } 
+        .text-brand-blue { color: #2e46b6; }
+        .bg-brand-blue { background-color: #2e46b6; }
+        .text-brand-green { color: #0a926d; }
         .bg-brand-green { background-color: #0a926d; }
         .text-brand-red { color: #ca0606; }
-        .bg-brand-red { background-color: #ca0606; } 
+        .bg-brand-red { background-color: #ca0606; }
         .main-heading { font-weight: 900; }
-        
+
         /* Breadcrumb Navigation */
         .crisis-breadcrumb {
             background: #f8f9fa;
@@ -43,13 +44,13 @@
             color: #0a926d;
             font-weight: 600;
             margin: 0 10px;
-        } 
-         
+        }
+
         .service-block {
             margin-bottom: 4rem;
             padding-top: 2rem;
             padding-bottom: 2rem;
-        } 
+        }
         .service-list li {
             position: relative;
             padding-left: 1.5rem;
@@ -62,12 +63,12 @@
             top: 0.5rem;
             width: 0.5rem;
             height: 0.5rem;
-            background-color: #cc0000;  
+            background-color: #cc0000;
             border-radius: 50%;
         }
- 
+
         .loading-placeholder {
-            min-height: 280px; 
+            min-height: 280px;
             background-color: #e5e7eb;
             display: flex;
             align-items: center;
@@ -82,7 +83,6 @@
         .animate-pulse-custom {
             animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
         }
- 
         .hero-image-container {
             overflow: hidden;
             display: flex;
@@ -99,7 +99,7 @@
             bottom: 20px;
             right: 20px;
             background-color: #0a926d;
-            border-radius: 50%; 
+            border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -118,10 +118,10 @@
             width: 350px;
             height: 450px;
             max-width: 90vw;
-            background-color: white; 
+            background-color: white;
             border-radius: 12px;
             box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
-            display: none; 
+            display: none;
             flex-direction: column;
             z-index: 50;
             overflow: hidden;
@@ -129,23 +129,21 @@
          #chat-container.open {
             display: flex;
         }
- 
         #chat-header {
             padding: 1rem;
             display: flex;
             align-items: center;
             justify-content: space-between;
         }
- 
         #chat-messages {
             flex-grow: 1;
             padding: 1rem;
             overflow-y: auto;
-            background-color: #f7f9fc;  
+            background-color: #f7f9fc;
             border-top: 1px solid #e5e7eb;
             border-bottom: 1px solid #e5e7eb;
         }
-         
+
         .message-bubble {
             max-width: 80%;
             padding: 0.75rem 1rem;
@@ -154,18 +152,17 @@
             word-wrap: break-word;
         }
         .bot-message {
-            background-color: #e6f7f4;  
-            color: #0a926d;  
+            background-color: #e6f7f4;
+            color: #0a926d;
             margin-right: auto;
             border-bottom-left-radius: 2px;
         }
         .user-message {
-            background-color: #2e46b6;  
+            background-color: #2e46b6;
             color: white;
             margin-left: auto;
             border-bottom-right-radius: 2px;
         }
- 
         #chat-input-area {
             padding: 1rem;
             display: flex;
@@ -182,7 +179,6 @@
         #chat-input:focus {
             border-color: #2e46b6;
         }
- 
         #send-button {
             margin-left: 0.75rem;
             width: 40px;
@@ -199,17 +195,16 @@
 </head>
 <body>
     <script>
-        
  function toggleChat() {
             const chatContainer = document.getElementById('chat-container');
             const chatButton = document.getElementById('chat-button');
             const isOpen = chatContainer.classList.toggle('open');
-             
+
             chatButton.innerHTML = isOpen ? `<svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>` : `<svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>`;
 
-            if (isOpen) { 
+            if (isOpen) {
                 const messages = document.getElementById('chat-messages');
-                if (messages.children.length === 0) { 
+                if (messages.children.length === 0) {
                     appendMessage("Welcome! I'm the **Crisis AI Assistant** for Diaspora County 48. Feel free to ask me for information on **Emergency** support, safety **Advisories**, **Welfare** checks, or general **Contact** details.", 'bot');
                 }
             }
@@ -218,26 +213,25 @@
         function appendMessage(text, sender) {
             const messagesContainer = document.getElementById('chat-messages');
             const messageElement = document.createElement('div');
-             
             let content = text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
 
             messageElement.classList.add('message-bubble', sender === 'user' ? 'user-message' : 'bot-message');
             messageElement.innerHTML = content;
             messagesContainer.appendChild(messageElement);
-            messagesContainer.scrollTop = messagesContainer.scrollHeight;  
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
         }
 
         function handleUserInput() {
             const inputElement = document.getElementById('chat-input');
             const message = inputElement.value.trim();
 
-            if (message) { 
+            if (message) {
                 appendMessage(message, 'user');
- 
+
                 setTimeout(() => {
                     const response = simulateAIResponse(message);
                     appendMessage(response, 'bot');
-                }, 800);  
+                }, 800);
                 inputElement.value = '';
             }
         }
@@ -253,13 +247,13 @@
                 return "❤️ **WELFARE CHECK:** We can conduct urgent welfare checks for registered members. Please state the full name and last known location of the individual you are concerned about for immediate processing.";
             } else if (lowerCaseMessage.includes('contact')) {
                 return "📞 **CONTACT:** The Diaspora County 48 Crisis Line is available 24/7. You can find the contact number by clicking the 'Contact DC48K Crisis Line' button in the red section at the bottom of the page.";
-            } else { 
+            } else {
                 return "That's a good question! I specialize in crisis services. To get the most relevant response, try focusing your question on one of these areas: **Emergency** support, safety **Advisories**, **Welfare** checks, or general **Contact** information.";
             }
         }
 
-        window.onload = function() { 
-            
+        window.onload = function() {
+
             document.getElementById('chat-button').addEventListener('click', toggleChat);
             document.getElementById('send-button').addEventListener('click', handleUserInput);
             document.getElementById('chat-input').addEventListener('keypress', function (e) {
@@ -341,7 +335,7 @@
             const helplineForm = document.getElementById('helpline-form');
             const helplineMsg = document.getElementById('helpline-msg');
 
-            function getCookie(name) {
+            function getCookieHelpline(name) {
                 const value = `; ${document.cookie}`;
                 const parts = value.split(`; ${name}=`);
                 if (parts.length === 2) return parts.pop().split(';').shift();
@@ -365,7 +359,7 @@
                         helplineMsg.textContent = 'Submitting...';
                         helplineMsg.className = 'text-gray-600 text-sm mt-2';
                     }
-                    const csrfToken = (document.querySelector('#helpline-form input[name=csrfmiddlewaretoken]')?.value) || getCookie('csrftoken');
+                    const csrfToken = (document.querySelector('#helpline-form input[name=csrfmiddlewaretoken]')?.value) || getCookieHelpline('csrftoken');
                     const payload = new URLSearchParams({
                         name: document.getElementById('hl-name')?.value || '',
                         phone: document.getElementById('hl-phone')?.value || '',
@@ -438,17 +432,17 @@
                 </div>
                 <!-- Image Column -->
                 <div class="w-full h-full hero-image-container">
-                    <img id="image-hero"  
-                         src="{% static 'main/img/lady.png' %}" 
+                    <img id="image-hero"
+                         src="{% static 'main/img/lady.png' %}"
                          class="w-full h-full object-cover loading-placeholder"
                          style="max-height: 400px; min-height: 400px;">
                 </div>
             </div>
         </header>
-        
+
         <!-- Breadcrumb Navigation -->
         <div class="crisis-breadcrumb">
-            <a href="{% url 'main:home' %}">Home</a>
+            <a href="{% url 'main:layout' %}">Home</a>
             <span>/</span>
             <span>Crisis Management</span>
         </div>
@@ -462,7 +456,6 @@
         </section>
         <!-- SERVICES DETAILED BLOCKS (Alternating Layout) -->
         <section class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
-            
             <!-- 1. Emergency Response (Image Left) -->
             <div id="emergency-response" class="service-block grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
                 <!-- Image -->
@@ -482,7 +475,7 @@
                         <li>Referrals to emergency legal counsel and repatriation assistance</li>
                     </ul>
                     <div class="mt-6">
-                        <a href="#" id="open-contacts" class="inline-block bg-brand-red text-white font-bold py-3 px-6 rounded-md 
+                        <a href="#" id="open-contacts" class="inline-block bg-brand-red text-white font-bold py-3 px-6 rounded-md
                         uppercase text-sm tracking-wider hover:bg-red-800 transition duration-300">
                             View Emergency Contact List
                         </a>
@@ -524,12 +517,11 @@
                 </div>
                 <!-- Image -->
                 <div class="lg:order-2">
-                    <img id="image-advisories" src="{% static 'main/img/family.png' %}" 
+                    <img id="image-advisories" src="{% static 'main/img/family.png' %}"
                     class="w-full rounded-xl shadow-lg object-cover loading-placeholder">
                 </div>
             </div>
             <!-- ChatboxAssistance section -->
-           
 <div id="chat-button" class="bg-brand-green text-white">
   <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"
        xmlns="http://www.w3.org/2000/svg">
@@ -537,7 +529,6 @@
           d="M8 10h.01M12 10h.01M16 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
   </svg>
 </div>
- 
 <div id="chat-container">
   <div id="chat-header" class="bg-brand-blue text-white flex justify-between items-center">
     <h4 class="text-lg font-bold">Crisis AI Assistant</h4>
@@ -549,7 +540,6 @@
       </svg>
     </button>
   </div>
- 
   <div id="chat-messages"></div>
 
   <div id="chat-input-area">
@@ -571,7 +561,7 @@
   <div class="bg-white max-w-lg mx-auto mt-24 rounded-lg shadow-xl p-6">
     <div class="flex items-center justify-between mb-4">
       <h4 class="text-xl font-bold text-brand-red">Emergency Help Line</h4>
-      <button id="helpline-close" class="text-gray-500 hover:text-gray-700">✕</button>
+      <button id="helpline-close" class="text-gray-500 hover:text-gray-700">&#10005;</button>
     </div>
 
     <div class="mb-6">
@@ -604,7 +594,6 @@
       </form>
     </div>
   </div>
-  
 </div>
 
 <!-- Emergency Contacts Modal (read-only list) -->
@@ -612,7 +601,7 @@
   <div class="bg-white max-w-lg mx-auto mt-24 rounded-lg shadow-xl p-6">
     <div class="flex items-center justify-between mb-4">
       <h4 class="text-xl font-bold text-brand-red">Emergency Contact List</h4>
-      <button id="contacts-close" class="text-gray-500 hover:text-gray-700">✕</button>
+      <button id="contacts-close" class="text-gray-500 hover:text-gray-700">&#10005;</button>
     </div>
 
     <div>

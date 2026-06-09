@@ -1,0 +1,105 @@
+{% extends "main/base_templates/base.html" %}
+{% load static %}
+{% block title %}{% if is_reply %}Reply to Message{% else %}Send Message{% endif %}{% endblock %}
+{% block content %}
+<style>
+    :root {
+        --success-green: #0d9f6e;
+        --dark-green: #0b8a60;
+        --primary-blue: #1f3bb3;
+        --gray-50: #f5f7fb;
+    }
+    .msg-container { max-width: 700px; margin: 40px auto; padding: 0 20px; }
+    .msg-card {
+        background: white; border-radius: 12px; padding: 30px;
+        box-shadow: 0 2px 12px rgba(0,0,0,0.08); margin-bottom: 20px;
+    }
+    .recipient-card {
+        display: flex; align-items: center; gap: 16px;
+        background: var(--gray-50); border-radius: 10px; padding: 16px 20px; margin-bottom: 24px;
+    }
+    .recipient-avatar {
+        width: 50px; height: 50px; border-radius: 50%;
+        background: linear-gradient(135deg, var(--success-green), var(--dark-green));
+        color: white; display: flex; align-items: center; justify-content: center;
+        font-size: 20px; font-weight: 700; flex-shrink: 0;
+    }
+    .recipient-info h4 { margin: 0; font-size: 16px; color: #111; }
+    .recipient-info p { margin: 4px 0 0; font-size: 13px; color: #666; }
+    .form-label { font-weight: 600; color: #333; margin-bottom: 6px; }
+    .form-control { border: 1px solid #d1d5db; border-radius: 8px; padding: 10px 14px; font-size: 14px; }
+    .form-control:focus { border-color: var(--success-green); box-shadow: 0 0 0 3px rgba(13,159,110,0.15); outline: none; }
+    .send-btn {
+        background: linear-gradient(135deg, var(--success-green), var(--dark-green));
+        color: white; border: none; border-radius: 8px; padding: 12px 32px;
+        font-weight: 600; font-size: 15px; cursor: pointer; transition: all 0.3s;
+        display: inline-flex; align-items: center; gap: 8px;
+    }
+    .send-btn:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(13,159,110,0.3); }
+    .cancel-btn {
+        color: #666; text-decoration: none; padding: 12px 20px; font-weight: 500;
+        display: inline-flex; align-items: center; gap: 6px;
+    }
+    .cancel-btn:hover { color: #333; }
+    .original-msg {
+        background: #f9fafb; border-left: 4px solid var(--success-green);
+        padding: 14px 18px; border-radius: 0 8px 8px 0; margin-bottom: 20px;
+    }
+    .original-msg p { margin: 0; font-size: 13px; color: #555; line-height: 1.6; }
+    .original-msg .meta { font-size: 12px; color: #999; margin-bottom: 6px; }
+    .page-title { font-size: 24px; font-weight: 700; color: #111; margin-bottom: 4px; }
+    .page-subtitle { font-size: 14px; color: #666; margin-bottom: 24px; }
+</style>
+
+<div class="msg-container">
+    {% if messages %}
+        {% for message in messages %}
+        <div class="alert alert-{% if message.tags == 'error' %}danger{% elif message.tags == 'warning' %}warning{% else %}success{% endif %} alert-dismissible fade show" role="alert">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+        {% endfor %}
+    {% endif %}
+
+    <div class="msg-card">
+        <h2 class="page-title">{% if is_reply %}Reply to Message{% else %}Send Message{% endif %}</h2>
+        <p class="page-subtitle">{% if is_reply %}Replying to {{ recipient.name }}{% else %}Compose a new message{% endif %}</p>
+
+        <!-- Recipient Info -->
+        <div class="recipient-card">
+            <div class="recipient-avatar">{{ recipient.name|first|upper }}</div>
+            <div class="recipient-info">
+                <h4>{{ recipient.name }}</h4>
+                <p>{{ recipient.profession }} &middot; {{ recipient.region }}</p>
+            </div>
+        </div>
+
+        {% if is_reply and original %}
+        <div class="original-msg">
+            <div class="meta"><strong>{{ original.sender.name }}</strong> wrote on {{ original.created_at|date:"M d, Y H:i" }}:</div>
+            <p>{{ original.body }}</p>
+        </div>
+        {% endif %}
+
+        <form method="post">
+            {% csrf_token %}
+            <div class="mb-3">
+                <label for="id_subject" class="form-label">Subject</label>
+                {{ form.subject }}
+            </div>
+            <div class="mb-3">
+                <label for="id_body" class="form-label">Message</label>
+                {{ form.body }}
+            </div>
+            <div style="display: flex; align-items: center; gap: 12px; margin-top: 20px;">
+                <button type="submit" class="send-btn">
+                    <i class="fas fa-paper-plane"></i> {% if is_reply %}Send Reply{% else %}Send Message{% endif %}
+                </button>
+                <a href="{% url 'communities:member_directory' %}" class="cancel-btn">
+                    <i class="fas fa-arrow-left"></i> Cancel
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

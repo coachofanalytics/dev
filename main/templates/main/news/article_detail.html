@@ -192,7 +192,7 @@
 
     {% if article.featured_image %}
     <div class="img-wrapper">
-        <img src="{{ article.featured_image.url }}" alt="{{article.title}}" class="featured-img">
+        <img src="{{ article.featured_image.url }}" alt="{{article.title}}" class="featured-img" onerror="this.onerror=null;this.src='{% static 'main/img/info_updates/embassy_government_news.png' %}';">
     </div>
     {% endif %}
 
@@ -209,9 +209,7 @@
     {% for item in related_articles %}
     <article class="article-card">
         <div class="card-image-wrapper">
-            {% if item.featured_image %}
-            <img src="{{ item.featured_image.url }}" alt="item.title">
-            {% endif %}
+            <img src="{% if item.featured_image %}{{ item.featured_image.url }}{% else %}{% static 'main/img/info_updates/embassy_government_news.png' %}{% endif %}" alt="{{ item.title }}" onerror="this.onerror=null;this.src='{% static 'main/img/info_updates/embassy_government_news.png' %}';">
         </div>
 
         <div class="card-body">

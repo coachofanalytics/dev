@@ -40,7 +40,7 @@ def notify_user_on_status_change(sender, instance, created, **kwargs):
                 f"Hello,\n\n"
                 f"Good news! Your investment opportunity '{instance.title}' has been verified "
                 f"by our team and is now live on the Diaspora Investment Directory.\n\n"
-                f"View it here: {settings.SITE_URL}/finance/directory/\n\n"
+                f"View it here: {getattr(settings, 'SITE_URL', 'http://localhost:8000')}/finance/directory/\n\n"
                 f"Thank you for contributing to the community!"
             )
             

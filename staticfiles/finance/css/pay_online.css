@@ -1,0 +1,202 @@
+/* Reset and layout */
+* {
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Segoe UI', sans-serif;
+  background-color: #f9f9f9;
+  margin: 0;
+  padding: 0;
+}
+
+section.payment-wrapper {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 40px 20px;
+}
+
+/* Container */
+.payment-container {
+  display: flex;
+  background: white;
+  border-radius: 20px;
+  overflow: hidden;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+  width: 1000px;
+  max-width: 95%;
+}
+
+/* Left Panel */
+.payment-left {
+  background: #00c28b;
+  color: white;
+  width: 50%;
+  padding: 30px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.package-card {
+  background-color: rgba(255, 255, 255, 0.15);
+  padding: 20px;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.package-card h5 {
+  font-size: 25px;
+  margin-bottom: 10px;
+  text-align: center;
+  color: red;
+}
+
+.package-card p {
+  font-size: 20px;
+  margin-bottom: 10px;
+  text-align: center;
+  color: black;
+}
+
+.package-card .amount {
+  font-size: 22px;
+  font-weight: bold;
+  margin-bottom: 10px;
+}
+
+.package-card .summary-placeholder .line {
+  height: 8px;
+  background: rgba(255, 255, 255, 0.3);
+  border-radius: 5px;
+  margin-bottom: 8px;
+}
+
+.package-card .summary-placeholder .line.short {
+  width: 60%;
+}
+
+.package-card.selected {
+  background-color: rgba(255, 255, 255, 0.35);
+  border: 2px solid white;
+}
+
+/* Right Panel */
+.payment-right {
+  padding: 30px;
+  width: 50%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 25px;
+}
+
+.payment-right h3 {
+  font-size: 18px;
+  margin-bottom: 10px;
+}
+
+/* Payment icons */
+.payment-icons {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 40px;
+  margin-bottom: 90px;
+}
+
+.icon-button {
+  background: #f5f5f5;
+  border-radius: 50%;                /* Make it circular */
+  width: 90px;                       /* Equal width and height */
+  height: 90px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  transition: background 0.3s ease, transform 0.3s ease;
+  cursor: pointer;
+  position: relative;
+  border: 1px solid #7f7b7b;
+}
+
+.icon-button i {
+  font-size: 30px;
+  margin: 0;
+}
+
+.icon-button span {
+  position: absolute;
+  bottom: -25px;
+  font-size: 14px;
+  font-weight: 500;
+  color: #333;
+  white-space: nowrap;
+}
+
+.icon-button.selected {
+  border: 2px solid #00bfff;
+  box-shadow: 0 0 10px rgba(0, 191, 255, 0.5);
+  transform: scale(1.05);
+}
+
+.icon-button.selected i {
+  color: #00c28b;
+}
+
+.icon-button:hover {
+  transform: scale(1.08);
+  background: #eaeaea;
+}
+
+/* Pay Now Button */
+.pay-btn {
+  width: 100%;
+  background: #00bfff;;
+  color: black;
+  font-weight: bold;
+  padding: 14px;
+  border: 1px solid black;
+  border-radius: 10px;
+  font-size: 25px;
+  cursor: pointer;
+  text-align: center;
+  text-decoration: none;
+  transition: background 0.3s ease;
+}
+
+.pay-btn i {
+  margin-left: 10px;
+  /* margin-top: 40px; */
+}
+
+.pay-btn:hover {
+  background: #00bfff;
+  text-decoration: none;
+}
+
+.pay-btn.disabled {
+  background-color: #cccccc;
+  pointer-events: none;
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .payment-container {
+    flex-direction: column;
+  }
+
+  .payment-left,
+  .payment-right {
+    width: 100%;
+  }
+
+  .payment-icons {
+    flex-wrap: wrap;
+    gap: 20px;
+  }
+}

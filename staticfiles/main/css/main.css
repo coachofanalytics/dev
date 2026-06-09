@@ -592,7 +592,6 @@ body {
 .sign-up-div button[type=submit] {
   background-color: #e7ad4a;
   border: 1px solid #e7ad4a;
-  margin-bottom: 4rem;
 }
 
 .sign-up-div button[type=submit]:hover {

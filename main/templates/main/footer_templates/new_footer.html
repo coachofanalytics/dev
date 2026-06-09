@@ -6,21 +6,24 @@
                     DC<span style="color: red;">48K</span>
                 </a>
                 <p style="color: white; max-width: 510px; font-size: 14px;">
-                    We have years of experience working with artists and entertainers across various industries, and we are passionate about helping our clients succeed. Our company is committed to providing personalized services that meet clients' needs. We work closely with them to develop customized strategies and plans that help them achieve their goals.
+                    We empower and connect the diaspora communities by providing tailored support and resources to meet their unique 
+                    needs across the globe.We strive to bridge cultural, financial, and social gaps, fostering a sense of belonging, 
+                    collaboration, and growth for our members, wherever they are. Through a network of services and partnerships, 
+                    we aim to create a thriving, interconnected diaspora that thrives in diverse global locations
                 </p>
             </div>
             <div class="col-md-6" style="margin-top: 44px;">
                 <div class="row text-white footer-liinks-div">
                     <div class="col-md-3">
                         <div>
-                            <a>Sign In</a>
-                            <a>Register</a>
-                            <a>Log Out</a>
+                            <a href="{% url 'accounts:account-login' %}" >Sign In</a>
+                            <a href="{% url 'accounts:joins' %}">Register</a>
+                            <a href="{% url 'accounts:account-logout' %}" >Log Out</a>
                         </div>
                     </div>
                     <div class="col-md-3">
                         <div>
-                            <a>Our Story</a>
+                            <a href="{% url 'main:about' %}" >Our Story</a>
                             <a>Why DC48K</a>
                             <a>Contacts</a>
                         </div>

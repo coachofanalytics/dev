@@ -1,483 +1,162 @@
 {% extends "main/base_templates/base.html" %}
 {% load static %}
 
-{% block title %}Contact Us - DC48K{% endblock %}
-
 {% block content %}
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Contact Us</title>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: 'Inter', sans-serif;
-        }
+<style>
+    .contact-page-wrapper {
+        background-color: #f4f4f9;
+        padding: 2rem 0 4rem 0;
+    }
 
-        /* Hero Section */
-        .contact-hero {
-            background: linear-gradient(135deg, #0a926d 0%, #2e46b6 100%);
-            color: white;
-            padding: 60px 8%;
-            text-align: center;
-            min-height: 40vh;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-        }
+    .contact-page-wrapper .page-header {
+        background-color: #35c7c7ea;
+        color: white;
+        padding: 1rem;
+        text-align: center;
+        margin-bottom: 2rem;
+    }
 
-        .contact-hero h1 {
-            font-size: 3rem;
-            font-weight: 900;
-            margin-bottom: 20px;
-        }
+    .contact-page-wrapper .page-header h1 {
+        margin: 0;
+    }
 
-        .contact-hero p {
-            font-size: 1.2rem;
-            max-width: 700px;
-            line-height: 1.8;
-        }
+    .contact-page-wrapper .container {
+        width: 90%;
+        max-width: 700px;
+        margin: 0 auto;
+        background-color: white;
+        padding: 2rem;
+        border-radius: 8px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
 
-        /* Breadcrumb Navigation */
-        .contact-nav {
-            background: #f8f9fa;
-            padding: 20px 8%;
-            margin-bottom: 40px;
-        }
+    .contact-page-wrapper .form-group {
+        margin-bottom: 1.25rem;
+    }
 
-        .contact-nav a {
-            text-decoration: none;
-            color: #2e46b6;
-            font-weight: 600;
-        }
+    .contact-page-wrapper label {
+        display: block;
+        margin-bottom: 0.5rem;
+        font-weight: bold;
+        color: #333;
+    }
 
-        .contact-nav span {
-            color: #0a926d;
-            font-weight: 600;
-            margin: 0 10px;
-        }
+    .contact-page-wrapper input,
+    .contact-page-wrapper textarea {
+        width: 100%;
+        padding: 0.6rem;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        box-sizing: border-box;
+        font-family: inherit;
+        font-size: 0.95rem;
+    }
 
-        /* Main Container */
-        .contact-container {
-            width: 90%;
-            max-width: 1200px;
-            margin: 0 auto 60px;
-            display: grid;
-            grid-template-columns: 1fr;
-            gap: 40px;
-        }
+    .contact-page-wrapper textarea {
+        resize: vertical;
+        min-height: 110px;
+    }
 
-        /* Form Section */
-        .contact-form-section {
-            background: white;
-            padding: 40px;
-            border-radius: 12px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-        }
+    .contact-page-wrapper button {
+        background-color: #35c7c7ea;
+        color: white;
+        border: none;
+        padding: 0.75rem 1.5rem;
+        font-size: 1rem;
+        font-weight: 600;
+        border-radius: 4px;
+        cursor: pointer;
+        transition: background-color 0.2s;
+    }
 
-        .contact-form-section h2 {
-            font-size: 2rem;
-            font-weight: 800;
-            color: #2e46b6;
-            margin-bottom: 30px;
-            padding-bottom: 20px;
-            border-bottom: 2px solid #0a926d;
-        }
+    .contact-page-wrapper button:hover {
+        background-color: #2bb0b0;
+    }
 
-        /* Form Styling */
-        .contact-form {
-            display: flex;
-            flex-direction: column;
-            gap: 20px;
-        }
+    .contact-page-wrapper table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 2rem;
+    }
 
-        .form-group {
-            display: flex;
-            flex-direction: column;
-        }
+    .contact-page-wrapper th,
+    .contact-page-wrapper td {
+        padding: 0.6rem;
+        text-align: left;
+        border-bottom: 1px solid #eee;
+    }
 
-        .form-group label {
-            font-weight: 600;
-            color: #333;
-            margin-bottom: 8px;
-            font-size: 0.95rem;
-        }
+    .contact-page-wrapper th {
+        background-color: #f8f9fa;
+        font-weight: 600;
+        color: #333;
+    }
 
-        .form-group input,
-        .form-group textarea {
-            padding: 12px 15px;
-            border: 2px solid #e0e0e0;
-            border-radius: 6px;
-            font-family: 'Inter', sans-serif;
-            font-size: 0.95rem;
-            transition: all 0.3s ease;
-        }
+    .contact-page-wrapper .no-data {
+        text-align: center;
+        margin-top: 2rem;
+        font-size: 1.1rem;
+        color: #555;
+    }
+</style>
 
-        .form-group input:focus,
-        .form-group textarea:focus {
-            outline: none;
-            border-color: #0a926d;
-            box-shadow: 0 0 0 3px rgba(10, 146, 109, 0.1);
-        }
+<div class="contact-page-wrapper">
+    <div class="page-header">
+        <h1>Contact Form</h1>
+    </div>
 
-        .form-group textarea {
-            resize: vertical;
-            min-height: 120px;
-        }
-
-        .form-button-group {
-            display: flex;
-            gap: 15px;
-            margin-top: 20px;
-        }
-
-        .form-button {
-            flex: 1;
-            padding: 14px 30px;
-            border: none;
-            border-radius: 6px;
-            font-weight: 700;
-            font-size: 1rem;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-
-        .btn-submit {
-            background: linear-gradient(135deg, #0a926d 0%, #2e46b6 100%);
-            color: white;
-        }
-
-        .btn-submit:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 12px rgba(10, 146, 109, 0.3);
-        }
-
-        .btn-reset {
-            background: #f0f0f0;
-            color: #333;
-            border: 2px solid #ddd;
-        }
-
-        .btn-reset:hover {
-            background: #e0e0e0;
-            border-color: #ccc;
-        }
-
-        /* Messages Table Section */
-        .contact-messages-section {
-            background: white;
-            padding: 40px;
-            border-radius: 12px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-        }
-
-        .contact-messages-section h2 {
-            font-size: 2rem;
-            font-weight: 800;
-            color: #2e46b6;
-            margin-bottom: 30px;
-            padding-bottom: 20px;
-            border-bottom: 2px solid #0a926d;
-        }
-
-        /* Table Styling */
-        .messages-table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 20px;
-        }
-
-        .messages-table thead {
-            background: linear-gradient(135deg, #0a926d 0%, #2e46b6 100%);
-            color: white;
-        }
-
-        .messages-table th {
-            padding: 15px;
-            text-align: left;
-            font-weight: 700;
-            font-size: 0.95rem;
-        }
-
-        .messages-table td {
-            padding: 15px;
-            border-bottom: 1px solid #e0e0e0;
-            font-size: 0.9rem;
-        }
-
-        .messages-table tbody tr:hover {
-            background-color: #f8f9fa;
-            transition: background 0.3s ease;
-        }
-
-        .messages-table tbody tr:nth-child(even) {
-            background-color: #f9f9f9;
-        }
-
-        /* Empty State */
-        .no-data {
-            text-align: center;
-            padding: 60px 20px;
-            background: #f8f9fa;
-            border-radius: 12px;
-            margin-top: 20px;
-        }
-
-        .no-data-icon {
-            font-size: 3rem;
-            margin-bottom: 15px;
-        }
-
-        .no-data h3 {
-            font-size: 1.5rem;
-            color: #333;
-            margin-bottom: 10px;
-        }
-
-        .no-data p {
-            font-size: 1.1rem;
-            color: #666;
-        }
-
-        /* Message Preview */
-        .message-preview {
-            max-width: 200px;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            white-space: nowrap;
-        }
-
-        /* CTA Section */
-        .contact-cta {
-            background: linear-gradient(135deg, #2e46b6 0%, #0a926d 100%);
-            color: white;
-            padding: 40px;
-            border-radius: 12px;
-            text-align: center;
-            margin-top: 40px;
-        }
-
-        .contact-cta h3 {
-            font-size: 1.5rem;
-            font-weight: 800;
-            margin-bottom: 15px;
-        }
-
-        .contact-cta p {
-            font-size: 1.05rem;
-            line-height: 1.6;
-            margin-bottom: 20px;
-        }
-
-        .contact-info {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 20px;
-            margin-top: 25px;
-        }
-
-        .info-box {
-            background: rgba(255, 255, 255, 0.1);
-            padding: 20px;
-            border-radius: 8px;
-            backdrop-filter: blur(10px);
-        }
-
-        .info-box-icon {
-            font-size: 2rem;
-            margin-bottom: 10px;
-        }
-
-        .info-box-title {
-            font-weight: 700;
-            margin-bottom: 8px;
-        }
-
-        .info-box-content {
-            font-size: 0.95rem;
-        }
-
-        /* Responsive Design */
-        @media (max-width: 768px) {
-            .contact-hero {
-                padding: 40px 5%;
-                min-height: 30vh;
-            }
-
-            .contact-hero h1 {
-                font-size: 2rem;
-            }
-
-            .contact-hero p {
-                font-size: 1rem;
-            }
-
-            .contact-container {
-                width: 95%;
-            }
-
-            .contact-form-section,
-            .contact-messages-section {
-                padding: 25px;
-            }
-
-            .contact-form-section h2,
-            .contact-messages-section h2 {
-                font-size: 1.5rem;
-            }
-
-            .form-button-group {
-                flex-direction: column;
-            }
-
-            .messages-table {
-                font-size: 0.85rem;
-            }
-
-            .messages-table th,
-            .messages-table td {
-                padding: 10px 8px;
-            }
-
-            .message-preview {
-                max-width: 100px;
-            }
-
-            .contact-info {
-                grid-template-columns: 1fr;
-            }
-        }
-    </style>
-</head>
-<body>
-
-<!-- Hero Section -->
-<div class="contact-hero">
-    <h1>Contact Us</h1>
-    <p>Have questions? We'd love to hear from you. Send us a message and we'll respond as soon as possible.</p>
-</div>
-
-<!-- Breadcrumb Navigation -->
-<div class="contact-nav">
-    <a href="{% url 'main:home' %}">Home</a>
-    <span>/</span>
-    <a href="{% url 'finance:homepage' %}">Finance</a>
-    <span>/</span>
-    <span>Contact Us</span>
-</div>
-
-<!-- Main Container -->
-<div class="contact-container">
-    <!-- Contact Form Section -->
-    <div class="contact-form-section">
-        <h2>Send us a Message</h2>
-        <form method="post" class="contact-form">
+    <div class="container">
+        <!-- Contact Us Form -->
+        <form method="post" action="{% url 'main:contact_us' %}">
             {% csrf_token %}
             <div class="form-group">
-                <label for="name">Full Name *</label>
-                <input type="text" id="name" name="name" placeholder="Enter your full name" required>
+                <label for="name">Name</label>
+                <input type="text" id="name" name="name" placeholder="Enter your name" required>
             </div>
-
             <div class="form-group">
-                <label for="email">Email Address *</label>
-                <input type="email" id="email" name="email" placeholder="Enter your email address" required>
+                <label for="email">Email</label>
+                <input type="email" id="email" name="email" placeholder="Enter your email" required>
             </div>
-
             <div class="form-group">
-                <label for="Phone">Phone Number *</label>
-                <input type="tel" id="Phone" name="Phone" placeholder="Enter your phone number" required>
+                <label for="Phone">Phone</label>
+                <input type="text" id="Phone" name="Phone" placeholder="Enter your Phone" required>
             </div>
-
             <div class="form-group">
-                <label for="message">Message *</label>
-                <textarea id="message" name="message" placeholder="Enter your message" required></textarea>
+                <label for="message">Message</label>
+                <textarea id="message" name="message" rows="4" placeholder="Enter your message" required></textarea>
             </div>
-
-            <div class="form-button-group">
-                <button type="submit" class="form-button btn-submit">Submit Message</button>
-                <button type="reset" class="form-button btn-reset">Clear Form</button>
+            <div class="form-group">
+                <button type="submit">Submit</button>
             </div>
         </form>
-    </div>
 
-    <!-- Contact CTA Section -->
-    <div class="contact-cta">
-        <h3>Other Ways to Reach Us</h3>
-        <p>We're here to help and answer any question you might have. Reach out to us in any of these ways:</p>
-        <div class="contact-info">
-            <div class="info-box">
-                <div class="info-box-icon">📧</div>
-                <div class="info-box-title">Email</div>
-                <div class="info-box-content">info@dc48k.com</div>
-            </div>
-            <div class="info-box">
-                <div class="info-box-icon">📞</div>
-                <div class="info-box-title">Phone</div>
-                <div class="info-box-content">+1 (555) 123-4567</div>
-            </div>
-            <div class="info-box">
-                <div class="info-box-icon">📍</div>
-                <div class="info-box-title">Address</div>
-                <div class="info-box-content">Nairobi, Kenya</div>
-            </div>
-            <div class="info-box">
-                <div class="info-box-icon">⏰</div>
-                <div class="info-box-title">Hours</div>
-                <div class="info-box-content">Mon-Fri: 9AM-5PM</div>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- Messages List Section -->
-{% if contact_us_list %}
-<div class="contact-container">
-    <div class="contact-messages-section">
-        <h2>Recent Messages</h2>
-        <table class="messages-table">
-            <thead>
-                <tr>
-                    <th>ID</th>
-                    <th>Name</th>
-                    <th>Email</th>
-                    <th>Phone</th>
-                    <th>Message</th>
-                    <th>Date</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for contact in contact_us_list %}
+        <!-- Contact Messages List -->
+        {% if contact_us_list %}
+            <table>
+                <thead>
                     <tr>
-                        <td>#{{ contact.id }}</td>
-                        <td><strong>{{ contact.name }}</strong></td>
-                        <td>{{ contact.email }}</td>
-                        <td>{{ contact.Phone }}</td>
-                        <td class="message-preview" title="{{ contact.message }}">{{ contact.message }}</td>
-                        <td>{{ contact.date|date:"M d, Y" }}</td>
+                        <th>ID</th>
+                        <th>Name</th>
+                        <th>Email</th>
+                        <th>Message</th>
+                        <th>Date</th>
                     </tr>
-                {% endfor %}
-            </tbody>
-        </table>
+                </thead>
+                <tbody>
+                    {% for contact in contact_us_list %}
+                        <tr>
+                            <td>{{ contact.id }}</td>
+                            <td>{{ contact.name }}</td>
+                            <td>{{ contact.email }}</td>
+                            <td>{{ contact.message }}</td>
+                            <td>{{ contact.date }}</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        {% else %}
+            <p class="no-data">No contact messages available.</p>
+        {% endif %}
     </div>
 </div>
-{% else %}
-<div class="contact-container">
-    <div class="no-data">
-        <div class="no-data-icon">💌</div>
-        <h3>No Messages Yet</h3>
-        <p>No contact messages have been submitted. Use the form above to get in touch with us.</p>
-    </div>
-</div>
-{% endif %}
-
-</body>
-</html>
-
 {% endblock %}

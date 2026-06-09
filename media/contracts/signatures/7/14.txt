@@ -1,0 +1,4 @@
+signer=Coda Candidate
+signed_at=2026-05-20T17:41:54.828965+00:00
+ip_address=127.0.0.1
+method=WEB

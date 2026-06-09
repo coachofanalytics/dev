@@ -13,7 +13,12 @@ from django.utils.text import slugify
 import random
 import string
 import uuid
-from .ai_services import generate_article_summary
+try:
+    from .ai_services import generate_article_summary
+except ImportError:
+    def generate_article_summary(content):
+        """Fallback when groq is not installed"""
+        return content[:200] + "..."
 
 User = get_user_model()
 
@@ -556,6 +561,68 @@ class Governance(models.Model):
 
 
 
+class Gallery(models.Model):
+    title = models.CharField(max_length=100)
+    description = models.TextField(blank=True, null=True)
+    image = models.ImageField(upload_to="gallery/")
+    uploaded_at = models.DateTimeField(auto_now_add=True)
+    event_date = models.DateField()
+
+    def __str__(self):
+        return self.title
+
+
+class Faq(models.Model):
+    CategoryChoices = [
+        ('general', 'General'),
+        ('technical', 'Technical'),
+        ('billing', 'Billing'),
+        ('account', 'Account'),
+        ('other', 'Other'),
+    ]
+    question = models.CharField(max_length=255)
+    answer = models.TextField()
+    category = models.CharField(max_length=255, choices=CategoryChoices, default=999)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return self.question
+
+
+class GetHelp(models.Model):
+    title = models.CharField(max_length=255,null=False,blank=False)
+    content = models.TextField(null=False,blank=False)
+    link = models.URLField(null=True,blank=False,max_length=100)
+    is_active = models.BooleanField(default=True)
+    created_at = models.DateTimeField(null=False,blank=False,auto_now_add=True)
+    updated_at = models.DateTimeField(null=False,blank=False,auto_now=True)
+
+    def __str__(self):
+        return self.title
+
+
+class DonationOrganization(models.Model):
+    name = models.CharField(max_length=255)
+    contact_email = models.EmailField()
+    linked_profile = models.OneToOneField(User, on_delete=models.CASCADE)
+    def __str__(self):
+        return self.name
+
+class History(models.Model):
+    year = models.IntegerField()
+    title = models.CharField(max_length=200)
+    description = models.TextField()
+    image = models.ImageField(upload_to="history_images/", blank=True, null=True)
+    order = models.PositiveIntegerField(default=0)
+
+    class Meta:
+        ordering = ['-year', 'order']
+
+    def __str__(self):
+        return f"{self.year}: {self.title}"
+
+
 class ConsularAssistancePage(models.Model):
     title = models.CharField(max_length=255)
     slug = models.SlugField(max_length=255, unique=True)
@@ -568,6 +635,112 @@ class ConsularAssistancePage(models.Model):
 
     def __str__(self):
         return self.title
+
+
+class ServiceRequest(models.Model):
+    """
+    Reusable service request model. Currently used for Consular Consultation
+    but designed with a service_type field to support Healthcare, Finance,
+    Crisis, Education, Community, and News requests in the future.
+    """
+
+    SERVICE_TYPE_CHOICES = [
+        ('consular', 'Consular Assistance'),
+        ('healthcare', 'Healthcare'),
+        ('finance', 'Finance'),
+        ('crisis', 'Crisis Support'),
+        ('education', 'Education'),
+        ('community', 'Community'),
+        ('news', 'News'),
+    ]
+
+    STATUS_CHOICES = [
+        ('new', 'New'),
+        ('in_review', 'In Review'),
+        ('responded', 'Responded'),
+        ('closed', 'Closed'),
+    ]
+
+    CONSULTATION_TYPE_CHOICES = [
+        ('Legal & Immigration', 'Legal & Immigration'),
+        ('Documentation', 'Documentation'),
+        ('Property & Estate', 'Property & Estate'),
+        ('Other', 'Other'),
+    ]
+
+    URGENCY_CHOICES = [
+        ('Not Urgent', 'Not Urgent'),
+        ('Moderately Urgent', 'Moderately Urgent'),
+        ('Very Urgent', 'Very Urgent'),
+        ('Emergency', 'Emergency'),
+    ]
+
+    # Core fields (matching the AJAX form submission)
+    service_type = models.CharField(max_length=30, choices=SERVICE_TYPE_CHOICES, default='consular')
+    full_name = models.CharField(max_length=200)
+    email = models.EmailField()
+    phone = models.CharField(max_length=30, blank=True, default='')
+    consultation_type = models.CharField(max_length=50, choices=CONSULTATION_TYPE_CHOICES)
+    preferred_language = models.CharField(max_length=50, default='English')
+    location = models.CharField(max_length=200, blank=True, default='')
+    question = models.TextField(help_text="User's main consultation description")
+    urgency = models.CharField(max_length=30, choices=URGENCY_CHOICES, default='Not Urgent')
+    additional_notes = models.TextField(blank=True, default='')
+
+    # Workflow / Admin fields
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='new')
+    admin_notes = models.TextField(blank=True, default='', help_text="Internal notes (timestamped)")
+    assigned_to = models.ForeignKey(
+        User,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='assigned_service_requests',
+        help_text="Staff member assigned to handle this request"
+    )
+    reply_message = models.TextField(blank=True, default='', help_text="Reply sent back to the user")
+    replied_at = models.DateTimeField(null=True, blank=True)
+
+    # Timestamps
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['-created_at']
+        verbose_name = "Service Request"
+        verbose_name_plural = "Service Requests"
+
+    def __str__(self):
+        return f"[{self.get_service_type_display()}] {self.full_name} - {self.consultation_type} ({self.created_at.strftime('%Y-%m-%d')})"
+
+    def add_note(self, note):
+        """Append a timestamped note to admin_notes."""
+        timestamp = timezone.now().strftime('%Y-%m-%d %H:%M')
+        entry = f"[{timestamp}] {note}"
+        if self.admin_notes:
+            self.admin_notes += f"\n{entry}"
+        else:
+            self.admin_notes = entry
+        self.save(update_fields=['admin_notes', 'updated_at'])
+
+    def mark_responded(self):
+        self.status = 'responded'
+        if not self.replied_at:
+            self.replied_at = timezone.now()
+        self.save(update_fields=['status', 'replied_at', 'updated_at'])
+        self.add_note("Status changed to Responded")
+
+    def mark_closed(self):
+        self.status = 'closed'
+        self.save(update_fields=['status', 'updated_at'])
+        self.add_note("Status changed to Closed")
+
+    def days_since_created(self):
+        delta = timezone.now() - self.created_at
+        return delta.days
+
+    def is_urgent(self):
+        return self.urgency in ('Very Urgent', 'Emergency')
 
 
 class Doctor(models.Model):
@@ -1388,9 +1561,16 @@ class LegalService(models.Model):
 
 class CommunityMember(models.Model):
     name = models.CharField(max_length=100)
-    email = models.EmailField(unique=True)
+    email = models.EmailField(blank=True, default='')
     phone = models.CharField(max_length=15, blank=True, null=True)
-    
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name='community_member'
+    )
+
     # Profile fields
     profession = models.CharField(max_length=100, default="Not Specified")
     region = models.CharField(max_length=100, default="Not Specified")
@@ -1398,20 +1578,27 @@ class CommunityMember(models.Model):
     bio = models.TextField(blank=True, null=True)
     website = models.URLField(blank=True, null=True)
     profile_picture = models.ImageField(upload_to='member_profiles/', blank=True, null=True)
-    
+
     # Status fields
     is_verified = models.BooleanField(default=True)
     is_public_directory = models.BooleanField(default=True)
-    
+
     # Timestamps
     date_joined = models.DateTimeField(auto_now_add=True)
     last_updated = models.DateTimeField(auto_now=True)
-    
+
     def __str__(self):
         return f"{self.name} - {self.profession}"
-    
+
     class Meta:
         ordering = ['-date_joined']
+        constraints = [
+            models.UniqueConstraint(
+                fields=['user'],
+                condition=models.Q(user__isnull=False),
+                name='unique_user_community_member'
+            ),
+        ]
 
 
 class DirectoryProfile(models.Model):
@@ -1485,8 +1672,12 @@ class CommunityPost(models.Model):
     """Forum post model (named CommunityPost to avoid clashes with other Post models)"""
     title = models.CharField(max_length=255)
     content = models.TextField()
-    category = models.ForeignKey(ForumCategory, on_delete=models.CASCADE)
+    category = models.ForeignKey(ForumCategory, on_delete=models.CASCADE, related_name='posts')
+    author = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True, related_name='forum_posts'
+    )
     created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
 
     def __str__(self):
         return self.title
@@ -1515,256 +1706,25 @@ class EventCalendar(models.Model):
     def __str__(self):
         return self.name
 
-class Bookings(models.Model):
-    name = models.CharField(max_length=255)
-    email = models.EmailField()
-    phone = models.CharField(max_length=20)
-    service_type = models.CharField(max_length=255)
-    preferred_date = models.DateField()
-    preferred_time = models.TimeField()
-    additional_info = models.TextField(blank=True, null=True)
 
-    def __str__(self):
-        return f"{self.name} - {self.service_type}"
-    
-class TestMigrationsIssue(models.Model):
-    test_field = models.CharField(max_length=255)
-
-    def __str__(self):
-        return f"{self.user.username} Settings"
-
-
-class UserPreferences(models.Model):
-    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="communities_preferences")
-    interest_area = models.CharField(max_length=150, blank=True, null=True)
-    communication_channel = models.CharField(
-        max_length=50,
-        choices=[
-            ("Email", "Email"),  
-            ("SMS", "SMS"),
-            ("WhatsApp", "WhatsApp"),
-            ("Telegram", "Telegram"),
-        ],
-        default="Email"
+class CommunityMessage(models.Model):
+    """Simple messaging between community directory members."""
+    sender = models.ForeignKey(
+        CommunityMember, on_delete=models.CASCADE, related_name='sent_messages'
     )
-    profile_visibility = models.BooleanField(default=True)
-    updated_at = models.DateTimeField(auto_now=True)
-    
-    def __str__(self):
-        return f"{self.user.username} Preferences"
-
-# ============================================
-# MEMBERJOIN APP MODELS
-# ============================================
-
-class MembershipRegistration(models.Model):
-    """Membership registration model from memberjoin app"""
-    
-    MEMBERSHIP_CHOICES = [
-        ('individual', 'Individual'),
-        ('leader', 'Leader'),
-        ('organization', 'Organization'),
-    ]
-    
-    first_name = models.CharField(max_length=30)
-    last_name = models.CharField(max_length=30)
-    email = models.EmailField(unique=True)
-    phone_number = models.CharField(max_length=15, blank=True, null=True)
-    country = models.CharField(max_length=30, blank=True, null=True)
-    city = models.CharField(max_length=30, blank=True, null=True)
-    address = models.TextField(blank=True, null=True)
-    membership_type = models.CharField(max_length=20, choices=MEMBERSHIP_CHOICES)
-    organization_name = models.CharField(max_length=100, blank=True, null=True)
-    date_of_birth = models.DateField(blank=True, null=True)
-    registration_date = models.DateTimeField(auto_now_add=True)
+    recipient = models.ForeignKey(
+        CommunityMember, on_delete=models.CASCADE, related_name='received_messages'
+    )
+    subject = models.CharField(max_length=200, blank=True, default='')
+    body = models.TextField()
+    parent_message = models.ForeignKey(
+        'self', null=True, blank=True, on_delete=models.SET_NULL, related_name='replies'
+    )
+    is_read = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        return f"{self.first_name} {self.last_name} - {self.email}"
+        return f"From {self.sender.name} to {self.recipient.name}: {self.subject or '(no subject)'}"
 
     class Meta:
-        verbose_name_plural = "Membership Registrations"
-        ordering = ['-registration_date']
-
-
-class Department(models.Model):
-    description = models.TextField(max_length=500, null=True, blank=True)  # Optional field for description
-    slug = models.SlugField(unique=True)  # SlugField for URL-friendly names, not nullable
-    is_featured = models.BooleanField(default=False)  # BooleanField, not varchar, defaults to False
-    is_active = models.BooleanField(default=True)  # BooleanField, not varchar, defaults to True
-
-    def __str__(self):
-        return self.slug  # Optional: human-readable representation of the department
-    
-
-class Location(models.Model):
-    zipcode = models.CharField(max_length=10, null=True, blank=True)
-    city = models.CharField(max_length=100, null=True, blank=True)
-    state = models.CharField(max_length=100, null=True, blank=True)
-    country = models.CharField(max_length=100, null=True, blank=True)
-
-    def __str__(self):
-        return f"{self.city}, {self.state}, {self.country}"
-
-class LegalService(models.Model):
-    title = models.CharField(max_length=200)
-    category = models.CharField(max_length=100)  # e.g., "visa", "residency", "citizenship"
-    description = models.TextField()
-    image_url = models.URLField(blank=True, null=True)
-    features = models.JSONField(default=list, blank=True)  # List of features/benefits
-    cta_button_text = models.CharField(max_length=50, default="Learn More")
-    cta_button_url = models.URLField(blank=True, null=True)
-    order = models.IntegerField(default=0)
-    is_active = models.BooleanField(default=True)
-
-    class Meta:
-        ordering = ['order']
-        verbose_name = "Legal Service"
-        verbose_name_plural = "Legal Services"
-    def __str__(self):
-        return self.title
-
-#COP systems models
-#==========================================
-
-class ContractTemplate(models.Model):
-    name = models.CharField(max_length=255)
-    slug = models.SlugField()
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
-
-    def __str__(self):
-        return self.name
-
-
-class ContractTemplateVersion(models.Model):
-    contract_template = models.ForeignKey(
-        ContractTemplate,
-        related_name="versions",
-        on_delete=models.CASCADE,
-    )
-    version = models.PositiveIntegerField()
-    template_body = models.TextField()
-    is_published = models.BooleanField(default=False)
-    created_at = models.DateTimeField(auto_now_add=True)
-
-
-class PackageDefinition(models.Model):
-    name = models.CharField(max_length=255)
-    slug = models.SlugField()
-    merge_schema = models.JSONField(default=dict)
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
-
-
-class PackageDefinitionDocument(models.Model):
-    package_definition = models.ForeignKey(
-        PackageDefinition,
-        related_name="documents",
-        on_delete=models.CASCADE,
-    )
-    contract_template_version = models.ForeignKey(
-        ContractTemplateVersion,
-        on_delete=models.CASCADE,
-    )
-    order = models.PositiveIntegerField()
-
-
-class ContractPackage(models.Model):
-    class State(models.TextChoices):
-        DRAFT = "DRAFT", "DRAFT"
-        GENERATED = "GENERATED", "GENERATED"
-        SENT = "SENT", "SENT"
-        SIGNED = "SIGNED", "SIGNED"
-        EXECUTED = "EXECUTED", "EXECUTED"
-
-    package_definition = models.ForeignKey(
-        PackageDefinition,
-        on_delete=models.CASCADE,
-    )
-    state = models.CharField(max_length=20, choices=State.choices)
-    origination_key = models.CharField(max_length=255)
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
-
-
-class ContractDocument(models.Model):
-    contract_package = models.ForeignKey(
-        ContractPackage,
-        related_name="documents",
-        on_delete=models.CASCADE,
-    )
-    contract_template_version = models.ForeignKey(
-        ContractTemplateVersion,
-        on_delete=models.CASCADE,
-    )
-    html_snapshot = models.TextField()
-    created_at = models.DateTimeField(auto_now_add=True)
-
-
-class ContractSignature(models.Model):
-    contract_document = models.ForeignKey(
-        ContractDocument,
-        related_name="signatures",
-        on_delete=models.CASCADE,
-    )
-    signer = models.CharField(max_length=255)
-    artifact = models.TextField()
-    signed_at = models.DateTimeField()
-    ip_address = models.GenericIPAddressField()
-    method = models.CharField(max_length=50)
-
-
-class ContractEvent(models.Model):
-    contract_package = models.ForeignKey(
-        ContractPackage,
-        related_name="events",
-        on_delete=models.CASCADE,
-    )
-    event_type = models.CharField(max_length=100)
-    actor = models.CharField(max_length=255)
-    payload = models.JSONField()
-    created_at = models.DateTimeField(auto_now_add=True)
-
-
-class ContractAttachment(models.Model):
-    contract_document = models.ForeignKey(
-        ContractDocument,
-        related_name="attachments",
-        on_delete=models.CASCADE,
-    )
-    file = models.TextField(blank=True, null=True)
-    external_uri = models.URLField(blank=True, null=True)
-    created_at = models.DateTimeField(auto_now_add=True)
-
-
-class CandidatePlacement(models.Model):
-    candidate = models.CharField(max_length=255)
-    candidate_email = models.EmailField(blank=True, null=True)
-    employer = models.CharField(max_length=255)
-    salary = models.DecimalField(max_digits=12, decimal_places=2)
-    placement_fee = models.DecimalField(max_digits=12, decimal_places=2)
-    start_date = models.DateField()
-    package_definition = models.ForeignKey(
-        PackageDefinition,
-        null=True,
-        blank=True,
-        on_delete=models.SET_NULL,
-    )
-    contract_package = models.ForeignKey(
-        ContractPackage,
-        null=True,
-        blank=True,
-        on_delete=models.CASCADE,
-    )
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
-
-class AboutUs(models.Model):
-    title = models.CharField(max_length=255)
-    content = models.TextField()
-    image = models.ImageField(upload_to='about_us_images/', blank=True, null=True)
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
-
-    def __str__(self):
-        return self.title
+        ordering = ['-created_at']

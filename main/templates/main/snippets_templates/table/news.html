@@ -1,159 +1,22 @@
 {% extends "main/base_templates/base.html" %}
 {% load static %}
 {% block content %}
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>News - Diaspora County 48</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            color: #333;
-            background-color: #f9f9f9;
-        }
-
-        h1 {
-            text-align: center;
-            color: #0073e6;
-            margin-top: 20px;
-        }
-
-        .news-container {
-            width: 90%;
-            margin: 0 auto;
-            padding: 20px 0;
-        }
-
-        .news-card {
-            display: flex;
-            flex-direction: column;
-            border: 1px solid #ddd;
-            border-radius: 8px;
-            padding: 15px;
-            margin-bottom: 20px;
-            background-color: #fff;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-        }
-
-        .news-card h2 {
-            font-size: 20px;
-            color: #0073e6;
-            margin: 0;
-        }
-
-        .news-card .meta {
-            font-size: 14px;
-            color: #777;
-            margin-top: 5px;
-        }
-
-        .news-card p {
-            margin-top: 10px;
-            font-size: 16px;
-            color: #444;
-        }
-
-        .news-card a {
-            text-decoration: none;
-            color: #0073e6;
-            font-weight: bold;
-        }
-
-        .news-card a:hover {
-            text-decoration: underline;
-        }
-
-        .no-news {
-            text-align: center;
-            font-size: 18px;
-            color: #777;
-            padding: 20px;
-        }
-
-        .footer {
-            text-align: center;
-            padding: 15px;
-            font-size: 14px;
-            color: #555;
-            border-top: 1px solid #ddd;
-            margin-top: 20px;
-        }
-    </style>
-</head>
-<body>
-    <h1>News - Diaspora County 48</h1>
-    <div class="news-container">
-        {% if news_list %}
-            {% for news in news_list %}
-                <div class="news-card">
-                    <h2><a href="#">{{ news.title }}</a></h2>
-                    <div class="meta">
-                        by {{ news.author }} | {{ news.published_date|date:"M d, Y" }}
-                    </div>
-                    <p>{{ news.description|truncatewords:30 }}</p>
-                    <a href="#">Read more</a>
-                </div>
-            {% endfor %}
-        {% else %}
-            <p class="no-news">No news available at this time.</p>
+<h1>All News</h1>
+  <ul>
+    {% for item in news_list %}
+      <li>
+        <h3>{{ item.title }}</h3>
+        <p><strong>Region:</strong> {{ item.region.name }} | 
+           <strong>Chapter:</strong> {{ item.chapter.name }}</p>
+        <p>{{ item.published_date|date:"M d, Y" }}</p>
+        {% if item.image_url %}
+          <img src="{{ item.image_url }}" alt="{{ item.title }}" width="200">
         {% endif %}
-    </div>
-    <div class="footer">
-        © Diaspora County 48 Kenya 2024. All Rights Reserved
-    </div>
-    <div class="news-list">
-        <h2>News List</h2>
-    
-        <div class="news-item">
-            <h3>Five Tips to Building Landing Pages that Convert</h3>
-            <p>by | Sep 12, 2024</p>
-            <a href="{% url 'main:news_detail' id=1 %}">Read more</a>
-        </div>
-    
-        <div class="news-item">
-            <h3>Three Common Website Issues and How to Survive Them</h3>
-            <p>by | Jul 10, 2024</p>
-            <a href="{% url 'main:news_detail' id=2 %}">Read more</a>
-        </div>
-    
-        <div class="news-item">
-            <h3>How to Make your Hero Image the Hero of your Webpage</h3>
-            <p>by | Jul 10, 2024</p>
-            <a href="{% url 'main:news_detail' id=3 %}">Read more</a>
-        </div>
-    
-        <div class="news-item">
-            <h3>Our Impact</h3>
-            <p>by | Sep 12, 2024</p>
-            <a href="{% url 'main:news_detail' id=4 %}">Read more</a>
-        </div>
-    
-        <div class="news-item">
-            <h3>Top Computer Office Vectors & Illustrations</h3>
-            <p>by | Sep 12, 2024</p>
-            <a href="{% url 'main:news_detail' id=5 %}">Read more</a>
-        </div>
-    
-        <div class="news-item">
-            <h3>Python Django</h3>
-            <p>by | Sep 28, 2024</p>
-            <a href="{% url 'main:news_detail' id=6 %}">Read more</a>
-        </div>
-    
-        <div class="news-item">
-            <h3>Data Analysis</h3>
-            <p>by | Sep 30, 2024</p>
-            <a href="{% url 'main:news_detail' id=7 %}">Read more</a>
-        </div>
-    
-        <div class="news-item">
-            <h3>Training & Professional Support</h3>
-            <p>by | Jun 27, 2024</p>
-            <a href="{% url 'main:news_detail' id=8 %}">Read more</a>
-        </div>
-    </div>
-    
-</body>
-</html>
+        <p>{{ item.content|truncatechars:200 }}</p>
+        <a href="{{ item.link }}" target="_blank">Read more</a>
+      </li>
+    {% empty %}
+      <li>No news available.</li>
+    {% endfor %}
+  </ul>
 {% endblock %}

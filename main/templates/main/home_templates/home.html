@@ -13,24 +13,24 @@ href="{% static 'main/css/home.css' %}"
 <div class="swiper-container">
       <div class="swiper-wrapper">
           <div class="swiper-slide">
-            <img src="{% static 'main/img/home/image1.png' %}" alt="Slide 1">
-            <div class="text"><a href="">PLan for the Diaspora <span style="font-weight: 650; font-size: 29px; ">></span></a></div>
+            <img src="{% static 'main/img/home/outside_upperhill.jpg' %}" alt="Slide 1">
+            <div class="text"><a href="">Plan for the Diaspora <span style="font-weight: 650; font-size: 29px; ">></span></a></div>
           </div>
           <div class="swiper-slide">
-            <img src="{% static 'main/img/background/swiper2.jpg' %}" alt="Slide 2">
-            <div class="text"><a href="">PLan for th2 Diaspora <span style="font-weight: 650; font-size: 29px; ">></span></a></div>
+            <img src="{% static 'main/img/home/board_room.jpg' %}" alt="Slide 2">
+            <div class="text"><a href="">Plan for the Diaspora <span style="font-weight: 650; font-size: 29px; ">></span></a></div>
           </div>
           <div class="swiper-slide">
-            <img src="{% static 'main/img/home/image2.png' %}" alt="Slide 3">
-            <div class="text"><a href="">PLan for the Diaspora  <span style="font-weight: 650; font-size: 29px; ">></span></a></div>
+            <img src="{% static 'main/img/home/ps_kavyu_chamwada.jpg' %}" alt="Slide 3">
+            <div class="text"><a href="">Plan for the Diaspora  <span style="font-weight: 650; font-size: 29px; ">></span></a></div>
           </div>
           <div class="swiper-slide">
-            <img src="{% static 'main/img/home/image4.png' %}" alt="Slide 1">
-            <div class="text"><a href="">PLan for the Diaspora <span style="font-weight: 650; font-size: 29px; ">></span></a></div>
+            <img src="{% static 'main/img/home/ps_boardroom.jpg' %}" alt="Slide 1">
+            <div class="text"><a href="">Plan for the Diaspora <span style="font-weight: 650; font-size: 29px; ">></span></a></div>
           </div>
           <div class="swiper-slide">
-            <img src="{% static 'main/img/home/image5.png' %}" alt="Slide 1">
-            <div class="text"><a href="">PLan for the Diaspora <span style="font-weight: 650; font-size: 29px; ">></span></a></div>
+            <img src="{% static 'main/img/home/london_kavyu.jpg' %}" alt="Slide 1">
+            <div class="text"><a href="">Plan for the Diaspora <span style="font-weight: 650; font-size: 29px; ">></span></a></div>
           </div>
          
         </div>
@@ -49,13 +49,13 @@ href="{% static 'main/css/home.css' %}"
               <h3 class="mt-4 mt-md-0" style="color: #35bdbd;font-size: 30px;font-weight: 900;">Bernard Kavyu <span style="color: red;font-size: 17px; font-weight: 400;"><li style="list-style: none; margin-left: 70px;margin-top: 7px;">GOVERNOR</li></span></h3>
               <h5 class="mt-4 mt-md-0" style="color: black;">{{item.name}}</h5>
             </div>
-            <p style="font-size: 19px;font-family: fantasy;">
+            <p style="font-size: 19px; font-family: fantasy;">
               {{item.content|split_paragraphs:3 }}
             </p>
             {% endif %}
             {% endfor %}
            
-           <button type="button" style="background-color: white;color: black;" class="btn btn-secondary">MORE INFORMATION</button>
+           <button type="button" style="background-color: #35bdbd; color: black;" class="btn btn-secondary">MORE INFORMATION</button>
           </div>
           <div class="col-md-6" >
               <!-- <img class="img-fluid ps-lg-5" style="border-radius: 800% 0 0 800%;box-shadow: 0 0 7px rgba(0, 128, 0, 0.7);" src="{% static 'main/img/home/Kavyu.png' %}" alt=""> -->
@@ -92,7 +92,7 @@ href="{% static 'main/css/home.css' %}"
     {% for item in description%}
     {% if item.name == 'Our Mission' %}
         <h2>{{item.name}}</h2>
-        <p>
+        <p style="font-size: 21px; font-family: tahoma;">
           {{item.content}}
         </p>
     {% endif %}
@@ -101,21 +101,21 @@ href="{% static 'main/css/home.css' %}"
   
 </div>
 <div class="about">
-  {% for item in description%}
-  {% if item.name == 'More about us' %}
-  <h2>{{item.name}} <span style="font-size: 20px;">***</span></h2>
-  <p>
+  {% for item in description %}
+  {% if item.name == 'More about us'%}
+  <h2>{{item.name}} <span style="font-size: 35px;">...</span></h2>
+  <p style="font-size: 21px; font-family: tahoma;">
     {{item.content}}
   </p>
   {% endif %}
   {% endfor %}  
 </div>
-<div class="contact-section">
+<div class="contact-section" id="contact-us">
   <div class="left">
     {% for item in description%}
     {% if item.name == 'Need More Info?' %}
       <h4>{{item.name}}</h4>
-     <p>
+     <p style="font-size: 18px; font-family: fantasy;">
         {{item.content|split_help:1}}
       </p>
     {% endif %}
@@ -130,7 +130,7 @@ href="{% static 'main/css/home.css' %}"
       </div>
   </div>
   <div class="right">
-      <form method="POST" enctype="multipart/form-data" autocomplete="off">
+      <form method="POST" enctype="multipart/form-data" autocomplete="off" action="{% url 'main:contact_us' %}">
               {% csrf_token %}
           <h4>Leave a Message here!</h4>
           <div class="contact-form">

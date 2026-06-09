@@ -1,26 +1,19 @@
 from django import forms
-from .models import (
-    ContractTemplateVersion,
-    ContractTemplate,
-    PackageDefinition,
-    PackageDefinitionDocument,
-    ContractPackage,
-    CandidatePlacement,
-    LegalService,
-    Testimonial,
-    Feedback,
-    Donation_organisation,
-    Donation_organization,
-    ContactMessage,
-    Scholarship,
-)
+from .models import Testimonial, Feedback, Donation_organisation, Donation_organization, ContactMessage, Scholarship
 from django.utils import timezone
 from .models import AppointmentRequest
 # Feedback / Contact Form
 
 from .models import (
-    ContactMessage, Scholarship, Governance, NewsArticle,TrainingCourse
+    ContactMessage, Scholarship, Governance, NewsArticle,TrainingCourse, GetHelp
 )
+
+
+class GetHelpForm(forms.ModelForm):
+    class Meta:
+        model = GetHelp
+        fields = ['title', 'content','link']
+
 
 class GovernanceForm(forms.ModelForm):
     """
@@ -228,134 +221,6 @@ class ScholarshipForm(forms.ModelForm):
         }
 
 
-class SignatureForm(forms.Form):
-    name = forms.CharField(max_length=255, widget=forms.TextInput(attrs={"class": "input"}))
-
-
-class ContractDefinitionForm(forms.Form):
-    name = forms.CharField(max_length=255)
-    slug = forms.SlugField(max_length=255)
-    merge_schema = forms.CharField(widget=forms.Textarea, help_text="JSON")
-    required_documents = forms.ModelMultipleChoiceField(
-        queryset=ContractTemplateVersion.objects.filter(
-            is_published=True
-        ).select_related(
-            "contract_template"
-        ).order_by("contract_template__name", "version"),
-    )
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.fields["required_documents"].label_from_instance = (
-            lambda obj: f"{obj.contract_template.name} v{obj.version}"
-        )
-        for field in self.fields.values():
-            field.widget.attrs.setdefault("class", "input")
-
-    def clean_merge_schema(self):
-        import json
-
-        raw_value = self.cleaned_data["merge_schema"]
-        try:
-            parsed = json.loads(raw_value)
-        except json.JSONDecodeError as exc:
-            raise forms.ValidationError("Invalid JSON.") from exc
-
-        required_fields = parsed.get("required_fields")
-        if not isinstance(required_fields, list):
-            raise forms.ValidationError(
-                "merge_schema must contain a required_fields list."
-            )
-
-        return parsed
-
-
-class CandidatePlacementForm(forms.ModelForm):
-    class Meta:
-        model = CandidatePlacement
-        fields = [
-            "candidate",
-            "candidate_email",
-            "employer",
-            "salary",
-            "placement_fee",
-            "start_date",
-            "package_definition",
-        ]
-        widgets = {
-            "candidate": forms.TextInput(attrs={"class": "input"}),
-            "candidate_email": forms.EmailInput(attrs={"class": "input"}),
-            "employer": forms.TextInput(attrs={"class": "input"}),
-            "salary": forms.NumberInput(attrs={"class": "input"}),
-            "placement_fee": forms.NumberInput(attrs={"class": "input"}),
-            "start_date": forms.DateInput(attrs={"class": "input", "type": "date"}),
-            "package_definition": forms.Select(attrs={"class": "input"}),
-        }
-
-
-class ContractTemplateForm(forms.ModelForm):
-    class Meta:
-        model = ContractTemplate
-        fields = ["name", "slug"]
-        widgets = {
-            "name": forms.TextInput(attrs={"class": "input"}),
-            "slug": forms.TextInput(attrs={"class": "input"}),
-        }
-
-
-class ContractTemplateVersionForm(forms.ModelForm):
-    class Meta:
-        model = ContractTemplateVersion
-        fields = [
-            "contract_template",
-            "version",
-            "template_body",
-            "is_published",
-        ]
-        widgets = {
-            "contract_template": forms.Select(attrs={"class": "input"}),
-            "version": forms.NumberInput(attrs={"class": "input"}),
-            "template_body": forms.Textarea(attrs={"class": "input", "rows": 6}),
-        }
-
-
-class PackageDefinitionDocumentForm(forms.ModelForm):
-    class Meta:
-        model = PackageDefinitionDocument
-        fields = [
-            "package_definition",
-            "contract_template_version",
-            "order",
-        ]
-        widgets = {
-            "package_definition": forms.Select(attrs={"class": "input"}),
-            "contract_template_version": forms.Select(attrs={"class": "input"}),
-            "order": forms.NumberInput(attrs={"class": "input"}),
-        }
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.fields["order"].required = False
-        self.fields["contract_template_version"].queryset = (
-            ContractTemplateVersion.objects.filter(is_published=True)
-            .select_related("contract_template")
-            .order_by("contract_template__name", "version")
-        )
-        self.fields["contract_template_version"].label_from_instance = (
-            lambda obj: f"{obj.contract_template.name} v{obj.version}"
-        )
-
-
-class ContractSearchForm(forms.Form):
-    candidate = forms.CharField(required=False, widget=forms.TextInput(attrs={"class": "input"}))
-    package_id = forms.IntegerField(required=False, widget=forms.NumberInput(attrs={"class": "input"}))
-    status = forms.ChoiceField(
-        required=False,
-        choices=[("", "Any status")] + list(ContractPackage.State.choices),
-        widget=forms.Select(attrs={"class": "input"}),
-    )
-
-
 
 class TrainingCourseForm(forms.ModelForm):
     class Meta:
@@ -478,20 +343,26 @@ class ArticleForm(forms.ModelForm):
     class Meta:
         model = NewsArticle
         fields = [
-            'category', 'title', 'slug', 'author',
+            'category', 'title', 'author',
             'featured_image', 'content', 'ai_summary',
-            'is_breaking', 'status', 'views'
+            'is_breaking', 'status',
         ]
         widgets = {
             'content': forms.Textarea(attrs={'rows': 10}),
             'ai_summary': forms.Textarea(attrs={'rows': 3}),
         }
 
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        from .models import Category as NewsCategory
+        self.fields['category'].queryset = NewsCategory.objects.all()
+        self.fields['category'].empty_label = '-- Select a category --'
+
 
 # ============================================
 # COMMUNITIES APP FORMS (MERGED FROM communities app)
 # ============================================
-from .models import CommunityMember, DirectoryProfile, CommunityPost, CommentP, EventCalendar
+from .models import CommunityMember, DirectoryProfile, CommunityPost, CommentP, EventCalendar, CommunityMessage
 
 
 class CommunityJoinForm(forms.ModelForm):
@@ -643,23 +514,66 @@ class CommunityContactForm(forms.ModelForm):
         model = ContactMessage
         fields = ['name', 'email', 'message']
 
-class LegalServiceForm(forms.ModelForm):
-    class Meta:
-        model = LegalService
-            
-        fields = [
-            "title",
-            "description",
-        ]
 
+class CommunityMessageForm(forms.ModelForm):
+    """Form for sending messages between community directory members."""
+    class Meta:
+        model = CommunityMessage
+        fields = ['subject', 'body']
         widgets = {
-            "title": forms.TextInput(attrs={
-            "class": "form-control",
-            "placeholder": "Enter legal service title"
+            'subject': forms.TextInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'Subject (optional)',
             }),
-            "description": forms.Textarea(attrs={
-            "class": "form-control",
-            "rows": 5,
-            "placeholder": "Enter description"
+            'body': forms.Textarea(attrs={
+                'class': 'form-control',
+                'rows': 6,
+                'placeholder': 'Write your message...',
             }),
-    }
+        }
+        labels = {
+            'subject': 'Subject',
+            'body': 'Message',
+        }
+
+
+class EmergencyHelpForm(forms.Form):
+    """Form for submitting emergency help requests"""
+    full_name = forms.CharField(
+        max_length=200,
+        required=True,
+        widget=forms.TextInput(attrs={
+            'class': 'form-control',
+            'placeholder': 'Your full name',
+        })
+    )
+    email = forms.EmailField(
+        required=True,
+        widget=forms.EmailInput(attrs={
+            'class': 'form-control',
+            'placeholder': 'Your email address',
+        })
+    )
+    phone = forms.CharField(
+        max_length=30,
+        required=False,
+        widget=forms.TextInput(attrs={
+            'class': 'form-control',
+            'placeholder': 'Your phone number (optional)',
+        })
+    )
+    description = forms.CharField(
+        required=True,
+        widget=forms.Textarea(attrs={
+            'class': 'form-control',
+            'rows': 6,
+            'placeholder': 'Describe your emergency or help request...',
+        })
+    )
+    urgency = forms.ChoiceField(
+        choices=[('Emergency', 'Emergency'), ('Very Urgent', 'Very Urgent')],
+        required=True,
+        widget=forms.RadioSelect(attrs={
+            'class': 'form-check-input',
+        })
+    )

@@ -1,0 +1,82 @@
+{% extends "main/base_templates/base.html" %}
+{% load static %}
+
+{% block content %}
+<link rel="stylesheet" type="text/css" href="{% static 'finance/css/pay_online.css' %}">
+<section class="payment-wrapper">
+  <!-- JSON URLs used by pay_online.js -->
+  <script id="payment-urls" type="application/json">
+  {
+    "partial": "{% url 'finance:partial_payment' %}"
+  }
+  </script>
+
+  <div class="payment-container">
+    <!-- LEFT: Package selection -->
+    <div class="payment-left">
+      <!-- Global Executive -->
+      <div class="package-card"
+           data-amount="{{ global_executive_price }}"
+           lead-level="{{ global_executive_title }}">
+        <h5>{{ global_executive_title }}</h5>
+        <hr style="color: yellow;">
+        <p class="package-desc">
+          {{ global_executive_description }}
+        </p>
+      </div>
+
+      <!-- Regional Administration -->
+      <div class="package-card"
+           data-amount="{{ regional_administration_price }}"
+           lead-level="{{ regional_administration_title }}">
+        <h5>{{ regional_administration_title }}</h5>
+        <hr style="color: yellow;">
+        <p class="package-desc">
+          {{ regional_administration_description }}
+        </p>
+      </div>
+
+      <!-- County Assembly -->
+      <div class="package-card"
+           data-amount="{{ county_assembly_price }}"
+           lead-level="{{ county_assembly_title }}">
+        <h5>{{ county_assembly_title }}</h5>
+        <hr style="color: yellow;">
+        <p class="package-desc">
+          {{ county_assembly_description }}
+        </p>
+      </div>
+    </div>
+
+    <!-- RIGHT: CTA -->
+    <div class="payment-right">
+      <h3 style="text-align:center;font-size:20px;margin-bottom:24px;">Select a Leadership item to continue</h3>
+
+      <!-- Continue button (JS enables it after a card is selected) -->
+      <a id="continueBtn" href="#"
+         class="pay-btn disabled"
+         aria-disabled="true"
+         style="display:block;text-align:center;padding:12px 16px;border-radius:8px;text-decoration:none;font-weight:600;">
+        Continue <i class="fas fa-arrow-right"></i>
+      </a>
+
+      <!-- Optional helper text -->
+      <p style="margin-top:10px;color:#6b7280;font-size:13px;text-align:center;">
+        You’ll pick payment method & amount on the next step.
+      </p>
+    </div>
+  </div>
+</section>
+{% endblock %}
+
+{% block page_js %}
+  <!-- Font Awesome (for the arrow icon) -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/js/all.min.js" defer></script>
+  <script src="{% static 'finance/js/pay_online.js' %}" defer></script>
+{% endblock %}
+
+{% block page_css %}
+<style>
+  src="{% static 'finance/css/pay_online.css' %}"
+</style>
+{% endblock %}

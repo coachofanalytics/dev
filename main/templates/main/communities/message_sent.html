@@ -1,0 +1,100 @@
+{% extends "main/base_templates/base.html" %}
+{% load static %}
+{% block title %}Sent Messages - Community{% endblock %}
+{% block content %}
+<style>
+    :root {
+        --success-green: #0d9f6e;
+        --dark-green: #0b8a60;
+        --gray-50: #f5f7fb;
+    }
+    .msg-container { max-width: 800px; margin: 40px auto; padding: 0 20px; }
+    .msg-card {
+        background: white; border-radius: 12px;
+        box-shadow: 0 2px 12px rgba(0,0,0,0.08); overflow: hidden;
+    }
+    .msg-header {
+        padding: 24px 28px; border-bottom: 1px solid #e5e7eb;
+        display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;
+    }
+    .msg-header h2 { margin: 0; font-size: 22px; font-weight: 700; color: #111; }
+    .tab-nav { display: flex; gap: 0; border-bottom: 1px solid #e5e7eb; }
+    .tab-link {
+        padding: 14px 24px; text-decoration: none; font-weight: 600; font-size: 14px;
+        color: #666; border-bottom: 3px solid transparent; transition: all 0.2s;
+    }
+    .tab-link:hover { color: var(--success-green); }
+    .tab-link.active { color: var(--success-green); border-bottom-color: var(--success-green); }
+    .msg-list { list-style: none; padding: 0; margin: 0; }
+    .msg-item {
+        display: flex; align-items: center; gap: 14px; padding: 16px 28px;
+        border-bottom: 1px solid #f3f4f6; text-decoration: none; color: inherit;
+        transition: background 0.15s;
+    }
+    .msg-item:hover { background: var(--gray-50); }
+    .msg-avatar {
+        width: 42px; height: 42px; border-radius: 50%;
+        background: linear-gradient(135deg, #3a56d6, #1f3bb3);
+        color: white; display: flex; align-items: center; justify-content: center;
+        font-size: 16px; font-weight: 700; flex-shrink: 0;
+    }
+    .msg-content { flex: 1; min-width: 0; }
+    .msg-sender { font-size: 14px; color: #111; margin: 0; }
+    .msg-subject { font-size: 13px; color: #555; margin: 2px 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .msg-preview { font-size: 12px; color: #999; margin: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .msg-time { font-size: 12px; color: #999; white-space: nowrap; flex-shrink: 0; }
+    .read-status { font-size: 11px; padding: 2px 8px; border-radius: 10px; font-weight: 600; }
+    .read-status.read { background: #dcfce7; color: #166534; }
+    .read-status.unread { background: #fef3c7; color: #92400e; }
+    .empty-state { text-align: center; padding: 60px 20px; }
+    .empty-state i { font-size: 48px; color: #d1d5db; margin-bottom: 16px; }
+    .empty-state p { color: #666; font-size: 15px; }
+    .back-btn {
+        color: var(--success-green); text-decoration: none; font-weight: 600;
+        display: inline-flex; align-items: center; gap: 6px; font-size: 14px;
+    }
+    .back-btn:hover { color: var(--dark-green); }
+</style>
+
+<div class="msg-container">
+    <div class="msg-card">
+        <div class="msg-header">
+            <h2><i class="fas fa-paper-plane" style="color: #3a56d6; margin-right: 8px;"></i> Sent Messages</h2>
+            <a href="{% url 'communities:member_directory' %}" class="back-btn"><i class="fas fa-arrow-left"></i> Directory</a>
+        </div>
+
+        <div class="tab-nav">
+            <a href="{% url 'communities:message_inbox' %}" class="tab-link {% if active_tab == 'inbox' %}active{% endif %}">Inbox</a>
+            <a href="{% url 'communities:message_sent' %}" class="tab-link {% if active_tab == 'sent' %}active{% endif %}">Sent</a>
+        </div>
+
+        {% if sent_messages %}
+        <ul class="msg-list">
+            {% for msg in sent_messages %}
+            <a href="{% url 'communities:message_detail' msg.id %}" class="msg-item">
+                <div class="msg-avatar">{{ msg.recipient.name|first|upper }}</div>
+                <div class="msg-content">
+                    <p class="msg-sender">To: {{ msg.recipient.name }}</p>
+                    <p class="msg-subject">{{ msg.subject|default:"(no subject)" }}</p>
+                    <p class="msg-preview">{{ msg.body|truncatechars:80 }}</p>
+                </div>
+                <div style="text-align: right;">
+                    <div class="msg-time">{{ msg.created_at|timesince }} ago</div>
+                    {% if msg.is_read %}
+                        <span class="read-status read">Read</span>
+                    {% else %}
+                        <span class="read-status unread">Unread</span>
+                    {% endif %}
+                </div>
+            </a>
+            {% endfor %}
+        </ul>
+        {% else %}
+        <div class="empty-state">
+            <i class="fas fa-paper-plane"></i>
+            <p>You haven't sent any messages yet. Start connecting with community members!</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

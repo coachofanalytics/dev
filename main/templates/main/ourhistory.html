@@ -1,0 +1,38 @@
+{% extends "main/base_templates/base.html" %}
+{% load static %}
+
+{% block content %}
+<section class="timeline-section">
+  
+  <!-- Title & Subtitle -->
+  <div class="timeline-header">
+    <h2 class="title">OUR HISTORY</h2>
+    <p class="subtitle">
+      Every great movement has a story. Here's how DC48K has grown over the years — milestone by milestone — thanks to the passion and unity of our community around the world.
+    </p>
+  </div>
+
+  <!-- Timeline -->
+  <div class="timeline">
+    {% for hist in history_years %}
+      <div class="timeline-item {% if forloop.counter|divisibleby:2 %}right{% else %}left{% endif %}">
+        <div class="timeline-content">
+          <span class="timeline-year">{{ hist.year }}</span>
+          <h3>{{ hist.title }}</h3>
+          {% if hist.image %}
+            <img src="{{ hist.image.url }}" alt="{{ hist.title }}">
+          {% endif %}
+          <p>{{ hist.description }}</p>
+        </div>
+      </div>
+    {% endfor %}
+  </div>
+
+  <!-- Footer -->
+  <div class="footer-note">
+    <h4>Looking Ahead</h4>
+    <p>As DC48K continues to grow, we remain committed to strengthening diaspora impact across the globe through unity, innovation, and purpose.</p>
+  </div>
+
+</section>
+{% endblock %}

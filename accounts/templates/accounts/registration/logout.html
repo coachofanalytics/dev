@@ -1,0 +1,22 @@
+{% extends "main/base_templates/base.html"%}
+{% block title %}Logout{% endblock %}
+ {%load crispy_forms_tags%}{% block content %}
+<hr style="height:3px;border:none;color:rgb(102, 102, 122);background-color:rgb(157, 157, 178);" />
+<div class="container h-100">
+  <div class="d-flex justify-content-center h-100">
+    <div class="user_card">
+      <div class="d-flex justify-content-center">
+        <h4 id="form-title">Thank You For Visiting With Us! You have now been logged out</h4>
+    </div>
+
+      <div class="mt-4">
+        <div class="d-flex justify-content-center links">
+            <a href="{% url 'accounts:account-login' %}" class="ml-2">
+              <button type="button" class="btn btn-primary">Log In Again</button>
+            </a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock content%}

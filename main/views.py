@@ -1,4 +1,5 @@
 from django.shortcuts import redirect, render, get_object_or_404
+from django.templatetags.static import static
 from datetime import datetime,date,timedelta
 from dateutil.relativedelta import relativedelta
 from django.contrib.auth.decorators import login_required
@@ -16,11 +17,10 @@ from django.views.generic import (
     DetailView,
     DeleteView,
 )
-from .services.contract_origination.render_service import render_html
 #<<<<<<< 25.10_DC48_UAT_UO
-from .models import Assets,Description, LegalService, News, Page, Service, SubService,Team, SafetyAlertSubscription, EmergencyHotline, StaffContact, InsurancePlan, AIRecommendationRule, ExpertInquiry, ConsularAssistancePage, NewsArticle, Category, Subscriber
+from .models import Assets,Description, News, Page, Service, SubService,Team, SafetyAlertSubscription, EmergencyHotline, StaffContact, InsurancePlan, AIRecommendationRule, ExpertInquiry, ConsularAssistancePage, NewsArticle, Category, Subscriber
 #=======
-from django.db.models import Q, Count, Max
+from django.db.models import Q
 #<<<<<<< HEAD
 from .models import Scholarship, Donation_organisation, ContactMessage, Testimonial
 #>>>>>>> origin/25.11_DC48K_UAT_FN
@@ -29,7 +29,7 @@ from accounts.models import CustomerUser
 from .models import Assets,Description, News, Page, Service, SubService,Team, Donation_organization, MedicalResourceInquiry,Governance, NewsArticle, Category, Subscriber
 from accounts.models import CustomerUser
 from .utils import image_view,path_values
-from .forms import ContactForm, DonorForm, LegalServiceForm, MessageForm,ScholarshipSearchForm
+from .forms import ContactForm, DonorForm, MessageForm,ScholarshipSearchForm
 ##=======
 from django.views.decorators.csrf import csrf_exempt, csrf_protect
 from main.forms import ContactForm, GovernanceForm, ArticleForm
@@ -38,31 +38,11 @@ from django.contrib.auth import get_user_model
 #<<<<<<< 25.10_DC48_UAT_UO
 from django.views.decorators.http import require_POST
 from django.http import JsonResponse, HttpResponse
-from django.middleware.csrf import get_token
-from django.core.mail import send_mail
+from django.core.mail import send_mail, EmailMessage
+from django.template.loader import render_to_string
 from django.utils.html import strip_tags
 from django.utils import timezone
-from django.views.decorators.http import require_http_methods
 from django.contrib.auth import get_user_model
-
-from main.models import (
-    CandidatePlacement,
-    ContractDocument,
-    ContractEvent,
-    ContractPackage,
-    ContractSignature,
-    ContractTemplate,
-    PackageDefinition,
-    PackageDefinitionDocument,
-)
-from main.services.contract_origination import origination as origination_service
-from main.services.contract_origination import signature_service
-from main.services.contract_origination.exceptions import (
-    ContractOriginationError,
-    InvalidTransitionError,
-    SignatureVerificationError,
-    TokenVerificationError,
-)
 
 # Models imports
 from .models import (
@@ -71,31 +51,21 @@ from .models import (
     InsurancePlan, AIRecommendationRule, ExpertInquiry,
     ConsularAssistancePage, NewsArticle, Category, Subscriber,
     Scholarship, ContactMessage, Testimonial, TrainingCourse,
-    Donation_organization, MedicalResourceInquiry, Governance
+    Donation_organization, MedicalResourceInquiry, Governance,
+    Gallery, GetHelp, DonationOrganization, History, ContactUs,
+    ServiceRequest, CommunityMessage
 )
 from accounts.models import CustomerUser
 from .utils import image_view, path_values
-from .forms import (
-    ContactForm,
-    DonorForm,
-    MessageForm,
-    ScholarshipSearchForm,
-    GovernanceForm,
-    ArticleForm,
-    ScholarshipForm,
-    TrainingCourseForm,
-    SignatureForm,
-    ContractDefinitionForm,
-    CandidatePlacementForm,
-    ContractTemplateForm,
-    ContractTemplateVersionForm,
-    PackageDefinitionDocumentForm,
-    ContractSearchForm,
-)
+from .forms import ContactForm, DonorForm, MessageForm, ScholarshipSearchForm, GovernanceForm, ArticleForm, ScholarshipForm,TrainingCourseForm, GetHelpForm, CommunityMessageForm
+from mail.custom_email import send_email
 
 import csv
 import feedparser
 import random
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 # Details Donation View
@@ -150,11 +120,54 @@ def template_errors(request):
 
 @csrf_exempt
 def medical_resource_form(request):
+    """Handle medical resource inquiry form with confirmation email"""
+    import logging
+    logger = logging.getLogger(__name__)
+
     if request.method == 'POST':
-        name = request.POST.get('name')
-        email = request.POST.get('email')
-        message = request.POST.get('message')
-        MedicalResourceInquiry.objects.create(name=name, email=email, message=message)
+        name = request.POST.get('name', '').strip()
+        email = request.POST.get('email', '').strip()
+        message = request.POST.get('message', '').strip()
+
+        # Create inquiry record
+        inquiry = MedicalResourceInquiry.objects.create(name=name, email=email, message=message)
+
+        # Also create ServiceRequest for admin tracking
+        try:
+            service_request = ServiceRequest.objects.create(
+                service_type='healthcare',
+                full_name=name,
+                email=email,
+                consultation_type='Medical Resource Request',
+                question=message,
+                additional_notes='Medical Resource Inquiry Form Submission',
+            )
+
+            # Send confirmation email using send_email utility
+            try:
+                send_email(
+                    category=0,
+                    to_email=[service_request.email],
+                    subject='Medical Resource Request Received - DC48K',
+                    html_template='main/email/medical_resource_confirmation.html',
+                    context={
+                        'full_name': service_request.full_name,
+                        'reference_number': f'MR-{service_request.id:05d}',
+                        'created_at': service_request.created_at,
+                    },
+                    from_name="Diaspora County 048 - Healthcare Support"
+                )
+            except Exception as e:
+                logger.error(f'Failed to send medical resource confirmation email to {service_request.email}: {e}')
+        except Exception as e:
+            logger.error(f'Failed to create ServiceRequest for medical resource inquiry: {e}')
+
+        # Add success message for user notification
+        messages.success(
+            request,
+            f'Thank you for your medical resource request! We have received your submission and a confirmation email has been sent to {email}. Our healthcare support team will review your request and contact you shortly.'
+        )
+
         # Redirect using the named URL so it works regardless of include path
         return redirect('main:healthcare_info')
     return render(request, 'main/data/medical_resource_form.html')
@@ -309,11 +322,14 @@ def History(request):
     page_instance, _ = Page.objects.get_or_create(page_name='About')
     description = Description.objects.filter(page = page_instance)
     context={
-            
+
             'description': description,
-            
+
         }
     return render(request, "main/about_templates/history.html",context)
+
+# Lowercase alias for URL pattern compatibility
+history = History
 
 class ImageCreateView(LoginRequiredMixin, CreateView):
     model = Assets
@@ -358,16 +374,13 @@ def team_list(request):
 @require_POST
 @csrf_protect
 def subscribe_alerts(request):
+    import logging
+    logger = logging.getLogger(__name__)
+
     email = request.POST.get('email', '').strip().lower()
     if not email:
         return JsonResponse({'success': False, 'message': 'Email is required.'}, status=400)
 
-    subject = "DC48K Safety Alerts Subscription"
-    html_message = """
-      <p>Thank you for subscribing to DC48K Safety Alerts.</p>
-      <p>You will receive updates about advisories and safety information.</p>
-    """
-    plain_message = strip_tags(html_message)
     # Check if already subscribed
     existing = SafetyAlertSubscription.objects.filter(email=email).first()
     if existing and existing.is_active:
@@ -383,19 +396,38 @@ def subscribe_alerts(request):
             is_active=True,
         )
 
-    # Attempt to send confirmation email
+    # Also create ServiceRequest entry for admin tracking
     try:
-        send_mail(
-            subject,
-            plain_message,
-            None,  # uses DEFAULT_FROM_EMAIL
-            [email],
-            html_message=html_message,
+        service_request = ServiceRequest.objects.create(
+            service_type='crisis',
+            full_name=request.POST.get('name', 'Safety Alert Subscriber').strip(),
+            email=email,
+            consultation_type='Safety Alert Subscription',
+            question='User subscribed to safety alerts',
+            additional_notes='Automatic subscription to DC48K Safety Alerts via crisis page',
         )
-        return JsonResponse({'success': True, 'message': 'Subscribed! A confirmation email has been sent.'})
-    except Exception:
-        # Gracefully succeed even if email backend is unavailable
-        return JsonResponse({'success': True, 'message': 'Subscribed! (Email could not be sent right now.)'})
+
+        # Send confirmation email using send_email utility
+        try:
+            send_email(
+                category=0,
+                to_email=[service_request.email],
+                subject='Safety Alert Subscription Confirmed - DC48K',
+                html_template='main/email/safety_alert_confirmation.html',
+                context={
+                    'full_name': service_request.full_name,
+                    'reference_number': f'SA-{service_request.id:05d}',
+                    'created_at': service_request.created_at,
+                },
+                from_name="Diaspora County 048 - Safety & Crisis Team"
+            )
+            return JsonResponse({'success': True, 'message': 'Subscribed! A confirmation email has been sent.'})
+        except Exception as e:
+            logger.error(f'Failed to send safety alert confirmation email: {e}')
+            return JsonResponse({'success': True, 'message': 'Subscribed! (Confirmation email could not be sent right now.)'})
+    except Exception as e:
+        logger.error(f'Failed to create ServiceRequest for safety alert: {e}')
+        return JsonResponse({'success': True, 'message': 'Subscribed! Your subscription is active.'})
 
 
 
@@ -520,6 +552,10 @@ def healthcare_info(request):
         'mission': mission,
         'sections': sections,
         'contact_cta': contact_cta,
+        # Static image URLs expected directly by the template
+        'hero_image_url': static('main/img/healthcare/doctor.svg'),
+        'services_image_url': static('main/img/healthcare/patient.svg'),
+        'insurance_image_url': static('main/img/healthcare/doctor.svg'),
     }
 
     return render(request, 'main/data/healthcare_info.html', context)
@@ -550,6 +586,176 @@ def contact_us_list(request):
 
     # Render the template with the context
     return render(request, 'main/snippets_templates/table/contact_us_list.html', {'contact_us_list': contact_us_list})
+
+
+def contact_us(request):
+    if request.method == "POST":
+        name = request.POST.get('name')
+        email = request.POST.get('email')
+        message = request.POST.get('message')
+        print (name,email,message)
+        contact_message = ContactUs.objects.create(
+            name = name,
+            email = email,
+            message = message
+        )
+        contact_message.save
+
+        messages.success(request, "Thank You For Contacting Us We Will Get To You As Soon As Possible.")
+        return redirect('main:layout')
+
+    return render(request, "main/home_templates/home.html")
+
+
+def gallery_list(request):
+    images = Gallery.objects.all()
+    return render(request, 'main/Gallery/gallery.html', {'images': images})
+
+
+# Send a welcome email to a new user
+
+def send_notification(request):
+    url = 'email/welcome.html'
+    new_user = CustomerUser.objects.all().order_by('-id').first()
+    print(new_user)
+
+    print(new_user)
+    print(new_user.id, new_user.first_name, new_user.category, new_user.member_number, new_user.email)
+
+
+    user_category = "Ordinary"
+    first_name = new_user.first_name
+    last_name = new_user.last_name
+    user_id = new_user.member_number
+    user_email = new_user.email
+    subject = "Welcome To DC48K"
+
+    print(new_user.id)
+
+    context = {
+        'user_category': user_category,
+        'first_name': first_name,
+        'last_name': last_name,
+        'user_id': user_id,
+        'subject': subject
+    }
+    try:
+        send_email(
+            category=user_category,
+            to_email=[user_email],
+            subject=subject,
+            html_template=url,
+            context=context
+        )
+
+        print("EMAIL SENT")
+    except Exception as e:
+        error_message = (
+            f'Hi {request.user.first_name}, Your message to '
+            f'{request.user.email} was unsuccessful. '
+            f'Please try again or contact info@diasporacounty48.org. Thank You. '
+            f'Error: {e}'
+        )
+        return render(request, 'main/messages/message.html', {"message": error_message})
+
+
+def send_welcome_email(user_id=None):
+    url = 'email/welcome.html'
+    user_information = CustomerUser.objects.get(id=user_id)
+    user_category = user_information.category
+    first_name = user_information.first_name
+    last_name = user_information.last_name
+    user_id = user_information.id
+    user_email = user_information.email
+    subject = "Welcome To DC48K"
+
+
+    context = {
+        'user_category': user_category,
+        'first_name': first_name,
+        'last_name': last_name,
+        'user_id': user_id
+    }
+    html_message = render_to_string(url, context)
+
+    email = EmailMessage(
+        subject=subject,
+        body = html_message,
+        from_email = settings.EMAIL_HOST_USER,
+        to = [user_email]
+    )
+    email.content_subtype = 'html'
+    email.send()
+    print('Email Sent Successfully')
+
+
+
+def gethelp_list(request):
+    helps = GetHelp.objects.all()
+    context = {
+        'helps': helps
+    }
+
+    return render(request, 'main/gethelp_list.html', context)
+
+
+
+def gethelp_update(request, pk):
+
+    gethelp = get_object_or_404(GetHelp, pk=pk)
+
+
+    if request.method == 'POST':
+        form = GetHelpForm(request.POST, instance=gethelp)
+        if form.is_valid():
+            form.save()
+            return redirect('main:gethelp')
+
+    else:
+        form = GetHelpForm(instance=gethelp)
+
+    return render(request, 'main/gethelp_update.html', {'form':form})
+
+
+
+
+def gethelp_create(request):
+    if request.method == 'POST':
+        form = GetHelpForm(request.POST)
+        if form.is_valid():
+            form.save()
+            return redirect('main:gethelp')
+
+    else:
+        form = GetHelpForm()
+
+    return render(request, 'main/gethelp_create.html',{'form':form})
+
+
+
+def gethelp_delete(request, pk):
+
+    gethelp = get_object_or_404(GetHelp, pk=pk)
+
+    if request.method == 'POST':
+
+        gethelp.delete()
+        return redirect('main:gethelp')
+
+    return render(request, 'main/gethelp_confirm_delete.html', {'gethelp':gethelp})
+
+
+def organization_list_view(request):
+    organizations = DonationOrganization.objects.all()
+    return render(request, 'main/snippets_templates/table/donation_list.html', {'organizations':organizations})
+
+
+def ourhistory(request):
+    history_years = History.objects.all()
+    context = {
+        "history_years": history_years
+    }
+    return render(request, "main/ourhistory.html", context)
 
 
 from django.views.generic import TemplateView
@@ -1261,8 +1467,7 @@ def governance_list(request):
         'records': records,
         'title': 'Governance Records'
     }
-    # Changed from 'list.html' to 'governance_list.html'
-    return render(request, 'main/governance/governance_list.html', context)
+    return render(request, 'main/governance_list.html', context)
 
 # Create new governance record
 # REPLACE your entire governance_create function with this:
@@ -2332,18 +2537,50 @@ def consular_all_updates(request):
 
 def book_consular_consultation(request):
     """
-    Render the Book Consultation form page.
+    Render the Book Consultation form page and handle AJAX POST submissions.
+    Saves consultation requests to database and sends confirmation email.
     """
     if request.method == 'POST':
-        # Handle AJAX form submission
         import json
+        import logging
+        logger = logging.getLogger(__name__)
         try:
             data = json.loads(request.body)
-            
-            # Here you would save the consultation request to database
-            # For now, we'll just return success
-            # In production, create a ConsultationRequest model and save it
-            
+
+            # Save the consultation request to database
+            service_request = ServiceRequest.objects.create(
+                service_type='consular',
+                full_name=data.get('full_name', '').strip(),
+                email=data.get('email', '').strip(),
+                phone=data.get('phone', '').strip(),
+                consultation_type=data.get('consultation_type', ''),
+                preferred_language=data.get('preferred_language', 'English'),
+                location=data.get('location', '').strip(),
+                question=data.get('question', '').strip(),
+                urgency=data.get('urgency', 'Not Urgent'),
+                additional_notes=data.get('additional_notes', '').strip(),
+            )
+
+            # Send confirmation email (non-blocking: SMTP failure won't crash the request)
+            try:
+                send_email(
+                    category=0,
+                    to_email=[service_request.email],
+                    subject='Your Consultation Request Has Been Received - DC48K',
+                    html_template='main/email/consultation_confirmation.html',
+                    context={
+                        'purpose': 'consultation_confirmation',
+                        'full_name': service_request.full_name,
+                        'consultation_type': service_request.consultation_type,
+                        'urgency': service_request.urgency,
+                        'reference_number': f'CR-{service_request.id:05d}',
+                        'created_at': service_request.created_at,
+                    },
+                    from_name="Diaspora County 048 - Consular Services"
+                )
+            except Exception as e:
+                logger.error(f'Failed to send consultation confirmation email to {service_request.email}: {e}')
+
             return JsonResponse({
                 'success': True,
                 'message': 'Your consultation request has been submitted. We will contact you shortly.'
@@ -2353,7 +2590,6 @@ def book_consular_consultation(request):
                 'success': False,
                 'error': str(e)
             }, status=400)
-    
     context = {
         'title': 'Book a Consultation',
     }
@@ -2378,8 +2614,8 @@ def confirm_email(request, token):
 # COMMUNITIES APP VIEWS (MERGED FROM communities app)
 # ============================================
 from .models import CommunityMember, DirectoryProfile, ForumCategory, CommunityPost, CommentP, EventCalendar
-from .forms import CommunityCommentForm, CommunityPostForm, CommunityEventForm, CommunityContactForm
-from .utils import send_email
+from .forms import CommunityCommentForm, CommunityPostForm, CommunityEventForm, CommunityContactForm, EmergencyHelpForm
+from .utils import send_email as send_email_util
 
 
 def communities_home(request):
@@ -2405,7 +2641,8 @@ def communities_join(request):
             email=email,
             is_public_directory=agree_to_directory,
             profession="To be updated",
-            region="Global"
+            region="Global",
+            user=request.user if request.user.is_authenticated else None,
         )
 
         subject = 'Welcome to Our Community!'
@@ -2413,7 +2650,7 @@ def communities_join(request):
         context = {'name': name}
 
         try:
-            send_email(
+            send_email_util(
                 subject,
                 recipient_list,
                 context,
@@ -2427,6 +2664,13 @@ def communities_join(request):
         return redirect('communities:member_directory')
 
     return render(request, 'main/communities/join.html')
+
+
+def _get_community_member_for_user(user):
+    """Get the CommunityMember linked to the authenticated user, or None."""
+    if not user or not user.is_authenticated:
+        return None
+    return CommunityMember.objects.filter(user=user).first()
 
 
 def communities_member_directory(request):
@@ -2454,6 +2698,12 @@ def communities_member_directory(request):
     for member in members:
         member.is_premium = member.id % 3 == 0
 
+    # Unread message count for inbox badge
+    unread_count = 0
+    current_member = _get_community_member_for_user(request.user)
+    if current_member:
+        unread_count = CommunityMessage.objects.filter(recipient=current_member, is_read=False).count()
+
     context = {
         'members': members,
         'search_query': search_query,
@@ -2461,7 +2711,9 @@ def communities_member_directory(request):
         'profession_filter': profession_filter,
         'unique_regions': unique_regions,
         'unique_professions': unique_professions,
-        'total_members': members.count()
+        'total_members': members.count(),
+        'unread_count': unread_count,
+        'current_member': current_member,
     }
     return render(request, 'main/communities/member_directory.html', context)
 
@@ -2477,13 +2729,20 @@ def communities_join_directory(request, member_id):
 
 
 def communities_join_directory_form(request):
-    member_id = request.session.get('joined_member_id')
     member = None
-    if member_id:
-        try:
-            member = CommunityMember.objects.get(id=member_id)
-        except CommunityMember.DoesNotExist:
-            pass
+
+    # Priority 1: If user is authenticated, find their linked CommunityMember
+    if request.user.is_authenticated:
+        member = CommunityMember.objects.filter(user=request.user).first()
+
+    # Priority 2: Fall back to session-based member
+    if not member:
+        member_id = request.session.get('joined_member_id')
+        if member_id:
+            try:
+                member = CommunityMember.objects.get(id=member_id)
+            except CommunityMember.DoesNotExist:
+                pass
 
     if request.method == 'POST':
         name = request.POST.get('name', '').strip()
@@ -2508,7 +2767,9 @@ def communities_join_directory_form(request):
 
         if not member:
             member = CommunityMember.objects.create(
-                name=name, profession=profession, region=region, is_public_directory=True
+                name=name, profession=profession, region=region,
+                is_public_directory=True,
+                user=request.user if request.user.is_authenticated else None,
             )
             request.session['joined_member_id'] = member.id
         else:
@@ -2516,6 +2777,9 @@ def communities_join_directory_form(request):
             member.profession = profession
             member.region = region
             member.is_public_directory = True
+            # Link to user if not already linked
+            if request.user.is_authenticated and member.user is None:
+                member.user = request.user
             member.save()
 
         DirectoryProfile.objects.update_or_create(
@@ -2529,10 +2793,24 @@ def communities_join_directory_form(request):
         messages.success(request, f'Profile updated for {name}!')
         return redirect('communities:member_directory')
 
+    # Pre-fill from existing member or from user account
+    if member:
+        default_name = member.name
+        default_profession = member.profession
+        default_region = member.region
+    elif request.user.is_authenticated:
+        default_name = f"{request.user.first_name} {request.user.last_name}".strip() or request.user.username
+        default_profession = ''
+        default_region = ''
+    else:
+        default_name = ''
+        default_profession = ''
+        default_region = ''
+
     context = {
-        'name': member.name if member else '',
-        'profession': member.profession if member else '',
-        'region': member.region if member else '',
+        'name': default_name,
+        'profession': default_profession,
+        'region': default_region,
         'categories': ['Tech & IT', 'Legal', 'Finance', 'Healthcare', 'Education', 'Business', 'Creative & Media', 'Engineering', 'Other']
     }
     return render(request, 'main/communities/join_directory_form.html', context)
@@ -2569,6 +2847,7 @@ def communities_view_post(request, post_id):
     return render(request, 'main/communities/view_post.html', {'post': post, 'comments': comments, 'form': form})
 
 
+@login_required
 def communities_create_post(request, slug):
     category = get_object_or_404(ForumCategory, slug=slug)
     if request.method == 'POST':
@@ -2576,6 +2855,7 @@ def communities_create_post(request, slug):
         if form.is_valid():
             post = form.save(commit=False)
             post.category = category
+            post.author = request.user
             post.save()
             return redirect('communities:category_detail', slug=category.slug)
     else:
@@ -2595,6 +2875,55 @@ def communities_add_comment(request, post_id):
             comment.save()
             return redirect('communities:view_post', post_id=post.id)
     return redirect('communities:view_post', post_id=post.id)
+
+
+@login_required
+def communities_edit_post(request, post_id):
+    """Edit a forum post. Only superuser/staff can edit."""
+    post = get_object_or_404(CommunityPost, id=post_id)
+
+    # Permission check: only superuser/staff can edit
+    if not request.user.is_superuser and not request.user.is_staff:
+        messages.error(request, 'Only administrators can edit posts.')
+        return redirect('communities:view_post', post_id=post.id)
+
+    if request.method == 'POST':
+        form = CommunityPostForm(request.POST, instance=post)
+        if form.is_valid():
+            post = form.save()
+            messages.success(request, f'Post "{post.title}" updated successfully!')
+            return redirect('communities:view_post', post_id=post.id)
+    else:
+        form = CommunityPostForm(instance=post)
+
+    context = {
+        'form': form,
+        'post': post,
+        'is_edit': True,
+    }
+    return render(request, 'main/communities/edit_post.html', context)
+
+
+@login_required
+def communities_delete_post(request, post_id):
+    """Delete a forum post. Only superuser/staff can delete."""
+    post = get_object_or_404(CommunityPost, id=post_id)
+    category_slug = post.category.slug
+
+    # Permission check: only superuser/staff can delete
+    if not request.user.is_superuser and not request.user.is_staff:
+        messages.error(request, 'Only administrators can delete posts.')
+        return redirect('communities:view_post', post_id=post.id)
+
+    if request.method == 'POST':
+        post.delete()
+        messages.success(request, 'Post deleted successfully!')
+        return redirect('communities:category_detail', slug=category_slug)
+
+    context = {
+        'post': post,
+    }
+    return render(request, 'main/communities/delete_post.html', context)
 
 
 def communities_event_calendar(request):
@@ -2655,573 +2984,228 @@ def communities_contact_view(request):
         form = CommunityContactForm(request.POST)
         if form.is_valid():
             contact = form.save()
-            context = {'name': contact.name, 'email': contact.email, 'message': contact.message}
-            subject = f'Hello {contact.name}, thank you for contacting us!'
-            recipient_list = [contact.email]
+
+            # Save to ServiceRequest for admin tracking and management
+            service_request = ServiceRequest.objects.create(
+                service_type='community',
+                full_name=contact.name,
+                email=contact.email,
+                consultation_type='General Inquiry',
+                question=contact.message,
+                additional_notes=f'Community Contact Form Submission',
+            )
+
+            # Send confirmation email using existing send_email utility
             try:
                 send_email(
-                    subject=subject,
-                    recipient_list=recipient_list,
-                    context=context,
-                    html_template='main/communities/contact_response.html',
-                    plain_template='main/communities/contact_response.txt'
+                    category=0,
+                    to_email=[service_request.email],
+                    subject='Community Contact Request Received - DC48K',
+                    html_template='main/email/community_contact_confirmation.html',
+                    context={
+                        'full_name': service_request.full_name,
+                        'reference_number': f'CC-{service_request.id:05d}',
+                        'created_at': service_request.created_at,
+                    },
+                    from_name="Diaspora County 048 - Community Team"
                 )
-            except Exception:
-                pass  # Don't fail if email can't be sent
+            except Exception as e:
+                logger.error(f'Failed to send community contact email to {service_request.email}: {e}')
+
+            messages.success(request, 'Thank you for contacting us! We will review your message shortly.')
             return redirect('communities:home')
     else:
         form = CommunityContactForm()
     return render(request, 'main/communities/contact_form.html', {'form': form})
 
 
-def legalServiceListView(request):
-    legal_services = LegalService.objects.all().order_by("-id")
+def emergency_help_line(request):
+    """Handle emergency help line requests"""
+    import logging
+    logger = logging.getLogger(__name__)
 
-    context = {
-        "legal_services": legal_services
-    }
-
-    return render(request, "main/legal_services_list.html", context)
-
-
-def legalServiceCreateView(request):
-    if request.method == "POST":
-        form = LegalServiceForm(request.POST)
+    if request.method == 'POST':
+        form = EmergencyHelpForm(request.POST)
         if form.is_valid():
-            form.save()
-            return redirect("main:legal_service_list")
+            # Create ServiceRequest for emergency help
+            service_request = ServiceRequest.objects.create(
+                service_type='crisis',
+                full_name=form.cleaned_data['full_name'],
+                email=form.cleaned_data['email'],
+                phone=form.cleaned_data['phone'],
+                consultation_type='Emergency Help Line',
+                question=form.cleaned_data['description'],
+                urgency=form.cleaned_data['urgency'],
+                additional_notes='Emergency Help Line Request - REQUIRES IMMEDIATE ATTENTION',
+            )
+
+            # Send urgent confirmation email
+            try:
+                send_email(
+                    category=0,
+                    to_email=[service_request.email],
+                    subject='🚨 URGENT: Emergency Help Request Received - DC48K',
+                    html_template='main/email/emergency_help_confirmation.html',
+                    context={
+                        'full_name': service_request.full_name,
+                        'reference_number': f'EH-{service_request.id:05d}',
+                        'created_at': service_request.created_at,
+                    },
+                    from_name="Diaspora County 048 - Emergency Response Team"
+                )
+            except Exception as e:
+                logger.error(f'Failed to send emergency help email: {e}')
+
+            messages.success(request, 'Your emergency request has been submitted. Our team is being notified.')
+            return redirect('crisis_page')
     else:
-        form = LegalServiceForm()
+        form = EmergencyHelpForm()
 
-    context = {
-        "form": form
-    }
+    return render(request, 'main/emergency_help.html', {'form': form})
 
-    return render(request, "main/legalservice_form.html", context)
 
-def legalServiceDeleteView(request, pk):
-    legal_service = get_object_or_404(LegalService, pk=pk)
+# ============================================
+# COMMUNITY MESSAGING VIEWS
+# ============================================
 
-    if request.method == "POST":
-        legal_service.delete()
-        return redirect("main:legal_service_list")
+@login_required
+def communities_message_compose(request, recipient_id):
+    """Send a message to a community member."""
+    sender = _get_community_member_for_user(request.user)
+    if not sender:
+        messages.warning(request, 'You need a community profile to send messages. Please join the directory first.')
+        return redirect('communities:join_directory_form')
 
-    context = {
-    "legal_service": legal_service
-    }
+    recipient = get_object_or_404(CommunityMember, id=recipient_id)
 
-    return render(request, "main/legalservice_confirm_delete.html", context)
+    if sender == recipient:
+        messages.error(request, 'You cannot send a message to yourself.')
+        return redirect('communities:member_directory')
 
-def legalServiceUpdateView(request, pk):
-    # Get the object or return 404
-    legal_service = get_object_or_404(LegalService, pk=pk)
-
-    # Bind the form to POST data if submitted, else use the instance for pre-fill
-    if request.method == "POST":
-        form = LegalServiceForm(request.POST, instance=legal_service)
+    if request.method == 'POST':
+        form = CommunityMessageForm(request.POST)
         if form.is_valid():
-            form.save()
-            return redirect("main:legal_service_list")
+            msg = form.save(commit=False)
+            msg.sender = sender
+            msg.recipient = recipient
+            msg.save()
+            messages.success(request, f'Message sent to {recipient.name}!')
+            return redirect('communities:message_inbox')
     else:
-        form = LegalServiceForm(instance=legal_service)
+        form = CommunityMessageForm()
 
-    # Pass the form and object to the template
     context = {
-        "form": form,
-        "legal_service": legal_service
+        'form': form,
+        'recipient': recipient,
     }
-
-    return render(request, "main/legal_service_update.html", context)
-
-
-def _json_error(message, status=400):
-    return JsonResponse({"error": message}, status=status)
-
-#COP system
-#==========
-@require_POST
-def originate_placement(request, placement_id):
-    try:
-        contract_package = origination_service.create_from_placement(
-            placement_id,
-            actor="system",
-        )
-    except CandidatePlacement.DoesNotExist:
-        return _json_error("Placement not found.", status=404)
-    except ContractOriginationError as exc:
-        return _json_error(str(exc), status=400)
-
-    return JsonResponse({
-        "package_id": contract_package.id,
-        "state": contract_package.state,
-    })
+    return render(request, 'main/communities/message_compose.html', context)
 
 
-@require_POST
-def send_contract_package(request, package_id):
-    contract_package = get_object_or_404(ContractPackage, id=package_id)
-    try:
-        signature_service.mark_package_sent(contract_package, actor="system")
-    except InvalidTransitionError as exc:
-        return _json_error(str(exc), status=409)
+@login_required
+def communities_message_inbox(request):
+    """View received messages."""
+    member = _get_community_member_for_user(request.user)
+    if not member:
+        messages.warning(request, 'You need a community profile to view messages. Please join the directory first.')
+        return redirect('communities:join_directory_form')
 
-    return JsonResponse({
-        "package_id": contract_package.id,
-        "state": contract_package.state,
-    })
+    inbox_messages = CommunityMessage.objects.filter(recipient=member).order_by('-created_at')
+    unread_count = inbox_messages.filter(is_read=False).count()
 
-
-@require_http_methods(["GET", "POST"])
-def contract_sign(request, token):
-    if request.method == "GET":
-        try:
-            document = signature_service.verify_signing_token(token)
-        except TokenVerificationError as exc:
-            return HttpResponse(str(exc), status=400)
-
-        csrf_token = get_token(request)
-        html = (
-            "<!doctype html>"
-            "<html><head><title>Sign Contract</title></head><body>"
-            "<div>"
-            + document.html_snapshot
-            + "</div>"
-            "<form method=\"post\">"
-            f"<input type=\"hidden\" name=\"csrfmiddlewaretoken\" value=\"{csrf_token}\">"
-            "<label>Full name</label>"
-            "<input type=\"text\" name=\"name\" required>"
-            "<button type=\"submit\">Sign</button>"
-            "</form>"
-            "</body></html>"
-        )
-        return HttpResponse(html)
-
-    signer_name = request.POST.get("name", "").strip()
-    if not signer_name:
-        return HttpResponse("Signer name is required.", status=400)
-
-    ip_address = request.META.get("REMOTE_ADDR") or "0.0.0.0"
-    try:
-        signature_service.sign_document(
-            token=token,
-            signer_name=signer_name,
-            ip_address=ip_address,
-            method="WEB",
-        )
-    except TokenVerificationError as exc:
-        return HttpResponse(str(exc), status=400)
-    except SignatureVerificationError as exc:
-        return HttpResponse(str(exc), status=400)
-    except InvalidTransitionError as exc:
-        return HttpResponse(str(exc), status=409)
-
-    success_html = (
-        "<!doctype html>"
-        "<html><head><title>Signed</title></head><body>"
-        "<p>Signature recorded successfully.</p>"
-        "</body></html>"
-    )
-    return HttpResponse(success_html)
-
-
-@require_http_methods(["GET"])
-def contract_package_detail(request, package_id):
-    contract_package = get_object_or_404(
-        ContractPackage.objects.prefetch_related("documents__signatures", "events"),
-        id=package_id,
-    )
-
-    documents = [
-        {
-            "id": document.id,
-            "html_snapshot": document.html_snapshot,
-        }
-        for document in contract_package.documents.all()
-    ]
-
-    signatures = [
-        {
-            "document_id": signature.contract_document_id,
-            "signer": signature.signer,
-            "artifact": signature.artifact,
-            "signed_at": signature.signed_at.isoformat(),
-            "ip_address": signature.ip_address,
-            "method": signature.method,
-        }
-        for signature in ContractSignature.objects.filter(
-            contract_document__contract_package=contract_package
-        )
-    ]
-
-    events = [
-        {
-            "event_type": event.event_type,
-            "actor": event.actor,
-            "payload": event.payload,
-            "created_at": event.created_at.isoformat(),
-        }
-        for event in ContractEvent.objects.filter(
-            contract_package=contract_package
-        ).order_by("created_at", "id")
-    ]
-
-    return JsonResponse({
-        "state": contract_package.state,
-        "documents": documents,
-        "signatures": signatures,
-        "events": events,
-    })
-
-
-def cop_dashboard(request):
-    if request.method == "POST":
-        definition_form = ContractDefinitionForm(request.POST)
-        if definition_form.is_valid():
-            package_definition = PackageDefinition.objects.create(
-                name=definition_form.cleaned_data["name"],
-                slug=definition_form.cleaned_data["slug"],
-                merge_schema=definition_form.cleaned_data["merge_schema"],
-            )
-            versions = sorted(
-                definition_form.cleaned_data["required_documents"],
-                key=lambda item: item.id,
-            )
-            for index, version in enumerate(versions, start=1):
-                PackageDefinitionDocument.objects.create(
-                    package_definition=package_definition,
-                    contract_template_version=version,
-                    order=index,
-                )
-            return redirect("/cop/")
-    else:
-        definition_form = ContractDefinitionForm()
-
-    placements = CandidatePlacement.objects.select_related(
-        "package_definition",
-        "contract_package",
-    ).order_by("-id")
-    packages = ContractPackage.objects.all().order_by("-id")
-    state_counts = {state: 0 for state, _ in ContractPackage.State.choices}
-    for row in ContractPackage.objects.values("state").annotate(total=Count("id")):
-        state_counts[row["state"]] = row["total"]
-    placement_map = {
-        placement.contract_package_id: placement
-        for placement in CandidatePlacement.objects.filter(
-            contract_package__isnull=False
-        )
+    context = {
+        'inbox_messages': inbox_messages,
+        'unread_count': unread_count,
+        'active_tab': 'inbox',
     }
-    package_rows = [
-        {
-            "package": package,
-            "placement": placement_map.get(package.id),
-        }
-        for package in packages
-    ]
-
-    selected_package = None
-    selected_documents = []
-    selected_events = []
-    selected_id = request.GET.get("package_id")
-    if selected_id:
-        selected_package = get_object_or_404(ContractPackage, id=selected_id)
-        selected_documents = selected_package.documents.select_related(
-            "contract_template_version"
-        )
-        selected_events = ContractEvent.objects.filter(
-            contract_package=selected_package
-        ).order_by("created_at", "id")
-
-    return render(
-        request,
-        "cop/dashboard.html",
-        {
-            "definition_form": definition_form,
-            "placements": placements,
-            "package_rows": package_rows,
-            "selected_package": selected_package,
-            "selected_documents": selected_documents,
-            "selected_events": selected_events,
-            "package_stats": state_counts,
-            "last_refresh": timezone.now(),
-        },
-    )
+    return render(request, 'main/communities/message_inbox.html', context)
 
 
-@require_http_methods(["GET", "POST"])
-def cop_placements(request):
-    if request.method == "POST":
-        form = CandidatePlacementForm(request.POST)
+@login_required
+def communities_message_sent(request):
+    """View sent messages."""
+    member = _get_community_member_for_user(request.user)
+    if not member:
+        messages.warning(request, 'You need a community profile to view messages. Please join the directory first.')
+        return redirect('communities:join_directory_form')
+
+    sent_messages = CommunityMessage.objects.filter(sender=member).order_by('-created_at')
+
+    context = {
+        'sent_messages': sent_messages,
+        'active_tab': 'sent',
+    }
+    return render(request, 'main/communities/message_sent.html', context)
+
+
+@login_required
+def communities_message_detail(request, message_id):
+    """Read a single message."""
+    member = _get_community_member_for_user(request.user)
+    if not member:
+        messages.warning(request, 'You need a community profile to view messages.')
+        return redirect('communities:join_directory_form')
+
+    msg = get_object_or_404(CommunityMessage, id=message_id)
+
+    # Authorization: only sender or recipient can view
+    if msg.sender != member and msg.recipient != member:
+        messages.error(request, 'You do not have permission to view this message.')
+        return redirect('communities:message_inbox')
+
+    # Mark as read if recipient is viewing
+    if msg.recipient == member and not msg.is_read:
+        msg.is_read = True
+        msg.save(update_fields=['is_read'])
+
+    # Get thread: replies to this message
+    replies = CommunityMessage.objects.filter(parent_message=msg).order_by('created_at')
+
+    context = {
+        'msg': msg,
+        'replies': replies,
+        'is_recipient': msg.recipient == member,
+    }
+    return render(request, 'main/communities/message_detail.html', context)
+
+
+@login_required
+def communities_message_reply(request, message_id):
+    """Reply to a received message."""
+    member = _get_community_member_for_user(request.user)
+    if not member:
+        messages.warning(request, 'You need a community profile to reply to messages.')
+        return redirect('communities:join_directory_form')
+
+    original = get_object_or_404(CommunityMessage, id=message_id)
+
+    # Authorization: only sender or recipient can reply
+    if original.sender != member and original.recipient != member:
+        messages.error(request, 'You do not have permission to reply to this message.')
+        return redirect('communities:message_inbox')
+
+    # Reply goes to the other party
+    reply_to = original.sender if original.recipient == member else original.recipient
+
+    if request.method == 'POST':
+        form = CommunityMessageForm(request.POST)
         if form.is_valid():
-            form.save()
-            messages.success(request, "Placement created.")
-            return redirect("main:cop_placements")
+            reply_msg = form.save(commit=False)
+            reply_msg.sender = member
+            reply_msg.recipient = reply_to
+            reply_msg.parent_message = original
+            if not reply_msg.subject and original.subject:
+                reply_msg.subject = f"Re: {original.subject}"
+            reply_msg.save()
+            messages.success(request, f'Reply sent to {reply_to.name}!')
+            return redirect('communities:message_detail', message_id=original.id)
     else:
-        form = CandidatePlacementForm()
+        initial_subject = f"Re: {original.subject}" if original.subject else ''
+        form = CommunityMessageForm(initial={'subject': initial_subject})
 
-    placements = CandidatePlacement.objects.select_related(
-        "package_definition",
-        "contract_package",
-    ).order_by("-id")
-
-    return render(
-        request,
-        "cop/placements.html",
-        {
-            "form": form,
-            "placements": placements,
-        },
-    )
-
-
-@require_http_methods(["GET", "POST"])
-def cop_templates(request):
-    template_form = ContractTemplateForm(prefix="template")
-    version_form = ContractTemplateVersionForm(prefix="version")
-    definition_form = ContractDefinitionForm(prefix="definition")
-    document_form = PackageDefinitionDocumentForm(prefix="document")
-
-    if request.method == "POST":
-        action = request.POST.get("action")
-        if action == "create_template":
-            template_form = ContractTemplateForm(request.POST, prefix="template")
-            if template_form.is_valid():
-                template_form.save()
-                messages.success(request, "Template created.")
-                return redirect("main:cop_templates")
-        elif action == "create_version":
-            version_form = ContractTemplateVersionForm(request.POST, prefix="version")
-            if version_form.is_valid():
-                version_form.save()
-                messages.success(request, "Template version created.")
-                return redirect("main:cop_templates")
-        elif action == "create_definition":
-            definition_form = ContractDefinitionForm(request.POST, prefix="definition")
-            if definition_form.is_valid():
-                package_definition = PackageDefinition.objects.create(
-                    name=definition_form.cleaned_data["name"],
-                    slug=definition_form.cleaned_data["slug"],
-                    merge_schema=definition_form.cleaned_data["merge_schema"],
-                )
-                versions = sorted(
-                    definition_form.cleaned_data["required_documents"],
-                    key=lambda item: item.id,
-                )
-                for index, version in enumerate(versions, start=1):
-                    PackageDefinitionDocument.objects.create(
-                        package_definition=package_definition,
-                        contract_template_version=version,
-                        order=index,
-                    )
-                messages.success(request, "Package definition created.")
-                return redirect("main:cop_templates")
-        elif action == "add_definition_document":
-            document_form = PackageDefinitionDocumentForm(
-                request.POST,
-                prefix="document",
-            )
-            if document_form.is_valid():
-                document = document_form.save(commit=False)
-                if not document.order:
-                    last_order = (
-                        PackageDefinitionDocument.objects.filter(
-                            package_definition=document.package_definition
-                        ).aggregate(Max("order"))["order__max"]
-                        or 0
-                    )
-                    document.order = last_order + 1
-                document.save()
-                messages.success(request, "Definition document added.")
-                return redirect("main:cop_templates")
-        elif action == "remove_definition_document":
-            document_id = request.POST.get("document_id")
-            if document_id:
-                PackageDefinitionDocument.objects.filter(id=document_id).delete()
-                messages.success(request, "Definition document removed.")
-                return redirect("main:cop_templates")
-
-    templates = ContractTemplate.objects.prefetch_related("versions").order_by("name")
-    definitions = PackageDefinition.objects.prefetch_related(
-        "documents__contract_template_version__contract_template"
-    ).order_by("name")
-
-    return render(
-        request,
-        "cop/templates.html",
-        {
-            "template_form": template_form,
-            "version_form": version_form,
-            "definition_form": definition_form,
-            "document_form": document_form,
-            "templates": templates,
-            "definitions": definitions,
-        },
-    )
-
-
-@require_http_methods(["GET"])
-def cop_contracts(request):
-    form = ContractSearchForm(request.GET or None)
-    packages = ContractPackage.objects.all().order_by("-id")
-
-    if form.is_valid():
-        candidate = form.cleaned_data.get("candidate")
-        package_id = form.cleaned_data.get("package_id")
-        status = form.cleaned_data.get("status")
-
-        if candidate:
-            matching_ids = CandidatePlacement.objects.filter(
-                candidate__icontains=candidate,
-                contract_package__isnull=False,
-            ).values_list("contract_package_id", flat=True)
-            packages = packages.filter(id__in=matching_ids)
-
-        if package_id:
-            packages = packages.filter(id=package_id)
-
-        if status:
-            packages = packages.filter(state=status)
-
-    placement_map = {
-        placement.contract_package_id: placement
-        for placement in CandidatePlacement.objects.filter(
-            contract_package__isnull=False
-        )
+    context = {
+        'form': form,
+        'recipient': reply_to,
+        'original': original,
+        'is_reply': True,
     }
-    package_rows = [
-        {
-            "package": package,
-            "placement": placement_map.get(package.id),
-        }
-        for package in packages
-    ]
-
-    return render(
-        request,
-        "cop/contracts.html",
-        {
-            "form": form,
-            "package_rows": package_rows,
-            "result_count": packages.count(),
-        },
-    )
-
-
-@require_POST
-def generate_package_view(request, placement_id):
-    try:
-        contract_package = origination_service.create_from_placement(
-            placement_id,
-            actor="system",
-        )
-    except CandidatePlacement.DoesNotExist:
-        return HttpResponse("Placement not found.", status=404)
-    except ContractOriginationError as exc:
-        return HttpResponse(str(exc), status=400)
-
-    return redirect(f"/cop/packages/{contract_package.id}/")
-
-
-@require_POST
-def send_package_view(request, package_id):
-    contract_package = get_object_or_404(ContractPackage, id=package_id)
-    if contract_package.state != ContractPackage.State.GENERATED:
-        return HttpResponse(
-            f"Invalid transition: {contract_package.state} -> SENT",
-            status=409,
-        )
-
-    placement = CandidatePlacement.objects.filter(
-        contract_package=contract_package
-    ).first()
-    if not placement or not placement.candidate_email:
-        return HttpResponse("Candidate email not available.", status=400)
-
-    token = signature_service.generate_package_signing_token(contract_package)
-    signing_url = request.build_absolute_uri(f"/cop/sign/{token}/")
-    print(signing_url) #Email sending not configured so we are using logs for now
-
-    try:
-        send_mail(
-            subject="Contract Signing Link",
-            message=(
-                "Please sign your contract using the link below:\n\n"
-                f"{signing_url}"
-            ),
-            from_email=settings.DEFAULT_FROM_EMAIL,
-            recipient_list=[placement.candidate_email],
-        )
-    except Exception as exc:
-        return HttpResponse(str(exc), status=500)
-
-    try:
-        signature_service.mark_package_sent(contract_package, actor="system")
-    except InvalidTransitionError as exc:
-        return HttpResponse(str(exc), status=409)
-
-    return redirect(f"/cop/?package_id={contract_package.id}")
-
-
-def sign_get_view(request, token):
-    try:
-        contract_package = signature_service.verify_package_signing_token(token)
-    except TokenVerificationError as exc:
-        return HttpResponse(str(exc), status=400)
-
-    placement = CandidatePlacement.objects.filter(
-        contract_package=contract_package
-    ).first()
-    form = SignatureForm()
-    return render(
-        request,
-        "cop/sign.html",
-        {"form": form, "token": token, "placement": placement},
-    )
-
-
-def sign_post_view(request, token):
-    form = SignatureForm(request.POST)
-    if not form.is_valid():
-        try:
-            contract_package = signature_service.verify_package_signing_token(token)
-        except TokenVerificationError as exc:
-            return HttpResponse(str(exc), status=400)
-        placement = CandidatePlacement.objects.filter(
-            contract_package=contract_package
-        ).first()
-        return render(
-            request,
-            "cop/sign.html",
-            {"form": form, "token": token, "placement": placement},
-        )
-
-    try:
-        contract_package = signature_service.verify_package_signing_token(token)
-        signature_service.sign_package(
-            token=token,
-            signer_name=form.cleaned_data["name"],
-            ip_address=request.META.get("REMOTE_ADDR") or "0.0.0.0",
-            method="WEB",
-        )
-    except TokenVerificationError as exc:
-        return HttpResponse(str(exc), status=400)
-    except SignatureVerificationError as exc:
-        return HttpResponse(str(exc), status=400)
-    except InvalidTransitionError as exc:
-        return HttpResponse(str(exc), status=409)
-
-    return redirect(f"/cop/?package_id={contract_package.id}")
-
-
-@require_http_methods(["GET", "POST"])  
-def sign_view(request, token):
-    if request.method == "POST":
-        return sign_post_view(request, token)
-    return sign_get_view(request, token)
-
-def renderContract(request, id):
-    placement = CandidatePlacement.objects.get(id=id)
-    contract_package = placement.contract_package
-    response = contract_package_detail(request, contract_package.id) 
-    context = json.loads(response.content)
-   
-    return render(request, "cop/contract_view.html", context)   
+    return render(request, 'main/communities/message_compose.html', context)

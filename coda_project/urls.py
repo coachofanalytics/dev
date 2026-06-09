@@ -25,8 +25,6 @@ from django.urls import reverse_lazy
 
 from accounts import views as account_views
 from coda_project import settings
-import os
-from main import views as main_views
 
 # ===========ERROR HANDLING SECTION================
 handler400 = "main.views.hendler400"
@@ -39,11 +37,22 @@ urlpatterns = [
     path("admin/", admin.site.urls),
     re_path(r"^static/(?P<path>.*)$", serve, {"document_root": settings.STATIC_ROOT}),
     re_path(r"^media/(?P<path>.*)$", serve, {"document_root": settings.MEDIA_ROOT}),
+    # path(
+    #     "logout/",
+    #     auth_views.LogoutView.as_view(
+    #         #template_name="accounts/registration/DC48K/logins.html"
+    #         template_name="accounts/registration/logout.html"
+    #     ),
+    #     name="account-logout",
+    # ),
     path(
-        "logout/",
-        account_views.logout_view,
-        name="account-logout",
+        "otp-reset/",
+        auth_views.PasswordResetView.as_view(
+            template_name="accounts/registration/otp_reset.html"
+        ),
+        name="otp_reset",
     ),
+
     path(
         "password-reset/",
         auth_views.PasswordResetView.as_view(
@@ -51,13 +60,10 @@ urlpatterns = [
         ),
         name="password_reset",
     ),
-    path(
-        "password-reset/done",
-        auth_views.PasswordResetDoneView.as_view(
-            template_name="accounts/registration/password_reset_done.html"
-        ),
-        name="password_reset_done",
-    ),
+
+    path("password-reset-email/", account_views.password_reset_request, name="password_reset_email"),
+
+
     path(
         "password-reset-confirm/<uidb64>/<token>/",
         auth_views.PasswordResetConfirmView.as_view(
@@ -65,6 +71,32 @@ urlpatterns = [
         ),
         name="password_reset_confirm",
     ),
+
+
+    path(
+        "password-reset/done",
+        auth_views.PasswordResetDoneView.as_view(
+            template_name="accounts/registration/password_reset_done.html"
+        ),
+        name="password_reset_done",
+    ),
+
+    # Ensure that this pattern exists for 'password_reset_complete'
+    path(
+        'reset/done/', 
+        auth_views.PasswordResetCompleteView.as_view(
+            template_name="accounts/registration/password_reset_complete.html"
+        ), 
+         name='password_reset_complete'
+    ),
+
+ 
+  
+    path('', include('main.news_urls', namespace='news')),
+    path("", include("main.urls", namespace="main")),
+    path("accounts/", include("accounts.urls")),
+    path("finance/", include("finance.urls"), name="finance"),
+    path('communities/', include('main.urls_communities')),
 
     # Provide a minimal set of un-namespaced testimonial/find-doctors routes
     # that match the available views in `main.views`.

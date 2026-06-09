@@ -1,8 +1,8 @@
-{% extends "main/base_templates/base.html" %}*
+{% extends "main/base_templates/base.html" %}
 {% load static %}
 
 {% block content %}
-{% load static %}
+<style>section { display: block !important; }</style>
 <link rel="stylesheet" href="{% static 'main/css/healthcare.css' %}">
 
 <div class="healthcare-page">
@@ -20,17 +20,12 @@
                     <a href="{% url 'main:medical_resource_form' %}" class="btn btn-danger btn-lg">FIND MEDICAL RESOURCES</a>
                 </div>
                 <div class="col-md-6 hero-image-container p-3">
-                    {% if hero_image_url %}
-                        <img id="image-hero"
-                             src="{{ hero_image_url }}"
-                             {% if hero_image_srcset %}srcset="{{ hero_image_srcset }}" sizes="(max-width: 800px) 100vw, 800px"{% endif %}
-                             alt="Healthcare Hero"
-                             class="img-fluid loading-placeholder"
-                             style="max-height:400px; min-height:400px;"
-                             loading="lazy" decoding="async" />
-                    {% else %}
-                        <img id="image-hero" src="https://placehold.co/800x400/0a926d/ffffff?text=Healthcare%20Hero" alt="Healthcare Hero" class="img-fluid loading-placeholder" style="max-height:400px; min-height:400px;" loading="lazy" decoding="async" />
-                    {% endif %}
+                    <img id="image-hero"
+                         src="{% static 'main/img/healthcare_uploads/healthcarehero.png' %}"
+                         alt="Healthcare Hero"
+                         class="img-fluid"
+                         style="max-height:400px; min-height:400px; width:100%; object-fit:cover;"
+                         loading="lazy" decoding="async" />
                 </div>
             </div>
         </div>
@@ -46,11 +41,12 @@
     <section class="container">
         <div id="healthcare-services" class="service-block row align-items-center mb-5">
             <div class="col-lg-6 mb-4">
-                {% if services_image_url %}
-                    <img id="image-services" src="{{ services_image_url }}" {% if services_image_srcset %}srcset="{{ services_image_srcset }}" sizes="(max-width: 600px) 100vw, 600px"{% endif %} alt="Healthcare Services" class="img-fluid rounded shadow-lg loading-placeholder" loading="lazy" decoding="async" />
-                {% else %}
-                    <img id="image-services" src="https://placehold.co/600x400/e0f2f1/000000?text=Healthcare%20Services" alt="Healthcare Services" class="img-fluid rounded shadow-lg loading-placeholder" loading="lazy" decoding="async" />
-                {% endif %}
+                <img id="image-services"
+                     src="{% static 'main/img/healthcare_uploads/healthcareservices.png' %}"
+                     alt="Healthcare Services"
+                     class="img-fluid rounded shadow-lg"
+                     style="width:100%; height:340px; object-fit:cover;"
+                     loading="lazy" decoding="async" />
             </div>
             <div class="col-lg-6">
                 <h3 class="h3 text-brand-blue font-weight-bold">1. Healthcare Services</h3>
@@ -67,11 +63,12 @@
 
         <div id="health-insurance" class="service-block row align-items-center">
             <div class="col-lg-6 order-lg-2 mb-4">
-                {% if insurance_image_url %}
-                    <img id="image-insurance" src="{{ insurance_image_url }}" {% if insurance_image_srcset %}srcset="{{ insurance_image_srcset }}" sizes="(max-width: 600px) 100vw, 600px"{% endif %} alt="Insurance Options" class="img-fluid rounded shadow-lg loading-placeholder" loading="lazy" decoding="async" />
-                {% else %}
-                    <img id="image-insurance" src="https://placehold.co/600x400/fff7e6/000000?text=Insurance%20Options" alt="Insurance Options" class="img-fluid rounded shadow-lg loading-placeholder" loading="lazy" decoding="async" />
-                {% endif %}
+                <img id="image-insurance"
+                     src="{% static 'main/img/healthcare_uploads/insuranceoptions.png' %}"
+                     alt="Insurance Options"
+                     class="img-fluid rounded shadow-lg"
+                     style="width:100%; height:340px; object-fit:cover;"
+                     loading="lazy" decoding="async" />
             </div>
             <div class="col-lg-6 order-lg-1">
                 <h3 class="h3 text-brand-blue font-weight-bold">2. Health Insurance Options</h3>
@@ -98,7 +95,7 @@
 </div>
 
 <!-- Healthcare chat widget root and assets -->
-<div id="healthcare-chat-root-pl aceholder"></div>
+<div id="healthcare-chat-root-placeholder"></div>
 <link rel="stylesheet" href="{% static 'main/css/chat.css' %}">
 <script src="{% static 'main/js/chat.js' %}" defer></script>
 

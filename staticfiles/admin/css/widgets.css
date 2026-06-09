@@ -1,31 +1,47 @@
 /* SELECTOR (FILTER INTERFACE) */
 
 .selector {
+    width: 800px;
+    float: left;
     display: flex;
-    flex: 1;
-    gap: 0 10px;
 }
 
 .selector select {
     height: 17.2em;
     flex: 1 0 auto;
-    overflow: scroll;
-    width: 100%;
 }
 
 .selector-available, .selector-chosen {
+    width: 380px;
+    text-align: center;
+    margin-bottom: 5px;
     display: flex;
     flex-direction: column;
-    flex: 1 1;
 }
 
-.selector-available-title, .selector-chosen-title {
+.selector-available h2, .selector-chosen h2 {
     border: 1px solid var(--border-color);
     border-radius: 4px 4px 0 0;
 }
 
-.selector .helptext {
-    font-size: 0.6875rem;
+.selector-chosen .list-footer-display {
+    border: 1px solid var(--border-color);
+    border-top: none;
+    border-radius: 0 0 4px 4px;
+    margin: 0 0 10px;
+    padding: 8px;
+    text-align: center;
+    background: var(--primary);
+    color: var(--header-link-color);
+    cursor: pointer;
+}
+.selector-chosen .list-footer-display__clear {
+    color: var(--breadcrumbs-fg);
+}
+
+.selector-chosen h2 {
+    background: var(--primary);
+    color: var(--header-link-color);
 }
 
 .selector-chosen .list-footer-display {
@@ -88,16 +104,18 @@
     min-width: auto;
 }
 
-.selector-filter input {
-    flex-grow: 1;
+.selector .selector-available input,
+.selector .selector-chosen input {
+    width: 320px;
+    margin-left: 8px;
 }
 
 .selector ul.selector-chooser {
     align-self: center;
-    width: 30px;
+    width: 22px;
     background-color: var(--selected-bg);
     border-radius: 10px;
-    margin: 0;
+    margin: 0 5px;
     padding: 0;
     transform: translateY(-17px);
 }
@@ -547,7 +565,7 @@ span.clearable-file-input label {
     margin: 0;
     padding: 4px 0;
     font-size: 0.75rem;
-    background: var(--close-button-bg);
+    background: #eee;
     border-top: 1px solid var(--border-color);
     color: var(--button-fg);
 }
@@ -604,6 +622,12 @@ ul.timelist, .timelist li {
 .related-widget-wrapper-link:link {
     opacity: 1;
     filter: grayscale(0);
+}
+
+/* GIS MAPS */
+.dj_map {
+    width: 600px;
+    height: 400px;
 }
 
 /* GIS MAPS */
