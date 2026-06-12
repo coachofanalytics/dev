@@ -2,124 +2,56 @@
 {% load static %}
 
 {% block content %}
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Governance</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 20px;
-            background-color: #f9f9f9;
-        }
-        h1 {
-            color: #333;
-        }
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 15px;
-            background-color: #fff;
-            box-shadow: 0px 2px 6px rgba(0,0,0,0.1);
-        }
-        th, td {
-            padding: 12px;
-            border-bottom: 1px solid #ddd;
-            text-align: left;
-        }
-        th {
-            background-color: #f4f4f4;
-        }
-        tr:hover {
-            background-color: #f1f1f1;
-        }
-        .empty {
-            margin-top: 20px;
-            color: #777;
-        }
-    </style>
-</head>
-<body>
-    <h1>Governance List</h1>
-        <a href="{% url 'main:governance_create' %}" class="add-btn">+ Add Governance</a>
+<section class="team-section">
+  <div class="container">
 
-    {% if governances %}
-        <table>
-            <thead>
-                <tr>
-                    <th>Category</th>
-                     <th>Description</th> 
-                     <th>Members</th> 
-                     <th>Created At</th>
-                      <th>Updated At</th> 
-                      <th>Actions</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for governance in governances %}
-                <tr>
-                    <td>{{ governance.governance_category }}</td>
-                    <td>{{ governance.members }}</td>
-                    <td>{{ governance.description }}</td>
-                    <td>{{ governance.updatedAt|date:"Y-m-d H:i" }}</td>
-                    <td>{{ governance.createdAt|date:"Y-m-d H:i" }}</td>
-                    <td>
-                       <a href="{% url 'main:governance_update' governance.id %}" class="action-btn edit-btn"> Edit </a> 
-                       <a href="{% url 'main:governance_delete' governance.id %}" class="action-btn delete-btn"> Delete </a>
-                    </td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-    {% else %}
-        <p class="empty">No governance have been made yet.</p>
+      <!-- Show Selected Category -->
+     <div style="background-color:black; padding-top:50px">
+        <h1 style="color:white">THE DIASPORA COUNTY 48 KENYA</h1>
+        <h2 class="selected-category" style='padding-bottom:30px; color:#35bddb'>{{ selected_category }}</h2>
+     </div>
+
+    <!-- Filter Buttons -->
+    <div class="filter-buttons">
+      {% for cat in categories %}
+      <a href="{% url 'main:governance_list' %}?category={{ cat|urlencode }}"
+         class="filter-btn {% if selected_category == cat %}active{% endif %}">
+         {{ cat }}
+      </a>
+      {% endfor %}
+    </div>
+
+    <!-- Governor Card -->
+    {% if governor and selected_category == "Global Executive Committee" %}
+    <div class="card governor-card">
+      <img src="{{ governor.image.url }}" alt="{{ governor.members.first_name }}">
+      <h4>{{ governor.members.first_name }} {{ governor.members.last_name }}</h4>
+      <h8>{{ governor.title }}</h8>
+    </div>
     {% endif %}
-        <style>
-            .add-btn {
-                display: inline-block;
-                margin-bottom: 15px;
-                background: #28a745;
-                color: #fff;
-                padding: 8px 18px;
-                border-radius: 4px;
-                text-decoration: none;
-                font-weight: bold;
-                transition: background 0.2s;
-            }
-            .add-btn:hover {
-                background: #218838;
-            }
-            .action-btn {
-                display: inline-block;
-                padding: 6px 14px;
-                border-radius: 4px;
-                color: #fff;
-                text-decoration: none;
-                margin-right: 4px;
-                font-size: 0.95em;
-                transition: background 0.2s;
-            }
-            .detail-btn {
-                background: #17a2b8;
-            }
-            .detail-btn:hover {
-                background: #117a8b;
-            }
-            .edit-btn {
-                background: #007bff;
-            }
-            .edit-btn:hover {
-                background: #0056b3;
-            }
-            .delete-btn {
-                background: #dc3545;
-            }
-            .delete-btn:hover {
-                background: #a71d2a;
-            }
-        </style>
-</body>
-</html>
 
+        <!-- Governor Card -->
+    {% if deputy_governor and selected_category == "Global Executive Committee" %}
+    <div class="card governor-card">
+      <img src="{{ deputy_governor.image.url }}" alt="{{ deputy_governor.members.first_name }}">
+      <h4>{{ deputy_governor.members.first_name }} {{ deputy_governor.members.last_name }}</h4>
+      <h8>{{ deputy_governor.title }}</h8>
+    </div>
+    {% endif %}
+
+    <!-- Other Members -->
+    <div class="team-cards">
+      {% for member in govern_order %}
+        {% if member.ui_order > 0 %}
+          <div class="card">
+            <img src="{{ member.image.url }}" alt="{{ member.members.first_name }}">
+            <h4>{{ member.members.first_name }} {{ member.members.last_name }}</h4>
+            <h8>{{ member.title }}</h8>
+          </div>
+        {% endif %}
+      {% endfor %}
+    </div>
+  </div>
+</section>
 {% endblock %}
+

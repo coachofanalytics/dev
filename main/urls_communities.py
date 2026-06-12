@@ -20,12 +20,20 @@ from main.views import (
     communities_view_post as view_post,
     communities_add_comment as add_comment,
     communities_create_post as create_post,
+    communities_edit_post as edit_post,
+    communities_delete_post as delete_post,
     communities_event_calendar as event_calendar,
     communities_create_event as create_event,
     communities_event_detail as event_detail,
     communities_edit_event as edit_event,
     communities_delete_event as delete_event,
     communities_contact_view as contact_view,
+    emergency_help_line,
+    communities_message_compose as message_compose,
+    communities_message_inbox as message_inbox,
+    communities_message_sent as message_sent,
+    communities_message_detail as message_detail,
+    communities_message_reply as message_reply,
 )
 
 app_name = 'communities'
@@ -48,6 +56,8 @@ urlpatterns = [
     path('category/<slug:slug>/create/', create_post, name='create_post'),
     path('post/<int:post_id>/', view_post, name='view_post'),
     path('post/<int:post_id>/comment/', add_comment, name='add_comment'),
+    path('post/<int:post_id>/edit/', edit_post, name='edit_post'),
+    path('post/<int:post_id>/delete/', delete_post, name='delete_post'),
     
     # Events
     path('events/', event_calendar, name='event_calendar'),
@@ -58,4 +68,12 @@ urlpatterns = [
     
     # Contact
     path('contact/', contact_view, name='contact'),
+    path('emergency-help/', emergency_help_line, name='emergency_help_line'),
+
+    # Messaging
+    path('messages/inbox/', message_inbox, name='message_inbox'),
+    path('messages/sent/', message_sent, name='message_sent'),
+    path('messages/compose/<int:recipient_id>/', message_compose, name='message_compose'),
+    path('messages/<int:message_id>/', message_detail, name='message_detail'),
+    path('messages/<int:message_id>/reply/', message_reply, name='message_reply'),
 ]

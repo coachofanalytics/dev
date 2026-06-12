@@ -1,0 +1,188 @@
+/* Global box-sizing for layout consistency */
+* {
+  box-sizing: border-box;
+}
+
+/* body {
+  font-family: Arial, sans-serif;
+  background-color: #f9f9f9;
+  margin: 0;
+  padding: 0;
+} */
+
+/* Wrapper to center form on the page */
+.wrapper {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 80vh;
+  padding: 20px;
+  background-color: #f9f9f9;
+}
+
+/* Donation form styling */
+.donation-form {
+  background: #fff;
+  padding: 60px 40px;
+  border-radius: 12px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
+  width: 100%;
+  max-width: 700px;
+  text-align: center;
+}
+
+/* Heading */
+h2 {
+  font-size: 30px;
+  margin-bottom: 20px;
+}
+
+/* Step indicator */
+.step-indicator {
+  margin: 10px 0 20px;
+}
+
+.dot {
+  height: 10px;
+  width: 10px;
+  margin: 0 3px;
+  background-color: #ccc;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+.dot.active {
+  background-color: #00c28b;
+}
+
+/* Donation amounts */
+.amount-options {
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 60px;
+  /* margin: 20px 0; */
+}
+
+.amount-button {
+  flex: 1 1 30%;
+  min-width: 100px;
+  padding: 14px 0;
+  background: #fff;
+  border: 2px solid #00c28b;
+  color: #00c28b;
+  font-weight: bold;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: 0.3s;
+  font-size: 16px;
+}
+
+.amount-button.selected,
+.amount-button:hover {
+  background: #00c28b;
+  color: #fff;
+}
+
+/* Custom amount input */
+.custom-amount {
+  position: relative;
+  /* margin: 20px 0; */
+  margin-bottom: 60px;
+}
+
+.custom-amount input {
+  width: 100%;
+  padding: 14px 50px 14px 30px;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  font-size: 18px;
+}
+
+.currency-symbol,
+.currency-code {
+  position: absolute;
+  top: 14px;
+  font-size: 16px;
+  color: #999;
+}
+
+.currency-symbol {
+  left: 10px;
+}
+
+.currency-code {
+  right: 10px;
+}
+
+/* Recurring donation */
+.recurring-option {
+  display: flex;
+  align-items: center;
+  justify-content: start;
+  margin: 20px 0;
+  font-size: 14px;
+  color: #333;
+}
+
+.recurring-option input[type="checkbox"] {
+  accent-color: #00c28b;
+  margin-right: 8px;
+}
+
+/* Payment section */
+.payment-section {
+  flex-direction: column;
+  margin-top: 30px;
+  text-align: left;
+}
+
+.payment-section p {
+  font-size: 14px;
+  color: #777;
+  margin-bottom: 10px;
+  font-weight: bold;
+}
+
+.payment-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.payment-button {
+  flex: 1 1 48%;
+  padding: 14px 0;
+  border: 2px solid #00c28b;
+  border-radius: 8px;
+  background: #fff;
+  color: #00c28b;
+  font-weight: bold;
+  cursor: pointer;
+  transition: 0.3s;
+  font-size: 16px;
+}
+
+.payment-button.selected,
+.payment-button:hover {
+  background: #00c28b;
+  color: #fff;
+}
+
+/* Responsive styles */
+@media (max-width: 768px) {
+  .donation-form {
+    padding: 40px 20px;
+  }
+
+  .amount-options,
+  .payment-buttons {
+    flex-direction: column;
+  }
+
+  .amount-button,
+  .payment-button {
+    width: 100%;
+  }
+}

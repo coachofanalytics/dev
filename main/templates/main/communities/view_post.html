@@ -15,16 +15,28 @@
 
     <!-- Post Content Section -->
     <section class="bg-white shadow-lg rounded-lg p-6">
-        <h3 class="text-2xl font-bold text-brand-blue mb-4">Post Content</h3>
+        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px;">
+            <h3 class="text-2xl font-bold text-brand-blue mb-4" style="margin: 0; flex: 1;">Post Content</h3>
+            {% if user.is_superuser or user.is_staff %}
+            <div style="display: flex; gap: 8px;">
+                <a href="{% url 'communities:edit_post' post.id %}" style="padding: 8px 14px; background: #0d9f6e; color: white; border-radius: 4px; font-size: 13px; font-weight: 600; text-decoration: none; display: flex; align-items: center; gap: 6px;">
+                    <i class="fas fa-edit"></i> Edit
+                </a>
+                <a href="{% url 'communities:delete_post' post.id %}" style="padding: 8px 14px; background: #dc2626; color: white; border-radius: 4px; font-size: 13px; font-weight: 600; text-decoration: none; display: flex; align-items: center; gap: 6px;">
+                    <i class="fas fa-trash"></i> Delete
+                </a>
+            </div>
+            {% endif %}
+        </div>
         <p class="text-gray-600">{{ post.content }}</p>
     </section>
 
     <!-- Comment Section (Optional) -->
     <section class="mt-16">
         <h2 class="text-3xl font-extrabold text-brand-blue mb-6">Comments</h2>
-        {% if post.comments.exists %}
+        {% if post.comments_p.exists %}
             <div class="space-y-6">
-                {% for comment in post.comments.all %}
+                {% for comment in post.comments_p.all %}
                     <div class="bg-white shadow-lg rounded-lg p-6">
                         <p class="text-gray-700">{{ comment.content }}</p>
                         <p class="text-gray-500 text-sm">Commented on: {{ comment.created_at|date:"F j, Y, H:i" }} by {{ comment.author.username }}</p>

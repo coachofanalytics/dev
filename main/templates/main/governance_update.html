@@ -1,55 +1,16 @@
-{% extends "main/base_templates/base.html" %}
+{%extends "main/base_templates/base.html"%} 
 {% load static %}
+{% block content %} 
+<section id="career">
+    <h1>Update Governance</h1>
 
-{% block content %}
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Edit Governance</title>
-</head>
-<body>
-    <h1>Edit Governance</h1>
-    <form method="post" class="form-container">
+    <form method="POST">
         {% csrf_token %}
-        {{ form.as_p }}
-       <button type="submit" class="action-btn edit-btn"> Save Changes </button> 
-       <a href="{% url 'main:governance_list' %}" class="action-btn cancel-btn"> Cancel </a>
+        {{ form.as_p }}  
+        <button type="submit">Update</button>
     </form>
-    <style>
-        .form-container {
-            background: #fff;
-            padding: 2rem;
-            border-radius: 8px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-            max-width: 400px;
-            margin: 2rem auto;
-        }
-        .action-btn {
-            display: inline-block;
-            padding: 6px 14px;
-            border-radius: 4px;
-            color: #fff;
-            text-decoration: none;
-            margin-right: 4px;
-            font-size: 0.95em;
-            border: none;
-            cursor: pointer;
-            transition: background 0.2s;
-        }
-        .edit-btn {
-            background: #007bff;
-        }
-        .edit-btn:hover {
-            background: #0056b3;
-        }
-        .cancel-btn {
-            background: #6c757d;
-        }
-        .cancel-btn:hover {
-            background: #343a40;
-        }
-    </style>
-</body>
-</html>
+
+    <br>
+    <a href="{% url 'main:governance_list' %}">Back to Governance List</a> 
+</section>
 {% endblock %}

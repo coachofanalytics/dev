@@ -1,0 +1,146 @@
+/* Center card */
+.payment-section {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin: 40px 0;
+}
+
+.payment-card {
+  background: #fff;
+  padding: 30px;
+  border-radius: 12px;
+  box-shadow: 0px 4px 12px rgba(0,0,0,0.1);
+  width: 420px;
+  text-align: center;
+}
+
+.page-title {
+  font-size: 22px;
+  font-weight: 600;
+  margin-bottom: 25px;
+  color: #333;
+}
+
+/* Amount buttons */
+.amount-selection {
+  display: flex;
+  justify-content: center;
+  gap: 15px;
+  margin-bottom: 30px;
+  flex-wrap: wrap;
+}
+
+.amount-btn {
+  flex: 1;
+  padding: 12px 20px;
+  border: 2px solid #00c48c;
+  border-radius: 8px;
+  background: #fff;
+  color: #00c48c;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease-in-out;
+}
+
+.amount-btn:hover,
+.amount-btn.selected {
+  background: #00c48c;
+  color: #fff;
+}
+
+/* Payment methods */
+.payment-method-container h3 {
+  font-size: 14px;
+  font-weight: 600;
+  text-align: left;
+  margin: 20px 0 15px;
+  color: #555;
+}
+
+.method-buttons {
+  display: flex;
+  justify-content: center;
+  gap: 25px;
+}
+
+.method-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+
+  width: 90px;
+  height: 90px; /* same as width */
+  aspect-ratio: 1 / 1;  /* force perfect circle */
+  
+  border: 2px solid #ccc;
+  border-radius: 50%;
+  background: #f9f9f9;
+  color: #444;
+
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease-in-out;
+}
+
+.method-btn i {
+  font-size: 26px;
+  margin-bottom: 4px; /* smaller gap */
+  line-height: 1;     /* prevents extra spacing */
+}
+
+.method-btn span {
+  font-size: 13px;
+}
+
+
+/* Card */
+.method-btn.card.selected {
+  border-color: #00bfff;   /* light blue */
+  box-shadow: 0 0 6px #00bfff80;
+  color: #00bfff;
+}
+
+/* Zelle */
+.method-btn.zelle.selected {
+  border-color: #6d1ed4;   /* purple */
+  box-shadow: 0 0 6px #6d1ed480;
+  color: #6d1ed4;
+}
+
+/* PayPal */
+.method-btn.paypal.selected {
+  border-color: #003087;   /* PayPal blue */
+  box-shadow: 0 0 6px #00308780;
+  color: #003087;
+}
+
+/* Proceed button */
+.proceed-container {
+  margin-top: 25px;
+}
+
+#proceed-btn {
+  width: 100%;
+  padding: 14px;
+  border: none;
+  border-radius: 8px;
+  background: #00bfff;
+  color: #fff;
+  font-size: 16px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background 0.3s;
+}
+
+#proceed-btn:disabled {
+  background: #ccc;
+  cursor: not-allowed;
+}
+
+#proceed-btn:hover:enabled {
+  background: #009f72;
+}

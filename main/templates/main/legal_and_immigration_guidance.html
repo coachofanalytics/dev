@@ -5,6 +5,7 @@
 
 <!-- Custom styles for this page (must be before content for proper rendering) -->
 <style>
+    section { display: block !important; }
     /* BRAND GUIDELINES (Consistent with reference design) */
     .legal-page-wrapper {
         font-family: 'Inter', sans-serif;
@@ -79,7 +80,7 @@
             <p class="text-xl md:text-2xl text-gray-200 mb-8 max-w-3xl">
                 Expert guidance and trusted referrals to help you navigate the complexities of international law and immigration processes.
             </p>
-            <a href="#" class="inline-block bg-red-700 text-white font-bold py-3 px-8 rounded-lg uppercase text-sm tracking-wider hover:bg-red-800 transition duration-300 shadow-xl">
+            <a href="{% url 'main:book_consular_consultation' %}" class="inline-block bg-red-700 text-white font-bold py-3 px-8 rounded-lg uppercase text-sm tracking-wider hover:bg-red-800 transition duration-300 shadow-xl">
                 Book a Legal Consultation
             </a>
         </div>

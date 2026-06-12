@@ -21,9 +21,21 @@
         <div class="space-y-6">
             {% for post in posts %}
             <div class="bg-white shadow-lg rounded-lg p-6">
-                <h3 class="text-2xl font-bold text-brand-blue mb-4">
-                    <a href="{% url 'communities:view_post' post.id %}">{{ post.title }}</a>
-                </h3>
+                <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px;">
+                    <h3 class="text-2xl font-bold text-brand-blue mb-4" style="margin: 0; flex: 1;">
+                        <a href="{% url 'communities:view_post' post.id %}">{{ post.title }}</a>
+                    </h3>
+                    {% if user.is_superuser or user.is_staff %}
+                    <div style="display: flex; gap: 8px;">
+                        <a href="{% url 'communities:edit_post' post.id %}" style="padding: 6px 12px; background: #0d9f6e; color: white; border-radius: 4px; font-size: 12px; font-weight: 600; text-decoration: none;">
+                            <i class="fas fa-edit"></i> Edit
+                        </a>
+                        <a href="{% url 'communities:delete_post' post.id %}" style="padding: 6px 12px; background: #dc2626; color: white; border-radius: 4px; font-size: 12px; font-weight: 600; text-decoration: none;">
+                            <i class="fas fa-trash"></i> Delete
+                        </a>
+                    </div>
+                    {% endif %}
+                </div>
                 <p class="text-gray-600 mb-4">{{ post.content|truncatewords:30 }}</p>
                 <a href="{% url 'communities:view_post' post.id %}" class="text-brand-green font-semibold">Read More</a>
             </div>

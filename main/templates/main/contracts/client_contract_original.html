@@ -31,7 +31,7 @@
   >
 </div> -->
 
-  <form  method="POST" action="{% url 'finance:finance-contract_form_submission' %}" class="form-group">
+  <form  method="POST" action="/finance/contract_form/" class="form-group">
     {% csrf_token %}
         <input type="hidden" name="usr_data" value="first_name={{student_data.first_name}}&last_name={{student_data.last_name}}&address={{student_data.addres}}&category={{student_data.category}}&sub_category={{student_data.sub_category}}&username={{student_data.username}}&password1={{student_data.password1}}&password2={{student_data.password2}}&email={{student_data.email}}&phone={{student_data.phone}}&gender={{student_data.gender}}&city={{student_data.city}}&state={{student_data.state}}&country={{student_data.country}}&resume_file={{student_data.resume_file}}">
         <input type="hidden" name="student_contract" value="student_contract">

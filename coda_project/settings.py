@@ -11,7 +11,6 @@ https://docs.djangoproject.com/en/3.0/ref/settings/
 """
 
 import os
-from decouple import config
 
 from pathlib import Path
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -20,7 +19,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = os.environ.get("SECRET_KEY") or "!cxl7yhjsl00964n=#e-=xblp4u!hbajo2k8u#$v9&s6__5=xf"
 
 # Default to False unless explicitly enabled via environment variable.
-DEBUG = True  # development only
+DEBUG = os.environ.get("DEBUG", "False") == "True"
 
 SECURE_SSL_REDIRECT = False
 
@@ -37,6 +36,7 @@ AUTHENTICATION_BACKENDS = (
 )
 # Application definition
 INSTALLED_APPS = [
+    'document_processing',
     "main.apps.MainConfig",
     #'users.apps.UsersConfig',
     "accounts.apps.AccountsConfig",
@@ -62,20 +62,19 @@ INSTALLED_APPS = [
     "allauth.socialaccount.providers.google",
     "allauth.socialaccount.providers.facebook",
     "django_crontab",
-    'cloudinary',
-    'cloudinary_storage',
-    # 'communities',  # App not found - commented out
+    # 'memberjoin',
+    # 'communities',
     #'debug_toolbar',
 
 ]
 
-# if DEBUG:
-#     try:
-#         import debug_toolbar
-#         INSTALLED_APPS += ['debug_toolbar']
-#         MIDDLEWARE += ['debug_toolbar.middleware.DebugToolbarMiddleware']
-#     except ImportError:
-#         pass # If it's not installed, just don't use it
+if DEBUG:
+    try:
+        import debug_toolbar
+        INSTALLED_APPS += ['debug_toolbar']
+        MIDDLEWARE += ['debug_toolbar.middleware.DebugToolbarMiddleware']
+    except ImportError:
+        pass # If it's not installed, just don't use it
 
 
 DEFAULT_AUTO_FIELD = "django.db.models.AutoField"
@@ -90,12 +89,6 @@ CRONJOBS = [
     ("* * * * *", "application.msg_send_cron.SendMsgApplicatUser"),
     ("*/5 * * * *", "management.cron.advertisement"),
 ]
-
-CACHES = {
-    'default': {
-        'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
-    }
-}
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
@@ -132,8 +125,8 @@ TEMPLATES = [
                 "django.contrib.messages.context_processors.messages",
                 "main.context_processors.images",
                 "main.context_processors.googledriveurl",
-                "main.context_processors.services",
-                "main.context_processors.healthcare_images",
+                # "main.context_processors.services",
+                # "main.context_processors.healthcare_images",
             ],
             # 'libraries': {
             #     'customfilters': 'application.templatetags.customfilters',
@@ -255,23 +248,17 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/3.0/howto/static-files/
 
-
 MEDIA_URL = "/media/"
 MEDIA_ROOT = os.path.join(BASE_DIR, "media")
-STATIC_ROOT = os.path.join(BASE_DIR, "staticfiles")
+
+STATIC_ROOT = os.path.join(BASE_DIR,  "staticfiles")
 STATIC_URL = "/static/"
 
-STORAGES = {
-    "default": {
-        "BACKEND": "cloudinary_storage.storage.MediaCloudinaryStorage",
-    },
-    "staticfiles": {
-        "BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage" if DEBUG 
-                   else "django.contrib.staticfiles.storage.ManifestStaticFilesStorage",
-    },
-}
 
-
+if DEBUG:
+    STATICFILES_STORAGE = 'django.contrib.staticfiles.storage.StaticFilesStorage'
+else:
+    STATICFILES_STORAGE = 'django.contrib.staticfiles.storage.ManifestStaticFilesStorage'
 
 CRISPY_TEMPLATE_PACK = "bootstrap4"
 
@@ -358,6 +345,12 @@ def payment_details(request):
     venmo= os.environ.get('VENMO'),
     account_no = os.environ.get('STANBIC_ACCOUNT_NO'),
     return (phone_number,email_info,cashapp,venmo,account_no)
+    #==================STRIPE SETTINGS=================
+STRIPE_PUBLIC_KEY = os.getenv("STRIPE_PUBLIC_KEY", "")
+STRIPE_SECRET_KEY = os.getenv("STRIPE_SECRET_KEY", "")
+STRIPE_WEBHOOK_SECRET = os.getenv("STRIPE_WEBHOOK_SECRET", "")
+
+#==================PAYMENT SETTINGS=================
 
 
 if os.environ.get('ENVIRONMENT') == 'production':
@@ -388,35 +381,21 @@ SOCIALACCOUNT_PROVIDERS = {
 }
 
 ACCOUNT_EMAIL_VERIFICATION = 'optional'  # or 'mandatory', depending on your setup
-ACCOUNT_EMAIL_REQUIRED = True
+ACCOUNT_SIGNUP_FIELDS = ['email*', 'username*', 'password1*', 'password2*']
 SOCIALACCOUNT_QUERY_EMAIL = True
 
 LOGIN_REDIRECT_URL = "main:layout"
 LOGIN_URL = "accounts:account-login"
 
-IS_TESTING = "test" in os.sys.argv
-
-CLOUDINARY_STORAGE = {
-    "CLOUD_NAME": config("CLOUDINARY_CLOUD_NAME", default=""),
-    "API_KEY": config("CLOUDINARY_API_KEY", default=""),
-    "API_SECRET": config("CLOUDINARY_API_SECRET", default=""),
-}
-
-
-# EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-EMAIL_HOST = 'sandbox.smtp.mailtrap.io'
-EMAIL_PORT = 2525
+# Email Configuration
+EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_PORT = 587
 EMAIL_USE_TLS = True
-EMAIL_USE_SSL = False
-
-# Credentials pulled from your .env file
-EMAIL_HOST_USER = os.environ.get('MAILTRAP_USER')
-EMAIL_HOST_PASSWORD = os.environ.get('MAILTRAP_PASS')
-
-# Identity settings
-DEFAULT_FROM_EMAIL = '"DC48 Investment Team" <hello@demomailtrap.com>'
-ADMIN_EMAIL = 'your-email@gmail.com'  # Still use your real email here for admin alerts
+EMAIL_HOST_USER = 'your-email@gmail.com'  # Your full Gmail address
+EMAIL_HOST_PASSWORD = 'your-16-character-app-password'  # The app password you generated (remove spaces)
+DEFAULT_FROM_EMAIL = 'your-email@gmail.com'
+ADMIN_EMAIL = 'your-email@gmail.com'  # Send admin notifications to yourself for testing
 
 # Site URL for email links
 SITE_URL = 'http://127.0.0.1:8000'
-GROQ_API_KEY = config("GROQ_API_KEY", default="")

@@ -4,15 +4,15 @@
             background-color: #f9fafb;
             color: #1f2937;
         }
-        .text-brand-blue { color: #1e40af; } 
+        .text-brand-blue { color: #1e40af; }
         .bg-brand-blue { background-color: #1e40af; }
         /* UPDATED: Green color changed to Teal (#0a926d) */
-        .text-brand-green { color: #0a926d; } 
+        .text-brand-green { color: #0a926d; }
         .bg-brand-green { background-color: #0a926d; }
         .text-brand-red { color: #cc0000; }
-        .bg-brand-red { background-color: #cc0000; } 
-        .main-heading { font-weight: 900; } 
-        
+        .bg-brand-red { background-color: #cc0000; }
+        .main-heading { font-weight: 900; }
+
         /* Service Block Styling */
         .service-block {
             margin-bottom: 4rem;
@@ -39,7 +39,7 @@
 
         /* Custom Loading Indicator Style for images */
         .loading-placeholder {
-            min-height: 280px; 
+            min-height: 280px;
             background-color: #e5e7eb;
             display: flex;
             align-items: center;

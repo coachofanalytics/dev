@@ -1,0 +1,113 @@
+{% extends "main/base_templates/base.html" %}
+{% block title %}Register{% endblock %}
+{% load crispy_forms_tags %}
+{% block content %}
+{% load static %}
+
+<style>
+    /* Sign Up Button */
+    #signupBtn {
+        background-color: #03b1af;
+        color: white;
+        border: none;
+        width: 100%;
+        padding: 10px;
+        border-radius: 4px;
+        font-size: 16px;
+        cursor: pointer;
+        transition: background-color 0.3s ease;
+        margin-bottom: 64px;
+    }
+
+    #signupBtn:hover {
+        background-color: #028a89;
+    }
+
+    /* Responsive Adjustments */
+    @media (max-width: 768px) {
+        .form-div {
+            margin-top: 20px;
+        }
+
+        .loginBtn {
+            margin-top: 10px;
+        }
+    }
+</style>
+
+<div class="sign-up-div">
+    <form method="POST" action="{% url 'finance:paypal_checkout' %}" id="signupForm" enctype="multipart/form-data" autocomplete="off">
+        {% csrf_token %}
+        <fieldset class="form-group">
+            <div class="row">
+                <!-- just for centering the form fields section -->
+                <div class="col-lg-3 form-div"></div>
+
+                <!-- Form Fields Section -->
+                <div class="col-lg-6 form-div">
+
+                    <!-- First Name -->
+                    <div class="form-group row">
+                        <div class="col-md-12">
+                            <label for="id_first_name">SelectCurrency*</label>
+                            {{ form.currency|as_crispy_field }}
+                        </div>
+                    </div>
+
+                    <!-- First Name -->
+                    <div class="form-group row">
+                        <div class="col-md-12">
+                            <label for="id_first_name">First Name*</label>
+                            {{ form.first_name|as_crispy_field }}
+                        </div>
+                    </div>
+
+                    <!-- Last Name -->
+                    <div class="form-group row">
+                        <div class="col-md-12">
+                            <label for="id_last_name">Last Name*</label>
+                            {{ form.last_name|as_crispy_field }}
+                        </div>
+                    </div>
+
+                    <!-- Email -->
+                    <div class="form-group row">
+                        <div class="col-md-12">
+                            <label for="id_email">Email*</label>
+                            {{ form.email|as_crispy_field }}
+                        </div>
+                    </div>
+                    <!-- Amount -->
+                    <div class="form-group row">
+                        <div class="col-md-12">
+                            <label for="id_amount">Amount</label>
+                            {{ form.amount|as_crispy_field }}
+                        </div>
+                    </div>
+                    <!-- Phone Number -->
+                    <div class="form-group row">
+                        <div class="col-md-12">
+                            <label for="id_phone_number">Phone Number(+Country Code)*</label>
+                            {{ form.phone|as_crispy_field }}
+                        </div>
+                    </div>
+                     <!-- Payment Purpose-->
+                     <div class="form-group row">
+                        <div class="col-md-12">
+                            <label for="id_payment_purpose">Payment Purpose*</label>
+                            {{ form.payment_purpose|as_crispy_field }}
+                        </div>
+                    </div>
+                    
+                    <!-- Sign Up Button -->
+                    <div class="form-group">
+                        <button type="submit" id="signupBtn">Submit Payment</button>
+                    </div>
+                </div>
+                <!-- just for centering the form fields section -->
+                <div class="col-lg-3 form-div"></div>
+            </div>
+        </fieldset>
+    </form>
+</div>
+{% endblock content %}

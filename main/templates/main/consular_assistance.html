@@ -3,6 +3,7 @@
 {% block content %}
 
 <style>
+    /* Hero */
     .hero-overlay {
         min-height: 370px;
         background-image: url('{% static "main/img/consular/hero.png" %}');
@@ -14,6 +15,40 @@
         position: absolute;
         inset: 0;
         background: rgba(0, 0, 0, 0.55);
+    }
+    section { display: block !important; }
+
+    /* Brand colours (shared across consular page) */
+    .bg-brand-green  { background-color: #0a926d; }
+    .bg-brand-red    { background-color: #cc0000; }
+    .bg-brand-blue   { background-color: #1e40af; }
+    .text-brand-green { color: #0a926d; }
+    .text-brand-blue  { color: #1e40af; }
+    .text-brand-red   { color: #cc0000; }
+
+    /* Hover overrides */
+    .hover-green:hover  { background-color: #086a4f; }
+    .hover-red:hover    { background-color: #991b1b; }
+
+    /* Typography */
+    .main-heading { font-weight: 900; }
+    @media (max-width: 768px) { .main-heading { font-size: 2rem; } }
+
+    /* Service bullet list */
+    .service-list li {
+        position: relative;
+        padding-left: 1.5rem;
+        margin-bottom: 0.5rem;
+    }
+    .service-list li::before {
+        content: '';
+        position: absolute;
+        left: 0;
+        top: 0.5rem;
+        width: 0.5rem;
+        height: 0.5rem;
+        background-color: #0a926d;
+        border-radius: 50%;
     }
 </style>
 
@@ -74,7 +109,7 @@
                         <li>Emergency Contact Directory: Vetted consular numbers worldwide</li>
                     </ul>
                     <div class="mt-6">
-                        <a href="{% url 'main:consular_information_updates' %}" class="inline-block bg-brand-green text-white font-bold py-3 px-6 rounded-md uppercase text-sm tracking-wider hover:bg-[#086a4f] transition duration-300">
+                        <a href="{% url 'main:consular_information_updates' %}" class="inline-block bg-brand-green text-white font-bold py-3 px-6 rounded-md uppercase text-sm tracking-wider hover-green transition duration-300">
                             View Official Forms
                         </a>
                     </div>
@@ -95,7 +130,7 @@
                         <li>Wills and Estate Planning: Connecting with notaries and legal experts</li>
                     </ul>
                     <div class="mt-6">
-                        <a href="{% url 'main:legal_immigration_guidance' %}" class="inline-block bg-brand-red text-white font-bold py-3 px-6 rounded-md uppercase text-sm tracking-wider hover:bg-red-800 transition duration-300">
+                        <a href="{% url 'main:legal_immigration_guidance' %}" class="inline-block bg-brand-red text-white font-bold py-3 px-6 rounded-md uppercase text-sm tracking-wider hover-red transition duration-300">
                             Request Legal Consult
                         </a>
                     </div>

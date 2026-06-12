@@ -166,7 +166,7 @@
 <section class="hero-slider">
     <div class="slide-container">
         {% for article in latest_news|slice:":2" %}
-        <div class="slide" style="background-image: url('{{ article.featured_image.url }}');">
+        <div class="slide" style="background-image: url('{{ article.featured_image.url }}'), url('{% static 'main/img/info_updates/embassy_government_news.png' %}');">
             <div class=" slide-overlay">
                 <div class="slide-content">
                     <span class="slide-tag">{{ article.category.name }}</span>
@@ -194,9 +194,7 @@
     <div class="news-grid-home">
         {% for article in latest_news %}
         <article class="news-card-home">
-            {% if article.featured_image %}
-            <img src="{{ article.featured_image.url }}" alt="{{ article.title }}">
-            {% endif %}
+            <img src="{% if article.featured_image %}{{ article.featured_image.url }}{% else %}{% static 'main/img/info_updates/embassy_government_news.png' %}{% endif %}" alt="{{ article.title }}" onerror="this.onerror=null;this.src='{% static 'main/img/info_updates/embassy_government_news.png' %}';">
             <div class="card-content">
                 <span class="card-date">{{ article.created_at|date:"M d, Y" }}</span>
                 <h3 class="card-title-home">{{ article.title | truncatechars:60 }}</h3>

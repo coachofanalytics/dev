@@ -1,0 +1,9 @@
+scope 2 weeks
+-------------
+
+-Week1 
+-Fix the store template rendering
+-Finish basic template rendering
+-Fix the products model
+-Reflect the new product model on the frontend
+-Finish product list and search

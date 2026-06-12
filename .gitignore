@@ -4,7 +4,6 @@
 
 ### Django ###
 *.log
-logs.log
 *.pot
 *.pyc
 __pycache__/
@@ -14,38 +13,13 @@ db.sqlite3-journal
 
 .idea/
 .vscode/
+.claude/
 .venv/
 /gapi/creds/credentials.json
 # /gapi/stored_mails/*
 
- 
-
 ### Apps ###
-# Node.js packages (not used - Python/Django only)
-package.json
-package-lock.json
-node_modules/
-
-
-# Build/utility tools (not part of project)
-*.jar
-bfg-*.jar
-
-# Test files and directories
-test/
-tests/
-test_*.py
-*_test.py
-*/test/
-*/tests/
-BackendTests/
-
-# Report files and directories
-report/
-reports/
-*.report
-test_results_*.xml
-*_test_report.html
+#testing
 
 # If your build process includes running collectstatic, then you probably don't need or want to include staticfiles/
 # in your Git repository. Update and uncomment the following line accordingly.
@@ -157,14 +131,9 @@ celerybeat.pid
 .venv
 env/
 venv/
-dc48_venv/
 ENV/
 env.bak/
 venv.bak/
-node_modules/
-
-# Tests
-tests/
 
 # Spyder project settings
 .spyderproject
@@ -190,33 +159,20 @@ dmypy.json
 # Cython debug symbols
 cython_debug/
 
+.DS_Store
 # End of https://www.toptal.com/developers/gitignore/api/django
 
-# Django media uploads
-media/
+#Migrations
+accounts/migrations/
+finance/migrations/
+main/migrations/
 
-# SECURITY: Authentication files
-token.json
-*.token
-*.secret
-.env
-credentials*.json
-
-#reports
-main/BackendTests/reports/
-EducationReports/
-
-# Temporary files created during merge and cleanup
-check_views.ps1
-current_views.txt
-temp_views.txt
-url_views.txt
-main/migrations/0010_merge_20260326_1652.py
-
-# Guidance files for newTest
-main/IMPLEMENTATION_GUID.md
-COMPREHENSIVE_TEST_SUITE_COMPLETE.md
-NEWS_APP_COMPREHENSIVE_TESTS_SUMMARY.md
-
-# database files
-db.sqlite3
+# Local backups and temporary files
+backups/
+*.bundle
+debug_*.py
+temp_*.py
+scratch_*.py
+test_scratch_*.py
+server.log
+logs.log

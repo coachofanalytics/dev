@@ -43,13 +43,15 @@ def get_exchange_rate(base, target):
     Fetch exchange rate between base and target currency.
     Fallback to a hardcoded value if the API fails.
     """
-    exchange_api_key = '19312eb3c8014755b32a7fdad5a7b1cc'
+    exchange_api_key =  os.environ.get('OPEN_EXCHANGE_API_KEY')
     url = f"https://openexchangerates.org/api/latest.json?app_id={exchange_api_key}&base={base}"
     try:
         response = requests.get(url, timeout=10)
         response.raise_for_status()
         data = response.json()
-        rate = data["rates"].get(target, 139.00)  # Fallback to 139.00 if target not found
+        rate = data["rates"].get(
+            target, 139.00
+        )  # Fallback to 139.00 if target not found
     except requests.RequestException as e:
         print(f"Error fetching exchange rate: {e}")
         rate = 139.00  # Fallback rate
@@ -89,13 +91,29 @@ def DYCDefaultPayments():
     Provide default payment information for various user types.
     """
     context_dict = {
-        "student": {"total_amount": 5000, "down_payment": 500, "early_registration_bonus": 100},
-        "business": {"total_amount": 10000, "down_payment": 500, "early_registration_bonus": 100},
-        "greencard": {"total_amount": 20000, "down_payment": 500, "early_registration_bonus": 100},
+        "student": {
+            "total_amount": 5000,
+            "down_payment": 500,
+            "early_registration_bonus": 100,
+        },
+        "business": {
+            "total_amount": 10000,
+            "down_payment": 500,
+            "early_registration_bonus": 100,
+        },
+        "greencard": {
+            "total_amount": 20000,
+            "down_payment": 500,
+            "early_registration_bonus": 100,
+        },
     }
     for usertype, values in context_dict.items():
         if usertype == "student":
-            return values["total_amount"], values["down_payment"], values["early_registration_bonus"]
+            return (
+                values["total_amount"],
+                values["down_payment"],
+                values["early_registration_bonus"],
+            )
     return 0, 0, 0  # Fallback values
 
 
@@ -106,9 +124,15 @@ def get_budget_periods():
     """
     today = datetime.now()
     budget_months = [
-        {"month_num": (today.month - 1) % 12 or 12, "month_name": calendar.month_name[(today.month - 1) % 12 or 12]},
+        {
+            "month_num": (today.month - 1) % 12 or 12,
+            "month_name": calendar.month_name[(today.month - 1) % 12 or 12],
+        },
         {"month_num": today.month, "month_name": calendar.month_name[today.month]},
-        {"month_num": (today.month + 1) % 12 or 12, "month_name": calendar.month_name[(today.month + 1) % 12 or 12]},
+        {
+            "month_num": (today.month + 1) % 12 or 12,
+            "month_name": calendar.month_name[(today.month + 1) % 12 or 12],
+        },
     ]
     budget_years = [
         {"budget_year": str(today.year - 1)},

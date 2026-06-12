@@ -1,12 +1,19 @@
 from django import forms
-from .models import LegalService, Testimonial, Feedback, Donation_organisation, Donation_organization, ContactMessage, Scholarship
+from .models import Testimonial, Feedback, Donation_organisation, Donation_organization, ContactMessage, Scholarship
 from django.utils import timezone
 from .models import AppointmentRequest
 # Feedback / Contact Form
 
 from .models import (
-    ContactMessage, Scholarship, Governance, NewsArticle,TrainingCourse
+    ContactMessage, Scholarship, Governance, NewsArticle,TrainingCourse, GetHelp
 )
+
+
+class GetHelpForm(forms.ModelForm):
+    class Meta:
+        model = GetHelp
+        fields = ['title', 'content','link']
+
 
 class GovernanceForm(forms.ModelForm):
     """
@@ -336,20 +343,26 @@ class ArticleForm(forms.ModelForm):
     class Meta:
         model = NewsArticle
         fields = [
-            'category', 'title', 'slug', 'author',
+            'category', 'title', 'author',
             'featured_image', 'content', 'ai_summary',
-            'is_breaking', 'status', 'views'
+            'is_breaking', 'status',
         ]
         widgets = {
             'content': forms.Textarea(attrs={'rows': 10}),
             'ai_summary': forms.Textarea(attrs={'rows': 3}),
         }
 
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        from .models import Category as NewsCategory
+        self.fields['category'].queryset = NewsCategory.objects.all()
+        self.fields['category'].empty_label = '-- Select a category --'
+
 
 # ============================================
 # COMMUNITIES APP FORMS (MERGED FROM communities app)
 # ============================================
-from .models import CommunityMember, DirectoryProfile, CommunityPost, CommentP, EventCalendar
+from .models import CommunityMember, DirectoryProfile, CommunityPost, CommentP, EventCalendar, CommunityMessage
 
 
 class CommunityJoinForm(forms.ModelForm):
@@ -501,23 +514,66 @@ class CommunityContactForm(forms.ModelForm):
         model = ContactMessage
         fields = ['name', 'email', 'message']
 
-class LegalServiceForm(forms.ModelForm):
-    class Meta:
-        model = LegalService
-            
-        fields = [
-            "title",
-            "description",
-        ]
 
+class CommunityMessageForm(forms.ModelForm):
+    """Form for sending messages between community directory members."""
+    class Meta:
+        model = CommunityMessage
+        fields = ['subject', 'body']
         widgets = {
-            "title": forms.TextInput(attrs={
-            "class": "form-control",
-            "placeholder": "Enter legal service title"
+            'subject': forms.TextInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'Subject (optional)',
             }),
-            "description": forms.Textarea(attrs={
-            "class": "form-control",
-            "rows": 5,
-            "placeholder": "Enter description"
+            'body': forms.Textarea(attrs={
+                'class': 'form-control',
+                'rows': 6,
+                'placeholder': 'Write your message...',
             }),
-    }
+        }
+        labels = {
+            'subject': 'Subject',
+            'body': 'Message',
+        }
+
+
+class EmergencyHelpForm(forms.Form):
+    """Form for submitting emergency help requests"""
+    full_name = forms.CharField(
+        max_length=200,
+        required=True,
+        widget=forms.TextInput(attrs={
+            'class': 'form-control',
+            'placeholder': 'Your full name',
+        })
+    )
+    email = forms.EmailField(
+        required=True,
+        widget=forms.EmailInput(attrs={
+            'class': 'form-control',
+            'placeholder': 'Your email address',
+        })
+    )
+    phone = forms.CharField(
+        max_length=30,
+        required=False,
+        widget=forms.TextInput(attrs={
+            'class': 'form-control',
+            'placeholder': 'Your phone number (optional)',
+        })
+    )
+    description = forms.CharField(
+        required=True,
+        widget=forms.Textarea(attrs={
+            'class': 'form-control',
+            'rows': 6,
+            'placeholder': 'Describe your emergency or help request...',
+        })
+    )
+    urgency = forms.ChoiceField(
+        choices=[('Emergency', 'Emergency'), ('Very Urgent', 'Very Urgent')],
+        required=True,
+        widget=forms.RadioSelect(attrs={
+            'class': 'form-check-input',
+        })
+    )

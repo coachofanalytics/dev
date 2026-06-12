@@ -108,6 +108,8 @@ body {
 }
 
 .top-left-coloumn {
+  /* background-image: url(/static/main/img/background/background_v1.jpg); */
+  /* background-image: url(media/background/background_v1.jpg); */
   background-repeat: no-repeat;
   background-size: cover;
 }
@@ -129,6 +131,11 @@ body {
   font-weight: bold;
 }
 
+/* .bottom-left-coloumn{
+  background-image: url('/static/data/img/coda_CEO.png');
+  background-repeat: no-repeat;
+  background-size: cover;
+} */
 @media screen and (max-width:768px) {
   .top-coloumn {
       padding: 3rem 1rem 3rem 2rem;
@@ -592,7 +599,6 @@ body {
 .sign-up-div button[type=submit] {
   background-color: #e7ad4a;
   border: 1px solid #e7ad4a;
-  margin-bottom: 4rem;
 }
 
 .sign-up-div button[type=submit]:hover {

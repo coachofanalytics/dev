@@ -1,0 +1,86 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "https://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="https://www.w3.org/1999/xhtml" lang="en" xml:lang="en"
+    xmlns:v="urn:schemas-microsoft-com:vml"
+    xmlns:o="urn:schemas-microsoft-com:office:office">
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+        <!--[if !mso]><!-->
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <!--<![endif]-->
+        <meta name="x-apple-disable-message-reformatting" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    </head>
+    <body style="margin:0; padding:0; background-color:#f8f9fa; font-family:Arial, sans-serif;">
+
+        <!-- Main Container -->
+        <table width="100%" cellpadding="0" cellspacing="0" style="background-color:#f8f9fa; padding:20px 0;">
+        <tr>
+        <td align="center">
+
+            <!-- Receipt Box -->
+            <table width="600" cellpadding="0" cellspacing="0" style="background:#ffffff; border-radius:10px; overflow:hidden; box-shadow:0 4px 12px rgba(0,0,0,0.1);">
+                
+                <!-- Header -->
+                <tr>
+                    <td style="background:#1ca877; height:80px; text-align: center; padding-top:3px; padding-bottom:3px">
+                        <img src="https://codanalytics.blob.core.windows.net/web-dev-media/img/governance/dc48k_logo.png" alt="DC48K Logo" style="width: 90px; height: auto;">
+                    </td>
+                </tr>
+
+                <!-- Title -->
+                <tr>
+                    <td align="center" style="padding:20px;">
+                        <h2 style="margin:0; font-size:20px; font-weight:bold; color:#000;">Receipt from DC48K</h2>
+                        <p style="margin:4px 0; color:#666; font-size:14px;">Receipt # 000{{ receipt_number }}</p>
+                    </td>
+                </tr>
+
+                <!-- Receipt Info -->
+                <tr>
+                    <td style="padding:0 20px 20px 20px;">
+                        <table width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse;">
+                            <tr>
+                                <td width="33%" valign="top" style="padding:10px;">
+                                    <strong style="font-size:12px; color:#555;">AMOUNT PAID</strong>
+                                    <p style="margin:5px 0; font-size:16px; color:#000;">${{ amount_paid }}</p>
+                                </td>
+                                <td width="33%" valign="top" style="padding:10px;">
+                                    <strong style="font-size:12px; color:#555;">DATE PAID</strong>
+                                    <p style="margin:5px 0; font-size:16px; color:#000;">{{ date_paid }}</p>
+                                </td>
+                                <td width="33%" valign="top" style="padding:10px;">
+                                    <strong style="font-size:12px; color:#555;">PAYMENT METHOD</strong>
+                                    <p style="margin:5px 0; font-size:16px; color:#000;">{{ payment_method }}</p>
+                                </td>
+                            </tr>
+                        </table>
+                    </td>
+                </tr>
+
+                <!-- Summary -->
+                <tr>
+                    <td style="padding:0 20px 20px 20px;">
+                        <h3 style="margin:0 0 10px; font-size:14px; color:#555; letter-spacing:1px;">SUMMARY</h3>
+                        <table width="100%" cellpadding="0" cellspacing="0" style="background:#f5f6f7; border-radius:6px; padding:10px; border-collapse:collapse;">
+                            <tr>
+                                <td style="padding:8px; font-size:14px; color:#000;">
+                                    {% if purpose == "donation" %} Donation {% else %} Leaders Membership {% endif %}
+                                </td>
+                                <td align="right" style="padding:8px; font-size:14px; color:#000;">${{ amount_paid }}</td>
+                            </tr>
+                            <tr>
+                                <td colspan="2" style="border-top:1px solid #ddd; padding:10px 8px; font-weight:bold; font-size:14px; color:#000;">
+                                    Total Amount Charged
+                                </td>
+                                <td align="right" style="padding:10px 8px; font-weight:bold; font-size:14px; color:#000;">${{ amount_paid }}</td>
+                            </tr>
+                        </table>
+                    </td>
+                </tr>
+
+            </table>
+        </td>
+        </tr>
+        </table>
+    </body>
+</html>

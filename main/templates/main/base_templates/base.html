@@ -1,122 +1,220 @@
 {% load static %}
 <!DOCTYPE html>
 <html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-<head>
-    <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DC48K</title>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css"
-        integrity="sha384-xOolHFLEh07PJGoPkLv1IbcEPTNtaed2xpHsD9ESMhqIYd0nLMwNLD69Npy4HI+N" crossorigin="anonymous">
+    <!-- Open Graph Tags -->
+    <meta property="og:title" content="Diaspora County 48 Kenya" />
+    <meta property="og:description" content="We are Stronger Together!" />
+    <meta property="og:image" content="https://www.diasporacounty48.org/static/main/img/dc48k_logo.png" />
+    <meta property="og:url" content="https://www.diasporacounty48.org/" />
+    <meta property="og:type" content="website" />
 
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.css"
-        integrity="sha512-5A8nwdMOWrSz20fDsjczgUidUBR8liPYU+WymTZP1lmY9G6Oc7HlZv156XqnsgNUzTyMefFTcsFH/tnJE/+xBg=="
-        crossorigin="anonymous" referrerpolicy="no-referrer" />
-        <link href="assets/img/favicon.png" rel="icon">
-        <link href="assets/img/apple-touch-icon.png" rel="apple-touch-icon">
-        <link rel="icon" href="{% static 'main/img/favicon.png' %}" type="image/png">
-         <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Diaspora County 48 Kenya</title>
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css"
+      integrity="sha384-xOolHFLEh07PJGoPkLv1IbcEPTNtaed2xpHsD9ESMhqIYd0nLMwNLD69Npy4HI+N"
+      crossorigin="anonymous"
+    />
+
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"
+      integrity="sha512-5A8nwdMOWrSz20fDsjczgUidUBR8liPYU+WymTZP1lmY9G6Oc7HlZv156XqnsgNUzTyMefFTcsFH/tnJE/+xBg=="
+      crossorigin="anonymous"
+      referrerpolicy="no-referrer"
+    />
+
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css"
+    />
+
+
+
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.css"
+      integrity="sha512-5A8nwdMOWrSz20fDsjczgUidUBR8liPYU+WymTZP1lmY9G6Oc7HlZv156XqnsgNUzTyMefFTcsFH/tnJE/+xBg=="
+      crossorigin="anonymous"
+      referrerpolicy="no-referrer"
+    />
+    <link href="assets/img/favicon.png" rel="icon" />
+    <link href="assets/img/apple-touch-icon.png" rel="apple-touch-icon" />
+    <link
+      rel="icon"
+      href="{% static 'main/img/favicon.png' %}"
+      type="image/png"
+    />
+
+    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+
+    <!-- Inter Font for Consular/Service pages -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&display=swap" rel="stylesheet">
-</head>
-      
-        <!-- Google Fonts -->
-        <link href="https://fonts.googleapis.com/css?family=Open+Sans:300,300i,400,400i,600,600i,700,700i|Jost:300,300i,400,400i,500,500i,600,600i,700,700i|Poppins:300,300i,400,400i,500,500i,600,600i,700,700i" rel="stylesheet">
-          <!-- Google Fonts -->
-        <link href="https://fonts.googleapis.com/css?family=Open+Sans:300,300i,400,400i,600,600i,700,700i|Jost:300,300i,400,400i,500,500i,600,600i,700,700i|Poppins:300,300i,400,400i,500,500i,600,600i,700,700i" rel="stylesheet">
-        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
 
-       <link
-        rel="stylesheet"
-        type="text/css"
-        href="{% static 'main/css/main.css' %}"
-       />
+    <!-- Google Fonts -->
+    <link
+      href="https://fonts.googleapis.com/css?family=Open+Sans:300,300i,400,400i,600,600i,700,700i|Jost:300,300i,400,400i,500,500i,600,600i,700,700i|Poppins:300,300i,400,400i,500,500i,600,600i,700,700i"
+      rel="stylesheet"
+    />
+    <!-- Google Fonts -->
+    <link
+      href="https://fonts.googleapis.com/css?family=Open+Sans:300,300i,400,400i,600,600i,700,700i|Jost:300,300i,400,400i,500,500i,600,600i,700,700i|Poppins:300,300i,400,400i,500,500i,600,600i,700,700i"
+      rel="stylesheet"
+    />
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+      integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC"
+      crossorigin="anonymous"
+    />
+
+    <link
+      rel="stylesheet"
+      type="text/css"
+      href="{% static 'main/css/main.css' %}"
+    />
+    <link
+      rel="stylesheet"
+      type="text/css"
+      href="{% static 'main/css/navbar.css' %}"
+    />
+
+
+    <link
+      rel="stylesheet"
+      type="text/css"
+      href="{% static 'main/css/governance.css' %}"
+    />
+
+    <link
+      rel="stylesheet"
+      type="text/css"
+      href="{% static 'finance/css/donation.css' %}"
+    />
+
       <link
-        rel="stylesheet"
-        type="text/css" 
-        href="{% static 'main/css/finance.css' %}" rel="stylesheet"
-        />
-        <link
-        rel="stylesheet" 
-        type="text/css"
-        href="{% static 'community/css/style.css' %}" 
+      rel="stylesheet"
+      type="text/css"
+      href="{% static 'finance/css/partial_payment.css' %}"
+    />
 
-        />
-      <link
-        rel="stylesheet"
-        type="text/css"
-        href="{% static 'main/css/navbar.css' %}"
-      />
-      <link rel="stylesheet" href="https://cdn.lineicons.com/3.0/lineicons.css"> 
-      <!-- Link Swiper's CSS -->
-    <link rel="stylesheet" href="https://unpkg.com/swiper/swiper-bundle.min.css" />
 
-<!-- Include Swiper's JS -->
-<script src="https://unpkg.com/swiper/swiper-bundle.min.js"></script>
-<script src="{% static 'community/js/script.js' %}"></script>
+    <link
+      rel="stylesheet"
+      type="text/css"
+      href="{% static 'main/css/ourhistory.css' %}"
+    />
 
-</head>
+    <!-- Community brand colours (used across all /communities/ pages) -->
+    <link
+      rel="stylesheet"
+      type="text/css"
+      href="{% static 'community/css/style.css' %}"
+    />
 
-<body>
-        {% include 'main/navbar_templates/navbar.html' %} 
-        <div>
-        {% block content %}
-        
-        {% endblock %}
-        </div>
+    <link
+      rel="stylesheet"
+      type="text/css"
+      href="{% static 'main/css/messages.css' %}"
+    />
 
-    {% include 'main/footer_templates/new_footer.html' %} 
+    <link rel="stylesheet" href="https://cdn.lineicons.com/3.0/lineicons.css" />
+    <!-- Link Swiper's CSS -->
+    <link
+      rel="stylesheet"
+      href="https://unpkg.com/swiper/swiper-bundle.min.css"
+    />
 
-<script src="https://cdn.jsdelivr.net/npm/jquery@3.5.1/dist/jquery.slim.min.js"
-        integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj"
-        crossorigin="anonymous"></script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js"
-        integrity="sha384-Fy6S3B9q64WdZWQUiU+q4/2Lc9npb8tCaSX9FK7E8HnRr0Jz8D6OP9dO5Vg3Q9ct"
-        crossorigin="anonymous"></script>
+    <!-- Include Swiper's JS -->
+    <script src="https://unpkg.com/swiper/swiper-bundle.min.js"></script>
+    
+    <!-- Stripe Payment JS -->
+    <script src="https://js.stripe.com/v3/"></script>
 
+    <!-- Messages JS script -->
+    <script src="{% static 'main/js/messages.js' %}" defer></script>
+  </head>
+
+  <body>
+      <!-- Show messages in your base template -->
+      {% if messages %}
+          <div id="messageBox" class="messages">
+              {% for message in messages %}
+                  <div class="alert alert-{{ message.tags }}">
+                      {{ message }}
+                  </div>
+              {% endfor %}
+          </div>
+      {% endif %}
+
+    {% include 'main/navbar_templates/navbar.html' %}
+    <div>{% block content %} {% endblock %}</div>
+
+    {% include 'main/footer_templates/new_footer.html' %}
+
+    <script
+      src="https://cdn.jsdelivr.net/npm/jquery@3.5.1/dist/jquery.slim.min.js"
+      integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj"
+      crossorigin="anonymous"
+    ></script>
+    <script
+      src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js"
+      integrity="sha384-Fy6S3B9q64WdZWQUiU+q4/2Lc9npb8tCaSX9FK7E8HnRr0Jz8D6OP9dO5Vg3Q9ct"
+      crossorigin="anonymous"
+    ></script>
 
     <script>
-        $(".nav-btn").click(function () {
-            $("#collapsibleNavbar").toggleClass('show')
-        })
+      $(".nav-btn").click(function () {
+        $("#collapsibleNavbar").toggleClass("show");
+      });
     </script>
 
     <!-- JS for home.html -->
     <script src="https://unpkg.com/swiper/swiper-bundle.min.js"></script>
     <script>
-      var swiper = new Swiper('.swiper-container', {
-          slidesPerView: 1,
-          spaceBetween: 30,
-          loop: true,
-          pagination: {
-              el: '.swiper-pagination',
-              clickable: true,
+      var swiper = new Swiper(".swiper-container", {
+        slidesPerView: 1,
+        spaceBetween: 30,
+        loop: true,
+        autoplay: {
+          delay: 3000,
+          disableOnInteraction: false,
+        },
+        pagination: {
+          el: ".swiper-pagination",
+          clickable: true,
+        },
+        navigation: {
+          nextEl: ".swiper-button-next",
+          prevEl: ".swiper-button-prev",
+        },
+        on: {
+          slideChangeTransitionStart: function () {
+            const slides = document.querySelectorAll(".swiper-slide img");
+            slides.forEach((slide) => {
+              slide.style.opacity = "0.9"; // Dim the current slide
+              //slide.style.transform = "scale(0.8)"; // Slightly shrink the current slide
+            });
           },
-          navigation: {
-              nextEl: '.swiper-button-next',
-              prevEl: '.swiper-button-prev',
+          slideChangeTransitionEnd: function () {
+            const slides = document.querySelectorAll(".swiper-slide img");
+            slides.forEach((slide) => {
+              slide.style.opacity = "1"; // Restore opacity
+              slide.style.transform = "scale(1)"; // Restore size
+            });
           },
-          on: {
-              slideChangeTransitionStart: function () {
-                  const slides = document.querySelectorAll('.swiper-slide img');
-                  slides.forEach(slide => {
-                      slide.style.opacity = '0.9'; // Dim the current slide
-                      slide.style.transform = 'scale(0.8)'; // Slightly shrink the current slide
-                  });
-              },
-              slideChangeTransitionEnd: function () {
-                  const slides = document.querySelectorAll('.swiper-slide img');
-                  slides.forEach(slide => {
-                      slide.style.opacity = '1'; // Restore opacity
-                      slide.style.transform = 'scale(1)'; // Restore size
-                  });
-              }
-          }
+        },
       });
-  </script>
-</body>
-
+    </script>
+    {% block page_js %}{% endblock %}
+  </body>
 </html>
+
+

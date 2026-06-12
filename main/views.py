@@ -1,4 +1,5 @@
 from django.shortcuts import redirect, render, get_object_or_404
+from django.templatetags.static import static
 from datetime import datetime,date,timedelta
 from dateutil.relativedelta import relativedelta
 from django.contrib.auth.decorators import login_required
@@ -17,7 +18,7 @@ from django.views.generic import (
     DeleteView,
 )
 #<<<<<<< 25.10_DC48_UAT_UO
-from .models import Assets,Description, LegalService, News, Page, Service, SubService,Team, SafetyAlertSubscription, EmergencyHotline, StaffContact, InsurancePlan, AIRecommendationRule, ExpertInquiry, ConsularAssistancePage, NewsArticle, Category, Subscriber , Employer, Job, Industry
+from .models import Assets,Description, News, Page, Service, SubService,Team, SafetyAlertSubscription, EmergencyHotline, StaffContact, InsurancePlan, AIRecommendationRule, ExpertInquiry, ConsularAssistancePage, NewsArticle, Category, Subscriber
 #=======
 from django.db.models import Q
 #<<<<<<< HEAD
@@ -28,7 +29,7 @@ from accounts.models import CustomerUser
 from .models import Assets,Description, News, Page, Service, SubService,Team, Donation_organization, MedicalResourceInquiry,Governance, NewsArticle, Category, Subscriber
 from accounts.models import CustomerUser
 from .utils import image_view,path_values
-from .forms import ContactForm, DonorForm, LegalServiceForm, MessageForm,ScholarshipSearchForm
+from .forms import ContactForm, DonorForm, MessageForm,ScholarshipSearchForm
 ##=======
 from django.views.decorators.csrf import csrf_exempt, csrf_protect
 from main.forms import ContactForm, GovernanceForm, ArticleForm
@@ -37,10 +38,10 @@ from django.contrib.auth import get_user_model
 #<<<<<<< 25.10_DC48_UAT_UO
 from django.views.decorators.http import require_POST
 from django.http import JsonResponse, HttpResponse
-from django.core.mail import send_mail
+from django.core.mail import send_mail, EmailMessage
+from django.template.loader import render_to_string
 from django.utils.html import strip_tags
 from django.utils import timezone
-from django.views.decorators.http import require_http_methods
 from django.contrib.auth import get_user_model
 from django.utils.text import slugify
 
@@ -52,15 +53,21 @@ from .models import (
     InsurancePlan, AIRecommendationRule, ExpertInquiry,
     ConsularAssistancePage, NewsArticle, Category, Subscriber,
     Scholarship, ContactMessage, Testimonial, TrainingCourse,
-    Donation_organization, MedicalResourceInquiry, Governance
+    Donation_organization, MedicalResourceInquiry, Governance,
+    Gallery, GetHelp, DonationOrganization, History, ContactUs,
+    ServiceRequest, CommunityMessage
 )
 from accounts.models import CustomerUser
 from .utils import image_view, path_values
-from .forms import ContactForm, DonorForm, MessageForm, ScholarshipSearchForm, GovernanceForm, ArticleForm, ScholarshipForm,TrainingCourseForm
+from .forms import ContactForm, DonorForm, MessageForm, ScholarshipSearchForm, GovernanceForm, ArticleForm, ScholarshipForm,TrainingCourseForm, GetHelpForm, CommunityMessageForm
+from mail.custom_email import send_email
 
 import csv
 import feedparser
 import random
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 # Details Donation View
@@ -115,11 +122,54 @@ def template_errors(request):
 
 @csrf_exempt
 def medical_resource_form(request):
+    """Handle medical resource inquiry form with confirmation email"""
+    import logging
+    logger = logging.getLogger(__name__)
+
     if request.method == 'POST':
-        name = request.POST.get('name')
-        email = request.POST.get('email')
-        message = request.POST.get('message')
-        MedicalResourceInquiry.objects.create(name=name, email=email, message=message)
+        name = request.POST.get('name', '').strip()
+        email = request.POST.get('email', '').strip()
+        message = request.POST.get('message', '').strip()
+
+        # Create inquiry record
+        inquiry = MedicalResourceInquiry.objects.create(name=name, email=email, message=message)
+
+        # Also create ServiceRequest for admin tracking
+        try:
+            service_request = ServiceRequest.objects.create(
+                service_type='healthcare',
+                full_name=name,
+                email=email,
+                consultation_type='Medical Resource Request',
+                question=message,
+                additional_notes='Medical Resource Inquiry Form Submission',
+            )
+
+            # Send confirmation email using send_email utility
+            try:
+                send_email(
+                    category=0,
+                    to_email=[service_request.email],
+                    subject='Medical Resource Request Received - DC48K',
+                    html_template='main/email/medical_resource_confirmation.html',
+                    context={
+                        'full_name': service_request.full_name,
+                        'reference_number': f'MR-{service_request.id:05d}',
+                        'created_at': service_request.created_at,
+                    },
+                    from_name="Diaspora County 048 - Healthcare Support"
+                )
+            except Exception as e:
+                logger.error(f'Failed to send medical resource confirmation email to {service_request.email}: {e}')
+        except Exception as e:
+            logger.error(f'Failed to create ServiceRequest for medical resource inquiry: {e}')
+
+        # Add success message for user notification
+        messages.success(
+            request,
+            f'Thank you for your medical resource request! We have received your submission and a confirmation email has been sent to {email}. Our healthcare support team will review your request and contact you shortly.'
+        )
+
         # Redirect using the named URL so it works regardless of include path
         return redirect('main:healthcare_info')
     return render(request, 'main/data/medical_resource_form.html')
@@ -147,72 +197,7 @@ def hendler500(request):
     return render(request, "main/errors/500.html")
     
 def test(request):
-    from .models import LegalService
-
-    if request.method == "POST":
-        features_raw = request.POST.get("features", "")
-        features = [item.strip() for item in features_raw.splitlines() if item.strip()]
-
-        LegalService.objects.create(
-            title=request.POST.get("title", "").strip(),
-            category=request.POST.get("category", "visa"),
-            description=request.POST.get("description", "").strip(),
-            image_url=request.POST.get("image_url", "").strip() or None,
-            features=features,
-            cta_button_text=request.POST.get("cta_button_text", "Learn More").strip() or "Learn More",
-            cta_button_url=request.POST.get("cta_button_url", "").strip(),
-            order=int(request.POST.get("order", 0) or 0),
-            is_active=(request.POST.get("is_active") == "on"),
-        )
-        messages.success(request, "Legal service created successfully.")
-        return redirect("main:legal_service_test")
-
-    services = LegalService.objects.all().order_by("order", "id")
-    context = {
-        "title": "Legal Services CRUD Test",
-        "services": services,
-        "categories": LegalService.CATEGORY_CHOICES,
-    }
-    return render(request, "main/test.html", context)
-
-
-@require_http_methods(["GET", "POST"])
-def test_edit(request, pk):
-    from .models import LegalService
-
-    service = get_object_or_404(LegalService, pk=pk)
-
-    if request.method == "POST":
-        features_raw = request.POST.get("features", "")
-        service.title = request.POST.get("title", "").strip()
-        service.category = request.POST.get("category", "visa")
-        service.description = request.POST.get("description", "").strip()
-        service.image_url = request.POST.get("image_url", "").strip() or None
-        service.features = [item.strip() for item in features_raw.splitlines() if item.strip()]
-        service.cta_button_text = request.POST.get("cta_button_text", "Learn More").strip() or "Learn More"
-        service.cta_button_url = request.POST.get("cta_button_url", "").strip()
-        service.order = int(request.POST.get("order", 0) or 0)
-        service.is_active = request.POST.get("is_active") == "on"
-        service.save()
-        messages.success(request, "Legal service updated successfully.")
-        return redirect("main:legal_service_test")
-
-    context = {
-        "title": "Edit Legal Service",
-        "service": service,
-        "categories": LegalService.CATEGORY_CHOICES,
-    }
-    return render(request, "main/test_edit.html", context)
-
-
-@require_POST
-def test_delete(request, pk):
-    from .models import LegalService
-
-    service = get_object_or_404(LegalService, pk=pk)
-    service.delete()
-    messages.success(request, "Legal service deleted successfully.")
-    return redirect("main:legal_service_test")
+    return render(request, "main/test.html", {"title": "test"})
 
 def checkout(request):
     return render(request, "main/checkout.html", {"title": "checkout"})
@@ -274,11 +259,14 @@ def History(request):
     page_instance, _ = Page.objects.get_or_create(page_name='About')
     description = Description.objects.filter(page = page_instance)
     context={
-            
+
             'description': description,
-            
+
         }
     return render(request, "main/about_templates/history.html",context)
+
+# Lowercase alias for URL pattern compatibility
+history = History
 
 class ImageCreateView(LoginRequiredMixin, CreateView):
     model = Assets
@@ -323,16 +311,13 @@ def team_list(request):
 @require_POST
 @csrf_protect
 def subscribe_alerts(request):
+    import logging
+    logger = logging.getLogger(__name__)
+
     email = request.POST.get('email', '').strip().lower()
     if not email:
         return JsonResponse({'success': False, 'message': 'Email is required.'}, status=400)
 
-    subject = "DC48K Safety Alerts Subscription"
-    html_message = """
-      <p>Thank you for subscribing to DC48K Safety Alerts.</p>
-      <p>You will receive updates about advisories and safety information.</p>
-    """
-    plain_message = strip_tags(html_message)
     # Check if already subscribed
     existing = SafetyAlertSubscription.objects.filter(email=email).first()
     if existing and existing.is_active:
@@ -348,19 +333,38 @@ def subscribe_alerts(request):
             is_active=True,
         )
 
-    # Attempt to send confirmation email
+    # Also create ServiceRequest entry for admin tracking
     try:
-        send_mail(
-            subject,
-            plain_message,
-            None,  # uses DEFAULT_FROM_EMAIL
-            [email],
-            html_message=html_message,
+        service_request = ServiceRequest.objects.create(
+            service_type='crisis',
+            full_name=request.POST.get('name', 'Safety Alert Subscriber').strip(),
+            email=email,
+            consultation_type='Safety Alert Subscription',
+            question='User subscribed to safety alerts',
+            additional_notes='Automatic subscription to DC48K Safety Alerts via crisis page',
         )
-        return JsonResponse({'success': True, 'message': 'Subscribed! A confirmation email has been sent.'})
-    except Exception:
-        # Gracefully succeed even if email backend is unavailable
-        return JsonResponse({'success': True, 'message': 'Subscribed! (Email could not be sent right now.)'})
+
+        # Send confirmation email using send_email utility
+        try:
+            send_email(
+                category=0,
+                to_email=[service_request.email],
+                subject='Safety Alert Subscription Confirmed - DC48K',
+                html_template='main/email/safety_alert_confirmation.html',
+                context={
+                    'full_name': service_request.full_name,
+                    'reference_number': f'SA-{service_request.id:05d}',
+                    'created_at': service_request.created_at,
+                },
+                from_name="Diaspora County 048 - Safety & Crisis Team"
+            )
+            return JsonResponse({'success': True, 'message': 'Subscribed! A confirmation email has been sent.'})
+        except Exception as e:
+            logger.error(f'Failed to send safety alert confirmation email: {e}')
+            return JsonResponse({'success': True, 'message': 'Subscribed! (Confirmation email could not be sent right now.)'})
+    except Exception as e:
+        logger.error(f'Failed to create ServiceRequest for safety alert: {e}')
+        return JsonResponse({'success': True, 'message': 'Subscribed! Your subscription is active.'})
 
 
 
@@ -485,6 +489,10 @@ def healthcare_info(request):
         'mission': mission,
         'sections': sections,
         'contact_cta': contact_cta,
+        # Static image URLs expected directly by the template
+        'hero_image_url': static('main/img/healthcare/doctor.svg'),
+        'services_image_url': static('main/img/healthcare/patient.svg'),
+        'insurance_image_url': static('main/img/healthcare/doctor.svg'),
     }
 
     return render(request, 'main/data/healthcare_info.html', context)
@@ -515,6 +523,176 @@ def contact_us_list(request):
 
     # Render the template with the context
     return render(request, 'main/snippets_templates/table/contact_us_list.html', {'contact_us_list': contact_us_list})
+
+
+def contact_us(request):
+    if request.method == "POST":
+        name = request.POST.get('name')
+        email = request.POST.get('email')
+        message = request.POST.get('message')
+        print (name,email,message)
+        contact_message = ContactUs.objects.create(
+            name = name,
+            email = email,
+            message = message
+        )
+        contact_message.save
+
+        messages.success(request, "Thank You For Contacting Us We Will Get To You As Soon As Possible.")
+        return redirect('main:layout')
+
+    return render(request, "main/home_templates/home.html")
+
+
+def gallery_list(request):
+    images = Gallery.objects.all()
+    return render(request, 'main/Gallery/gallery.html', {'images': images})
+
+
+# Send a welcome email to a new user
+
+def send_notification(request):
+    url = 'email/welcome.html'
+    new_user = CustomerUser.objects.all().order_by('-id').first()
+    print(new_user)
+
+    print(new_user)
+    print(new_user.id, new_user.first_name, new_user.category, new_user.member_number, new_user.email)
+
+
+    user_category = "Ordinary"
+    first_name = new_user.first_name
+    last_name = new_user.last_name
+    user_id = new_user.member_number
+    user_email = new_user.email
+    subject = "Welcome To DC48K"
+
+    print(new_user.id)
+
+    context = {
+        'user_category': user_category,
+        'first_name': first_name,
+        'last_name': last_name,
+        'user_id': user_id,
+        'subject': subject
+    }
+    try:
+        send_email(
+            category=user_category,
+            to_email=[user_email],
+            subject=subject,
+            html_template=url,
+            context=context
+        )
+
+        print("EMAIL SENT")
+    except Exception as e:
+        error_message = (
+            f'Hi {request.user.first_name}, Your message to '
+            f'{request.user.email} was unsuccessful. '
+            f'Please try again or contact info@diasporacounty48.org. Thank You. '
+            f'Error: {e}'
+        )
+        return render(request, 'main/messages/message.html', {"message": error_message})
+
+
+def send_welcome_email(user_id=None):
+    url = 'email/welcome.html'
+    user_information = CustomerUser.objects.get(id=user_id)
+    user_category = user_information.category
+    first_name = user_information.first_name
+    last_name = user_information.last_name
+    user_id = user_information.id
+    user_email = user_information.email
+    subject = "Welcome To DC48K"
+
+
+    context = {
+        'user_category': user_category,
+        'first_name': first_name,
+        'last_name': last_name,
+        'user_id': user_id
+    }
+    html_message = render_to_string(url, context)
+
+    email = EmailMessage(
+        subject=subject,
+        body = html_message,
+        from_email = settings.EMAIL_HOST_USER,
+        to = [user_email]
+    )
+    email.content_subtype = 'html'
+    email.send()
+    print('Email Sent Successfully')
+
+
+
+def gethelp_list(request):
+    helps = GetHelp.objects.all()
+    context = {
+        'helps': helps
+    }
+
+    return render(request, 'main/gethelp_list.html', context)
+
+
+
+def gethelp_update(request, pk):
+
+    gethelp = get_object_or_404(GetHelp, pk=pk)
+
+
+    if request.method == 'POST':
+        form = GetHelpForm(request.POST, instance=gethelp)
+        if form.is_valid():
+            form.save()
+            return redirect('main:gethelp')
+
+    else:
+        form = GetHelpForm(instance=gethelp)
+
+    return render(request, 'main/gethelp_update.html', {'form':form})
+
+
+
+
+def gethelp_create(request):
+    if request.method == 'POST':
+        form = GetHelpForm(request.POST)
+        if form.is_valid():
+            form.save()
+            return redirect('main:gethelp')
+
+    else:
+        form = GetHelpForm()
+
+    return render(request, 'main/gethelp_create.html',{'form':form})
+
+
+
+def gethelp_delete(request, pk):
+
+    gethelp = get_object_or_404(GetHelp, pk=pk)
+
+    if request.method == 'POST':
+
+        gethelp.delete()
+        return redirect('main:gethelp')
+
+    return render(request, 'main/gethelp_confirm_delete.html', {'gethelp':gethelp})
+
+
+def organization_list_view(request):
+    organizations = DonationOrganization.objects.all()
+    return render(request, 'main/snippets_templates/table/donation_list.html', {'organizations':organizations})
+
+
+def ourhistory(request):
+    history_years = History.objects.all()
+    context = {
+        "history_years": history_years
+    }
+    return render(request, "main/ourhistory.html", context)
 
 
 from django.views.generic import TemplateView
@@ -1226,8 +1404,7 @@ def governance_list(request):
         'records': records,
         'title': 'Governance Records'
     }
-    # Changed from 'list.html' to 'governance_list.html'
-    return render(request, 'main/governance/governance_list.html', context)
+    return render(request, 'main/governance_list.html', context)
 
 # Create new governance record
 # REPLACE your entire governance_create function with this:
@@ -2297,18 +2474,50 @@ def consular_all_updates(request):
 
 def book_consular_consultation(request):
     """
-    Render the Book Consultation form page.
+    Render the Book Consultation form page and handle AJAX POST submissions.
+    Saves consultation requests to database and sends confirmation email.
     """
     if request.method == 'POST':
-        # Handle AJAX form submission
         import json
+        import logging
+        logger = logging.getLogger(__name__)
         try:
             data = json.loads(request.body)
-            
-            # Here you would save the consultation request to database
-            # For now, we'll just return success
-            # In production, create a ConsultationRequest model and save it
-            
+
+            # Save the consultation request to database
+            service_request = ServiceRequest.objects.create(
+                service_type='consular',
+                full_name=data.get('full_name', '').strip(),
+                email=data.get('email', '').strip(),
+                phone=data.get('phone', '').strip(),
+                consultation_type=data.get('consultation_type', ''),
+                preferred_language=data.get('preferred_language', 'English'),
+                location=data.get('location', '').strip(),
+                question=data.get('question', '').strip(),
+                urgency=data.get('urgency', 'Not Urgent'),
+                additional_notes=data.get('additional_notes', '').strip(),
+            )
+
+            # Send confirmation email (non-blocking: SMTP failure won't crash the request)
+            try:
+                send_email(
+                    category=0,
+                    to_email=[service_request.email],
+                    subject='Your Consultation Request Has Been Received - DC48K',
+                    html_template='main/email/consultation_confirmation.html',
+                    context={
+                        'purpose': 'consultation_confirmation',
+                        'full_name': service_request.full_name,
+                        'consultation_type': service_request.consultation_type,
+                        'urgency': service_request.urgency,
+                        'reference_number': f'CR-{service_request.id:05d}',
+                        'created_at': service_request.created_at,
+                    },
+                    from_name="Diaspora County 048 - Consular Services"
+                )
+            except Exception as e:
+                logger.error(f'Failed to send consultation confirmation email to {service_request.email}: {e}')
+
             return JsonResponse({
                 'success': True,
                 'message': 'Your consultation request has been submitted. We will contact you shortly.'
@@ -2318,7 +2527,7 @@ def book_consular_consultation(request):
                 'success': False,
                 'error': str(e)
             }, status=400)
-    
+
     context = {
         'title': 'Book a Consultation',
     }
@@ -2343,8 +2552,8 @@ def confirm_email(request, token):
 # COMMUNITIES APP VIEWS (MERGED FROM communities app)
 # ============================================
 from .models import CommunityMember, DirectoryProfile, ForumCategory, CommunityPost, CommentP, EventCalendar
-from .forms import CommunityCommentForm, CommunityPostForm, CommunityEventForm, CommunityContactForm
-from .utils import send_email
+from .forms import CommunityCommentForm, CommunityPostForm, CommunityEventForm, CommunityContactForm, EmergencyHelpForm
+from .utils import send_email as send_email_util
 
 
 def communities_home(request):
@@ -2370,7 +2579,8 @@ def communities_join(request):
             email=email,
             is_public_directory=agree_to_directory,
             profession="To be updated",
-            region="Global"
+            region="Global",
+            user=request.user if request.user.is_authenticated else None,
         )
 
         subject = 'Welcome to Our Community!'
@@ -2378,7 +2588,7 @@ def communities_join(request):
         context = {'name': name}
 
         try:
-            send_email(
+            send_email_util(
                 subject,
                 recipient_list,
                 context,
@@ -2392,6 +2602,13 @@ def communities_join(request):
         return redirect('communities:member_directory')
 
     return render(request, 'main/communities/join.html')
+
+
+def _get_community_member_for_user(user):
+    """Get the CommunityMember linked to the authenticated user, or None."""
+    if not user or not user.is_authenticated:
+        return None
+    return CommunityMember.objects.filter(user=user).first()
 
 
 def communities_member_directory(request):
@@ -2419,6 +2636,12 @@ def communities_member_directory(request):
     for member in members:
         member.is_premium = member.id % 3 == 0
 
+    # Unread message count for inbox badge
+    unread_count = 0
+    current_member = _get_community_member_for_user(request.user)
+    if current_member:
+        unread_count = CommunityMessage.objects.filter(recipient=current_member, is_read=False).count()
+
     context = {
         'members': members,
         'search_query': search_query,
@@ -2426,7 +2649,9 @@ def communities_member_directory(request):
         'profession_filter': profession_filter,
         'unique_regions': unique_regions,
         'unique_professions': unique_professions,
-        'total_members': members.count()
+        'total_members': members.count(),
+        'unread_count': unread_count,
+        'current_member': current_member,
     }
     return render(request, 'main/communities/member_directory.html', context)
 
@@ -2442,13 +2667,20 @@ def communities_join_directory(request, member_id):
 
 
 def communities_join_directory_form(request):
-    member_id = request.session.get('joined_member_id')
     member = None
-    if member_id:
-        try:
-            member = CommunityMember.objects.get(id=member_id)
-        except CommunityMember.DoesNotExist:
-            pass
+
+    # Priority 1: If user is authenticated, find their linked CommunityMember
+    if request.user.is_authenticated:
+        member = CommunityMember.objects.filter(user=request.user).first()
+
+    # Priority 2: Fall back to session-based member
+    if not member:
+        member_id = request.session.get('joined_member_id')
+        if member_id:
+            try:
+                member = CommunityMember.objects.get(id=member_id)
+            except CommunityMember.DoesNotExist:
+                pass
 
     if request.method == 'POST':
         name = request.POST.get('name', '').strip()
@@ -2473,7 +2705,9 @@ def communities_join_directory_form(request):
 
         if not member:
             member = CommunityMember.objects.create(
-                name=name, profession=profession, region=region, is_public_directory=True
+                name=name, profession=profession, region=region,
+                is_public_directory=True,
+                user=request.user if request.user.is_authenticated else None,
             )
             request.session['joined_member_id'] = member.id
         else:
@@ -2481,6 +2715,9 @@ def communities_join_directory_form(request):
             member.profession = profession
             member.region = region
             member.is_public_directory = True
+            # Link to user if not already linked
+            if request.user.is_authenticated and member.user is None:
+                member.user = request.user
             member.save()
 
         DirectoryProfile.objects.update_or_create(
@@ -2494,10 +2731,24 @@ def communities_join_directory_form(request):
         messages.success(request, f'Profile updated for {name}!')
         return redirect('communities:member_directory')
 
+    # Pre-fill from existing member or from user account
+    if member:
+        default_name = member.name
+        default_profession = member.profession
+        default_region = member.region
+    elif request.user.is_authenticated:
+        default_name = f"{request.user.first_name} {request.user.last_name}".strip() or request.user.username
+        default_profession = ''
+        default_region = ''
+    else:
+        default_name = ''
+        default_profession = ''
+        default_region = ''
+
     context = {
-        'name': member.name if member else '',
-        'profession': member.profession if member else '',
-        'region': member.region if member else '',
+        'name': default_name,
+        'profession': default_profession,
+        'region': default_region,
         'categories': ['Tech & IT', 'Legal', 'Finance', 'Healthcare', 'Education', 'Business', 'Creative & Media', 'Engineering', 'Other']
     }
     return render(request, 'main/communities/join_directory_form.html', context)
@@ -2534,6 +2785,7 @@ def communities_view_post(request, post_id):
     return render(request, 'main/communities/view_post.html', {'post': post, 'comments': comments, 'form': form})
 
 
+@login_required
 def communities_create_post(request, slug):
     category = get_object_or_404(ForumCategory, slug=slug)
     if request.method == 'POST':
@@ -2541,6 +2793,7 @@ def communities_create_post(request, slug):
         if form.is_valid():
             post = form.save(commit=False)
             post.category = category
+            post.author = request.user
             post.save()
             return redirect('communities:category_detail', slug=category.slug)
     else:
@@ -2560,6 +2813,55 @@ def communities_add_comment(request, post_id):
             comment.save()
             return redirect('communities:view_post', post_id=post.id)
     return redirect('communities:view_post', post_id=post.id)
+
+
+@login_required
+def communities_edit_post(request, post_id):
+    """Edit a forum post. Only superuser/staff can edit."""
+    post = get_object_or_404(CommunityPost, id=post_id)
+
+    # Permission check: only superuser/staff can edit
+    if not request.user.is_superuser and not request.user.is_staff:
+        messages.error(request, 'Only administrators can edit posts.')
+        return redirect('communities:view_post', post_id=post.id)
+
+    if request.method == 'POST':
+        form = CommunityPostForm(request.POST, instance=post)
+        if form.is_valid():
+            post = form.save()
+            messages.success(request, f'Post "{post.title}" updated successfully!')
+            return redirect('communities:view_post', post_id=post.id)
+    else:
+        form = CommunityPostForm(instance=post)
+
+    context = {
+        'form': form,
+        'post': post,
+        'is_edit': True,
+    }
+    return render(request, 'main/communities/edit_post.html', context)
+
+
+@login_required
+def communities_delete_post(request, post_id):
+    """Delete a forum post. Only superuser/staff can delete."""
+    post = get_object_or_404(CommunityPost, id=post_id)
+    category_slug = post.category.slug
+
+    # Permission check: only superuser/staff can delete
+    if not request.user.is_superuser and not request.user.is_staff:
+        messages.error(request, 'Only administrators can delete posts.')
+        return redirect('communities:view_post', post_id=post.id)
+
+    if request.method == 'POST':
+        post.delete()
+        messages.success(request, 'Post deleted successfully!')
+        return redirect('communities:category_detail', slug=category_slug)
+
+    context = {
+        'post': post,
+    }
+    return render(request, 'main/communities/delete_post.html', context)
 
 
 def communities_event_calendar(request):
@@ -2620,307 +2922,228 @@ def communities_contact_view(request):
         form = CommunityContactForm(request.POST)
         if form.is_valid():
             contact = form.save()
-            context = {'name': contact.name, 'email': contact.email, 'message': contact.message}
-            subject = f'Hello {contact.name}, thank you for contacting us!'
-            recipient_list = [contact.email]
+
+            # Save to ServiceRequest for admin tracking and management
+            service_request = ServiceRequest.objects.create(
+                service_type='community',
+                full_name=contact.name,
+                email=contact.email,
+                consultation_type='General Inquiry',
+                question=contact.message,
+                additional_notes=f'Community Contact Form Submission',
+            )
+
+            # Send confirmation email using existing send_email utility
             try:
                 send_email(
-                    subject=subject,
-                    recipient_list=recipient_list,
-                    context=context,
-                    html_template='main/communities/contact_response.html',
-                    plain_template='main/communities/contact_response.txt'
+                    category=0,
+                    to_email=[service_request.email],
+                    subject='Community Contact Request Received - DC48K',
+                    html_template='main/email/community_contact_confirmation.html',
+                    context={
+                        'full_name': service_request.full_name,
+                        'reference_number': f'CC-{service_request.id:05d}',
+                        'created_at': service_request.created_at,
+                    },
+                    from_name="Diaspora County 048 - Community Team"
                 )
-            except Exception:
-                pass  # Don't fail if email can't be sent
+            except Exception as e:
+                logger.error(f'Failed to send community contact email to {service_request.email}: {e}')
+
+            messages.success(request, 'Thank you for contacting us! We will review your message shortly.')
             return redirect('communities:home')
     else:
         form = CommunityContactForm()
     return render(request, 'main/communities/contact_form.html', {'form': form})
 
 
-def legalServiceListView(request):
-    legal_services = LegalService.objects.all().order_by("-id")
+def emergency_help_line(request):
+    """Handle emergency help line requests"""
+    import logging
+    logger = logging.getLogger(__name__)
 
-    context = {
-        "legal_services": legal_services
-    }
-
-    return render(request, "main/legal_services_list.html", context)
-
-
-def legalServiceCreateView(request):
-    if request.method == "POST":
-        form = LegalServiceForm(request.POST)
+    if request.method == 'POST':
+        form = EmergencyHelpForm(request.POST)
         if form.is_valid():
-            form.save()
-            return redirect("main:legal_service_list")
+            # Create ServiceRequest for emergency help
+            service_request = ServiceRequest.objects.create(
+                service_type='crisis',
+                full_name=form.cleaned_data['full_name'],
+                email=form.cleaned_data['email'],
+                phone=form.cleaned_data['phone'],
+                consultation_type='Emergency Help Line',
+                question=form.cleaned_data['description'],
+                urgency=form.cleaned_data['urgency'],
+                additional_notes='Emergency Help Line Request - REQUIRES IMMEDIATE ATTENTION',
+            )
+
+            # Send urgent confirmation email
+            try:
+                send_email(
+                    category=0,
+                    to_email=[service_request.email],
+                    subject='🚨 URGENT: Emergency Help Request Received - DC48K',
+                    html_template='main/email/emergency_help_confirmation.html',
+                    context={
+                        'full_name': service_request.full_name,
+                        'reference_number': f'EH-{service_request.id:05d}',
+                        'created_at': service_request.created_at,
+                    },
+                    from_name="Diaspora County 048 - Emergency Response Team"
+                )
+            except Exception as e:
+                logger.error(f'Failed to send emergency help email: {e}')
+
+            messages.success(request, 'Your emergency request has been submitted. Our team is being notified.')
+            return redirect('crisis_page')
     else:
-        form = LegalServiceForm()
+        form = EmergencyHelpForm()
 
-    context = {
-        "form": form
-    }
+    return render(request, 'main/emergency_help.html', {'form': form})
 
-    return render(request, "main/legalservice_form.html", context)
 
-def legalServiceDeleteView(request, pk):
-    legal_service = get_object_or_404(LegalService, pk=pk)
+# ============================================
+# COMMUNITY MESSAGING VIEWS
+# ============================================
 
-    if request.method == "POST":
-        legal_service.delete()
-        return redirect("main:legal_service_list")
+@login_required
+def communities_message_compose(request, recipient_id):
+    """Send a message to a community member."""
+    sender = _get_community_member_for_user(request.user)
+    if not sender:
+        messages.warning(request, 'You need a community profile to send messages. Please join the directory first.')
+        return redirect('communities:join_directory_form')
 
-    context = {
-    "legal_service": legal_service
-    }
+    recipient = get_object_or_404(CommunityMember, id=recipient_id)
 
-    return render(request, "main/legalservice_confirm_delete.html", context)
+    if sender == recipient:
+        messages.error(request, 'You cannot send a message to yourself.')
+        return redirect('communities:member_directory')
 
-def legalServiceUpdateView(request, pk):
-    # Get the object or return 404
-    legal_service = get_object_or_404(LegalService, pk=pk)
-
-    # Bind the form to POST data if submitted, else use the instance for pre-fill
-    if request.method == "POST":
-        form = LegalServiceForm(request.POST, instance=legal_service)
+    if request.method == 'POST':
+        form = CommunityMessageForm(request.POST)
         if form.is_valid():
-            form.save()
-            return redirect("main:legal_service_list")
+            msg = form.save(commit=False)
+            msg.sender = sender
+            msg.recipient = recipient
+            msg.save()
+            messages.success(request, f'Message sent to {recipient.name}!')
+            return redirect('communities:message_inbox')
     else:
-        form = LegalServiceForm(instance=legal_service)
+        form = CommunityMessageForm()
 
-    # Pass the form and object to the template
     context = {
-        "form": form,
-        "legal_service": legal_service
+        'form': form,
+        'recipient': recipient,
     }
+    return render(request, 'main/communities/message_compose.html', context)
 
-    return render(request, "main/legal_service_update.html", context)
+
+@login_required
+def communities_message_inbox(request):
+    """View received messages."""
+    member = _get_community_member_for_user(request.user)
+    if not member:
+        messages.warning(request, 'You need a community profile to view messages. Please join the directory first.')
+        return redirect('communities:join_directory_form')
+
+    inbox_messages = CommunityMessage.objects.filter(recipient=member).order_by('-created_at')
+    unread_count = inbox_messages.filter(is_read=False).count()
+
+    context = {
+        'inbox_messages': inbox_messages,
+        'unread_count': unread_count,
+        'active_tab': 'inbox',
+    }
+    return render(request, 'main/communities/message_inbox.html', context)
 
 
-# industry list_view 
-def industry_list_view(request):
-    industries = Industry.objects.all().order_by('name')
-    return render(request, 'main/industry_list.html', {'industries': industries})
+@login_required
+def communities_message_sent(request):
+    """View sent messages."""
+    member = _get_community_member_for_user(request.user)
+    if not member:
+        messages.warning(request, 'You need a community profile to view messages. Please join the directory first.')
+        return redirect('communities:join_directory_form')
 
-# industry detail_view
-def industry_detail_view(request, pk):
-    industry = get_object_or_404(Industry, pk=pk)
-    return render(request, 'main/industry_detail.html', {'industry': industry})
+    sent_messages = CommunityMessage.objects.filter(sender=member).order_by('-created_at')
 
-# industry create_view
-def industry_create_view(request):
-    if request.method == 'POST':
-        name = request.POST.get('name', '').strip()
-        slug = request.POST.get('slug', '').strip()
+    context = {
+        'sent_messages': sent_messages,
+        'active_tab': 'sent',
+    }
+    return render(request, 'main/communities/message_sent.html', context)
 
-        if not name or not slug:
-            messages.error(request, 'Name and slug are required.')
-            return redirect('main:industry_create')
 
-        if Industry.objects.filter(slug=slug).exists():
-            messages.error(request, 'Slug already exists.')
-            return redirect('main:industry_create')
+@login_required
+def communities_message_detail(request, message_id):
+    """Read a single message."""
+    member = _get_community_member_for_user(request.user)
+    if not member:
+        messages.warning(request, 'You need a community profile to view messages.')
+        return redirect('communities:join_directory_form')
 
-        if Industry.objects.filter(name__iexact=name).exists():
-            messages.error(request, 'Industry name already exists.')
-            return redirect('main:industry_create')
+    msg = get_object_or_404(CommunityMessage, id=message_id)
 
-        Industry.objects.create(name=name, slug=slug)
-        messages.success(request, 'Industry created successfully!')
-        return redirect('main:industry_list')
+    # Authorization: only sender or recipient can view
+    if msg.sender != member and msg.recipient != member:
+        messages.error(request, 'You do not have permission to view this message.')
+        return redirect('communities:message_inbox')
 
-    return render(request, 'main/industry_form.html')
+    # Mark as read if recipient is viewing
+    if msg.recipient == member and not msg.is_read:
+        msg.is_read = True
+        msg.save(update_fields=['is_read'])
 
-# industry update_view
-def industry_update_view(request, pk):
-    industry = get_object_or_404(Industry, pk=pk)
+    # Get thread: replies to this message
+    replies = CommunityMessage.objects.filter(parent_message=msg).order_by('created_at')
 
-    if request.method == 'POST':
-        name = request.POST.get('name')
-        slug = request.POST.get('slug')
+    context = {
+        'msg': msg,
+        'replies': replies,
+        'is_recipient': msg.recipient == member,
+    }
+    return render(request, 'main/communities/message_detail.html', context)
 
-        if not name or not slug:
-            messages.error(request, 'Both name and slug are required.')
-            return redirect('main:industry_update', pk=pk)
 
-        if Industry.objects.filter(slug=slug).exclude(pk=pk).exists():
-            messages.error(request, 'An industry with this slug already exists.')
-            return redirect('main:industry_update', pk=pk)
+@login_required
+def communities_message_reply(request, message_id):
+    """Reply to a received message."""
+    member = _get_community_member_for_user(request.user)
+    if not member:
+        messages.warning(request, 'You need a community profile to reply to messages.')
+        return redirect('communities:join_directory_form')
 
-        industry.name = name
-        industry.slug = slug
-        industry.save()
-        messages.success(request, 'Industry updated successfully!')
-        return redirect('main:industry_list')
+    original = get_object_or_404(CommunityMessage, id=message_id)
 
-    return render(request, 'main/industry_form.html', {'industry': industry})
-# industry delete_view 
-def industry_delete_view(request, pk):
-    industry = Industry.objects.filter(id=pk).first()
+    # Authorization: only sender or recipient can reply
+    if original.sender != member and original.recipient != member:
+        messages.error(request, 'You do not have permission to reply to this message.')
+        return redirect('communities:message_inbox')
 
-    if not industry:
-        messages.error(request, 'Industry not found.')
-        return redirect('main:industry_list')
-
-    if request.method == 'POST':
-        industry.delete()
-        messages.success(request, 'Industry deleted successfully!')
-        return redirect('main:industry_list')
-
-    return render(request, 'main/industry_confirm_delete.html', {
-        'industry': industry
-    })
-    
-    
-# job listing views
-def job_list_view(request):
-    jobs = Job.objects.filter(status='published')
-
-    industry = request.GET.get('industry')
-    job_type = request.GET.get('job_type')
-    experience = request.GET.get('experience')
-    location = request.GET.get('location')
-    search = request.GET.get('search')
-
-    if industry:
-        jobs = jobs.filter(industry__slug=industry)
-
-    if job_type:
-        jobs = jobs.filter(job_type=job_type)
-
-    if experience:
-        jobs = jobs.filter(experience_level=experience)
-
-    if location:
-        jobs = jobs.filter(location__icontains=location)
-
-    if search:
-        jobs = jobs.filter(title__icontains=search)
-
-    return render(request, 'main/job_list.html', {
-        'jobs': jobs.order_by('-posted_at')
-    })
-
-# job create view
-def job_create_view(request):
-    industries = Industry.objects.all()
+    # Reply goes to the other party
+    reply_to = original.sender if original.recipient == member else original.recipient
 
     if request.method == 'POST':
-        title = request.POST.get('title', '').strip()
-        description = request.POST.get('description', '').strip()
-        industry_id = request.POST.get('industry')
-        job_type = request.POST.get('job_type')
-        experience_level = request.POST.get('experience_level')
-        location = request.POST.get('location', '').strip()
-        is_remote = request.POST.get('is_remote') == 'on'
+        form = CommunityMessageForm(request.POST)
+        if form.is_valid():
+            reply_msg = form.save(commit=False)
+            reply_msg.sender = member
+            reply_msg.recipient = reply_to
+            reply_msg.parent_message = original
+            if not reply_msg.subject and original.subject:
+                reply_msg.subject = f"Re: {original.subject}"
+            reply_msg.save()
+            messages.success(request, f'Reply sent to {reply_to.name}!')
+            return redirect('communities:message_detail', message_id=original.id)
+    else:
+        initial_subject = f"Re: {original.subject}" if original.subject else ''
+        form = CommunityMessageForm(initial={'subject': initial_subject})
 
-        salary_min = request.POST.get('salary_min')
-        salary_max = request.POST.get('salary_max')
-        currency = request.POST.get('currency', 'RWF')
-        expires_at = request.POST.get('expires_at')
-
-        if not title or not description:
-            messages.error(request, 'Title and description are required.')
-            return redirect('main:job_create')
-
-        industry = Industry.objects.filter(id=industry_id).first()
-        if not industry:
-            messages.error(request, 'Invalid industry selected.')
-            return redirect('main:job_create')
-
-        slug = slugify(title)
-
-        # prevent duplicate slug
-        if Job.objects.filter(slug=slug).exists():
-            slug = f"{slug}-{timezone.now().timestamp()}"
-
-        employer = request.user.employer
-
-        Job.objects.create(
-            title=title,
-            description=description,
-            industry=industry,
-            job_type=job_type,
-            experience_level=experience_level,
-            location=location,
-            is_remote=is_remote,
-            salary_min=salary_min or None,
-            salary_max=salary_max or None,
-            currency=currency,
-            expires_at=expires_at,
-            slug=slug,
-            employer=employer,
-            status='published'
-        )
-
-        messages.success(request, 'Job created successfully!')
-        return redirect('main:job_list')
-
-    return render(request, 'main/job_form.html', {
-        'industries': industries
-    })
-    
-    
-# job detail views 
-def job_detail_view(request, slug):
-    job = Job.objects.filter(slug=slug, status='published').first()
-
-    if not job:
-        messages.error(request, 'Job not found.')
-        return redirect('main:job_list')
-
-    return render(request, 'main/job_detail.html', {
-        'job': job
-    })
-    
-# job update view
-
-def job_update_view(request, pk):
-    job = Job.objects.filter(id=pk, employer=request.user.employer).first()
-
-    if not job:
-        messages.error(request, 'Job not found or unauthorized.')
-        return redirect('main:job_list')
-
-    industries = Industry.objects.all()
-
-    if request.method == 'POST':
-        job.title = request.POST.get('title', '').strip()
-        job.description = request.POST.get('description', '').strip()
-        job.location = request.POST.get('location', '').strip()
-        job.job_type = request.POST.get('job_type')
-        job.experience_level = request.POST.get('experience_level')
-        job.is_remote = request.POST.get('is_remote') == 'on'
-        job.currency = request.POST.get('currency', 'RWF')
-
-        industry_id = request.POST.get('industry')
-        job.industry = Industry.objects.filter(id=industry_id).first()
-
-        job.save()
-
-        messages.success(request, 'Job updated successfully!')
-        return redirect('main:job_detail', slug=job.slug)
-
-    return render(request, 'main/job_form.html', {
-        'job': job,
-        'industries': industries
-    })
-    
-    
-def job_delete_view(request, slug):
-    job = Job.objects.filter(slug=slug, employer=request.user.employer).first()
-
-    if not job:
-        messages.error(request, 'Job not found or unauthorized.')
-        return redirect('main:job_list')
-
-    if request.method == 'POST':
-        job.delete()
-        messages.success(request, 'Job deleted successfully!')
-        return redirect('main:job_list')
-
-    return render(request, 'main/job_confirm_delete.html', {
-        'job': job
-    })
+    context = {
+        'form': form,
+        'recipient': reply_to,
+        'original': original,
+        'is_reply': True,
+    }
+    return render(request, 'main/communities/message_compose.html', context)

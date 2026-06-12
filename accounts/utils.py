@@ -6,14 +6,31 @@ import requests
 from accounts.choices import CategoryChoices
 from coda_project import settings
 
+import logging
+import string
+import random
+import secrets
+from django.core.mail.backends.smtp import EmailBackend
+# from accounts.choices import CategoryChoices,SubCategoryChoices
 
 
 # def get_default_sender():
 #     # Custom logic to determine the default sender
 #     return User.objects.get(username="default_sender")
 
+
+logger = logging.getLogger(__name__)
+
+
+def generate_random_password(length=12):
+    otp = "".join(random.choices(string.ascii_uppercase + string.digits, k=length))
+    characters = string.ascii_letters + string.digits + "!@#$%&"
+    password = "".join(secrets.choice(characters) for _ in range(length))
+    return password, otp
+
+
 @login_required
-def user_categories(user,UserCategory):
+def user_categories(user, UserCategory):
     # get the current logged in user
     # user = request.user
 
@@ -26,11 +43,16 @@ def user_categories(user,UserCategory):
     # iterate over the user_categories queryset and populate the categories dictionary
     for category in user_categories:
         category_name = UserCategory.Category(category.category).name
-        subcategory_name = UserCategory.SubCategory(category.sub_category).name if category.sub_category else ""
+        subcategory_name = (
+            UserCategory.SubCategory(category.sub_category).name
+            if category.sub_category
+            else ""
+        )
         categories[category_name] = subcategory_name
 
     # render the categories in a template or return a JSON response
     return categories
+
 
 def agreement_data(request):
     contract_data = {}
@@ -51,13 +73,14 @@ def agreement_data(request):
     # contract_data["resume_file"] = request.POST.get("resume_file")
     today = date.today()
     contract_date = today.strftime("%d %B, %Y")
-    return contract_data,contract_date
+    return contract_data, contract_date
 
-def compute_default_fee(category, default_amounts,Default_Payment_Fees):
+
+def compute_default_fee(category, default_amounts, Default_Payment_Fees):
     if default_amounts:
         default_fee = default_amounts.first()
     else:
-        if category == "4" : #and subcategory == "1":
+        if category == "4":  # and subcategory == "1":
             default_fee = Default_Payment_Fees.objects.create(
                 job_down_payment_per_month=1000,
                 job_plan_hours_per_month=40,
@@ -73,8 +96,11 @@ def compute_default_fee(category, default_amounts,Default_Payment_Fees):
             )
     return default_fee
 
+
 # ============================FDYC===========================================
-def dyc_compute_default_fee(category,subcategory,dyc_default_amounts, Default_Payment_Fees):
+def dyc_compute_default_fee(
+    category, subcategory, dyc_default_amounts, Default_Payment_Fees
+):
     if dyc_default_amounts:
         dyc_default_fee = dyc_default_amounts.first()
     else:
@@ -94,14 +120,16 @@ def dyc_compute_default_fee(category,subcategory,dyc_default_amounts, Default_Pa
         )
     return default_fee
 
+
 CATEGORY_FEES = {
-    CategoryChoices.ORDINARY_MEMBER: 0.0,
-    CategoryChoices.ACTIVE_MEMBER: 1000.0,
-    CategoryChoices.EXECUTIVE_MEMBER: 10000.0,
-    CategoryChoices.FBO_ORDINARY: 0.0,
-    CategoryChoices.ACTIVE_ORGANIZATION: 10000.0,
-    CategoryChoices.ROYAL_ORGANIZATION: 20000.0,
+    CategoryChoices.ORDINARY_MEMBERSHIP: 0.0,
+    CategoryChoices.LEADERS_MEMBERSHIP: 1000.0,
+    CategoryChoices.ORGANIZATIONAL_MEMBERSHIP: 10000.0,
+    #     CategoryChoices.FBO_ORDINARY: 0.0,
+    #     CategoryChoices.ACTIVE_ORGANIZATION: 10000.0,
+    #     CategoryChoices.ROYAL_ORGANIZATION: 20000.0,
 }
+
 
 def convert_kes_to_usd(amount_kes):
     """
@@ -109,7 +137,9 @@ def convert_kes_to_usd(amount_kes):
     """
     try:
         # Use an exchange rate API (e.g., exchangerate.host)
-        response = requests.get("https://api.exchangerate.host/latest?base=KES&symbols=USD")
+        response = requests.get(
+            "https://api.exchangerate.host/latest?base=KES&symbols=USD"
+        )
         response.raise_for_status()  # Raise exception for HTTP errors
         rate = response.json()["rates"]["USD"]
     except Exception as e:
@@ -119,6 +149,8 @@ def convert_kes_to_usd(amount_kes):
 
     # Convert and return the amount
     return round(amount_kes * rate, 2)
+
+
 def get_exchange_rate(base, target):
     """
     Fetches the exchange rate between base and target currencies using OpenExchangeRates API.
@@ -130,77 +162,85 @@ def get_exchange_rate(base, target):
     Returns:
         float: Exchange rate between base and target currencies.
     """
-    exchange_api_key = '19312eb3c8014755b32a7fdad5a7b1cc'  # API key from environment variables
-    
+    exchange_api_key = (
+        "19312eb3c8014755b32a7fdad5a7b1cc"  # API key from environment variables
+    )
+
     try:
         # OpenExchangeRates endpoint
-        url = f'https://openexchangerates.org/api/latest.json?app_id={exchange_api_key}'
+        url = f"https://openexchangerates.org/api/latest.json?app_id={exchange_api_key}"
         response = requests.get(url)
         response.raise_for_status()  # Raise an exception for HTTP errors
-        
+
         data = response.json()
-        
+
         # Extract rates
-        rates = data.get('rates', {})
-        
+        rates = data.get("rates", {})
+
         # Calculate rate relative to the base currency
-        if base == 'USD':
+        if base == "USD":
             rate = rates.get(target)
         else:
             rate = rates.get(target) / rates.get(base)
-        
+
         if rate is None:
             raise ValueError("Target or base currency not found in API response.")
     except Exception as e:
         print(f"Error fetching exchange rate: {e}")
         # Fallback rate
         rate = 139.00  # Default fallback exchange rate
-    
+
     return rate
+
+
 # ================================USERS========================================
 
 from django.core.mail import EmailMultiAlternatives
 from django.template.loader import render_to_string
-from django.core.mail.backends.smtp import EmailBackend
-def send_verification_email(user,password=None):
+
+
+def send_verification_email(user, password=None):
     """
     Sends a verification email to the user with the verification URL using the info email configuration.
     """
     verification_token = user.verification_token
-   
-    verification_url = f"https://dc48k-19fc8ecbc388.herokuapp.com{reverse('accounts:verify-email',  kwargs={'token': str(verification_token)})}"
+
+    verification_url = f"http://localhost:8000/{reverse('accounts:verify-email', kwargs={'token': str(verification_token)})}"
     print(verification_url)
     subject = "Email Verification"
-    html_message = render_to_string('accounts/verification_email.html', {
-        'user': user,
-        'verification_url': verification_url,
-        'password': password,
-    })
+    html_message = render_to_string(
+        "accounts/verification_email.html",
+        {
+            "user": user,
+            "verification_url": verification_url,
+            "password": password,
+        },
+    )
     print("Email message rendered.")
 
     try:
         # Create an email backend using the EMAIL_INFO configuration
         email_backend = EmailBackend(
-            host=settings.EMAIL_INFO['HOST'],
-            port=settings.EMAIL_INFO['PORT'],
-            username=settings.EMAIL_INFO['USER'],
-            password=settings.EMAIL_INFO['PASS'],
-            use_tls=settings.EMAIL_INFO['USE_TLS'] == 'True',
-            use_ssl=settings.EMAIL_INFO['USE_SSL'] == 'True',
+            host=settings.EMAIL_INFO["HOST"],
+            port=settings.EMAIL_INFO["PORT"],
+            username=settings.EMAIL_INFO["USER"],
+            password=settings.EMAIL_INFO["PASS"],
+            use_tls=settings.EMAIL_INFO["USE_TLS"] == "True",
+            use_ssl=settings.EMAIL_INFO["USE_SSL"] == "True",
         )
-        
+
         # Explicitly open the connection
         email_backend.open()
-        
+
         email = EmailMultiAlternatives(
             subject=subject,
             body=html_message,  # This will be used as plain text fallback
-            from_email=settings.EMAIL_INFO['USER'],
+            from_email=settings.EMAIL_INFO["USER"],
             to=[user.email],
-            connection=email_backend
+            connection=email_backend,
         )
         email.attach_alternative(html_message, "text/html")  # Attach the HTML version
-        
+
         # Send the email
         email.send()
         print(f"Verification email sent to {user.email}.")

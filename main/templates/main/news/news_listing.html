@@ -223,7 +223,7 @@
 <main class="main-wrapper">
     
     {% if hero_article and page_obj.number == 1 %}
-    <div class="hero-banner" style="background-image: url('{{ hero_article.featured_image.url }}');">
+    <div class="hero-banner" style="background-image: url('{{ hero_article.featured_image.url }}'), url('{% static 'main/img/info_updates/embassy_government_news.png' %}');">
         <div class="hero-overlay"></div>
         <div class="hero-text-content">
             <h1 class="hero-title">{{ hero_article.title }}</h1>
@@ -275,7 +275,7 @@
     <div class="article-grid">
         {% for article in grid_articles %}
         <article class="article-card">
-            <img src="{{ article.featured_image.url }}" class="card-image" alt="{{ article.title }}">
+            <img src="{% if article.featured_image %}{{ article.featured_image.url }}{% else %}{% static 'main/img/info_updates/embassy_government_news.png' %}{% endif %}" class="card-image" alt="{{ article.title }}" onerror="this.onerror=null;this.src='{% static 'main/img/info_updates/embassy_government_news.png' %}';">
             <div class="card-body">
                 <span class="card-tag">{{ article.category.name }}</span>
                 <h3 class="card-title">{{ article.title }}</h3>
