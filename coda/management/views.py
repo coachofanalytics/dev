@@ -38,6 +38,7 @@ from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 from django.utils import timezone
 from django.utils.decorators import method_decorator
+from management.utils.task_initializer import create_default_tasks_for_user
 from django.utils.text import capfirst
 from django.utils.timezone import make_aware
 from django.views.generic import (CreateView, DeleteView, DetailView, ListView,
@@ -835,59 +836,20 @@ def newtaskcreation(request):
                 )
 
             for act in activitys:
-                # check if activity exist
-                count = Task.objects.filter(
-                    category_id=category, activity_name=act
-                ).count()
-                if count > 0:
-                    des, po, maxpo, maxear = Task.objects.values_list(
-                        "description", "point", "mxpoint", "mxearning"
-                    ).filter(category_id=category, activity_name=act)[0]
+             Task.objects.update_or_create(
+                 employee_id=emp,
+                 category_id=category,
+                 activity_name=act,
+                 defaults={
+                     "groupname_id": group,
+                     "group": group_title,
+                     "description": description,
+                     "point": 0.00,
+                     "mxpoint": mxpoint,
+                     "mxearning": mxearning,
+                 }
+             )
 
-                    if (
-                        Task.objects.filter(
-                            groupname_id=group,
-                            group=group_title,
-                            category_id=category,
-                            activity_name=act,
-                        ).count()
-                        == 0
-                    ):
-                        Task.objects.create(
-                            groupname_id=group,
-                            category_id=category,
-                            employee_id=emp,
-                            activity_name=act,
-                            description=des,
-                            point=0.00,
-                            mxpoint=mxpoint,
-                            mxearning=mxearning,
-                        )
-                    else:
-                        Task.objects.create(
-                            groupname_id=group,
-                            group=group_title,
-                            category_id=category,
-                            employee_id=emp,
-                            activity_name=act,
-                            description=des,
-                            point=0.00,
-                            mxpoint=maxpo,
-                            mxearning=maxear,
-                        )
-
-                else:
-                    Task.objects.create(
-                        groupname_id=group,
-                        group=group_title,
-                        category_id=category,
-                        employee_id=emp,
-                        activity_name=act,
-                        description=description,
-                        point=point,
-                        mxpoint=mxpoint,
-                        mxearning=mxearning,
-                    )
         # return redirect("management:tasks")
         return JsonResponse({"success": True})
     else:
@@ -1233,21 +1195,23 @@ def payslip(request, *args, **kwargs):
     employee = None
 
     if username:
-        # Security: Only allow users to access their own data, unless they're staff/superuser
-        if (
-            request.user.username == username
-            or request.user.is_staff
-            or request.user.is_superuser
-        ):
-            employee = get_object_or_404(User, username=username)
-        else:
-            # Redirect unauthorized users to their own page
-            messages.warning(
-                request, "You can only access your own payroll information."
-            )
-            return redirect(
-                f"{request.path}?username={request.user.username}&pay_type={pay_type or 'usertasks'}"
-            )
+      try:
+          if (
+              request.user.username == username
+              or request.user.is_staff
+              or request.user.is_superuser
+          ):
+              employee = get_object_or_404(User, username=username)
+          else:
+              messages.warning(
+                  request, "You can only access your own payroll information."
+              )
+              return redirect(
+                  f"{request.path}?username={request.user.username}&pay_type={request.GET.get('pay_type', 'usertasks')}"
+              )
+      except Exception as e:
+            print("⚠️ Username lookup failed:", e)
+
 
     request.session["siteurl"] = settings.SITEURL
     today, year, deadline_date, *_ = paytime()
@@ -1292,25 +1256,69 @@ def payslip(request, *args, **kwargs):
                                       paymentconfigurations)
 
         # Get tasks for the selected month/year
-        tasks = (
-            TaskHistory.objects.filter(
-                employee=employee,
-                daf_date__year=selected_year,
-                daf_date__month=selected_month,
-            )
-            if employee
-            else TaskHistory.objects.none()
-        )
+        if Task.objects.filter(employee=employee).count() == 0:
+            create_default_tasks_for_user(employee)
+        if pay_type in ["usertasks", "usertaskhistory"]:
+            if employee:
+                tasks = Task.objects.filter(employee=employee)
+
+            else:
+                tasks = Task.objects.none()
+        
+        else:
+            # TaskHistory for selected month/year
+            if employee:
+                tasks = TaskHistory.objects.filter(
+                    employee=employee,
+                    daf_date__year=selected_year,
+                    daf_date__month=selected_month,
+                )
+            else:
+                tasks = TaskHistory.objects.none()
+        
+        # ✅ Debug AFTER assignment (correct place)
+        print("🔥 TASKS QUERY:", tasks.query)
+        print("🔥 EMPLOYEE:", employee)
+        print("🔥 TASK COUNT:", tasks.count())
+        print("🔥 USER ID:", request.user.id)
+        # ================= TOTAL CALCULATION =================
+        total_points = sum(float(t.point or 0) for t in tasks)
+        max_points = sum(float(t.mxpoint or 0) for t in tasks)
+
+        balance_points = max_points - total_points
+
+        if balance_points < 0:
+            balance_points = 0
+        
+        point_percentage = 0
+        if max_points > 0:
+            point_percentage = (total_points / max_points) * 100
+
+        # # ================= TOTAL POINTS =================
+        # if tasks.exists():
+        #     total_points, max_points = compute_total_points(tasks)
+        # else:
+        #     total_points = 0
+        #     max_points = 0
+
+        # point_percentage = 0
+
+        # if max_points > 0:
+        #     point_percentage = (total_points / max_points) * 100
+    
+        print("🔥 TOTAL:", total_points)
+        print("🔥 MAX:", max_points)
+        print("🔥 BALANCE:", balance_points)
 
         # Calculate pay using legacy methods
         base_pay = {
             "num_tasks": tasks.count(),
-            "points": compute_total_points(tasks) if tasks.exists() else 0,
-            "max_points": 0,  # Will be calculated from tasks
-            "point_percentage": 0,
+            "points": total_points,
+            "max_points": max_points,  # Will be calculated from tasks
+            "point_percentage": point_percentage,
             "goal_amount": Decimal("0"),
             "pay_balance": Decimal("0"),
-            "points_balance": 0,
+            "pointsbalance": balance_points,
             "total": Decimal("0"),
         }
 
@@ -1446,15 +1454,15 @@ def payslip(request, *args, **kwargs):
         "num_tasks": base_pay.get("num_tasks", 0),
         "tasks": tasks,
         "TaskHistoryFilter": myfilter,
-        "Points": base_pay.get("points", 0),
-        "MaxPoints": base_pay.get("max_points", 0),
+        "Points": total_points,
+        "MaxPoints": max_points,
         "point_percentage": base_pay.get("point_percentage", Decimal("0")),
         "pay": base_pay.get(
             "goal_amount", Decimal("0")
         ),  # 'pay' in old context was GoalAmount
         "GoalAmount": base_pay.get("goal_amount", Decimal("0")),
         "paybalance": base_pay.get("pay_balance", Decimal("0")),
-        "pointsbalance": base_pay.get("points_balance", Decimal("0")),
+        "pointsbalance": balance_points,
         "total_pay": base_pay.get("total", Decimal("0")),
         "loan": deductions.get("loan_payment", Decimal("0")),
         "net": summary.get("net_pay", Decimal("0")),
@@ -1489,7 +1497,7 @@ def payslip(request, *args, **kwargs):
         # Include full payslip_data for future use
         "payslip_data": payslip_data,
     }
-
+    print("🔥 CONTEXT BALANCE:", balance_points)
     # Dynamic Redirection Logic
     if pay_type in ["payslip", "task_payslip"]:
         return render(request, "management/daf/payslip.html", context)
@@ -1565,19 +1573,20 @@ class TaskDetailView(DetailView):
         return Task.objects.filter(pk=pk)
 
 
-# class UserTaskListView(ListView):
-#     model = Task
-#     context_object_name = "tasks"
-#     template_name = "management/daf/employee_tasks.html"
+from accounts.models import CustomerUser
 
-#     # paginate_by = 5
-#     def get_queryset(self):
-#         # request=self.request
-#         # user=self.kwargs.get('user')
-#         user = get_object_or_404(User, username=self.kwargs.get("username"))
-#         # tasks=Task.objects.all().filter(employee=user)
+class UserTaskListView(ListView):
+    model = Task
+    context_object_name = "tasks"
+    template_name = "management/daf/employee_tasks.html"
 
-#         return Task.objects.all().filter(employee=user)
+    def get_queryset(self):
+        user = get_object_or_404(
+            CustomerUser,
+            username=self.kwargs.get("username")
+        )
+        return Task.objects.filter(employee=user)
+
 
 
 @method_decorator(login_required, name="dispatch")
@@ -1764,7 +1773,7 @@ def newevidence(request, taskid):
                 request,
                 "Your evidence is being processed. You will be notified upon completion.",
             )
-            return redirect("management:user_evidence", username=request.user.username)
+            return redirect("management:user_evidence")
         else:
             messages.error(request, "Please correct the errors in the form.")
             return render(request, "management/daf/evidence_form.html", {"form": form})
@@ -1872,6 +1881,29 @@ def evidence_update_view(request, id, *args, **kwargs):
     message = "Edit Evidence"
     context = {"form": form, "message": message}
     return render(request, "main/snippets_templates/generalform.html", context)
+
+from django.shortcuts import get_object_or_404, redirect
+from django.contrib.auth.decorators import login_required
+from django.contrib import messages
+from django.urls import reverse
+
+@login_required
+def evidence_delete(request, pk):
+    """Delete evidence link"""
+    evidence = get_object_or_404(TaskLinks, pk=pk)  # Replace 'Evidence' with your model name
+    
+    # Optional: Check permissions - only allow certain users to delete
+    if request.user.is_superuser or request.user == evidence.added_by:
+        evidence.delete()
+        messages.success(request, 'Evidence deleted successfully!')
+    else:
+        messages.error(request, 'You do not have permission to delete this evidence.')
+    
+    # Redirect back to the evidence list page
+    # Adjust the redirect URL as needed
+    return redirect('management:user_evidence')
+
+
 
 
 # =============================EMPLOYEE SESSIONS========================================
