@@ -138,32 +138,22 @@
             </div>
 
             <div class="form-group">
-              <label for="{{ form.description.id_for_label }}">
-                What is this link/Evidence about
-                {% if form.description.field.required %}<span class="text-danger">*</span>{% endif %}
-              </label>
+             
               {{ form.description|as_crispy_field }}
             </div>
 
             <div class="form-group">
-              <label for="{{ form.link.id_for_label }}">
-                Upload link/paste your link below
-                {% if form.link.field.required %}<span class="text-danger">*</span>{% endif %}
-              </label>
+            
               {{ form.link|as_crispy_field }}
             </div>
 
             <div class="form-group">
-              <label for="{{ form.linkpassword.id_for_label }}">
-                Provide Password if necessary
-              </label>
+              
               {{ form.linkpassword|as_crispy_field }}
             </div>
 
             <div class="form-group">
-              <label for="{{ form.doc.id_for_label }}">
-                Upload file/document if possible
-              </label>
+              
               {{ form.doc|as_crispy_field }}
               <small class="form-text text-muted">
                 Upload a file or document (optional, if link is not available)

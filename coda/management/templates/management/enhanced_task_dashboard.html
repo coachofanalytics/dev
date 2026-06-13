@@ -297,6 +297,9 @@
                                         <a href="{% url 'management:user_session' user.username %}" class="btn btn-outline-warning btn-lg">
                                             🎓 My Sessions
                                         </a>
+                                        <a href="{% url 'management:user_pay' %}?username={{ user.username }}&pay_type=usertaskhistory" class="btn btn-outline-warning btn-lg">
+                                            💰 My DAF (Classic)
+                                        </a>
                                         {% if user.is_staff %}
                                         <a href="{% url 'management:user_pay' %}?username={{ user.username }}&pay_type=usertasks" class="btn btn-outline-warning btn-lg">
                                             💰 My DAF (Current)
