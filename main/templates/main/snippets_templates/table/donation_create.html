@@ -2,55 +2,56 @@
 {% load static %}
 
 {% block content %}
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Add Donation</title>
-    <style>
-        .form-container {
-            background: #fff;
-            padding: 2rem;
-            border-radius: 8px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-            max-width: 400px;
-            margin: 2rem auto;
-        }
-        .form-container h1 {
-            margin-bottom: 1.5rem;
-            color: #333;
-        }
-        .form-container button {
-            background: #007bff;
-            color: #fff;
-            border: none;
-            padding: 0.5rem 1.5rem;
-            border-radius: 4px;
-            cursor: pointer;
-            margin-right: 1rem;
-        }
-        .form-container button:hover {
-            background: #0056b3;
-        }
-        .form-container a {
-            color: #888;
-            text-decoration: none;
-        }
-        .form-container a:hover {
-            text-decoration: underline;
-        }
-    </style>
-</head>
-<body>
-    <div class="form-container">
-        <h1>Add Donation</h1>
-        <form method="post">
+<section class="min-h-screen flex items-center justify-center bg-gradient-to-br from-indigo-50 via-white to-pink-50 py-12">
+    <div class="max-w-2xl w-full p-8 bg-white/95 backdrop-blur rounded-2xl shadow-2xl border border-gray-100 donation-card">
+        <div class="flex items-center gap-4 mb-4">
+            <div class="w-12 h-12 rounded-full bg-brand-green flex items-center justify-center text-white text-xl font-bold">❤</div>
+            <div>
+                <h1 class="text-2xl lg:text-3xl font-extrabold text-gray-900">Make a Donation</h1>
+                <p class="text-sm text-gray-600">Support DC48K's mission — your contribution makes local impact possible.</p>
+            </div>
+        </div>
+
+        <style>
+            .donation-card input, .donation-card textarea { width:100%; padding:0.6rem 0.75rem; border-radius:0.5rem; border:1px solid #e6e6f0; font-size:0.95rem; }
+            .donation-card input:focus, .donation-card textarea:focus { outline:none; box-shadow:0 0 0 6px rgba(10,146,109,0.08); border-color:#0a926d; }
+            .donation-card label { display:block; font-weight:700; font-size:0.75rem; color:#334155; margin-bottom:0.35rem; text-transform:uppercase; letter-spacing:0.08em; }
+            .btn-donate { background: linear-gradient(90deg,#06b6d4,#0a926d); color:white; padding:0.6rem 1.1rem; border-radius:0.6rem; font-weight:800; }
+            .btn-donate:hover { transform:translateY(-1px); box-shadow:0 8px 30px rgba(10,146,109,0.18); }
+        </style>
+
+        <form method="post" class="donation-form space-y-4 mt-4">
             {% csrf_token %}
-            {{ form.as_p }}
-            <button type="submit">Add</button>
-            <a href="{% url 'main:donation' %}">Cancel</a>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                    <label for="id_donor_name">Full name</label>
+                    {{ form.donor_name }}
+                </div>
+                <div>
+                    <label for="id_email">Email</label>
+                    {{ form.email }}
+                </div>
+            </div>
+
+            <div>
+                <label for="id_amount">Amount (e.g., 25.00)</label>
+                {{ form.amount }}
+            </div>
+
+            <div>
+                <label for="id_message">Message (optional)</label>
+                {{ form.message }}
+            </div>
+
+            <div class="flex items-center justify-between pt-2">
+                <a href="{% url 'main:support_page' %}" class="text-sm font-semibold text-gray-600 hover:underline">Back to Support</a>
+                <div class="flex items-center gap-3">
+                    <a href="{% url 'main:donation' %}" class="px-4 py-2 border border-gray-200 rounded-lg text-sm font-semibold text-gray-700 hover:bg-gray-50">Cancel</a>
+                    <button type="submit" class="btn-donate">Donate</button>
+                </div>
+            </div>
         </form>
     </div>
-</body>
-</html>
+</section>
+
 {% endblock %}

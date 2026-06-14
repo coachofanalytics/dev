@@ -2067,3 +2067,33 @@ def confirm_email(request, token):
     return render(request, 'main/news/subscription_confirmed.html', {
         'email': subscriber.email
     })
+def support_page(request):
+    """Render the support page."""
+    return render(request, 'main/support/support_page.html')
+
+
+from .forms import VolunteerForm
+from .models import volunteer as Volunteer
+
+
+def join_team(request):
+    if request.method == 'POST':
+        form = VolunteerForm(request.POST)
+        if form.is_valid():
+            # Save the volunteer instance and redirect to success
+            form.save()
+            return redirect("main:volunteer_success")
+    else:
+        form = VolunteerForm()
+
+    return render(request, 'main/volunteer/join_team.html', {'form': form})
+
+
+def volunteer_success(request):
+    return render(request, 'main/volunteer/volunteer_success.html')
+        
+def submit_join(request):
+
+    return render(request, 'main/volunteer/join_team.html', {
+        'form': VolunteerForm()
+    })
