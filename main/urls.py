@@ -8,6 +8,7 @@ app_name = 'main'
 urlpatterns = [
     path('', views.layout, name='layout'),
     path('team/', views.team_list, name='team_view'),
+    path('support/', views.support_page, name='support_page'),
     path('history',views.History, name ='history'),
     path('services/', views.service_list, name='service_list'),
     path('data/healthcare-info/', views.healthcare_info, name='healthcare_info'),
@@ -15,7 +16,9 @@ urlpatterns = [
     path('healthcare/insurance-support/api/recommend/', views.ai_recommendation_api, name='ai_recommendation_api'),
     path('healthcare/insurance-support/api/inquiry/', views.submit_expert_inquiry, name='submit_expert_inquiry'),
     path('healthcare/insurance-support/download-csv/', views.download_comparison_csv, name='download_comparison_csv'),
-
+    path('join_team/', views.join_team, name='join_team'),
+    path('join_team/submit/', views.submit_join, name='submit_join'),
+    path('volunteer_success/', views.volunteer_success, name='volunteer_success'),
     path('consular-assistance/', views.book_consular_consultation, name='book_consular_consultation'),
 
     path('data/consular/information-updates/', views.consular_information_updates, name='consular_information_updates'),

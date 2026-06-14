@@ -1,0 +1,265 @@
+{% extends "main/base_templates/base.html"%}
+{% block content %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DC48K | Support Ecosystem</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            green: '#0a926d', // Updated to requested hex
+                            darkBlue: '#0a192f',
+                            red: '#cc0000',
+                            lightGray: '#f1f5f9'
+                        }
+                    },
+                    fontFamily: { sans: ['Inter', 'sans-serif'] }
+                }
+            }
+        }
+    </script>
+    <style>
+        body { font-family: 'Inter', sans-serif; scroll-behavior: smooth; }
+        .hero-gradient {
+            background: linear-gradient(135deg, #0a192f 0%, #020617 100%);
+        }
+        .card-pro {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            border: 1px solid #e2e8f0;
+        }
+        .card-pro:hover {
+            transform: translateY(-5px);
+            border-color: #0a926d;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.05);
+        }
+        .btn-red { background-color: #cc0000; transition: all 0.2s; }
+        .btn-red:hover { background-color: #aa0000; transform: scale(1.02); }
+        .nav-link { font-size: 0.7rem; font-weight: 700; letter-spacing: 0.1em; transition: color 0.2s; }
+        .nav-link:hover { color: #dcfce7; }
+
+        /* Compact Chat Animations */
+        #chat-window {
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.1);
+            transform-origin: bottom right;
+        }
+        #chat-window.hidden {
+            display: none;
+            opacity: 0;
+            transform: scale(0.8) translateY(20px);
+        }
+        #chat-window.active {
+            display: flex;
+            opacity: 1;
+            transform: scale(1) translateY(0);
+        }
+        /* Custom scrollbar for chat */
+        #chat-messages::-webkit-scrollbar { width: 4px; }
+        #chat-messages::-webkit-scrollbar-track { background: transparent; }
+        #chat-messages::-webkit-scrollbar-thumb { background: #e2e8f0; border-radius: 10px; }
+    </style>
+</head>
+<body class="bg-brand-lightGray text-slate-900">
+
+   
+
+    <!-- Hero Section -->
+    <section class="hero-gradient pt-48 pb-24 text-center text-white px-6">
+        <div class="max-w-4xl mx-auto">
+            <p class="text-xs font-black uppercase tracking-[0.4em] text-brand-green mb-6">
+                Priority Care Network
+            </p>
+            
+            <h1 class="text-5xl lg:text-7xl font-extrabold leading-tight mb-8 tracking-tight">
+                How Can We<br>Support You?
+            </h1>
+            
+            <p class="text-lg md:text-xl text-slate-400 mb-12 max-w-2xl mx-auto leading-relaxed">
+                DC48K is a mission-driven ecosystem. Whether you're offering your heart, your hands, or your strength, we're here to facilitate the connection.
+            </p>
+
+            <button class="btn-red px-12 py-5 rounded font-black text-xs uppercase tracking-[0.2em] shadow-2xl">
+                Explore The Network
+            </button>
+        </div>
+    </section>
+
+    <!-- Support Cards -->
+    <section class="max-w-7xl mx-auto px-6 lg:px-12 py-24">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+            
+            <!-- Card 1: Donate -->
+            <div class="card-pro bg-white p-12 rounded flex flex-col items-start group">
+                <div class="text-brand-green mb-8 transition-transform group-hover:scale-110">
+                    <i class="fa-solid fa-hand-holding-dollar text-4xl"></i>
+                </div>
+                <h3 class="text-2xl font-extrabold text-brand-darkBlue mb-4">Financial Support<br>Donate Now</h3>
+                <p class="text-slate-500 leading-relaxed text-sm mb-8">
+                    Empower our global mission with direct funding. Your contributions drive immediate local impact and long-term sustainability.
+                </p>
+                <a href="{% url 'main:donation_add' %}" class="mt-auto font-black text-[10px] uppercase tracking-widest text-brand-green border-b-2 border-brand-green hover:text-brand-darkBlue hover:border-brand-darkBlue transition-colors inline-block text-center py-2 px-3">
+                    Make Donation
+                </a>
+            </div>
+
+            <!-- Card 2: Volunteer -->
+            <div class="card-pro bg-white p-12 rounded flex flex-col items-start group">
+                <div class="text-brand-green mb-8 transition-transform group-hover:scale-110">
+                    <i class="fa-solid fa-users-gear text-4xl"></i>
+                </div>
+                <h3 class="text-2xl font-extrabold text-brand-darkBlue mb-4">Join Our Forces<br>Become Volunteer</h3>
+                <p class="text-slate-500 leading-relaxed text-sm mb-8">
+                    Step into a role that matters. DC48K volunteers are the backbone of our community-led initiatives across all territories.
+                </p>
+                <a href="{% url 'main:join_team' %}" class="mt-auto font-black text-[10px] uppercase tracking-widest text-brand-green border-b-2 border-brand-green hover:text-brand-darkBlue hover:border-brand-darkBlue transition-colors">
+                    Join Team
+                </a>
+            </div>
+
+            <!-- Card 3: Get Help -->
+            <div class="card-pro bg-white p-12 rounded flex flex-col items-start group">
+                <div class="text-brand-green mb-8 transition-transform group-hover:scale-110">
+                    <i class="fa-solid fa-circle-info text-4xl"></i>
+                </div>
+                <h3 class="text-2xl font-extrabold text-brand-darkBlue mb-4">Need Assistance?<br>Get Help</h3>
+                <p class="text-slate-500 leading-relaxed text-sm mb-8">
+                    No one walks alone. Access our 24/7 priority help desk, professional resources, and dedicated support systems.
+                </p>
+                <button class="mt-auto font-black text-[10px] uppercase tracking-widest text-brand-green border-b-2 border-brand-green hover:text-brand-darkBlue hover:border-brand-darkBlue transition-colors">
+                    Get Support
+                </button>
+            </div>
+
+        </div>
+    </section>
+
+    <!-- Professional Chat UI (Compact Version) -->
+    <div class="fixed bottom-8 right-8 z-[100] flex flex-col items-end">
+        <!-- Compact Chat Window -->
+        <div id="chat-window" class="hidden flex-col w-[320px] h-[400px] bg-white rounded-2xl shadow-2xl border border-slate-200 overflow-hidden mb-4">
+            <!-- Header -->
+            <div class="bg-brand-green p-4 flex justify-between items-center text-white">
+                <div class="flex items-center gap-3">
+                    <div class="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center">
+                        <i class="fa-solid fa-robot text-sm"></i>
+                    </div>
+                    <div>
+                        <p class="text-xs font-bold leading-none">DC48K Assistant</p>
+                        <div class="flex items-center gap-1 mt-1">
+                            <span class="w-1.5 h-1.5 bg-green-200 rounded-full animate-pulse"></span>
+                            <p class="text-[9px] font-medium opacity-80 uppercase tracking-tighter">Automated Agent</p>
+                        </div>
+                    </div>
+                </div>
+                <button onclick="toggleChat()" class="hover:opacity-60 transition-opacity">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+
+            <!-- Messages Area -->
+            <div id="chat-messages" class="flex-1 p-4 overflow-y-auto bg-slate-50 space-y-3">
+                <div class="flex items-start gap-2">
+                    <div class="bg-white border border-slate-100 p-3 rounded-2xl rounded-tl-none text-[12px] text-slate-700 shadow-sm max-w-[85%] leading-relaxed">
+                        Hello! I am the DC48K automated assistant. How can I help you navigate our support systems?
+                    </div>
+                </div>
+            </div>
+
+            <!-- Input Area -->
+            <div class="p-3 bg-white border-t border-slate-100 flex gap-2">
+                <input type="text" placeholder="Send a message..." class="flex-1 text-xs bg-slate-50 border-none focus:ring-1 focus:ring-brand-green/20 rounded-lg px-3 py-2">
+                <button class="bg-brand-green text-white w-8 h-8 rounded-lg flex items-center justify-center hover:opacity-90 transition-opacity shadow-sm">
+                    <i class="fa-solid fa-paper-plane text-[10px]"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- Toggle Button -->
+        <button onclick="toggleChat()" class="w-16 h-16 bg-brand-green text-white rounded-full shadow-2xl flex items-center justify-center text-2xl hover:scale-105 transition-transform active:scale-95">
+            <i class="fa-solid fa-headset" id="chat-icon"></i>
+        </button>
+    </div>
+
+    <!-- Professional Footer -->
+    <footer class="bg-brand-green pt-24 pb-12 text-white px-6">
+        <div class="max-w-7xl mx-auto">
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-20 mb-20 border-b border-white/20 pb-20">
+                <!-- Brand Story -->
+                <div>
+                    <div class="flex items-center gap-3 mb-8">
+                        <div class="w-10 h-10 bg-white rounded-full overflow-hidden flex items-center justify-center">
+                             <img src="https://flagcdn.com/w80/ke.png" alt="Kenya Flag" class="w-full h-full object-cover">
+                        </div>
+                        <span class="text-3xl font-black uppercase tracking-tighter text-white">DC48K</span>
+                    </div>
+                    <p class="text-white/90 text-sm leading-relaxed max-w-lg font-medium">
+                        We have years of experience working with artists and entertainers across various industries, and we are passionate about helping our clients succeed. Our company is committed to providing personalized services that meet clients' needs. We work closely with them to develop customized strategies and plans that help them achieve their goals.
+                    </p>
+                </div>
+
+                <!-- Footer Links -->
+                <div class="grid grid-cols-2 md:grid-cols-3 gap-10">
+                    <div class="flex flex-col space-y-4">
+                        <a href="#" class="text-xs font-bold hover:text-white/60 transition-colors uppercase tracking-widest">Sign In</a>
+                        <a href="#" class="text-xs font-bold hover:text-white/60 transition-colors uppercase tracking-widest">Register</a>
+                        <a href="#" class="text-xs font-bold hover:text-white/60 transition-colors uppercase tracking-widest">Log Out</a>
+                    </div>
+                    <div class="flex flex-col space-y-4">
+                        <a href="#" class="text-xs font-bold hover:text-white/60 transition-colors uppercase tracking-widest">Our Story</a>
+                        <a href="#" class="text-xs font-bold hover:text-white/60 transition-colors uppercase tracking-widest">Why DC48K</a>
+                        <a href="#" class="text-xs font-bold hover:text-white/60 transition-colors uppercase tracking-widest">Contacts</a>
+                        <a href="#" class="text-xs font-bold hover:text-white/60 transition-colors uppercase tracking-widest">FAQ</a>
+                    </div>
+                    <div class="flex flex-col space-y-4">
+                        <a href="#" class="text-xs font-bold hover:text-white/60 transition-colors uppercase tracking-widest">Student Support</a>
+                        <a href="#" class="text-xs font-bold hover:text-white/60 transition-colors uppercase tracking-widest">Welfare</a>
+                        <a href="#" class="text-xs font-bold hover:text-white/60 transition-colors uppercase tracking-widest">Privacy Policy</a>
+                        <a href="#" class="text-xs font-bold hover:text-white/60 transition-colors uppercase tracking-widest">Terms Of Use</a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Bottom Bar -->
+            <div class="pt-10 flex justify-between items-center text-[10px] font-black uppercase tracking-[0.2em] text-white/60">
+                <p>&copy; 2026 DC48K</p>
+                <div class="flex gap-4">
+                    <a href="#" class="hover:text-white transition-colors">Copyright</a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        function toggleMenu() {
+            const menu = document.getElementById('mobileMenu');
+            menu.classList.toggle('hidden');
+        }
+
+        function toggleChat() {
+            const chatWindow = document.getElementById('chat-window');
+            const icon = document.getElementById('chat-icon');
+            
+            if (chatWindow.classList.contains('hidden')) {
+                chatWindow.classList.remove('hidden');
+                setTimeout(() => chatWindow.classList.add('active'), 10);
+                icon.className = 'fa-solid fa-chevron-down';
+            } else {
+                chatWindow.classList.remove('active');
+                setTimeout(() => chatWindow.classList.add('hidden'), 400);
+                icon.className = 'fa-solid fa-headset';
+            }
+        }
+    </script>
+</body>
+</html>
+{% endblock content %}

@@ -1,0 +1,60 @@
+{% extends "main/base_templates/base.html" %}
+{% load static %}
+
+{% block content %}
+<section class="min-h-screen flex items-center justify-center bg-gradient-to-br from-green-50 via-white to-indigo-50 py-12">
+  <div class="max-w-2xl w-full p-8 bg-white rounded-2xl shadow-lg border">
+    <div class="flex items-center gap-4 mb-6">
+      <div class="w-12 h-12 rounded-full bg-brand-green flex items-center justify-center text-white text-xl font-bold">V</div>
+      <div>
+        <h1 class="text-2xl font-extrabold text-gray-900">Join Our Team</h1>
+        <p class="text-sm text-gray-600">Complete the form below to volunteer with DC48K.</p>
+      </div>
+    </div>
+
+    <form method="post" class="space-y-4">
+      {% csrf_token %}
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div>
+          <label class="block text-xs font-bold text-gray-700 uppercase mb-1" for="id_first_name">First name</label>
+          {{ form.first_name }}
+        </div>
+        <div>
+          <label class="block text-xs font-bold text-gray-700 uppercase mb-1" for="id_last_name">Last name</label>
+          {{ form.last_name }}
+        </div>
+      </div>
+
+      <div>
+        <label class="block text-xs font-bold text-gray-700 uppercase mb-1" for="id_email">Email</label>
+        {{ form.email }}
+      </div>
+
+      <div>
+        <label class="block text-xs font-bold text-gray-700 uppercase mb-1" for="id_phone_number">Phone (optional)</label>
+        {{ form.phone_number }}
+      </div>
+
+      <div>
+        <label class="block text-xs font-bold text-gray-700 uppercase mb-1" for="id_territory">Territory (optional)</label>
+        {{ form.territory }}
+      </div>
+
+      <div>
+        <label class="block text-xs font-bold text-gray-700 uppercase mb-1" for="id_skills">Skills</label>
+        {{ form.skills }}
+      </div>
+
+      <div>
+        <label class="block text-xs font-bold text-gray-700 uppercase mb-1" for="id_motivation">Why do you want to volunteer?</label>
+        {{ form.motivation }}
+      </div>
+
+      <div class="flex items-center justify-between pt-2">
+        <a href="{% url 'main:support_page' %}" class="text-sm font-semibold text-gray-600 hover:underline">Back</a>
+        <button type="submit" class="px-4 py-2 bg-brand-green text-white font-bold rounded-lg shadow">Submit</button>
+      </div>
+    </form>
+  </div>
+</section>
+{% endblock %}

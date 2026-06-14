@@ -7,6 +7,7 @@ from .models import AppointmentRequest
 from .models import (
     ContactMessage, Scholarship, Governance, NewsArticle,TrainingCourse
 )
+from .models import volunteer
 
 class GovernanceForm(forms.ModelForm):
     """
@@ -344,3 +345,18 @@ class ArticleForm(forms.ModelForm):
             'content': forms.Textarea(attrs={'rows': 10}),
             'ai_summary': forms.Textarea(attrs={'rows': 3}),
         }
+class VolunteerForm(forms.ModelForm):
+    first_name = forms.CharField(max_length=100)
+    last_name = forms.CharField(max_length=100)
+    email = forms.EmailField()
+    phone_number = forms.CharField(max_length=15, required=False)
+    territory = forms.CharField(max_length=100, required=False)
+    skills = forms.CharField(widget=forms.Textarea, required=False)
+    motivation = forms.CharField(widget=forms.Textarea, required=False)
+
+    class Meta:
+        model = volunteer
+        fields = [
+            'first_name', 'last_name', 'email', 'phone_number',
+            'territory', 'skills', 'motivation'
+        ]
