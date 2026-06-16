@@ -97,6 +97,7 @@ urlpatterns = [
     path("accounts/", include("accounts.urls")),
     path("finance/", include("finance.urls"), name="finance"),
     path('communities/', include('main.urls_communities')),
+    path('document_processing/', include('document_processing.urls', namespace='document_processing')),
 
     path('accounts/social/custom_login/', account_views.custom_social_login, name='custom_social_login'),
     path('social_accounts/signup/', account_views.join),

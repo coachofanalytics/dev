@@ -20,6 +20,7 @@ SECRET_KEY = os.environ.get("SECRET_KEY") or "!cxl7yhjsl00964n=#e-=xblp4u!hbajo2
 
 # Default to False unless explicitly enabled via environment variable.
 DEBUG = os.environ.get("DEBUG", "False") == "True"
+DEBUG = True
 
 SECURE_SSL_REDIRECT = False
 
@@ -68,6 +69,21 @@ INSTALLED_APPS = [
 
 ]
 
+MIDDLEWARE = [
+    "django.middleware.security.SecurityMiddleware",
+    "django.contrib.sessions.middleware.SessionMiddleware",
+    "django.middleware.common.CommonMiddleware",
+    "django.middleware.csrf.CsrfViewMiddleware",
+    "django.contrib.auth.middleware.AuthenticationMiddleware",
+    "django.contrib.messages.middleware.MessageMiddleware",
+    "django.middleware.clickjacking.XFrameOptionsMiddleware",
+    "whitenoise.middleware.WhiteNoiseMiddleware",
+    'allauth.account.middleware.AccountMiddleware',
+    # 'Middleware.MiddlewareFile.MailMiddleware'
+    #'debug_toolbar.middleware.DebugToolbarMiddleware',
+
+]
+
 if DEBUG:
     try:
         import debug_toolbar
@@ -88,21 +104,6 @@ CRONJOBS = [
     # ("*/1 * * * *", "coda_project.cron.my_backup"),
     ("* * * * *", "application.msg_send_cron.SendMsgApplicatUser"),
     ("*/5 * * * *", "management.cron.advertisement"),
-]
-
-MIDDLEWARE = [
-    "django.middleware.security.SecurityMiddleware",
-    "django.contrib.sessions.middleware.SessionMiddleware",
-    "django.middleware.common.CommonMiddleware",
-    "django.middleware.csrf.CsrfViewMiddleware",
-    "django.contrib.auth.middleware.AuthenticationMiddleware",
-    "django.contrib.messages.middleware.MessageMiddleware",
-    "django.middleware.clickjacking.XFrameOptionsMiddleware",
-    "whitenoise.middleware.WhiteNoiseMiddleware",
-    'allauth.account.middleware.AccountMiddleware',
-    # 'Middleware.MiddlewareFile.MailMiddleware'
-    #'debug_toolbar.middleware.DebugToolbarMiddleware',
-
 ]
 
 CSRF_COOKIE_SECURE = False
