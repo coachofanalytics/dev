@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+        .container { max-width: 600px; margin: 0 auto; background: #f9f9f9; }
+        .header { background: #4A902C; color: white; padding: 30px; text-align: center; }
+        .header h1 { margin: 0; font-size: 28px; }
+        .content { padding: 30px; background: white; }
+        .summary-box { background: #f5f5f5; padding: 20px; border-left: 4px solid #4A902C; margin: 20px 0; }
+        .footer { background: #333; color: white; padding: 20px; text-align: center; font-size: 12px; }
+        .hotline { background: #dc3545; color: white; padding: 15px; text-align: center; margin: 20px 0; }
+        .hotline a { color: white; font-weight: bold; text-decoration: none; font-size: 18px; }
+        .signature { margin-top: 30px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🙏 Thank You for Contacting Us</h1>
+        </div>
+        
+        <div class="content">
+            <p>Dear <strong>{{ inquiry.full_name }}</strong>,</p>
+            
+            <p>Thank you for reaching out to the Diaspora County 48 Insurance Support team. We have received your inquiry and one of our experts will get back to you within <strong>24 hours</strong>.</p>
+            
+            <div class="summary-box">
+                <h3 style="margin-top: 0; color: #4A902C;">📋 Your Inquiry Summary</h3>
+                <p><strong>Date:</strong> {{ inquiry.created_at|date:"F j, Y - g:i A" }}</p>
+                {% if inquiry.interested_plan %}
+                <p><strong>Plan of Interest:</strong> {{ inquiry.interested_plan.provider_name }} {{ inquiry.interested_plan.plan_name }}</p>
+                {% endif %}
+                <p><strong>Your Question:</strong></p>
+                <p style="background: #fff; padding: 10px; border: 1px solid #ddd;">"{{ inquiry.question }}"</p>
+            </div>
+            
+            {% if inquiry.get_priority == "URGENT" %}
+            <div class="hotline">
+                <strong>🚨 URGENT: You indicated this is an emergency</strong><br>
+                If you need immediate assistance, please call our 24/7 emergency hotline:<br>
+                <a href="tel:+1234567890">📞 +1 (234) 567-890</a>
+            </div>
+            {% endif %}
+            
+            <h3 style="color: #4A902C;">⏰ What Happens Next:</h3>
+            <ol>
+                <li>An insurance expert will review your inquiry within 24 hours</li>
+                <li>You'll receive a personalized response via email</li>
+                <li>If needed, we may schedule a phone consultation</li>
+            </ol>
+            
+            <p>If you have any additional information to add, simply reply to this email.</p>
+            
+            <div class="signature">
+                <p>Best regards,<br>
+                <strong>The Insurance Support Team</strong><br>
+                Diaspora County 48</p>
+            </div>
+        </div>
+        
+        <div class="footer">
+            <p>© {% now "Y" %} Diaspora County 48. All rights reserved.</p>
+            <p style="font-size: 11px;">This is an automated response. Please do not reply to this email.</p>
+        </div>
+    </div>
+</body>
+</html>

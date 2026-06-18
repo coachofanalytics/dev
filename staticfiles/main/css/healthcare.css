@@ -1,0 +1,139 @@
+/* Healthcare page styles extracted from template */
+.text-brand-blue { color: #1e40af; }
+.bg-brand-blue { background-color: #1e40af; }
+.text-brand-green { color: #0a926d; }
+.bg-brand-green { background-color: #0a926d; }
+.text-brand-red { color: #cc0000; }
+.bg-brand-red { background-color: #cc0000; }
+.main-heading { font-weight: 900; }
+.service-block { margin-bottom: 4rem; padding-top: 2rem; padding-bottom: 2rem; }
+.service-list li { position: relative; padding-left: 1.5rem; margin-bottom: 0.5rem; }
+.service-list li::before { content: ''; position: absolute; left: 0; top: 0.5rem; width: 0.5rem; height: 0.5rem; background-color: #cc0000; border-radius: 50%; }
+.loading-placeholder { min-height: 280px; background-color: #e5e7eb; display: flex; align-items: center; justify-content: center; color: #6b7280; font-weight: 600; }
+@keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+.animate-pulse-custom { animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
+.hero-image-container { overflow: hidden; display: flex; align-items: center; justify-content: center; }
+.hero-image-container img { width: 100%; height: 100%; object-fit: cover; }
+
+/* Make the visible portion of the hero image align to the bottom so the
+	 image appears to touch the bottom edge of the green header. Keep this
+	 behavior only on wider viewports so stacking on mobile is preserved. */
+@media (min-width: 768px) {
+	.healthcare-page > header .hero-image-container {
+		/* remove bottom padding added by template classes so image can reach the edge */
+		padding-bottom: 0 !important;
+		padding-top: 0 !important;
+	}
+
+	/* Align the cropping area of the cover image to the bottom */
+	.healthcare-page > header .hero-image-container img {
+		object-position: center bottom !important;
+		display: block;
+	}
+}
+@media (max-width: 768px) { .main-heading { font-size: 2rem; } }
+
+/* Small vertical gap between the hero header and the mission section */
+
+/* ============ BREADCRUMB NAVIGATION ============ */
+.breadcrumb-nav { 
+    background: #f0f9ff; 
+    border-bottom: 1px solid #bfdbfe; 
+    padding: 1.25rem 0; 
+    margin: 2rem 0; 
+    position: relative; 
+    z-index: 5;
+}
+.breadcrumb-container { 
+    max-width: 80rem; 
+    margin: 0 auto; 
+    padding: 0 1.5rem; 
+}
+.breadcrumb-list { 
+    display: flex; 
+    align-items: center; 
+    gap: 1rem; 
+    list-style: none; 
+    margin: 0; 
+    padding: 0.5rem 0; 
+    flex-wrap: wrap;
+    justify-content: flex-start;
+}
+.breadcrumb-item { 
+    display: flex; 
+    align-items: center; 
+    gap: 0.5rem;
+}
+.breadcrumb-item a { 
+    color: #2563eb; 
+    text-decoration: none; 
+    font-weight: 600; 
+    font-size: 0.95rem; 
+    transition: color 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+}
+.breadcrumb-item a:hover { 
+    color: #1e40af; 
+    text-decoration: underline; 
+}
+.breadcrumb-item.active { 
+    color: #1a3a2a; 
+    font-weight: 700; 
+    font-size: 0.95rem;
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+}
+.breadcrumb-item.completed a { 
+    color: #16a34a; 
+}
+.breadcrumb-item.completed a:hover { 
+    color: #15803d; 
+}
+.breadcrumb-separator { 
+    color: #94a3b8; 
+    font-weight: 600;
+    margin: 0 0.25rem;
+}
+.breadcrumb-badge { 
+    display: inline-flex; 
+    align-items: center; 
+    justify-content: center; 
+    width: 24px; 
+    height: 24px; 
+    border-radius: 50%; 
+    font-size: 0.75rem; 
+    font-weight: 700; 
+    flex-shrink: 0;
+    min-width: 24px;
+}
+.breadcrumb-item.active .breadcrumb-badge { 
+    background: #2563eb; 
+    color: #fff; 
+}
+.breadcrumb-item.completed .breadcrumb-badge { 
+    background: #16a34a; 
+    color: #fff; 
+}
+
+/* Responsive breadcrumb */
+@media (max-width: 768px) {
+    .breadcrumb-list { 
+        gap: 0.5rem;
+        font-size: 0.85rem;
+    }
+    .breadcrumb-badge { 
+        width: 20px; 
+        height: 20px;
+        font-size: 0.7rem;
+    }
+    .breadcrumb-item a,
+    .breadcrumb-item.active { 
+        font-size: 0.85rem; 
+    }
+}
+.healthcare-page > header + section {
+	margin-top: 2.5rem; /* add space between hero and mission */
+}

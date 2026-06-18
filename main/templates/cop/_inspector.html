@@ -1,0 +1,40 @@
+<h2>Inspector</h2>
+<p class="muted">Audit snapshots, templates, and signature events.</p>
+
+{% if selected_package %}
+  <div class="row" style="margin-bottom: 12px;">
+    <div>
+      <strong>Package #{{ selected_package.id }}</strong>
+      <p class="muted" style="margin: 6px 0 0;">State: {{ selected_package.state }}</p>
+    </div>
+    <span class="badge" data-state="{{ selected_package.state }}">{{ selected_package.state }}</span>
+  </div>
+
+  <h3>Documents</h3>
+  <div class="list">
+    {% for doc in selected_documents %}
+      <div class="item">
+        <strong>Template v{{ doc.contract_template_version.version }}</strong>
+        <div style="margin-top: 10px;">
+          {{ doc.html_snapshot|safe }}
+        </div>
+      </div>
+    {% empty %}
+      <p class="muted">No documents found for this package.</p>
+    {% endfor %}
+  </div>
+
+  <h3 style="margin-top: 20px;">Audit Trail</h3>
+  <div class="list">
+    {% for event in selected_events %}
+      <div class="item">
+        <strong>{{ event.event_type }}</strong>
+        <p class="muted" style="margin: 6px 0 0;">{{ event.created_at }}</p>
+      </div>
+    {% empty %}
+      <p class="muted">No audit events.</p>
+    {% endfor %}
+  </div>
+{% else %}
+  <p class="muted">Select a package to inspect.</p>
+{% endif %}

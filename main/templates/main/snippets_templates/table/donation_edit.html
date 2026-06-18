@@ -1,0 +1,55 @@
+{% extends "main/base_templates/base.html" %}
+{% load static %}
+
+{% block content %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Edit Donation</title>
+</head>
+<body>
+    <h1>Edit Donation</h1>
+    <form method="post" class="form-container">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit" class="action-btn edit-btn">Save</button>
+        <a href="{% url 'main:donation' %}" class="action-btn cancel-btn">Cancel</a>
+    </form>
+    <style>
+        .form-container {
+            background: #fff;
+            padding: 2rem;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            max-width: 400px;
+            margin: 2rem auto;
+        }
+        .action-btn {
+            display: inline-block;
+            padding: 6px 14px;
+            border-radius: 4px;
+            color: #fff;
+            text-decoration: none;
+            margin-right: 4px;
+            font-size: 0.95em;
+            border: none;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        .edit-btn {
+            background: #007bff;
+        }
+        .edit-btn:hover {
+            background: #0056b3;
+        }
+        .cancel-btn {
+            background: #6c757d;
+        }
+        .cancel-btn:hover {
+            background: #343a40;
+        }
+    </style>
+</body>
+</html>
+{% endblock %}

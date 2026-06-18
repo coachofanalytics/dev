@@ -1,0 +1,62 @@
+{% extends "main/base_templates/base.html" %}
+{% load static %}
+
+{% block content %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Donation Details</title>
+    <style>
+        .detail-container {
+            background: #fff;
+            padding: 2rem;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            max-width: 500px;
+            margin: 2rem auto;
+        }
+        .detail-container h1 {
+            margin-bottom: 1.5rem;
+            color: #333;
+        }
+        .detail-row {
+            margin-bottom: 1rem;
+        }
+        .detail-label {
+            font-weight: bold;
+            color: #555;
+        }
+        .detail-value {
+            margin-left: 1rem;
+            color: #222;
+        }
+        .back-btn {
+            display: inline-block;
+            margin-top: 1.5rem;
+            background: #007bff;
+            color: #fff;
+            padding: 8px 18px;
+            border-radius: 4px;
+            text-decoration: none;
+            font-weight: bold;
+            transition: background 0.2s;
+        }
+        .back-btn:hover {
+            background: #0056b3;
+        }
+    </style>
+</head>
+<body>
+    <div class="detail-container">
+        <h1>Donation Details</h1>
+        <div class="detail-row"><span class="detail-label">Donor Name:</span><span class="detail-value">{{ object.donor_name }}</span></div>
+        <div class="detail-row"><span class="detail-label">Email:</span><span class="detail-value">{{ object.email }}</span></div>
+        <div class="detail-row"><span class="detail-label">Amount:</span><span class="detail-value">{{ object.amount }}</span></div>
+        <div class="detail-row"><span class="detail-label">Message:</span><span class="detail-value">{{ object.message|default:"—" }}</span></div>
+        <div class="detail-row"><span class="detail-label">Date:</span><span class="detail-value">{{ object.created_at|date:"M d, Y H:i" }}</span></div>
+        <a href="{% url 'main:donation' %}" class="back-btn">Back to List</a>
+    </div>
+</body>
+</html>
+{% endblock %}

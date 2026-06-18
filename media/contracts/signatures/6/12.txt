@@ -1,0 +1,4 @@
+signer=Jorden Riddle
+signed_at=2026-05-20T07:32:09.693289+00:00
+ip_address=127.0.0.1
+method=WEB

@@ -1,0 +1,15 @@
+{%extends "main/base_templates/base.html"%}
+
+{% block content %}
+<div class="container">
+    <h2>Add a Account</h2>
+
+    <form method="post">
+        {% csrf_token %}
+        {{ form.as_p }}
+
+        <button type="submit" class="btn btn-success">Save Account</button>
+        <a href="{% url 'accounts:account_list' %}" class="btn btn-secondary">Cancel</a>
+    </form>
+</div>
+{% endblock %}

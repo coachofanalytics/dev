@@ -1,0 +1,184 @@
+{% extends "main/document_services/base_document_services.html" %}
+
+{% block page_title %}Notification Preferences{% endblock %}
+
+{% block content %}
+<div id="notification-preferences-view" class="page-view p-8">
+    <div class="max-w-2xl mx-auto">
+        <div class="flex items-center space-x-4 mb-8">
+            <a href="{% url 'main:document_services_notifications' %}" class="text-blue-600 font-semibold hover:underline">← Back to Notifications</a>
+        </div>
+
+        <h2 class="text-2xl font-bold text-gray-900 mb-8">Notification Preferences</h2>
+
+        <form id="preferences-form" class="space-y-8">
+            <!-- Email Notifications Section -->
+            <div class="border border-gray-200 rounded-lg p-6">
+                <div class="flex items-center justify-between mb-6">
+                    <div>
+                        <h3 class="text-lg font-bold text-gray-900">Email Notifications</h3>
+                        <p class="text-sm text-gray-600 mt-1">Receive updates via email</p>
+                    </div>
+                    <label class="relative inline-flex items-center cursor-pointer">
+                        <input type="checkbox" name="email_enabled" class="sr-only peer" checked>
+                        <div class="w-11 h-6 bg-gray-300 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+                    </label>
+                </div>
+                <div class="space-y-4">
+                    <label class="flex items-center">
+                        <input type="checkbox" name="email_application_updates" class="w-4 h-4 text-blue-600 rounded" checked>
+                        <span class="ml-3 text-gray-700">Application Status Updates</span>
+                    </label>
+                    <label class="flex items-center">
+                        <input type="checkbox" name="email_payment_notifications" class="w-4 h-4 text-blue-600 rounded" checked>
+                        <span class="ml-3 text-gray-700">Payment Notifications</span>
+                    </label>
+                    <label class="flex items-center">
+                        <input type="checkbox" name="email_document_expiry" class="w-4 h-4 text-blue-600 rounded" checked>
+                        <span class="ml-3 text-gray-700">Document Expiry Alerts</span>
+                    </label>
+                    <label class="flex items-center">
+                        <input type="checkbox" name="email_feature_announcements" class="w-4 h-4 text-blue-600 rounded">
+                        <span class="ml-3 text-gray-700">Feature Announcements & Updates</span>
+                    </label>
+                    <label class="flex items-center">
+                        <input type="checkbox" name="email_system_messages" class="w-4 h-4 text-blue-600 rounded" checked>
+                        <span class="ml-3 text-gray-700">System Messages & Maintenance</span>
+                    </label>
+                </div>
+            </div>
+
+            <!-- SMS Notifications Section -->
+            <div class="border border-gray-200 rounded-lg p-6">
+                <div class="flex items-center justify-between mb-6">
+                    <div>
+                        <h3 class="text-lg font-bold text-gray-900">SMS Notifications</h3>
+                        <p class="text-sm text-gray-600 mt-1">Receive urgent updates via text message</p>
+                    </div>
+                    <label class="relative inline-flex items-center cursor-pointer">
+                        <input type="checkbox" name="sms_enabled" class="sr-only peer" checked>
+                        <div class="w-11 h-6 bg-gray-300 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+                    </label>
+                </div>
+                <div class="space-y-4">
+                    <label class="flex items-center">
+                        <input type="checkbox" name="sms_application_approved" class="w-4 h-4 text-blue-600 rounded" checked>
+                        <span class="ml-3 text-gray-700">Application Approved</span>
+                    </label>
+                    <label class="flex items-center">
+                        <input type="checkbox" name="sms_payment_required" class="w-4 h-4 text-blue-600 rounded" checked>
+                        <span class="ml-3 text-gray-700">Payment Required</span>
+                    </label>
+                    <label class="flex items-center">
+                        <input type="checkbox" name="sms_rejected" class="w-4 h-4 text-blue-600 rounded" checked>
+                        <span class="ml-3 text-gray-700">Application Rejected/Requires Correction</span>
+                    </label>
+                </div>
+            </div>
+
+            <!-- In-App Notifications Section -->
+            <div class="border border-gray-200 rounded-lg p-6">
+                <div class="flex items-center justify-between mb-6">
+                    <div>
+                        <h3 class="text-lg font-bold text-gray-900">In-App Notifications</h3>
+                        <p class="text-sm text-gray-600 mt-1">Notifications within the dashboard</p>
+                    </div>
+                    <label class="relative inline-flex items-center cursor-pointer">
+                        <input type="checkbox" name="inapp_enabled" class="sr-only peer" checked>
+                        <div class="w-11 h-6 bg-gray-300 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+                    </label>
+                </div>
+                <div class="space-y-4">
+                    <label class="flex items-center">
+                        <input type="checkbox" name="inapp_all" class="w-4 h-4 text-blue-600 rounded" checked>
+                        <span class="ml-3 text-gray-700">All Notifications</span>
+                    </label>
+                </div>
+            </div>
+
+            <!-- Notification Frequency Section -->
+            <div class="border border-gray-200 rounded-lg p-6">
+                <h3 class="text-lg font-bold text-gray-900 mb-6">Notification Frequency</h3>
+                <div class="space-y-4">
+                    <label class="flex items-center">
+                        <input type="radio" name="frequency" value="instant" class="w-4 h-4 text-blue-600" checked>
+                        <span class="ml-3 text-gray-700">
+                            <span class="font-semibold">Instant</span> - Receive notifications immediately
+                        </span>
+                    </label>
+                    <label class="flex items-center">
+                        <input type="radio" name="frequency" value="daily" class="w-4 h-4 text-blue-600">
+                        <span class="ml-3 text-gray-700">
+                            <span class="font-semibold">Daily Digest</span> - Receive a summary once per day at 9:00 AM
+                        </span>
+                    </label>
+                    <label class="flex items-center">
+                        <input type="radio" name="frequency" value="weekly" class="w-4 h-4 text-blue-600">
+                        <span class="ml-3 text-gray-700">
+                            <span class="font-semibold">Weekly Digest</span> - Receive a summary once per week on Monday
+                        </span>
+                    </label>
+                </div>
+            </div>
+
+            <!-- Do Not Disturb Section -->
+            <div class="border border-gray-200 rounded-lg p-6">
+                <div class="flex items-center justify-between mb-6">
+                    <div>
+                        <h3 class="text-lg font-bold text-gray-900">Do Not Disturb</h3>
+                        <p class="text-sm text-gray-600 mt-1">Pause notifications during certain hours</p>
+                    </div>
+                    <label class="relative inline-flex items-center cursor-pointer">
+                        <input type="checkbox" name="dnd_enabled" class="sr-only peer">
+                        <div class="w-11 h-6 bg-gray-300 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+                    </label>
+                </div>
+                <div class="space-y-4" id="dnd-options" style="display: none;">
+                    <div class="flex items-center space-x-4">
+                        <div>
+                            <label class="text-sm font-medium text-gray-700">From</label>
+                            <input type="time" name="dnd_start" value="22:00" class="mt-1 block w-full border border-gray-300 rounded-lg" disabled>
+                        </div>
+                        <div>
+                            <label class="text-sm font-medium text-gray-700">To</label>
+                            <input type="time" name="dnd_end" value="08:00" class="mt-1 block w-full border border-gray-300 rounded-lg" disabled>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="flex items-center justify-between pt-6 border-t border-gray-200">
+                <a href="{% url 'main:document_services_notifications' %}" class="px-6 py-2 border border-gray-300 rounded-lg text-gray-700 font-semibold hover:bg-gray-50">Cancel</a>
+                <button type="submit" class="px-6 py-2 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700">Save Preferences</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Handle Do Not Disturb toggle
+    const dndCheckbox = document.querySelector('input[name="dnd_enabled"]');
+    const dndOptions = document.getElementById('dnd-options');
+    const dndInputs = dndOptions.querySelectorAll('input[type="time"]');
+
+    dndCheckbox.addEventListener('change', function() {
+        if (this.checked) {
+            dndOptions.style.display = 'block';
+            dndInputs.forEach(input => input.disabled = false);
+        } else {
+            dndOptions.style.display = 'none';
+            dndInputs.forEach(input => input.disabled = true);
+        }
+    });
+
+    // Handle form submission
+    document.getElementById('preferences-form').addEventListener('submit', function(e) {
+        e.preventDefault();
+        showToast('Notification preferences saved successfully!');
+        // Here you would typically send the data to the backend
+    });
+});
+</script>
+{% endblock %}

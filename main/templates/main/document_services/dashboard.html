@@ -1,0 +1,237 @@
+{% extends "main/document_services/base_document_services.html" %}
+
+{% block page_title %}Applications Dashboard{% endblock %}
+
+{% block content %}
+<div id="dashboard-view" class="page-view p-8">
+    <div class="flex justify-between items-center mb-8">
+        <h1 class="text-3xl font-bold text-gray-800">My Applications</h1>
+        <a href="{% url 'main:document_services_application_form' %}" class="bg-blue-600 text-white px-4 py-2 rounded-lg font-bold hover:bg-blue-700 transition">
+            + New Application
+        </a>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+        <div class="bg-white rounded-lg p-6 shadow-sm border border-gray-100">
+            <p class="text-gray-500 text-sm font-medium">Total Applications</p>
+            <p class="text-3xl font-bold text-gray-800 mt-2">6</p>
+        </div>
+        <div class="bg-white rounded-lg p-6 shadow-sm border border-gray-100">
+            <p class="text-gray-500 text-sm font-medium">Pending Review</p>
+            <p class="text-3xl font-bold text-yellow-600 mt-2">1</p>
+        </div>
+        <div class="bg-white rounded-lg p-6 shadow-sm border border-gray-100">
+            <p class="text-gray-500 text-sm font-medium">Completed</p>
+            <p class="text-3xl font-bold text-green-600 mt-2">3</p>
+        </div>
+    </div>
+
+    <div class="bg-white rounded-lg shadow-sm border border-gray-100 p-6 mb-6">
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Search Field</label>
+                <select id="search-field" class="form-input" onchange="filterApplications()">
+                    <option value="">All Fields</option>
+                    <option value="appNo">Application No</option>
+                    <option value="service">Service</option>
+                    <option value="applicant">Applicant</option>
+                </select>
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Search Text</label>
+                <input type="text" id="search-input" class="form-input" placeholder="Enter search term" onkeyup="filterApplications()">
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Filter by Status</label>
+                <select id="status-filter" class="form-input" onchange="filterApplications()">
+                    <option value="">All Status</option>
+                    <option value="Approved">Approved</option>
+                    <option value="Pending">Pending</option>
+                    <option value="Processing">Processing</option>
+                    <option value="Rejected">Rejected</option>
+                </select>
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">&nbsp;</label>
+                <button onclick="document.getElementById('search-input').value = ''; document.getElementById('search-field').value = ''; document.getElementById('status-filter').value = ''; filterApplications();" class="w-full bg-gray-200 text-gray-700 px-4 py-2 rounded font-bold hover:bg-gray-300 transition">
+                    Clear
+                </button>
+            </div>
+        </div>
+
+        <div class="overflow-x-auto">
+            <table class="w-full text-sm">
+                <thead>
+                    <tr class="border-b border-gray-200 bg-gray-50">
+                        <th class="text-left py-3 px-4 font-bold text-gray-700">Application No</th>
+                        <th class="text-left py-3 px-4 font-bold text-gray-700">Service</th>
+                        <th class="text-left py-3 px-4 font-bold text-gray-700">Applicant</th>
+                        <th class="text-left py-3 px-4 font-bold text-gray-700">Status</th>
+                        <th class="text-left py-3 px-4 font-bold text-gray-700">Fee (KES)</th>
+                        <th class="text-left py-3 px-4 font-bold text-gray-700">Submission Date</th>
+                        <th class="text-left py-3 px-4 font-bold text-gray-700">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr class="border-b border-gray-100 hover:bg-blue-50 transition">
+                        <td class="py-4 px-4 font-mono text-blue-600">APP-2026-001</td>
+                        <td class="py-4 px-4">National ID Replacement</td>
+                        <td class="py-4 px-4">George Ndahiro</td>
+                        <td class="py-4 px-4"><span class="status-badge status-approved"><span class="status-dot" style="background-color: #10b981;"></span>Approved</span></td>
+                        <td class="py-4 px-4">1,500</td>
+                        <td class="py-4 px-4">Feb 4, 2026</td>
+                        <td class="py-4 px-4 space-x-2 flex">
+                            <button onclick="downloadDoc('Certificate')" class="text-blue-600 hover:text-blue-800 font-bold" title="Download">
+                                <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                            </button>
+                            <button onclick="refreshStatus('APP-2026-001')" class="text-gray-500 hover:text-gray-700 font-bold" title="Refresh">
+                                <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                            </button>
+                            <button onclick="viewDetails('APP-2026-001', 'National ID Replacement')" class="text-gray-500 hover:text-gray-700 font-bold" title="View">
+                                <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+                            </button>
+                        </td>
+                    </tr>
+                    <tr class="border-b border-gray-100 hover:bg-blue-50 transition">
+                        <td class="py-4 px-4 font-mono text-blue-600">APP-2026-002</td>
+                        <td class="py-4 px-4">Marriage Services</td>
+                        <td class="py-4 px-4">Alice Kipchoge</td>
+                        <td class="py-4 px-4"><span class="status-badge status-pending"><span class="status-dot" style="background-color: #eab308;"></span>Pending</span></td>
+                        <td class="py-4 px-4">2,500</td>
+                        <td class="py-4 px-4">Feb 3, 2026</td>
+                        <td class="py-4 px-4 space-x-2 flex">
+                            <button onclick="downloadDoc('Application Form')" class="text-blue-600 hover:text-blue-800 font-bold" title="Download">
+                                <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                            </button>
+                            <button onclick="refreshStatus('APP-2026-002')" class="text-gray-500 hover:text-gray-700 font-bold" title="Refresh">
+                                <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                            </button>
+                            <button onclick="viewDetails('APP-2026-002', 'Marriage Services')" class="text-gray-500 hover:text-gray-700 font-bold" title="View">
+                                <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+                            </button>
+                        </td>
+                    </tr>
+                    <tr class="border-b border-gray-100 hover:bg-blue-50 transition">
+                        <td class="py-4 px-4 font-mono text-blue-600">APP-2026-003</td>
+                        <td class="py-4 px-4">Birth Certificate</td>
+                        <td class="py-4 px-4">Peter Koech</td>
+                        <td class="py-4 px-4"><span class="status-badge status-processing"><span class="status-dot" style="background-color: #2563eb;"></span>Processing</span></td>
+                        <td class="py-4 px-4">1,200</td>
+                        <td class="py-4 px-4">Feb 2, 2026</td>
+                        <td class="py-4 px-4 space-x-2 flex">
+                            <button onclick="downloadDoc('Application Form')" class="text-blue-600 hover:text-blue-800 font-bold" title="Download">
+                                <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                            </button>
+                            <button onclick="refreshStatus('APP-2026-003')" class="text-gray-500 hover:text-gray-700 font-bold" title="Refresh">
+                                <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                            </button>
+                            <button onclick="viewDetails('APP-2026-003', 'Birth Certificate')" class="text-gray-500 hover:text-gray-700 font-bold" title="View">
+                                <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+                            </button>
+                        </td>
+                    </tr>
+                    <tr class="border-b border-gray-100 hover:bg-blue-50 transition">
+                        <td class="py-4 px-4 font-mono text-blue-600">APP-2026-004</td>
+                        <td class="py-4 px-4">Passport Services</td>
+                        <td class="py-4 px-4">Sarah Mwangi</td>
+                        <td class="py-4 px-4"><span class="status-badge status-rejected"><span class="status-dot" style="background-color: #dc2626;"></span>Rejected</span></td>
+                        <td class="py-4 px-4">3,500</td>
+                        <td class="py-4 px-4">Jan 31, 2026</td>
+                        <td class="py-4 px-4 space-x-2 flex">
+                            <button onclick="downloadDoc('Rejection Notice')" class="text-blue-600 hover:text-blue-800 font-bold" title="Download">
+                                <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                            </button>
+                            <button onclick="refreshStatus('APP-2026-004')" class="text-gray-500 hover:text-gray-700 font-bold" title="Refresh">
+                                <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                            </button>
+                            <button onclick="viewDetails('APP-2026-004', 'Passport Services')" class="text-gray-500 hover:text-gray-700 font-bold" title="View">
+                                <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+                            </button>
+                        </td>
+                    </tr>
+                    <tr class="border-b border-gray-100 hover:bg-blue-50 transition">
+                        <td class="py-4 px-4 font-mono text-blue-600">APP-2026-005</td>
+                        <td class="py-4 px-4">Death Services</td>
+                        <td class="py-4 px-4">John Kipyegon</td>
+                        <td class="py-4 px-4"><span class="status-badge status-approved"><span class="status-dot" style="background-color: #10b981;"></span>Approved</span></td>
+                        <td class="py-4 px-4">800</td>
+                        <td class="py-4 px-4">Jan 28, 2026</td>
+                        <td class="py-4 px-4 space-x-2 flex">
+                            <button onclick="downloadDoc('Death Certificate')" class="text-blue-600 hover:text-blue-800 font-bold" title="Download">
+                                <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                            </button>
+                            <button onclick="refreshStatus('APP-2026-005')" class="text-gray-500 hover:text-gray-700 font-bold" title="Refresh">
+                                <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                            </button>
+                            <button onclick="viewDetails('APP-2026-005', 'Death Services')" class="text-gray-500 hover:text-gray-700 font-bold" title="View">
+                                <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+                            </button>
+                        </td>
+                    </tr>
+                    <tr class="border-b border-gray-100 hover:bg-blue-50 transition">
+                        <td class="py-4 px-4 font-mono text-blue-600">APP-2026-006</td>
+                        <td class="py-4 px-4">Employment Verification</td>
+                        <td class="py-4 px-4">Lucy Kamau</td>
+                        <td class="py-4 px-4"><span class="status-badge status-approved"><span class="status-dot" style="background-color: #10b981;"></span>Approved</span></td>
+                        <td class="py-4 px-4">2,000</td>
+                        <td class="py-4 px-4">Jan 25, 2026</td>
+                        <td class="py-4 px-4 space-x-2 flex">
+                            <button onclick="downloadDoc('Verification Letter')" class="text-blue-600 hover:text-blue-800 font-bold" title="Download">
+                                <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                            </button>
+                            <button onclick="refreshStatus('APP-2026-006')" class="text-gray-500 hover:text-gray-700 font-bold" title="Refresh">
+                                <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                            </button>
+                            <button onclick="viewDetails('APP-2026-006', 'Employment Verification')" class="text-gray-500 hover:text-gray-700 font-bold" title="View">
+                                <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+                            </button>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div id="apps-pagination" class="mt-6 flex justify-between items-center border-t pt-4">
+            <span id="apps-pagination-info" class="text-sm text-gray-600">Showing 1–6 of 6</span>
+            <div id="apps-page-buttons" class="flex gap-2"></div>
+            <div class="space-x-2">
+                <button id="apps-prev" class="bg-gray-100 text-gray-600 px-4 py-2 rounded font-bold hover:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed transition">
+                    ← Previous
+                </button>
+                <button id="apps-next" class="bg-gray-100 text-gray-600 px-4 py-2 rounded font-bold hover:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed transition">
+                    Next →
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Hash navigation handling
+    function handleRouting() {
+        const hash = window.location.hash || '#dashboard';
+        const pageId = hash.replace('#', '') + '-view';
+        
+        document.querySelectorAll('.page-view').forEach(view => {
+            view.style.display = 'none';
+        });
+        
+        const targetView = document.getElementById(pageId);
+        if (targetView) {
+            targetView.style.display = '';
+        }
+
+        document.querySelectorAll('.sidebar-link').forEach(link => {
+            link.classList.remove('active');
+        });
+        
+        const activeLink = document.querySelector(`[href*="${window.location.hash.slice(1)}"]`);
+        if (activeLink) {
+            activeLink.classList.add('active');
+        }
+    }
+
+    window.onhashchange = handleRouting;
+    window.addEventListener('load', handleRouting);
+</script>
+{% endblock %}

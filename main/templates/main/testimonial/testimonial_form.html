@@ -1,0 +1,15 @@
+{% extends "main/base_templates/base.html" %}
+{% block content %}
+
+<h2>{{ title }}</h2>
+
+<form method="POST" enctype="multipart/form-data">
+    {% csrf_token %}
+
+    {{ form.as_p }}
+
+    <button type="submit" class="add-btn">Save</button>
+    <a href="{% url 'testimonial_list' %}" class="action-btn delete-btn">Cancel</a>
+</form>
+
+{% endblock %}

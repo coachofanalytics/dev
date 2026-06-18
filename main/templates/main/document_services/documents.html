@@ -1,0 +1,53 @@
+{% extends "main/document_services/base_document_services.html" %}
+
+{% block page_title %}My Documents{% endblock %}
+
+{% block content %}
+<div id="documents-view" class="page-view p-8">
+    <h1 class="text-3xl font-bold text-gray-800 mb-8">Generated Documents</h1>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div class="bg-white rounded-lg shadow-sm border border-gray-100 p-6 hover:shadow-md transition">
+            <div class="flex items-start mb-4">
+                <div class="w-12 h-12 bg-blue-100 rounded flex items-center justify-center mr-4">
+                    <svg width="24" height="24" fill="currentColor" class="text-blue-600" viewBox="0 0 20 20"><path d="M5.5 13a3.5 3.5 0 01-.369-6.98 4 4 0 117.753-1.3A4.5 4.5 0 1113.5 13H11V9.413l1.293 1.293a1 1 0 001.414-1.414l-3-3a1 1 0 00-1.414 0l-3 3a1 1 0 001.414 1.414L9 9.414V13H5.5z"/></svg>
+                </div>
+                <div class="flex-1">
+                    <h3 class="font-bold text-gray-800">National ID Certificate</h3>
+                    <p class="text-xs text-gray-500">Generated: Feb 4, 2026</p>
+                </div>
+            </div>
+            <p class="text-sm text-gray-600 mb-4">Your official National ID replacement certificate is ready for viewing and download.</p>
+            <div class="flex gap-3">
+                <button onclick="viewDocOnline('National ID Certificate')" class="flex-1 bg-blue-100 text-blue-600 px-4 py-2 rounded font-bold hover:bg-blue-200 transition">
+                    View Online
+                </button>
+                <button onclick="downloadDoc('National ID Certificate')" class="flex-1 bg-blue-600 text-white px-4 py-2 rounded font-bold hover:bg-blue-700 transition">
+                    Download
+                </button>
+            </div>
+        </div>
+
+        <div class="bg-white rounded-lg shadow-sm border border-gray-100 p-6 hover:shadow-md transition">
+            <div class="flex items-start mb-4">
+                <div class="w-12 h-12 bg-green-100 rounded flex items-center justify-center mr-4">
+                    <svg width="24" height="24" fill="currentColor" class="text-green-600" viewBox="0 0 20 20"><path d="M5.5 13a3.5 3.5 0 01-.369-6.98 4 4 0 117.753-1.3A4.5 4.5 0 1113.5 13H11V9.413l1.293 1.293a1 1 0 001.414-1.414l-3-3a1 1 0 00-1.414 0l-3 3a1 1 0 001.414 1.414L9 9.414V13H5.5z"/></svg>
+                </div>
+                <div class="flex-1">
+                    <h3 class="font-bold text-gray-800">Employment Verification Letter</h3>
+                    <p class="text-xs text-gray-500">Generated: Jan 25, 2026</p>
+                </div>
+            </div>
+            <p class="text-sm text-gray-600 mb-4">Your official employment verification document has been successfully prepared and certified.</p>
+            <div class="flex gap-3">
+                <button onclick="viewDocOnline('Employment Verification Letter')" class="flex-1 bg-blue-100 text-blue-600 px-4 py-2 rounded font-bold hover:bg-blue-200 transition">
+                    View Online
+                </button>
+                <button onclick="downloadDoc('Employment Verification Letter')" class="flex-1 bg-blue-600 text-white px-4 py-2 rounded font-bold hover:bg-blue-700 transition">
+                    Download
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

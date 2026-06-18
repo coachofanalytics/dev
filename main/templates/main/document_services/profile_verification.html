@@ -1,0 +1,85 @@
+{% extends "main/document_services/base_document_services.html" %}
+
+{% block page_title %}Profile Verification{% endblock %}
+
+{% block content %}
+<div id="profile-verification-view" class="page-view p-8">
+    <div class="max-w-4xl mx-auto">
+        <div class="mb-6">
+            <a href="{% url 'main:document_services_profile' %}" class="text-blue-600 font-semibold text-sm hover:underline flex items-center">
+                <svg class="mr-1" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M15 19l-7-7 7-7"/></svg>
+                Back to Profile
+            </a>
+        </div>
+
+        <h2 class="text-xl font-bold text-gray-900 mb-2">Profile Verification</h2>
+        <p class="text-gray-600 mb-6">Complete these verification steps to unlock premium features and expedited processing.</p>
+
+        <div class="space-y-6">
+            <div class="bg-white border border-gray-200 rounded-lg shadow-sm overflow-hidden">
+                <div class="bg-gradient-to-r from-green-50 to-emerald-50 border-b border-gray-200 px-6 py-4 flex items-center justify-between">
+                    <div class="flex items-center space-x-3">
+                        <div class="w-10 h-10 bg-green-500 rounded-full flex items-center justify-center">
+                            <svg width="20" height="20" fill="none" stroke="white" stroke-width="3" viewBox="0 0 24 24"><path d="M5 13l4 4L19 7"/></svg>
+                        </div>
+                        <div>
+                            <h3 class="font-bold text-gray-900">Email Verification</h3>
+                            <p class="text-sm text-gray-600">Verified on Feb 10, 2026</p>
+                        </div>
+                    </div>
+                    <span class="text-xs font-bold text-green-600 bg-green-100 px-3 py-1 rounded-full">VERIFIED</span>
+                </div>
+            </div>
+
+            <div class="bg-white border border-gray-200 rounded-lg shadow-sm overflow-hidden">
+                <div class="bg-gradient-to-r from-yellow-50 to-orange-50 border-b border-gray-200 px-6 py-4 flex items-center justify-between">
+                    <div class="flex items-center space-x-3">
+                        <div class="w-10 h-10 bg-yellow-500 rounded-full flex items-center justify-center">
+                            <svg width="20" height="20" fill="none" stroke="white" stroke-width="2" viewBox="0 0 24 24"><path d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                        </div>
+                        <div>
+                            <h3 class="font-bold text-gray-900">Phone Verification</h3>
+                            <p class="text-sm text-gray-600">Confirm your phone number via SMS</p>
+                        </div>
+                    </div>
+                    <span class="text-xs font-bold text-yellow-600 bg-yellow-100 px-3 py-1 rounded-full">PENDING</span>
+                </div>
+                <div class="p-6">
+                    <p class="text-sm text-gray-600 mb-4">We'll send a 6-digit code to <strong>0785072120</strong></p>
+                    <button onclick="showToast('Verification code sent to your phone!')" class="bg-blue-600 text-white px-4 py-2 rounded font-semibold hover:bg-blue-700">Send Verification Code</button>
+                </div>
+            </div>
+
+            <div class="bg-white border border-gray-200 rounded-lg shadow-sm overflow-hidden">
+                <div class="border-b border-gray-200 px-6 py-4 flex items-center justify-between">
+                    <div class="flex items-center space-x-3">
+                        <div class="w-10 h-10 bg-gray-300 rounded-full flex items-center justify-center">
+                            <svg width="20" height="20" fill="none" stroke="white" stroke-width="2" viewBox="0 0 24 24"><path d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                        </div>
+                        <div>
+                            <h3 class="font-bold text-gray-900">Document Upload</h3>
+                            <p class="text-sm text-gray-600">Upload supporting documents for advanced verification</p>
+                        </div>
+                    </div>
+                    <span class="text-xs font-bold text-gray-500 bg-gray-100 px-3 py-1 rounded-full">NOT STARTED</span>
+                </div>
+                <div class="p-6">
+                    <p class="text-sm text-gray-600 mb-4">Upload a clear photo of your National ID (front and back) for enhanced account security.</p>
+                    <button onclick="showToast('Document upload feature coming soon!')" class="bg-gray-100 text-gray-700 px-4 py-2 rounded font-semibold hover:bg-gray-200">Upload Documents</button>
+                </div>
+            </div>
+
+            <div class="bg-gradient-to-r from-purple-50 to-pink-50 border border-purple-200 rounded-lg p-6">
+                <h4 class="font-bold text-gray-900 mb-2">✨ Premium Benefits</h4>
+                <p class="text-sm text-gray-600 mb-4">Complete all verification steps to unlock:</p>
+                <ul class="text-sm text-gray-700 space-y-2 ml-4">
+                    <li>• Priority application processing (50% faster)</li>
+                    <li>• Dedicated customer support</li>
+                    <li>• Advanced document tracking</li>
+                    <li>• Expedited payment options</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

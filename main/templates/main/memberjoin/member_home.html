@@ -1,0 +1,103 @@
+{% extends "main/base_templates/base.html" %}
+{% load static %}
+{% block content %}
+
+<!-- Hero Section -->
+<section class="bg-blue-50 py-16 text-center">
+  <h1 class="text-4xl font-bold text-blue-800">Join Diaspora County 48 Kenya (DC48K)</h1>
+  <p class="mt-4 text-lg text-gray-700">Be part of a global community representing Kenyans abroad — the 48th County of Kenya.</p>
+</section>
+
+<!-- Membership Plans -->
+<section class="container mx-auto px-4 mt-12">
+  <h2 class="text-3xl font-semibold text-center mb-8">Membership Plans</h2>
+  <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+    <div class="bg-white p-6 rounded-lg shadow-md hover:shadow-lg transition">
+      <h3 class="text-2xl font-semibold mb-4">Individual</h3>
+      <ul class="list-disc list-inside mb-4">
+        <li>Community Access</li>
+        <li>Monthly Updates</li>
+        <li>Support Network</li>
+      </ul>
+      <p class="text-xl font-bold text-blue-600">$10 / month</p>
+    </div>
+
+    <div class="bg-white p-6 rounded-lg shadow-md hover:shadow-lg transition">
+      <h3 class="text-2xl font-semibold mb-4">Leadership</h3>
+      <ul class="list-disc list-inside mb-4">
+        <li>Includes Individual Benefits</li>
+        <li>Leadership Forums</li>
+        <li>Exclusive Policy Events</li>
+      </ul>
+      <p class="text-xl font-bold text-blue-600">$30 / month</p>
+    </div>
+
+    <div class="bg-white p-6 rounded-lg shadow-md hover:shadow-lg transition">
+      <h3 class="text-2xl font-semibold mb-4">Organization</h3>
+      <ul class="list-disc list-inside mb-4">
+        <li>All Leadership Benefits</li>
+        <li>Brand Exposure</li>
+        <li>Collaboration Opportunities</li>
+      </ul>
+      <p class="text-xl font-bold text-blue-600">$100 / month</p>
+    </div>
+  </div>
+</section>
+
+<!-- Display messages -->
+{% if messages %}
+  <div class="max-w-xl mx-auto mt-6">
+    {% for message in messages %}
+      <div class="p-4 mb-4 text-sm text-green-800 bg-green-100 rounded-lg" role="alert">
+        {{ message }}
+      </div>
+    {% endfor %}
+  </div>
+{% endif %}
+
+<!-- Registration Form -->
+<section class="container mx-auto px-4 mt-16 mb-20">
+  <h2 class="text-3xl font-semibold text-center mb-6">Membership Registration</h2>
+  <form method="POST" class="max-w-xl mx-auto bg-white shadow-lg p-8 rounded-lg space-y-6">
+    {% csrf_token %}
+    {{ form.non_field_errors }}
+    {% for field in form %}
+      <div>
+        <label for="{{ field.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">{{ field.label }}</label>
+        {{ field }}
+        {% if field.errors %}
+          <p class="text-red-500 text-sm mt-1">{{ field.errors|join:", " }}</p>
+        {% endif %}
+      </div>
+    {% endfor %}
+    <button type="submit" name="register_submit" class="w-full bg-blue-600 text-white py-3 rounded-lg hover:bg-blue-700 transition">
+      Register Now
+    </button>
+  </form>
+</section>
+
+<!-- Contact Form -->
+<section class="bg-gray-100 py-16 text-center">
+  <h2 class="text-3xl font-semibold mb-4">Have Questions?</h2>
+  <p class="text-gray-700 mb-6">Reach out to our team for more details about membership and partnership opportunities.</p>
+
+  <form method="POST" class="max-w-xl mx-auto bg-white shadow-lg p-8 rounded-lg text-left">
+    {% csrf_token %}
+    {{ contact_form.non_field_errors }}
+    {% for field in contact_form %}
+      <div class="mb-4">
+        <label for="{{ field.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">{{ field.label }}</label>
+        {{ field }}
+        {% if field.errors %}
+          <p class="text-red-500 text-sm mt-1">{{ field.errors|join:", " }}</p>
+        {% endif %}
+      </div>
+    {% endfor %}
+    <button type="submit" name="contact_submit" class="w-full bg-blue-600 text-white py-3 rounded-lg hover:bg-blue-700 transition">
+      Send Message
+    </button>
+  </form>
+</section>
+
+{% endblock %}
+

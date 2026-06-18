@@ -1,0 +1,39 @@
+/* Healthcare page styles extracted from template */
+.text-brand-blue { color: #1e40af; }
+.bg-brand-blue { background-color: #1e40af; }
+.text-brand-green { color: #0a926d; }
+.bg-brand-green { background-color: #0a926d; }
+.text-brand-red { color: #cc0000; }
+.bg-brand-red { background-color: #cc0000; }
+.main-heading { font-weight: 900; }
+.service-block { margin-bottom: 4rem; padding-top: 2rem; padding-bottom: 2rem; }
+.service-list li { position: relative; padding-left: 1.5rem; margin-bottom: 0.5rem; }
+.service-list li::before { content: ''; position: absolute; left: 0; top: 0.5rem; width: 0.5rem; height: 0.5rem; background-color: #cc0000; border-radius: 50%; }
+.loading-placeholder { min-height: 280px; background-color: #e5e7eb; display: flex; align-items: center; justify-content: center; color: #6b7280; font-weight: 600; }
+@keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+.animate-pulse-custom { animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
+.hero-image-container { overflow: hidden; display: flex; align-items: center; justify-content: center; }
+.hero-image-container img { width: 100%; height: 100%; object-fit: cover; }
+
+/* Make the visible portion of the hero image align to the bottom so the
+	 image appears to touch the bottom edge of the green header. Keep this
+	 behavior only on wider viewports so stacking on mobile is preserved. */
+@media (min-width: 768px) {
+	.healthcare-page > header .hero-image-container {
+		/* remove bottom padding added by template classes so image can reach the edge */
+		padding-bottom: 0 !important;
+		padding-top: 0 !important;
+	}
+
+	/* Align the cropping area of the cover image to the bottom */
+	.healthcare-page > header .hero-image-container img {
+		object-position: center bottom !important;
+		display: block;
+	}
+}
+@media (max-width: 768px) { .main-heading { font-size: 2rem; } }
+
+/* Small vertical gap between the hero header and the mission section */
+.healthcare-page > header + section {
+	margin-top: 2.5rem; /* add space between hero and mission */
+}

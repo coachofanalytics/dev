@@ -1,0 +1,32 @@
+{% extends 'main/base_templates/base.html' %}
+{% block content %}
+<h2>Members List</h2>
+<table class="table">
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>Username</th>
+            <th>Email</th>
+            <th>First Name</th>
+            <th>Last Name</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for member in members %}
+        <tr>
+            <td>{{ member.id }}</td>
+            <td>{{ member.username }}</td>
+            <td>{{ member.email }}</td>
+            <td>{{ member.first_name }}</td>
+            <td>{{ member.last_name }}</td>
+            <td>
+                <a href="{% url 'accounts:member-update' member.id %}">Edit</a> |
+                <a href="{% url 'accounts:member-delete' member.id %}">Delete</a>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+<a href="{% url 'accounts:member-create' %}" class="btn btn-primary">Add Member</a>
+{% endblock content %}

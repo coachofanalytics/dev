@@ -1,0 +1,39 @@
+{% extends "main/base_templates/base.html" %}
+
+{% block content %}
+
+<div class="container mt-4">
+<h2>Legal Services</h2>
+
+<table class="table table-bordered">
+<thead>
+<tr>
+<th>#</th>
+<th>Service Name</th>
+<th>Description</th>
+</tr>
+</thead>
+
+<tbody>
+{% for service in legal_services %}
+<tr>
+<td>{{ forloop.counter }}</td>
+<td>{{ service.title }}</td>
+<td>{{ service.description }}</td>
+<td>
+    <a href="{% url 'main:legal_service_update' service.pk %}" class="btn btn-primary">Edit</a>
+    <a href="{% url 'main:legal_service_delete' service.pk %}" class="btn btn-danger">Delete</a>
+</td>
+</tr>
+{% empty %}
+<tr>
+<td colspan="4" class="text-center">
+No legal services found.
+</td>
+</tr>
+{% endfor %}
+</tbody>
+</table>
+</div>
+
+{% endblock %}

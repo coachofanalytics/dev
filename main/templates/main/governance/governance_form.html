@@ -1,0 +1,130 @@
+<!-- templates/main/governance/form.html - FIXED VERSION -->
+<!DOCTYPE html>
+<html>
+<head>
+    <title>{{ title }}</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.8.1/font/bootstrap-icons.css">
+</head>
+<body>
+    <div class="container mt-4">
+        <h1>{{ title }}</h1>
+        
+        <!-- Show Django messages -->
+        {% if messages %}
+        <div class="mb-3">
+            {% for message in messages %}
+            <div class="alert alert-{{ message.tags }}">
+                {{ message }}
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+        
+        <!-- Django form -->
+        <form method="post" id="governanceForm">
+            {% csrf_token %}
+            
+            <!-- Show each form field -->
+            <div class="mb-3">
+                <label class="form-label">{{ form.governance_category.label }}</label>
+                {{ form.governance_category }}
+            </div>
+            
+            <div class="mb-3">
+                <label class="form-label">{{ form.description.label }}</label>
+                {{ form.description }}
+            </div>
+            
+            <!-- MEMBER SELECTION -->
+            <div class="mb-3">
+                <label class="form-label">{{ form.members.label }}</label>
+                {{ form.members }}
+            </div>
+            
+            <!-- CREATE NEW USER SECTION -->
+            <div class="card mb-3 border-success">
+                <div class="card-header bg-success text-white">
+                    <i class="bi bi-person-plus"></i> Option 2: Create New User
+                </div>
+                <div class="card-body">
+                    <p class="card-text">
+                        <strong>Instead of selecting a user above, create a new one:</strong>
+                    </p>
+                    
+                    <div class="row g-2 mb-2">
+                        <div class="col-md-4">
+                            <input type="text" name="new_username" class="form-control" 
+                                   placeholder="New Username" id="newUsername">
+                        </div>
+                        <div class="col-md-4">
+                            <input type="password" name="new_password" class="form-control" 
+                                   placeholder="New Password" id="newPassword">
+                        </div>
+                        <div class="col-md-4">
+                            <input type="email" name="new_email" class="form-control" 
+                                   placeholder="Email (optional)" id="newEmail">
+                        </div>
+                    </div>
+                    
+                    <div class="alert alert-warning">
+                        <small>
+                            <i class="bi bi-exclamation-triangle"></i> 
+                            <strong>Important:</strong> If you fill these fields, 
+                            <strong>DO NOT select a user from the dropdown above</strong>.
+                            The new user will be created and selected automatically.
+                        </small>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Form Actions -->
+            <div class="mt-4">
+                <button type="submit" class="btn btn-primary">
+                    <i class="bi bi-save"></i> Save Record
+                </button>
+                <a href="{% url 'main:governance_list' %}" class="btn btn-secondary">
+                    <i class="bi bi-x-circle"></i> Cancel
+                </a>
+            </div>
+        </form>
+    </div>
+    
+    <script>
+    // Add Bootstrap classes
+    document.addEventListener('DOMContentLoaded', function() {
+        document.querySelectorAll('input, select, textarea').forEach(el => {
+            if (!el.classList.contains('form-control') && 
+                el.type !== 'checkbox' && 
+                el.type !== 'radio') {
+                el.classList.add('form-control');
+            }
+        });
+    });
+    
+    // JavaScript to handle user creation
+    document.getElementById('governanceForm').addEventListener('submit', function(e) {
+        const newUsername = document.getElementById('newUsername').value.trim();
+        const newPassword = document.getElementById('newPassword').value.trim();
+        const newEmail = document.getElementById('newEmail').value.trim();
+        const membersSelect = document.querySelector('[name="members"]');
+        
+        // If new user fields are filled
+        if (newUsername && newPassword) {
+            // Create a hidden field with new user data
+            const hiddenDiv = document.createElement('div');
+            hiddenDiv.innerHTML = `
+                <input type="hidden" name="create_new_user" value="true">
+                <input type="hidden" name="new_username" value="${newUsername}">
+                <input type="hidden" name="new_password" value="${newPassword}">
+                <input type="hidden" name="new_email" value="${newEmail}">
+            `;
+            this.appendChild(hiddenDiv);
+            
+            // Clear the members dropdown selection
+            membersSelect.value = '';
+        }
+    });
+    </script>
+</body>
+</html>

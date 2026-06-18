@@ -1,0 +1,103 @@
+.card {
+    border: none;
+    border-radius: 15px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    background: linear-gradient(135deg, #ffffff, #f8f9fa);
+    margin-bottom: 2rem;
+}
+
+.card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+}
+
+.card-header {
+    background: linear-gradient(45deg, #4b6584, #243865);
+    color: white;
+    border-radius: 15px 15px 0 0;
+    text-align: center;
+}
+
+.header-section .title-sub-head {
+    font-size: 1.5rem;
+    color: #E7AD4A;
+}
+
+.header-section .title-para {
+    font-size: 1rem;
+    color: #ffffff;
+}
+
+.btn-bc {
+    background-color: #E7AD4A;
+    color: #ffffff;
+    transition: background-color 0.3s ease;
+}
+
+.btn-bc:hover {
+    background-color: #d6943a;
+}
+
+.follow-section {
+    background: linear-gradient(135deg, #E6E6E6, #ffffff);
+    padding: 2rem 1rem;
+    text-align: center;
+    border-radius: 15px;
+    margin-bottom: 2rem;
+}
+
+ .follow-text {
+    color: black;
+    font-size: 1.3rem;
+    margin-bottom: 1rem;
+}
+
+ .social-icon {
+    font-size: 25px;
+    color: #C5702F;
+    transition: color 0.3s ease;
+}
+
+ .social-icon:hover {
+    color: #a45e28;
+}
+
+.fb-circle {
+    background-color: #3A5B9F;
+    padding: 5px;
+    width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    transition: background-color 0.3s ease;
+}
+
+.fb-circle:hover {
+    background-color: #2e4b84;
+}
+
+
+
+@media (max-width: 768px) {
+    .header-section {
+        padding: 2rem 1rem;
+    }
+
+    .content-section {
+        padding: 1rem 1rem;
+    }
+
+    .follow-section {
+        padding: 1rem 1rem;
+    }
+
+    .image-section {
+        padding: 1rem 1rem;
+    }
+}
+
+/* Pay.html */
+

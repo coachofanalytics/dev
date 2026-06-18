@@ -1,0 +1,62 @@
+<h2>Contracts</h2>
+<p class="muted">Create packages from placements, then send signing links.</p>
+
+<div class="row" style="margin-bottom: 12px;">
+  <h3 style="margin: 0;">Placements</h3>
+  <a class="button secondary" href="{% url 'main:cop_placements' %}">New placement</a>
+</div>
+
+<div class="list">
+  {% for p in placements %}
+    <div class="item">
+      <div class="row">
+        <div>
+          <strong>{{ p.candidate }}</strong>
+          <p class="muted" style="margin: 6px 0 0;">{{ p.employer }} | {{ p.start_date }} | {{ p.salary }}</p>
+          {% if p.package_definition %}
+            <span class="pill">{{ p.package_definition.name }}</span>
+          {% endif %}
+        </div>
+        <div style="display:flex; gap:10px; flex-wrap:wrap;">
+          <form method="post" action="/cop/placements/{{ p.id }}/generate/">
+            {% csrf_token %}
+            <button class="button" type="submit">Generate</button>
+          </form>
+          {% if p.contract_package_id %}
+            <a class="button ghost" href="/cop/?package_id={{ p.contract_package_id }}">Inspect</a>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  {% empty %}
+    <p class="muted">No placements available.</p>
+  {% endfor %}
+</div>
+
+<h3 style="margin-top: 20px;">Packages</h3>
+<div class="list">
+  {% for row in package_rows %}
+    <div class="item">
+      <div class="row">
+        <div>
+          <strong>Package #{{ row.package.id }}</strong>
+          {% if row.placement %}
+            <p class="muted" style="margin: 6px 0 0;">{{ row.placement.candidate }} | {{ row.placement.employer }}</p>
+          {% endif %}
+        </div>
+        <div style="display:flex; gap:10px; flex-wrap:wrap; align-items:center;">
+          <span class="badge" data-state="{{ row.package.state }}">{{ row.package.state }}</span>
+          <a class="button ghost" href="/cop/?package_id={{ row.package.id }}">Inspect</a>
+          {% if row.package.state == "GENERATED" %}
+            <form method="post" action="/cop/packages/{{ row.package.id }}/send/">
+              {% csrf_token %}
+              <button class="button" type="submit">Send</button>
+            </form>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  {% empty %}
+    <p class="muted">No packages available.</p>
+  {% endfor %}
+</div>
