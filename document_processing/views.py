@@ -1,8 +1,8 @@
 from django.shortcuts import render
-<<<<<<< HEAD
+# <<<<<<< HEAD
 
 # Create your views here.
-=======
+# =======
 from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator
 from .models import Document_Application
@@ -46,4 +46,4 @@ def document_application_list(request):
         'document_processing/document_application_list.html',
         context
     )
->>>>>>> 6b38594f704780076e59319dcf0696de541774a1
+# >>>>>>> 6b38594f704780076e59319dcf0696de541774a1

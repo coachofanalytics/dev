@@ -7,14 +7,14 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # print(BASE_DIR)
 
 SECRET_KEY = os.environ.get("SECRET_KEY") or "!cxl7yhjsl00964n=#e-=xblp4u!hbajo2k8u#$v9&s6__5=xf"
-<<<<<<< HEAD
+# <<<<<<< HEAD
 DEBUG = os.environ.get("DEBUG", "True") == "True"
 
 ALLOWED_HOSTS = ["*"]
 SECURE_SSL_REDIRECT = False
 CSRF_COOKIE_SECURE = False
 
-=======
+# =======
 
 # Default to False unless explicitly enabled via environment variable.
 DEBUG = os.environ.get("DEBUG", "False") == "True"
@@ -26,7 +26,7 @@ ALLOWED_HOSTS = ["*"]
 # ALLOWED_HOSTS = []
 
 # AUTH_USER_MODEL = "accounts.User"
->>>>>>> 6b38594f704780076e59319dcf0696de541774a1
+# >>>>>>> 6b38594f704780076e59319dcf0696de541774a1
 AUTH_USER_MODEL = "accounts.CustomerUser"
 
 AUTHENTICATION_BACKENDS = (
@@ -35,12 +35,12 @@ AUTHENTICATION_BACKENDS = (
 )
 
 INSTALLED_APPS = [
-<<<<<<< HEAD
+# <<<<<<< HEAD
     "document_portal",
 
-=======
+# =======
     'document_processing',
->>>>>>> 6b38594f704780076e59319dcf0696de541774a1
+# >>>>>>> 6b38594f704780076e59319dcf0696de541774a1
     "main.apps.MainConfig",
     "accounts.apps.AccountsConfig",
     "finance.apps.FinanceConfig",
@@ -61,19 +61,19 @@ INSTALLED_APPS = [
     "django_filters",
     "django_celery_beat",
     "django_celery_results",
-<<<<<<< HEAD
+# <<<<<<< HEAD
 
-=======
->>>>>>> 6b38594f704780076e59319dcf0696de541774a1
+# =======
+# >>>>>>> 6b38594f704780076e59319dcf0696de541774a1
     "allauth",
     "allauth.account",
     "allauth.socialaccount",
     "allauth.socialaccount.providers.google",
     "allauth.socialaccount.providers.facebook",
-<<<<<<< HEAD
+# <<<<<<< HEAD
 
-    "django_crontab",
-=======
+    # "django_crontab",
+# =======
     "django_crontab",
     # 'memberjoin',
     # 'communities',
@@ -101,7 +101,7 @@ CRONJOBS = [
     # ("*/1 * * * *", "coda_project.cron.my_backup"),
     ("* * * * *", "application.msg_send_cron.SendMsgApplicatUser"),
     ("*/5 * * * *", "management.cron.advertisement"),
->>>>>>> 6b38594f704780076e59319dcf0696de541774a1
+# >>>>>>> 6b38594f704780076e59319dcf0696de541774a1
 ]
 
 MIDDLEWARE = [
@@ -113,14 +113,14 @@ MIDDLEWARE = [
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
     "whitenoise.middleware.WhiteNoiseMiddleware",
-<<<<<<< HEAD
+# <<<<<<< HEAD
     "allauth.account.middleware.AccountMiddleware",
-=======
+# =======
     'allauth.account.middleware.AccountMiddleware',
     # 'Middleware.MiddlewareFile.MailMiddleware'
     #'debug_toolbar.middleware.DebugToolbarMiddleware',
 
->>>>>>> 6b38594f704780076e59319dcf0696de541774a1
+# >>>>>>> 6b38594f704780076e59319dcf0696de541774a1
 ]
 
 if DEBUG:
@@ -139,14 +139,14 @@ DEFAULT_AUTO_FIELD = "django.db.models.AutoField"
 TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
-<<<<<<< HEAD
+# <<<<<<< HEAD
         "DIRS": ["templates"],
-=======
+# =======
         "DIRS": [
             # os.path.join(BASE_DIR, 'templates')
             "templates"
         ],
->>>>>>> 6b38594f704780076e59319dcf0696de541774a1
+# >>>>>>> 6b38594f704780076e59319dcf0696de541774a1
         "APP_DIRS": True,
         "OPTIONS": {
             "context_processors": [
@@ -163,7 +163,7 @@ TEMPLATES = [
     },
 ]
 
-<<<<<<< HEAD
+# <<<<<<< HEAD
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.sqlite3",
@@ -176,7 +176,7 @@ if "test" in sys.argv:
         "ENGINE": "django.db.backends.sqlite3",
         "NAME": "coda_dev",
     }
-=======
+# =======
 #  ==============DBFUNCTIONS=====================================
 def dba_values():
     if os.environ.get('ENVIRONMENT') == 'production':
@@ -242,7 +242,7 @@ if 'test' in sys.argv:
         'NAME': 'coda_dev'
     }
 
->>>>>>> 6b38594f704780076e59319dcf0696de541774a1
+# >>>>>>> 6b38594f704780076e59319dcf0696de541774a1
 
 db_from_env = dj_database_url.config(conn_max_age=600)
 DATABASES["default"].update(db_from_env)
@@ -255,10 +255,10 @@ AUTH_PASSWORD_VALIDATORS = [
 ]
 
 PASSWORD_HASHERS = [
-<<<<<<< HEAD
-=======
+# <<<<<<< HEAD
+# =======
     # Use secure, production-appropriate password hashers. MD5 is insecure and should not be used.
->>>>>>> 6b38594f704780076e59319dcf0696de541774a1
+# >>>>>>> 6b38594f704780076e59319dcf0696de541774a1
     "django.contrib.auth.hashers.PBKDF2PasswordHasher",
     "django.contrib.auth.hashers.PBKDF2SHA1PasswordHasher",
 ]
@@ -278,13 +278,13 @@ STATICFILES_DIRS = [
 MEDIA_URL = "/media/"
 MEDIA_ROOT = os.path.join(BASE_DIR, "media")
 
-<<<<<<< HEAD
+# <<<<<<< HEAD
 STATICFILES_STORAGE = (
     "django.contrib.staticfiles.storage.StaticFilesStorage"
     if DEBUG
     else "django.contrib.staticfiles.storage.ManifestStaticFilesStorage"
 )
-=======
+# =======
 STATIC_ROOT = os.path.join(BASE_DIR,  "staticfiles")
 STATIC_URL = "/static/"
 
@@ -293,7 +293,7 @@ if DEBUG:
     STATICFILES_STORAGE = 'django.contrib.staticfiles.storage.StaticFilesStorage'
 else:
     STATICFILES_STORAGE = 'django.contrib.staticfiles.storage.ManifestStaticFilesStorage'
->>>>>>> 6b38594f704780076e59319dcf0696de541774a1
+# >>>>>>> 6b38594f704780076e59319dcf0696de541774a1
 
 CRISPY_TEMPLATE_PACK = "bootstrap4"
 
@@ -302,7 +302,7 @@ LOGIN_URL = "accounts:account-login"
 
 SITE_ID = 1
 
-<<<<<<< HEAD
+# <<<<<<< HEAD
 ACCOUNT_EMAIL_VERIFICATION = "optional"
 ACCOUNT_SIGNUP_FIELDS = ["email*", "username*", "password1*", "password2*"]
 SOCIALACCOUNT_QUERY_EMAIL = True
@@ -328,7 +328,7 @@ EMAIL_HOST_USER = "your-email@gmail.com"
 EMAIL_HOST_PASSWORD = "your-16-character-app-password"
 DEFAULT_FROM_EMAIL = "your-email@gmail.com"
 ADMIN_EMAIL = "your-email@gmail.com"
-=======
+# =======
 # EMAIL_FILE_PATH = BASE_DIR + "/emails"
 
 # Gmail Email Backend Account
@@ -347,18 +347,18 @@ ADMIN_EMAIL = "your-email@gmail.com"
 # EMAIL_FILE_PATH = BASE_DIR + "/emails"
 
 # DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
->>>>>>> 6b38594f704780076e59319dcf0696de541774a1
+# >>>>>>> 6b38594f704780076e59319dcf0696de541774a1
 
 SITE_URL = "http://127.0.0.1:8000"
 
-<<<<<<< HEAD
+# <<<<<<< HEAD
 if os.environ.get("ENVIRONMENT") == "production":
     SITEURL = "https://www.codanalytics.net"
 elif os.environ.get("ENVIRONMENT") == "testing":
     SITEURL = "https://codamakutano.herokuapp.com"
 else:
     SITEURL = "http://localhost:8000"
-=======
+# =======
 EMAIL_INFO = {
     'USER': os.environ.get('EMAIL_INFO_USER'),
     'PASS': os.environ.get('EMAIL_INFO_PASS'),
@@ -375,7 +375,7 @@ EMAIL_HR = {
     'USE_TLS': os.environ.get('EMAIL_HR_USE_TLS'),
     'USE_SSL': os.environ.get('EMAIL_HR_USE_SSL'),
 }
->>>>>>> 6b38594f704780076e59319dcf0696de541774a1
+# >>>>>>> 6b38594f704780076e59319dcf0696de541774a1
 
 EMAIL_INFO = {
     "USER": os.environ.get("EMAIL_INFO_USER"),
@@ -405,7 +405,7 @@ AWS_DEFAULT_ACL = None
 
 from celery.schedules import crontab
 
-<<<<<<< HEAD
+# <<<<<<< HEAD
 CELERY_BROKER_URL = os.environ.get("CELERY_BROKER_URL", "")
 CELERY_RESULT_BACKEND = os.environ.get("CELERY_RESULT_BACKEND", "")
 CELERY_ACCEPT_CONTENT = ["application/json"]
@@ -417,7 +417,8 @@ CELERYBEAT_SCHEDULE = {
     "task_history_monthly": {
         "task": "task_history",
         "schedule": crontab(0, 0, day_of_month="1"),
-=======
+    }}
+# =======
 from celery.schedules import crontab
 
 CELERY_BROKER_URL = "redis://default:xjaoROhpU8Lbiz8OZskVTgyYDFAdSmlo@redis-11854.c240.us-east-1-3.ec2.cloud.redislabs.com:11854"
@@ -476,7 +477,7 @@ SOCIALACCOUNT_PROVIDERS = {
             "email"
         ],
         "AUTH_PARAMS": {"access_type": "online"}
->>>>>>> 6b38594f704780076e59319dcf0696de541774a1
+# >>>>>>> 6b38594f704780076e59319dcf0696de541774a1
     },
     "advertisement_monthly": {
         "task": "advertisement",
@@ -484,16 +485,16 @@ SOCIALACCOUNT_PROVIDERS = {
     },
 }
 
-<<<<<<< HEAD
+# <<<<<<< HEAD
 CRONJOBS = [
     ("* * * * *", "application.msg_send_cron.SendMsgApplicatUser"),
     ("*/5 * * * *", "management.cron.advertisement"),
 ]
-=======
+# =======
 ACCOUNT_EMAIL_VERIFICATION = 'optional'  # or 'mandatory', depending on your setup
 ACCOUNT_SIGNUP_FIELDS = ['email*', 'username*', 'password1*', 'password2*']
 SOCIALACCOUNT_QUERY_EMAIL = True
->>>>>>> 6b38594f704780076e59319dcf0696de541774a1
+# >>>>>>> 6b38594f704780076e59319dcf0696de541774a1
 
 STRIPE_PUBLIC_KEY = os.getenv("STRIPE_PUBLIC_KEY", "")
 STRIPE_SECRET_KEY = os.getenv("STRIPE_SECRET_KEY", "")
@@ -509,7 +510,7 @@ EMAIL_HOST_PASSWORD = 'your-16-character-app-password'  # The app password you g
 DEFAULT_FROM_EMAIL = 'your-email@gmail.com'
 ADMIN_EMAIL = 'your-email@gmail.com'  # Send admin notifications to yourself for testing
 
-<<<<<<< HEAD
+# <<<<<<< HEAD
 def payment_details(request):
     phone_number = os.environ.get("MPESA_PHONE_NUMBER")
     email_info = os.environ.get("EMAIL_INFO_USER")
@@ -518,7 +519,7 @@ def payment_details(request):
     account_no = os.environ.get("STANBIC_ACCOUNT_NO")
 
     return (phone_number, email_info, cashapp, venmo, account_no)
-=======
+# =======
 # Site URL for email links
 SITE_URL = 'http://127.0.0.1:8000'
->>>>>>> 6b38594f704780076e59319dcf0696de541774a1
+# >>>>>>> 6b38594f704780076e59319dcf0696de541774a1

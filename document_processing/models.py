@@ -1,4 +1,4 @@
-<<<<<<< HEAD
+# <<<<<<< HEAD
 # from django.db import models
 
 # # Create your models here.
@@ -11,7 +11,7 @@
 #     def __str__(self):
 #         return f"Draft for {self.application}"
 # from this create for me all the functional base using def
-=======
+# =======
 from django.db import models
 from django.contrib.auth.models import User
 from django.conf import settings
@@ -67,4 +67,4 @@ class Document_Application(models.Model):
     fee = models.DecimalField(max_digits=12, decimal_places=2, default=0)
     submitted_at = models.DateTimeField(auto_now_add=True)
     last_modified = models.DateTimeField(auto_now=True)
->>>>>>> 6b38594f704780076e59319dcf0696de541774a1
+# >>>>>>> 6b38594f704780076e59319dcf0696de541774a1
