@@ -57,3 +57,4 @@ class DocumentDraft(models.Model):
 
     def __str__(self):
         return f"Draft for {self.application}"
+

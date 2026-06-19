@@ -1,5 +1,20 @@
 from django.contrib import admin
-from .models import DocumentApplication, DocumentDraft
+from .models import DocumentApplication, DocumentDraft, DocumentProfile
+
+
+@admin.register(DocumentProfile)
+class DocumentProfileAdmin(admin.ModelAdmin):
+    list_display = (
+        "id",
+        "user",
+        "role",
+        "language_preference",
+        "phone_number",
+        "email_notifications",
+        "phone_notifications", 
+    )
+    list_filter = ("role", "language_preference")
+    search_fields = ("user__username", "user__email", "phone_number")
 
 
 @admin.register(DocumentApplication)
@@ -14,8 +29,8 @@ class DocumentApplicationAdmin(admin.ModelAdmin):
         "fee",
         "submitted_at",
     )
-    search_fields = ("first_name", "last_name", "id_number", "service_type")
     list_filter = ("status", "service_type")
+    search_fields = ("first_name", "last_name", "id_number", "service_type")
 
 
 @admin.register(DocumentDraft)
@@ -26,3 +41,5 @@ class DocumentDraftAdmin(admin.ModelAdmin):
         "completion_percentage",
     )
     search_fields = ("application__first_name", "application__last_name")
+
+

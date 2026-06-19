@@ -37,6 +37,7 @@ AUTHENTICATION_BACKENDS = (
 INSTALLED_APPS = [
 # <<<<<<< HEAD
     "document_portal",
+    "healthcare_services",
 
 # =======
     'document_processing',
