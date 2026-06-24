@@ -176,3 +176,10 @@ scratch_*.py
 test_scratch_*.py
 server.log
 logs.log
+
+# Learning guides and documentation (not part of project)
+SQL_LEARNING_GUIDE.md
+HANDS_ON_IMPLEMENTATION.md
+QUICK_REFERENCE.md
+DC48K_DATABASE_REPORT.md
+*_backup.json
