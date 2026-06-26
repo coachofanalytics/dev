@@ -6,6 +6,9 @@ from django.shortcuts import render
 from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator
 from .models import Document_Application
+from document_portal.models import DocumentApplication
+
+DocumentApplication.objects.count()
 
 
 @login_required

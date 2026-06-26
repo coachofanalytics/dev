@@ -32,6 +32,11 @@ class DocumentApplicationAdmin(admin.ModelAdmin):
     list_filter = ("status", "service_type")
     search_fields = ("first_name", "last_name", "id_number", "service_type")
 
+    def save_model(save,obj,form,change):
+        if not obj.user_id:
+            obj.user=request.user
+            super().save_model(request,obj,form,change)
+
 
 @admin.register(DocumentDraft)
 class DocumentDraftAdmin(admin.ModelAdmin):
