@@ -3,6 +3,7 @@ from pydantic import BaseModel
 from typing import Optional
 from datetime import datetime
 from decimal import Decimal
+from app.database import engine, create_db_and_tables
 
 app = FastAPI(
     title="INFLOW MANAGEMENT API - main5",
