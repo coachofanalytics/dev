@@ -59,6 +59,51 @@ def create_search_record(
         status_code=303
     )
 
+
+@app.get("/search-dashboard/edit/{record_id}")
+def edit_record(record_id: int, request: Request):
+    with Session(database.engine) as db:
+        record = db.get(models.SearchRecord, record_id)
+
+        if not record:
+            return RedirectResponse(
+                url="/search-dashboard",
+                status_code=303
+            )
+
+    return templates.TemplateResponse(
+        "edit_record.html",
+        {
+            "request": request,
+            "record": record
+        }
+    )
+
+
+@app.post("/search-dashboard/update/{record_id}")
+def update_record(
+    record_id: int,
+    topic: str = Form(...),
+    question: str = Form(...),
+    uploaded: bool = Form(False)
+):
+    with Session(database.engine) as db:
+        record = db.get(models.SearchRecord, record_id)
+
+        if record:
+            record.topic = topic
+            record.question = question
+            record.uploaded = uploaded
+
+            db.add(record)
+            db.commit()
+
+    return RedirectResponse(
+        url="/search-dashboard",
+        status_code=303
+    )
+
+
 @app.post("/search-dashboard/delete/{record_id}")
 def delete_search_dashboard_record(record_id: int):
     with Session(database.engine) as db:
