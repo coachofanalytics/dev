@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Create Job Opportunity</title>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f4f6f9;
+            margin: 0;
+            padding: 40px;
+        }
+
+        .page-wrapper {
+            max-width: 900px;
+            margin: auto;
+        }
+
+        .form-card {
+            background: white;
+            padding: 30px;
+            border-radius: 14px;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+        }
+
+        h1 {
+            margin-top: 0;
+            color: #111827;
+        }
+
+        label {
+            display: block;
+            margin-top: 18px;
+            font-weight: bold;
+        }
+
+        input, textarea, select {
+            width: 100%;
+            padding: 11px;
+            margin-top: 6px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            font-size: 15px;
+        }
+
+        textarea {
+            resize: vertical;
+        }
+
+        .btn-row {
+            margin-top: 25px;
+        }
+
+        button {
+            background: #0d6efd;
+            color: white;
+            padding: 11px 16px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        .back-btn {
+            display: inline-block;
+            margin-left: 10px;
+            background: #6c757d;
+            color: white;
+            padding: 10px 14px;
+            border-radius: 6px;
+            text-decoration: none;
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="page-wrapper">
+    <div class="form-card">
+        <h1>Create Job Opportunity</h1>
+
+        <form method="post" action="/application/jobs/pages/create/form">
+
+            <label>Job Title</label>
+            <input type="text" name="title" required>
+
+            <label>Company Name</label>
+            <input type="text" name="company_name">
+
+            <label>Description</label>
+            <textarea name="description" rows="5" required></textarea>
+
+            <label>Skills Required</label>
+            <textarea name="skills_required" rows="3" required placeholder="Python, FastAPI, Django, SQL"></textarea>
+
+            <label>Deliverables</label>
+            <textarea name="deliverables" rows="4" required></textarea>
+
+            <label>Payment Minimum</label>
+            <input type="number" step="0.01" name="payment_min" required>
+
+            <label>Payment Maximum</label>
+            <input type="number" step="0.01" name="payment_max" required>
+
+            <label>Currency</label>
+            <input type="text" name="currency" value="USD">
+
+            <label>Duration Value</label>
+            <input type="number" name="duration_value" required>
+
+            <label>Duration Unit</label>
+            <select name="duration_unit">
+                <option value="days">Days</option>
+                <option value="weeks" selected>Weeks</option>
+                <option value="months">Months</option>
+            </select>
+
+            <label>Project Type</label>
+            <select name="project_type">
+                <option value="fixed">Fixed</option>
+                <option value="hourly">Hourly</option>
+                <option value="milestone">Milestone</option>
+                <option value="retainer">Retainer</option>
+            </select>
+
+            <label>Engagement Level</label>
+            <select name="engagement_level">
+                <option value="low">Low</option>
+                <option value="medium" selected>Medium</option>
+                <option value="high">High</option>
+                <option value="full_time">Full Time</option>
+            </select>
+
+            <label>External Reference Links</label>
+            <textarea name="external_reference_links" rows="3" placeholder="Add one link per line"></textarea>
+
+            <label>Status</label>
+            <select name="status">
+                <option value="open" selected>Open</option>
+                <option value="draft">Draft</option>
+                <option value="paused">Paused</option>
+                <option value="closed">Closed</option>
+            </select>
+
+            <div class="btn-row">
+                <button type="submit">Save Job</button>
+                <a class="back-btn" href="/application/jobs/pages/list">Cancel</a>
+            </div>
+
+        </form>
+    </div>
+</div>
+
+</body>
+</html>

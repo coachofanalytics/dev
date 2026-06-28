@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Edit Job</title>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f4f6f9;
+            margin: 0;
+            padding: 40px;
+        }
+
+        .page-wrapper {
+            max-width: 900px;
+            margin: auto;
+        }
+
+        .form-card {
+            background: white;
+            padding: 30px;
+            border-radius: 14px;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+        }
+
+        h1 {
+            margin-top: 0;
+            color: #111827;
+        }
+
+        label {
+            display: block;
+            margin-top: 18px;
+            font-weight: bold;
+        }
+
+        input, textarea, select {
+            width: 100%;
+            padding: 11px;
+            margin-top: 6px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            font-size: 15px;
+        }
+
+        textarea {
+            resize: vertical;
+        }
+
+        .btn-row {
+            margin-top: 25px;
+        }
+
+        button {
+            background: #0d6efd;
+            color: white;
+            padding: 11px 16px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        .back-btn {
+            display: inline-block;
+            margin-left: 10px;
+            background: #6c757d;
+            color: white;
+            padding: 10px 14px;
+            border-radius: 6px;
+            text-decoration: none;
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="page-wrapper">
+    <div class="form-card">
+        <h1>Edit Job Opportunity</h1>
+
+        <form method="post" action="/application/jobs/pages/{{ job.id }}/edit">
+
+            <label>Job Title</label>
+            <input type="text" name="title" value="{{ job.title }}" required>
+
+            <label>Company Name</label>
+            <input type="text" name="company_name" value="{{ job.company_name or '' }}">
+
+            <label>Description</label>
+            <textarea name="description" rows="5" required>{{ job.description }}</textarea>
+
+            <label>Skills Required</label>
+            <textarea name="skills_required" rows="3" required>{{ job.skills_required }}</textarea>
+
+            <label>Deliverables</label>
+            <textarea name="deliverables" rows="4" required>{{ job.deliverables }}</textarea>
+
+            <label>Payment Minimum</label>
+            <input type="number" step="0.01" name="payment_min" value="{{ job.payment_min }}" required>
+
+            <label>Payment Maximum</label>
+            <input type="number" step="0.01" name="payment_max" value="{{ job.payment_max }}" required>
+
+            <label>Currency</label>
+            <input type="text" name="currency" value="{{ job.currency }}">
+
+            <label>Duration Value</label>
+            <input type="number" name="duration_value" value="{{ job.duration_value }}" required>
+
+            <label>Duration Unit</label>
+            <select name="duration_unit">
+                <option value="days" {% if job.duration_unit == "days" %}selected{% endif %}>Days</option>
+                <option value="weeks" {% if job.duration_unit == "weeks" %}selected{% endif %}>Weeks</option>
+                <option value="months" {% if job.duration_unit == "months" %}selected{% endif %}>Months</option>
+            </select>
+
+            <label>Project Type</label>
+            <select name="project_type">
+                <option value="fixed" {% if job.project_type == "fixed" %}selected{% endif %}>Fixed</option>
+                <option value="hourly" {% if job.project_type == "hourly" %}selected{% endif %}>Hourly</option>
+                <option value="milestone" {% if job.project_type == "milestone" %}selected{% endif %}>Milestone</option>
+                <option value="retainer" {% if job.project_type == "retainer" %}selected{% endif %}>Retainer</option>
+            </select>
+
+            <label>Engagement Level</label>
+            <select name="engagement_level">
+                <option value="low" {% if job.engagement_level == "low" %}selected{% endif %}>Low</option>
+                <option value="medium" {% if job.engagement_level == "medium" %}selected{% endif %}>Medium</option>
+                <option value="high" {% if job.engagement_level == "high" %}selected{% endif %}>High</option>
+                <option value="full_time" {% if job.engagement_level == "full_time" %}selected{% endif %}>Full Time</option>
+            </select>
+
+            <label>External Reference Links</label>
+            <textarea name="external_reference_links" rows="3">{{ job.external_reference_links or '' }}</textarea>
+
+            <label>Status</label>
+            <select name="status">
+                <option value="open" {% if job.status == "open" %}selected{% endif %}>Open</option>
+                <option value="draft" {% if job.status == "draft" %}selected{% endif %}>Draft</option>
+                <option value="paused" {% if job.status == "paused" %}selected{% endif %}>Paused</option>
+                <option value="closed" {% if job.status == "closed" %}selected{% endif %}>Closed</option>
+            </select>
+
+            <div class="btn-row">
+                <button type="submit">Update Job</button>
+                <a class="back-btn" href="/application/jobs/pages/{{ job.id }}">Cancel</a>
+            </div>
+
+        </form>
+    </div>
+</div>
+
+</body>
+</html>
