@@ -254,3 +254,55 @@ class Profile(models.Model):
 
     def __str__(self):
         return f"{self.title} - {self.member.first_name} {self.member.last_name}" 
+class UserProfile(models.Model):            
+    
+    user = models.OneToOneField(        
+        "accounts.CustomerUser", 
+        related_name="applicant_profile", # <--- CHANGE THIS LINE
+        on_delete=models.CASCADE     
+    )       
+    position = models.CharField(max_length=255, blank=True, null=True)   
+    # ... (the rest of your model stays exactly the same)     
+    description = models.TextField(blank=True, null=True)        
+    company = models.CharField(max_length=254, null=True, blank=True)       
+    linkedin = models.CharField(max_length=500, null=True, blank=True)      
+    section = models.CharField(max_length=2, default="A", blank=True)       
+            
+    image = models.ImageField(      
+        default="default.jpg", upload_to="Application_Profile_pics", blank=True     
+    )       
+    # image2 = models.ForeignKey(       
+    #     Assets, related_name="profile_image", on_delete=models.CASCADE, default=1       
+    # )     
+            
+    upload_a = models.FileField(upload_to="Application_Profile/uploads", null=True, blank=True)     
+    upload_b = models.FileField(upload_to="Application_Profile/uploads", null=True, blank=True)     
+    upload_c = models.FileField(upload_to="Application_Profile/uploads", null=True, blank=True)     
+            
+    is_active = models.BooleanField("Is featured", default=True)        
+    laptop_status = models.BooleanField("Is lap_status", default=True)      
+            
+    national_id_no = models.CharField(max_length=254, null=True, blank=True)        
+    id_file = models.ImageField(upload_to='id_files/', null=True, blank=True)       
+            
+    emergency_name = models.CharField(max_length=254, null=True, blank=True)        
+    emergency_address = models.CharField(max_length=254, null=True, blank=True)     
+    emergency_citizenship = models.CharField(max_length=254, null=True, blank=True)     
+    emergency_national_id_no = models.CharField(max_length=254, null=True, blank=True)      
+    emergency_phone = models.CharField(max_length=254, null=True, blank=True)       
+    emergency_email = models.CharField(max_length=254, null=True, blank=True)       
+            
+    def __str__(self):      
+        return f"{self.user.username} Applicant Profile"        
+            
+    @property       
+    def img_url(self):      
+        if self.image2:     
+            return self.image2.image_url        
+        else:       
+            return "default_image_url.jpg"      
+            
+    @property       
+    def img_category(self):     
+        img_cat = self.image2.category        
+        return img_cat

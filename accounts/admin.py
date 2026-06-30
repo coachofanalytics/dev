@@ -2,7 +2,7 @@ from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
 
 
-from .models import CustomerUser, Membership, Region, Chapter, Profile
+from .models import CustomerUser, Membership, Region, Chapter, Profile,UserProfile
 
 
 #
@@ -88,3 +88,4 @@ admin.site.register(Membership)
 admin.site.register(Region)
 admin.site.register(Chapter)
 admin.site.register(Profile)
+admin.site.register(UserProfile)
