@@ -138,6 +138,9 @@ def delete_search_dashboard_record(record_id: int):
 def jobs_page(
     request: Request,
     search: Optional[str] = None,
+    project_type: Optional[str] = None,
+    engagement_level: Optional[str] = None,
+    status: Optional[str] = None,
     session: Session = Depends(get_session)
 ):
     statement = select(JobDetails)
@@ -145,22 +148,39 @@ def jobs_page(
     if search:
         statement = statement.where(JobDetails.title.contains(search))
 
+    if project_type:
+        statement = statement.where(JobDetails.project_type == project_type)
+
+    if engagement_level:
+        statement = statement.where(JobDetails.engagement_level == engagement_level)
+
+    if status:
+        statement = statement.where(JobDetails.status == status)
+
     jobs = session.exec(statement).all()
+
+    all_jobs = session.exec(select(JobDetails)).all()
+
+    total_jobs = len(all_jobs)
+    open_jobs = len([job for job in all_jobs if job.status == "open"])
+    draft_jobs = len([job for job in all_jobs if job.status == "draft"])
+    closed_jobs = len([job for job in all_jobs if job.status == "closed"])
 
     return templates.TemplateResponse(
         "JobDetails_list.html",
         {
             "request": request,
             "jobs": jobs,
-            "search": search
+            "search": search,
+            "project_type": project_type,
+            "engagement_level": engagement_level,
+            "status": status,
+            "total_jobs": total_jobs,
+            "open_jobs": open_jobs,
+            "draft_jobs": draft_jobs,
+            "closed_jobs": closed_jobs
         }
     )
-
-
-# ==========================================================
-# JOB DETAILS API CRUD ROUTES
-# These will appear in /docs
-# ==========================================================
 
 @app.get("/application/jobs/", response_model=List[JobDetails], tags=["Job Details"])
 def list_jobs(
@@ -456,3 +476,119 @@ def delete_job_from_page(
         url="/application/jobs/pages/list",
         status_code=303
     )
+
+from typing import Optional, List
+from decimal import Decimal
+from datetime import datetime
+
+from fastapi import FastAPI, HTTPException
+from sqlmodel import SQLModel, Field, Session, create_engine, select
+
+
+DATABASE_URL = "sqlite:///document_app.db"
+engine = create_engine(DATABASE_URL, echo=True)
+
+
+class DocumentApplication(SQLModel, table=True):
+    id: Optional[int] = Field(default=None, primary_key=True)
+    user_id: int
+    service_type: str
+    first_name: str
+    last_name: str
+    id_number: str
+    district: str
+    sub_county: str
+    reason: str
+    status: str = "draft"
+    fee: Decimal = Field(default=0, max_digits=12, decimal_places=2)
+    submitted_at: datetime = Field(default_factory=datetime.utcnow)
+    last_modified: datetime = Field(default_factory=datetime.utcnow)
+
+
+def create_db_and_tables():
+    SQLModel.metadata.create_all(engine)
+
+
+app = FastAPI()
+
+
+@app.on_event("startup")
+def on_startup():
+    create_db_and_tables()
+
+
+# LIST VIEW
+@app.get("/document-applications/", response_model=List[DocumentApplication])
+def list_document_applications(
+    status: Optional[str] = None,
+    service_type: Optional[str] = None
+):
+    with Session(engine) as session:
+        statement = select(DocumentApplication)
+
+        if status:
+            statement = statement.where(DocumentApplication.status == status)
+
+        if service_type:
+            statement = statement.where(DocumentApplication.service_type == service_type)
+
+        applications = session.exec(statement).all()
+        return applications
+
+
+# CREATE VIEW
+@app.post("/document-applications/", response_model=DocumentApplication)
+def create_document_application(application: DocumentApplication):
+    with Session(engine) as session:
+        session.add(application)
+        session.commit()
+        session.refresh(application)
+        return application
+
+
+# UPDATE VIEW
+@app.put("/document-applications/{application_id}", response_model=DocumentApplication)
+def update_document_application(application_id: int, updated_application: DocumentApplication):
+    with Session(engine) as session:
+        application = session.get(DocumentApplication, application_id)
+
+        if not application:
+            raise HTTPException(status_code=404, detail="Application not found")
+
+        application.user_id = updated_application.user_id
+        application.service_type = updated_application.service_type
+        application.first_name = updated_application.first_name
+        application.last_name = updated_application.last_name
+        application.id_number = updated_application.id_number
+        application.district = updated_application.district
+        application.sub_county = updated_application.sub_county
+        application.reason = updated_application.reason
+        application.status = updated_application.status
+        application.fee = updated_application.fee
+        application.last_modified = datetime.utcnow()
+
+        session.add(application)
+        session.commit()
+        session.refresh(application)
+
+        return application
+
+
+
+@app.delete("/document-applications/{application_id}")
+def delete_document_application(application_id: int):
+    with Session(engine) as session:
+        application = session.get(DocumentApplication, application_id)
+
+        if not application:
+            raise HTTPException(
+                status_code=404,
+                detail="Application not found"
+            )
+
+        session.delete(application)
+        session.commit()
+
+        return {
+            "message": "Document application deleted successfully."
+        }

@@ -16,6 +16,8 @@
             justify-content: space-between;
             align-items: center;
             margin-bottom: 25px;
+            flex-wrap: wrap;
+            gap: 12px;
         }
 
         h1 {
@@ -43,13 +45,53 @@
             background: #6c757d;
         }
 
+        .btn-secondary:hover {
+            background: #565e64;
+        }
+
         .btn-warning {
             background: #ffc107;
             color: #111827;
         }
 
+        .btn-warning:hover {
+            background: #e0a800;
+        }
+
         .btn-danger {
             background: #dc3545;
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #bb2d3b;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 18px;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        }
+
+        .stat-card h3 {
+            margin: 0;
+            color: #6c757d;
+            font-size: 14px;
+        }
+
+        .stat-card p {
+            margin: 8px 0 0;
+            font-size: 28px;
+            font-weight: bold;
+            color: #111827;
         }
 
         .search-box {
@@ -60,12 +102,28 @@
             box-shadow: 0 2px 8px rgba(0,0,0,0.08);
         }
 
-        .search-box input {
+        .search-box form {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            align-items: center;
+        }
+
+        .search-box input,
+        .search-box select {
             padding: 10px;
-            width: 280px;
             max-width: 100%;
             border: 1px solid #ccc;
             border-radius: 6px;
+            font-size: 14px;
+        }
+
+        .search-box input {
+            width: 280px;
+        }
+
+        .search-box select {
+            min-width: 170px;
         }
 
         .search-box button {
@@ -75,6 +133,10 @@
             border: none;
             border-radius: 6px;
             cursor: pointer;
+        }
+
+        .search-box button:hover {
+            background: #000;
         }
 
         .job-card {
@@ -121,7 +183,7 @@
             align-items: center;
         }
 
-        form {
+        .actions form {
             display: inline;
         }
 
@@ -131,6 +193,35 @@
             border-radius: 10px;
             color: #555;
         }
+
+        @media (max-width: 800px) {
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (max-width: 600px) {
+            body {
+                padding: 15px;
+            }
+
+            .search-box input,
+            .search-box select,
+            .search-box button,
+            .search-box .btn {
+                width: 100%;
+            }
+
+            .btn {
+                text-align: center;
+            }
+        }
+
+        @media (max-width: 500px) {
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+        }
     </style>
 </head>
 
@@ -138,26 +229,79 @@
 
     <div class="page-header">
         <h1>Job Opportunities</h1>
-        <a class="btn" href="/application/jobs/pages/create/form">Add New Job</a>
+        <a class="btn" href="/application/jobs/pages/create/form">
+            Add New Job
+        </a>
+    </div>
+
+    <div class="stats-grid">
+        <div class="stat-card">
+            <h3>Total Jobs</h3>
+            <p>{{ total_jobs }}</p>
+        </div>
+
+        <div class="stat-card">
+            <h3>Open Jobs</h3>
+            <p>{{ open_jobs }}</p>
+        </div>
+
+        <div class="stat-card">
+            <h3>Draft Jobs</h3>
+            <p>{{ draft_jobs }}</p>
+        </div>
+
+        <div class="stat-card">
+            <h3>Closed Jobs</h3>
+            <p>{{ closed_jobs }}</p>
+        </div>
     </div>
 
     <div class="search-box">
         <form method="get" action="/application/jobs/pages/list">
+
             <input
                 type="text"
                 name="search"
                 placeholder="Search job by title"
                 value="{{ search or '' }}"
             >
-            <button type="submit">Search</button>
+
+            <select name="project_type">
+                <option value="">All Project Types</option>
+                <option value="fixed" {% if project_type == "fixed" %}selected{% endif %}>Fixed</option>
+                <option value="hourly" {% if project_type == "hourly" %}selected{% endif %}>Hourly</option>
+                <option value="milestone" {% if project_type == "milestone" %}selected{% endif %}>Milestone</option>
+                <option value="retainer" {% if project_type == "retainer" %}selected{% endif %}>Retainer</option>
+            </select>
+
+            <select name="engagement_level">
+                <option value="">All Engagement Levels</option>
+                <option value="low" {% if engagement_level == "low" %}selected{% endif %}>Low</option>
+                <option value="medium" {% if engagement_level == "medium" %}selected{% endif %}>Medium</option>
+                <option value="high" {% if engagement_level == "high" %}selected{% endif %}>High</option>
+                <option value="full_time" {% if engagement_level == "full_time" %}selected{% endif %}>Full Time</option>
+            </select>
+
+            <select name="status">
+                <option value="">All Statuses</option>
+                <option value="open" {% if status == "open" %}selected{% endif %}>Open</option>
+                <option value="draft" {% if status == "draft" %}selected{% endif %}>Draft</option>
+                <option value="paused" {% if status == "paused" %}selected{% endif %}>Paused</option>
+                <option value="closed" {% if status == "closed" %}selected{% endif %}>Closed</option>
+            </select>
+
+            <button type="submit">Filter</button>
+
+            <a class="btn btn-secondary" href="/application/jobs/pages/list">
+                Reset
+            </a>
+
         </form>
     </div>
 
     {% for job in jobs %}
         <div class="job-card">
-            <h2>
-                {{ job.title }}
-            </h2>
+            <h2>{{ job.title }}</h2>
 
             <p class="job-meta">
                 <strong>Company:</strong>
