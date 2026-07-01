@@ -1,16 +1,27 @@
-<h1>User Profiles</h1>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>All Applicants</title>
+</head>
+<body>
 
-<ul>
-{% for profile in profiles %}
-    <li>
-        <strong>{{ profile.user.username }}</strong>
+    <h1>Applicant Directory</h1>
+    <hr>
 
-        {% if profile.city or profile.country %}
-            <br>
-            {{ profile.city }}{% if profile.city and profile.country %}, {% endif %}{{ profile.country }}
-        {% endif %}
-    </li>
-{% empty %}
-    <li>No profiles found.</li>
-{% endfor %}
-</ul>
+    <ul>
+        {% for profile in profiles %}
+            <li style="margin-bottom: 10px;">
+                <strong>{{ profile.user.username }}</strong> 
+                - {{ profile.position|default:"No position listed" }} <br>
+                
+                <a href="{% url 'accounts:profile_detail' profile.id %}">View Full Profile</a>
+            </li>
+        {% empty %}
+            <p>No profiles found in the database.</p>
+        {% endfor %}
+    </ul>
+
+</body>
+</html>

@@ -5,6 +5,11 @@ from django.contrib.auth import (
     get_user_model,
     get_backends,
 )
+from django.views.generic import ListView
+from .models import UserProfile
+from django.views.generic import DetailView
+
+
 from django.urls import reverse
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
@@ -882,3 +887,14 @@ def governance_list(request):
         'selected_category': category,
         'categories': categories
     })
+
+class UserProfileListView(ListView):
+    model = UserProfile
+    template_name = 'accounts/userprofile_list.html' # Django's default naming convention
+    context_object_name = 'profiles' # This lets us loop through 'profiles' in the HTML
+
+
+class UserProfileDetailView(DetailView):
+    model = UserProfile
+    template_name = "accounts/userprofile_detail.html"
+    context_object_name = "profile"
