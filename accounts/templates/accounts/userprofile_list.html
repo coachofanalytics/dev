@@ -1,27 +1,16 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>All Applicants</title>
-</head>
-<body>
+<h1>Applicant Profiles Directory</h1>
 
-    <h1>Applicant Directory</h1>
-    <hr>
+<hr>
 
-    <ul>
-        {% for profile in profiles %}
-            <li style="margin-bottom: 10px;">
-                <strong>{{ profile.user.username }}</strong> 
-                - {{ profile.position|default:"No position listed" }} <br>
-                
-                <a href="{% url 'accounts:profile_detail' profile.id %}">View Full Profile</a>
-            </li>
-        {% empty %}
-            <p>No profiles found in the database.</p>
-        {% endfor %}
-    </ul>
-
-</body>
-</html>
+{% for profile in profiles %}
+    <div style="border: 1px solid #ccc; padding: 15px; margin-bottom: 10px;">
+        <h3>Applicant ID: {{ profile.id }}</h3>
+        <p><strong>Position:</strong> {{ profile.position|default:"Not provided" }}</p>
+        <p><strong>Company:</strong> {{ profile.company|default:"Not provided" }}</p>
+        
+        <!-- Link to the actual Detail View -->
+        <a href="{% url 'accounts:profile_detail' profile.pk %}">View Full Profile &rarr;</a>
+    </div>
+{% empty %}
+    <p>No applicant profiles have been created yet.</p>
+{% endfor %}

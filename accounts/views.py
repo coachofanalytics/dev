@@ -46,6 +46,11 @@ from django.http import Http404
 from fuzzywuzzy import fuzz
 
 
+from django.views.generic import CreateView
+from django.urls import reverse_lazy
+from .models import UserProfile
+from .forms import UserProfileForm
+
 
 logger = logging.getLogger(__name__)
 # Create your views here..
@@ -892,6 +897,12 @@ class UserProfileListView(ListView):
     model = UserProfile
     template_name = 'accounts/userprofile_list.html' # Django's default naming convention
     context_object_name = 'profiles' # This lets us loop through 'profiles' in the HTML
+
+class UserProfileCreateView(CreateView):
+    model = UserProfile
+    form_class = UserProfileForm
+    template_name = 'accounts/userprofile_form.html'
+    success_url = reverse_lazy('accounts:profile-list')
 
 
 class UserProfileDetailView(DetailView):

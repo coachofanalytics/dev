@@ -1,13 +1,10 @@
 from django.urls import path
 from . import views
 from .views import (
-    UserUpdateView, 
-    SuperuserUpdateView, 
-    register, 
     UserProfileListView, 
-    UserProfileDetailView
+    UserProfileDetailView,
+    UserProfileCreateView # <-- Reactivate this!
 )
-
 app_name = "accounts"
 
 urlpatterns = [
@@ -16,23 +13,23 @@ urlpatterns = [
     path("join/", views.join, name="joins"),
     path("login/", views.login_view, name="account-login"),
     path("logout/", views.custom_logout, name="account-logout"),
-    path("register/", register, name="register"),
+    path("register/", views.register, name="register"),
     path("verify-email/<uuid:token>/", views.verify_email, name="verify-email"),
     path("email-verification-notice/<int:user_id>/", views.email_verification_notice, name="email-verification-notice"),
     path("select-category/", views.select_category, name="select_category"),
     path("users/", views.users, name="accounts-users"),
     path("processing/", views.userlist, name="processing-users"),
     
-    path(
-        "user/update/<int:pk>",
-        UserUpdateView.as_view(template_name="accounts/admin/user_update_form.html"),
-        name="user-update",
-    ),
-    path(
-        "superuser/<int:pk>/update/",
-        SuperuserUpdateView.as_view(template_name="accounts/admin/user_update_form.html"),
-        name="superuser-update",
-    ),
+    # path(
+    #     "user/update/<int:pk>",
+    #     UserUpdateView.as_view(template_name="accounts/admin/user_update_form.html"),
+    #     name="user-update",
+    # ),
+    # path(
+    #     "superuser/<int:pk>/update/",
+    #     SuperuserUpdateView.as_view(template_name="accounts/admin/user_update_form.html"),
+    #     name="superuser-update",
+    # ),
     path("thank/", views.thank, name="thank-you"),
     path("security/", views.security_verification, name="security"),
     
@@ -50,9 +47,8 @@ urlpatterns = [
     path('governance_list/', views.governance_list, name='governance_list'),
 
     # ============================= PROFILE VIEWS ===================================
-    # Directory list of all profiles: http://127.0.0.1:8000/accounts/profiles/
+ # KEEP THESE ACTIVE:
     path('profiles/', views.UserProfileListView.as_view(), name='profile-list'),
-    
-    # Individual detailed profile view: http://127.0.0.1:8000/accounts/profiles/1/
-    path('profiles/<int:pk>/', views.UserProfileDetailView.as_view(), name='profile_detail'), 
+    path('profiles/create/', views.UserProfileCreateView.as_view(), name='profile-create'), # <-- Reactivate this!
+    path('profiles/<int:pk>/', views.UserProfileDetailView.as_view(), name='profile_detail'),
 ]
