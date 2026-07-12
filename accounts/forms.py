@@ -24,7 +24,6 @@ class UserForm(forms.ModelForm):
     class Meta:
         model = CustomerUser
         fields = [
-            "category",
             "sub_category",
             "first_name",
             "last_name",
@@ -62,7 +61,7 @@ class UserForm(forms.ModelForm):
         super(UserForm, self).__init__(*args, **kwargs)
         # self.fields['category'].required= True
         # set category initial=1 and added category
-        self.fields["category"].initial = 1
+        # self.fields["category"].initial = 1
         self.fields["sub_category"].initial = 1
         self.fields["gender"].required = True
         self.fields["country"].required = True

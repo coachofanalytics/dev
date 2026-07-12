@@ -4,8 +4,8 @@ from django.contrib.auth.forms import UserChangeForm, UserCreationForm
 # <<<<<<< HEAD
 from .models import CustomerUser
 from django.contrib import admin
-from .models import PaymentHistory
-from .models import Transaction
+from .models import PaymentHistory,Transaction
+
 # =======
 from .models import CustomerUser, LoginHistory
 # >>>>>>> e79fe45578418c384fbb84ca7760d91bef020a33

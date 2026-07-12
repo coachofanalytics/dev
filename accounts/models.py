@@ -1,4 +1,4 @@
-from datetime import datetime,timedelta
+from datetime import timedelta
 from decimal import *
 from django.contrib.auth.models import AbstractUser, Group
 from django.db import models
@@ -9,8 +9,8 @@ from django_countries.fields import CountryField
 
 # from accounts.choices import CategoryChoices,SubCategoryChoices, GenderChoices
 from django.conf import settings
-from django.db import models
-from django.utils import timezone
+# from django.db import models
+# from django.utils import timezone
 
 # from accounts.choices import CategoryChoices,SubCategoryChoices
 
