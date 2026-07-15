@@ -1,12 +1,12 @@
 from django.core.exceptions import ValidationError
 from django.test import TestCase
 from django.contrib.auth import get_user_model
-from document_processing.models import DocumentApplication
+from document_processing.models import Application
 
 User = get_user_model()
 
 
-class DocumentApplicationRegressionTest(TestCase):
+class ApplicationRegressionTest(TestCase):
 
     def setUp(self):
         self.user = User.objects.create_user(
@@ -15,9 +15,9 @@ class DocumentApplicationRegressionTest(TestCase):
         )
 
     def test_invalid_service_type_rejected(self):
-        application = DocumentApplication(
+        application = Application(
             user=self.user,
-            service_type="invalid_service",
+            service="invalid_service",
             first_name="John",
             last_name="Doe",
             id_number="123",

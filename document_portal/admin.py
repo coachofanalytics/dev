@@ -1,0 +1,50 @@
+from django.contrib import admin
+from .models import DocumentApplication, DocumentDraft, DocumentProfile
+
+
+@admin.register(DocumentProfile)
+class DocumentProfileAdmin(admin.ModelAdmin):
+    list_display = (
+        "id",
+        "user",
+        "role",
+        "language_preference",
+        "phone_number",
+        "email_notifications",
+        "phone_notifications", 
+    )
+    list_filter = ("role", "language_preference")
+    search_fields = ("user__username", "user__email", "phone_number")
+
+
+@admin.register(DocumentApplication)
+class DocumentApplicationAdmin(admin.ModelAdmin):
+    list_display = (
+        "id",
+        "user",
+        "service_type",
+        "first_name",
+        "last_name",
+        "status",
+        "fee",
+        "submitted_at",
+    )
+    list_filter = ("status", "service_type")
+    search_fields = ("first_name", "last_name", "id_number", "service_type")
+
+    def save_model(save,obj,form,change):
+        if not obj.user_id:
+            obj.user=request.user
+            super().save_model(request,obj,form,change)
+
+
+@admin.register(DocumentDraft)
+class DocumentDraftAdmin(admin.ModelAdmin):
+    list_display = (
+        "id",
+        "application",
+        "completion_percentage",
+    )
+    search_fields = ("application__first_name", "application__last_name")
+
+

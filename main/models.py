@@ -1728,3 +1728,13 @@ class CommunityMessage(models.Model):
 
     class Meta:
         ordering = ['-created_at']
+
+from django.db import models
+
+# class DocumentDraft(models.Model):
+#     application = models.OneToOneField('DocumentApplication', on_delete=models.CASCADE)
+#     completion_percentage = models.IntegerField(default=0)
+#     draft_data = models.JSONField(blank=True, null=True)
+
+#     def __str__(self):
+#         return f"Draft for {self.application}"

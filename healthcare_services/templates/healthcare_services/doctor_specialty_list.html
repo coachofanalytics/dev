@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Doctor Specialties</title>
+</head>
+<body>
+
+<h1>Doctor Specialties</h1>
+
+{% if specialties %}
+    <table border="1" cellpadding="8">
+        <thead>
+            <tr>
+                <th>#</th>
+                <th>Name</th>
+                <th>Default</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for specialty in specialties %}
+                <tr>
+                    <td>{{ forloop.counter }}</td>
+                    <td>{{ specialty.name }}</td>
+                    <td>
+                        {% if specialty.is_default %}
+                            Yes
+                        {% else %}
+                            No
+                        {% endif %}
+                    </td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+{% else %}
+    <p>No doctor specialties have been added yet.</p>
+{% endif %}
+
+</body>
+</html>
