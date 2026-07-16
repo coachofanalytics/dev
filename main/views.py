@@ -1883,7 +1883,7 @@ The provider will review your request and contact you at {appointment.email} to 
 def home(request):
     """Simple home redirect."""
     from django.shortcuts import redirect
-    return redirect('find_doctors')
+    return redirect('main:find_doctors')
 
 
 
