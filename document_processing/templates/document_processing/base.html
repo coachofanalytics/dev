@@ -1,0 +1,89 @@
+{% extends 'main/base_templates/base.html' %}
+
+{% load static %}
+
+{% block content %}
+<style>
+    body {
+        background: #f5f8fc;
+    }
+
+    .document-processing-shell {
+        display: flex;
+        min-height: 100vh;
+        background: #f5f8fc;
+    }
+
+    .document-processing-sidebar {
+        width: 320px;
+        flex: 0 0 320px;
+        background: #ffffff;
+        border-right: 1px solid #e5eaf2;
+        position: sticky;
+        top: 0;
+        height: 100vh;
+        overflow-y: auto;
+    }
+
+    .document-processing-main {
+        flex: 1;
+        min-width: 0;
+        padding: 32px 40px 48px;
+    }
+
+    .document-processing-page-title {
+        color: #0f172a;
+    }
+
+    @media (max-width: 1024px) {
+        .document-processing-sidebar {
+            width: 280px;
+            flex-basis: 280px;
+        }
+
+        .document-processing-main {
+            padding: 24px;
+        }
+    }
+
+    @media (max-width: 768px) {
+        .document-processing-shell {
+            flex-direction: column;
+        }
+
+        .document-processing-sidebar {
+            width: 100%;
+            flex-basis: auto;
+            height: auto;
+            position: relative;
+        }
+
+        .document-processing-main {
+            padding: 20px 16px 32px;
+        }
+    }
+</style>
+
+<section class="document-processing-shell">
+    <aside class="document-processing-sidebar">
+        {% include 'document_processing/components/sidebar.html' with active_item=active_sidebar|default:'applications' %}
+    </aside>
+
+    <main class="document-processing-main">
+        <div class="max-w-7xl mx-auto">
+            <div class="mb-8">
+                {% block page_header %}
+                <h1 class="text-3xl font-extrabold tracking-tight document-processing-page-title">
+                    {% block page_heading %}{{ page_title|default:"Document Processing" }}{% endblock %}
+                </h1>
+                {% block page_subheading %}{% endblock %}
+                {% endblock %}
+            </div>
+
+            {% block page_content %}{% endblock %}
+        </div>
+    </main>
+</section>
+{% endblock %}
+
+{% block page_js %}{% endblock %}

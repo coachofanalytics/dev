@@ -80,7 +80,10 @@ urlpatterns = [
     path("accounts/", include("accounts.urls")),
     path("finance/", include("finance.urls")),
     path("communities/", include("main.urls_communities")),
-    path("document_processing/", include("document_processing.urls")),
+    path(
+        "document_processing/",
+        include(("document_processing.urls", "document_processing"), namespace="document_processing"),
+    ),
 
     # Social auth URLs
     path(

@@ -3,6 +3,8 @@ from . import views
 
 # urls.py
 
+app_name = "document_processing"
+
 urlpatterns = [
     # Dashboard
     path("", views.document_application_list, name="applications"),

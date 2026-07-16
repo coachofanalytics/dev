@@ -1,81 +1,120 @@
-{% extends 'main/base_templates/base.html' %}
+{% extends 'document_processing/base.html' %}
 
-{% block content %}
+{% block page_title %}My Applications{% endblock %}
 
-<h2>Document Applications</h2>
+{% block page_heading %}My Applications{% endblock %}
 
-<form method="GET">
-    <input type="text"
-           name="search"
-           placeholder="Search..."
-           value="{{ search }}">
+{% block page_subheading %}
+<p class="text-slate-500 text-base mt-2">
+    Manage and track your document requests.
+</p>
+{% endblock %}
 
-    <button type="submit">Search</button>
-</form>
-
-<p>Total Applications: {{ total_applications }}</p>
-
-<table border="1">
-    <thead>
-        <tr>
-            <th>ID</th>
-            <th>Service</th>
-            <th>Name</th>
-            <th>ID Number</th>
-            <th>District</th>
-            <th>Status</th>
-            <th>Fee</th>
-            <th>Date Submitted</th>
-        </tr>
-    </thead>
-
-    <tbody>
-        {% for application in page_obj %}
-        <tr>
-            <td>{{ application.id }}</td>
-            <td>{{ application.get_service_type_display }}</td>
-            <td>{{ application.first_name }} {{ application.last_name }}</td>
-            <td>{{ application.id_number }}</td>
-            <td>{{ application.district }}</td>
-            <td>{{ application.get_status_display }}</td>
-            <td>{{ application.fee }}</td>
-            <td>{{ application.submitted_at }}</td>
-        </tr>
-
-        {% empty %}
-        <tr>
-            <td colspan="8">
-                No applications found.
-            </td>
-        </tr>
-        {% endfor %}
-    </tbody>
-</table>
-
-<br>
-
-<div>
-    {% if page_obj.has_previous %}
-        <a href="#">&laquo; First</a>
-
-        <a href="#">
-            Previous
-        </a>
-    {% endif %}
-
-    Page {{ page_obj.number }}
-    of
-    {{ page_obj.paginator.num_pages }}
-
-    {% if page_obj.has_next %}
-        <a href="#">
-            Next
-        </a>
-
-        <a href="#">
-            Last &raquo;
-        </a>
-    {% endif %}
+{% block page_content %}
+<div class="grid grid-cols-1 xl:grid-cols-3 gap-6 mb-8">
+    {% for stat in stats %}
+        {% include 'document_processing/components/stat_card.html' with label=stat.label value=stat.value color=stat.color %}
+    {% endfor %}
 </div>
 
+<form method="GET" class="bg-white rounded-[20px] shadow-sm border border-slate-200 p-4 md:p-5 mb-6">
+    <div class="grid grid-cols-1 lg:grid-cols-[minmax(0,1.5fr)_180px_auto] gap-3 items-center">
+        <div class="flex items-center gap-3 rounded-2xl border border-slate-200 px-4 py-3 bg-slate-50">
+            <select class="bg-transparent border-0 p-0 text-slate-700 font-medium focus:ring-0 focus:outline-none w-40">
+                <option>Application No.</option>
+                <option>Service</option>
+                <option>Applicant</option>
+            </select>
+            <div class="w-px h-6 bg-slate-200"></div>
+            <input type="text"
+                   name="search"
+                   placeholder="Search applications"
+                   value="{{ search }}"
+                   class="bg-transparent border-0 flex-1 focus:ring-0 focus:outline-none placeholder-slate-400">
+            <button type="submit" class="w-12 h-12 rounded-xl bg-[#2f63f4] text-white flex items-center justify-center shadow-sm">
+                <i class="fa-solid fa-magnifying-glass"></i>
+            </button>
+        </div>
+
+        <select class="form-control h-12 rounded-2xl border-slate-200 text-slate-700 font-medium">
+            <option>All Status</option>
+            <option>Pending</option>
+            <option>Approved</option>
+            <option>Rejected</option>
+        </select>
+
+        <a href="#" class="inline-flex items-center justify-center gap-2 h-12 px-5 rounded-2xl bg-[#0A926D] text-white font-semibold shadow-sm hover:bg-[#087a5c] hover:text-white">
+            <i class="fa-solid fa-plus"></i>
+            New Application
+        </a>
+    </div>
+</form>
+
+<div class="bg-white rounded-[20px] shadow-sm border border-slate-200 overflow-hidden">
+    <div class="overflow-x-auto">
+        <table class="w-full min-w-[980px] text-sm">
+            <thead>
+                <tr class="border-b border-slate-200 bg-slate-50 text-slate-500 uppercase tracking-wide text-xs font-bold">
+                    <th class="text-left py-4 px-6">Application No.</th>
+                    <th class="text-left py-4 px-6">Service</th>
+                    <th class="text-left py-4 px-6">Applicant</th>
+                    <th class="text-left py-4 px-6">Application Status</th>
+                    <th class="text-left py-4 px-6">Fee</th>
+                    <th class="text-left py-4 px-6">Submission Date</th>
+                    <th class="text-left py-4 px-6">Actions</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                {% for application in page_obj %}
+                <tr class="border-b border-slate-100 hover:bg-blue-50/60 transition {% if forloop.first %}border-l-4 border-l-[#2f63f4]{% endif %}">
+                    <td class="py-5 px-6 font-semibold text-slate-900 whitespace-nowrap">{{ application.id }}</td>
+                    <td class="py-5 px-6 text-slate-700 max-w-[260px]">{{ application.get_service_type_display }}</td>
+                    <td class="py-5 px-6 text-slate-700">{{ application.first_name }} {{ application.last_name }}</td>
+                    <td class="py-5 px-6">
+                        <span class="inline-flex items-center rounded-xl border border-emerald-300 bg-emerald-50 px-4 py-2 font-semibold text-emerald-700">
+                            <i class="fa-solid fa-check mr-2 text-xs"></i>
+                            {{ application.get_status_display }}
+                        </span>
+                    </td>
+                    <td class="py-5 px-6 text-slate-900 font-semibold whitespace-nowrap">KES {{ application.fee }}</td>
+                    <td class="py-5 px-6 text-slate-600 whitespace-nowrap">{{ application.submitted_at }}</td>
+                    <td class="py-5 px-6">
+                        <div class="flex items-center gap-4 text-slate-400">
+                            <button type="button" class="hover:text-[#0A926D]" title="Download">
+                                <i class="fa-solid fa-download"></i>
+                            </button>
+                            <button type="button" class="hover:text-[#0A926D]" title="Refresh">
+                                <i class="fa-solid fa-rotate-right"></i>
+                            </button>
+                            <button type="button" class="hover:text-[#0A926D]" title="View">
+                                <i class="fa-regular fa-eye"></i>
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+
+                {% empty %}
+                <tr>
+                    <td colspan="7" class="text-center text-slate-500 py-10">
+                        No applications found.
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="mt-6 flex flex-col md:flex-row md:items-center md:justify-between gap-3 text-sm text-slate-600">
+    <span>Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
+    <div class="flex items-center gap-2">
+        {% if page_obj.has_previous %}
+            <a href="#" class="px-4 py-2 rounded-xl bg-white border border-slate-200 hover:border-[#0A926D] hover:text-[#0A926D]">Previous</a>
+        {% endif %}
+        {% if page_obj.has_next %}
+            <a href="#" class="px-4 py-2 rounded-xl bg-white border border-slate-200 hover:border-[#0A926D] hover:text-[#0A926D]">Next</a>
+        {% endif %}
+    </div>
+</div>
 {% endblock %}

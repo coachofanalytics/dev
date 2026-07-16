@@ -1,0 +1,106 @@
+<div class="h-full flex flex-col px-5 py-6">
+    <div class="flex items-center gap-3 px-2 mb-8">
+        <div class="w-11 h-11 rounded-2xl bg-[#0A926D]/10 flex items-center justify-center text-[#0A926D]">
+            <i class="fa-regular fa-file-lines text-lg"></i>
+        </div>
+        <div>
+            <p class="text-xs uppercase tracking-[0.24em] text-slate-400 font-semibold">Document</p>
+            <p class="text-lg font-bold text-slate-900 leading-tight">Processing</p>
+        </div>
+    </div>
+
+    <nav class="flex-1">
+        <p class="px-3 text-xs font-semibold uppercase tracking-[0.2em] text-slate-400 mb-3">Workspace</p>
+        <a href="{% url 'document_processing:applications' %}"
+           class="dp-sidebar-link {% if active_item == 'applications' %}active{% endif %}">
+            <i class="fa-regular fa-file-lines"></i>
+            <span>Applications</span>
+        </a>
+        <a href="#" class="dp-sidebar-link">
+            <i class="fa-regular fa-pen-to-square"></i>
+            <span>Drafts</span>
+        </a>
+        <a href="#" class="dp-sidebar-link">
+            <i class="fa-regular fa-folder-open"></i>
+            <span>Documents</span>
+        </a>
+        <a href="#" class="dp-sidebar-link">
+            <i class="fa-solid fa-clock-rotate-left"></i>
+            <span>Data access history</span>
+        </a>
+
+        <div class="my-6 border-t border-slate-200"></div>
+
+        <p class="px-3 text-xs font-semibold uppercase tracking-[0.2em] text-slate-400 mb-3">Account</p>
+        <a href="#" class="dp-sidebar-link">
+            <i class="fa-regular fa-user"></i>
+            <span>My Profile</span>
+        </a>
+        <a href="#" class="dp-sidebar-link">
+            <i class="fa-regular fa-bell"></i>
+            <span>Notifications</span>
+            <span class="ml-auto rounded-full bg-[#0A926D] text-white text-[11px] font-bold px-2 py-0.5">3</span>
+        </a>
+        <a href="#" class="dp-sidebar-link">
+            <i class="fa-solid fa-gear"></i>
+            <span>Settings</span>
+        </a>
+        <a href="#" class="dp-sidebar-link">
+            <i class="fa-regular fa-circle-question"></i>
+            <span>Support &amp; Help</span>
+        </a>
+
+        <div class="my-6 border-t border-slate-200"></div>
+
+        <a href="{% url 'accounts:account-logout' %}" class="dp-sidebar-link dp-sidebar-logout">
+            <i class="fa-solid fa-arrow-right-from-bracket"></i>
+            <span>Logout</span>
+        </a>
+    </nav>
+</div>
+
+<style>
+    .dp-sidebar-link {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        width: 100%;
+        padding: 0.95rem 1rem;
+        margin-bottom: 0.35rem;
+        border-radius: 0.9rem;
+        color: #475569;
+        font-weight: 600;
+        transition: background-color 0.18s ease, color 0.18s ease, transform 0.18s ease;
+        text-decoration: none;
+    }
+
+    .dp-sidebar-link:hover {
+        background: #f1f7ff;
+        color: #0A926D;
+        text-decoration: none;
+        transform: translateX(2px);
+    }
+
+    .dp-sidebar-link.active {
+        background: linear-gradient(90deg, rgba(10, 146, 109, 0.12), rgba(10, 146, 109, 0.04));
+        color: #0A926D;
+        border: 1px solid rgba(10, 146, 109, 0.18);
+        box-shadow: 0 10px 24px rgba(15, 23, 42, 0.04);
+    }
+
+    .dp-sidebar-link i {
+        width: 1rem;
+        text-align: center;
+        color: inherit;
+        opacity: 0.9;
+    }
+
+    .dp-sidebar-logout {
+        color: #ef4444;
+    }
+
+    .dp-sidebar-logout:hover {
+        background: rgba(239, 68, 68, 0.08);
+        color: #dc2626;
+    }
+</style>

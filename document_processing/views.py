@@ -12,6 +12,13 @@ def document_application_list(request):
 
     applications = Application.objects.all().order_by('-submitted_at')
 
+    #Stats
+    stats = [
+        {'label': 'Total Applications', 'value': applications.count(), 'color': 'blue'},
+        {'label': 'Pending', 'value': applications.filter(status='in_progress').count(), 'color': 'orange'},
+        {'label': 'Approved', 'value': applications.filter(status='completed').count(), 'color': 'green'},
+    ]    
+
     # Search functionality
     search = request.GET.get('search')
 
@@ -34,7 +41,7 @@ def document_application_list(request):
     context = {
         'page_obj': page_obj,
         'search': search,
-        'total_applications': applications.count(),
+        'stats': stats,
     }
 
     return render(
