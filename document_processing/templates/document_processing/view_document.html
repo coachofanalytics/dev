@@ -1,0 +1,42 @@
+{% extends 'document_processing/base.html' %}
+
+{% block page_title %}{{ document.title }}{% endblock %}
+{% block page_heading %}{{ document.title }}{% endblock %}
+
+{% block page_subheading %}
+<p class="text-slate-500 text-base mt-2">
+    Secure viewer &middot; Issued {{ document.issued_at|date:"M d, Y" }} &middot; Status: {{ document.get_status_display }}
+</p>
+{% endblock %}
+
+{% block page_content %}
+<div class="bg-white rounded-[20px] shadow-sm border border-slate-200 overflow-hidden">
+    <div class="flex items-center justify-between gap-3 px-6 py-4 border-b border-slate-200 bg-slate-50">
+        <div class="flex items-center gap-3 text-slate-700 font-semibold">
+            <i class="fa-regular fa-file-pdf text-[#0A926D]"></i>
+            {{ document.title }}
+        </div>
+        <a href="{% url 'document_processing:download_document' document.pk %}"
+           class="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-[#0A926D] text-white text-sm font-semibold hover:bg-[#087a5c]">
+            <i class="fa-solid fa-download"></i> Download
+        </a>
+    </div>
+
+    <div class="p-8 flex items-center justify-center min-h-[420px] bg-slate-50">
+        {% if document.file %}
+            <iframe src="{{ document.file.url }}" class="w-full h-[70vh] rounded-xl border border-slate-200 bg-white" title="{{ document.title }}"></iframe>
+        {% else %}
+            <div class="text-center text-slate-500">
+                <i class="fa-regular fa-file-pdf text-4xl mb-3"></i>
+                <p>Document preview is not available.</p>
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+<div class="mt-4">
+    <a href="{% url 'document_processing:documents' %}" class="inline-flex items-center gap-2 text-slate-500 font-semibold hover:text-[#0A926D]">
+        <i class="fa-solid fa-arrow-left"></i> Back to My Documents
+    </a>
+</div>
+{% endblock %}
