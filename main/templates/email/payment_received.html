@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Payment Received</title>
+</head>
+<body style="font-family: Arial, sans-serif; background:#f4f6f8; padding:24px;">
+    <div style="max-width:560px; margin:0 auto; background:#ffffff; border-radius:12px; overflow:hidden; box-shadow:0 2px 8px rgba(0,0,0,0.08);">
+        <div style="background:#0A926D; padding:20px 24px; color:#ffffff;">
+            <h2 style="margin:0; font-size:20px;">Payment Received</h2>
+        </div>
+        <div style="padding:24px;">
+            <p>Hello {{ user.first_name|default:user.username }},</p>
+            <p>We have received your payment for the following document service application:</p>
+            <table style="width:100%; border-collapse:collapse; margin:16px 0;">
+                <tr>
+                    <td style="padding:8px 0; color:#555;">Application</td>
+                    <td style="padding:8px 0; font-weight:bold;">{{ application.application_number }}</td>
+                </tr>
+                <tr>
+                    <td style="padding:8px 0; color:#555;">Service</td>
+                    <td style="padding:8px 0; font-weight:bold;">{{ application.get_service_display }}</td>
+                </tr>
+                <tr>
+                    <td style="padding:8px 0; color:#555;">Amount Paid</td>
+                    <td style="padding:8px 0; font-weight:bold;">{{ application.service_fee }} RWF</td>
+                </tr>
+                <tr>
+                    <td style="padding:8px 0; color:#555;">Method</td>
+                    <td style="padding:8px 0; font-weight:bold;">{{ payment.get_method_display }}</td>
+                </tr>
+                <tr>
+                    <td style="padding:8px 0; color:#555;">Transaction ID</td>
+                    <td style="padding:8px 0; font-weight:bold;">{{ payment.transaction_id|default:"N/A" }}</td>
+                </tr>
+            </table>
+            <p>Your application is now being processed. You will be notified once your document is ready.</p>
+            <p style="margin-top:24px; color:#777; font-size:13px;">
+                Thank you,<br>Diaspora County 048 — Document Processing Portal
+            </p>
+        </div>
+    </div>
+</body>
+</html>
