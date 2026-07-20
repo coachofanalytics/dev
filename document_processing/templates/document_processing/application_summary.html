@@ -1,0 +1,161 @@
+{% extends 'document_processing/base.html' %}
+
+{% block page_title %}Summary{% endblock %}
+{% block page_heading %}Review &amp; Confirm{% endblock %}
+
+{% block page_subheading %}
+<p class="text-slate-500 text-base mt-2">
+    {{ application.applicant_name }} &middot; ID {{ application.id_number }}
+</p>
+{% endblock %}
+
+{% block page_content %}
+<style>
+    .dp-step {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        flex: 1;
+    }
+    .dp-step-circle {
+        width: 38px;
+        height: 38px;
+        border-radius: 9999px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 700;
+        border: 2px solid #e2e8f0;
+        color: #94a3b8;
+        background: #fff;
+    }
+    .dp-step.active .dp-step-circle,
+    .dp-step.done .dp-step-circle {
+        border-color: #0A926D;
+        background: #0A926D;
+        color: #fff;
+    }
+    .dp-step-label { font-weight: 600; color: #64748b; }
+    .dp-step.active .dp-step-label, .dp-step.done .dp-step-label { color: #0f172a; }
+    .dp-check {
+        width: 20px; height: 20px; border-radius: 6px; border: 2px solid #cbd5e1;
+        display: inline-flex; align-items: center; justify-content: center;
+        cursor: pointer; transition: all .15s ease;
+    }
+    .dp-check input { display: none; }
+    .dp-check.checked { background: #0A926D; border-color: #0A926D; color: #fff; }
+</style>
+
+<!-- Stepper -->
+<div class="bg-white rounded-[20px] shadow-sm border border-slate-200 px-6 py-5 mb-6">
+    <div class="flex items-center">
+        <div class="dp-step done">
+            <div class="dp-step-circle"><i class="fa-solid fa-check"></i></div>
+            <span class="dp-step-label">Application</span>
+        </div>
+        <div class="flex-1 h-0.5 bg-slate-100 mx-2"></div>
+        <div class="dp-step active">
+            <div class="dp-step-circle">2</div>
+            <span class="dp-step-label">Summary</span>
+        </div>
+        <div class="flex-1 h-0.5 bg-slate-100 mx-2"></div>
+        <div class="dp-step">
+            <div class="dp-step-circle">3</div>
+            <span class="dp-step-label">Payment</span>
+        </div>
+    </div>
+</div>
+
+<form method="POST" novalidate>
+    {% csrf_token %}
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div class="lg:col-span-2 space-y-6">
+            <div class="bg-white rounded-[20px] shadow-sm border border-slate-200 p-6">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-sm font-bold uppercase tracking-wide text-slate-400">Requester Details</h3>
+                    <a href="{% url 'document_processing:application_edit' application.pk %}"
+                       class="inline-flex items-center gap-1.5 text-sm font-semibold text-[#0A926D] hover:underline">
+                        <i class="fa-solid fa-pen"></i> Edit
+                    </a>
+                </div>
+                <dl class="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-4 text-sm">
+                    <div><dt class="text-slate-400">Name</dt><dd class="font-semibold text-slate-800">{{ application.applicant_name }}</dd></div>
+                    <div><dt class="text-slate-400">ID number</dt><dd class="font-semibold text-slate-800">{{ application.id_number }}</dd></div>
+                    <div><dt class="text-slate-400">Service</dt><dd class="font-semibold text-slate-800">{{ application.get_service_display }}</dd></div>
+                    <div><dt class="text-slate-400">Reason</dt><dd class="font-semibold text-slate-800">{{ application.get_reason_display|default:application.reason }}</dd></div>
+                </dl>
+            </div>
+
+            <div class="bg-white rounded-[20px] shadow-sm border border-slate-200 p-6">
+                <h3 class="text-sm font-bold uppercase tracking-wide text-slate-400 mb-4">Collection / Processing Office</h3>
+                <p class="text-slate-700">{{ application.get_district_display|default:application.district }} District &mdash; {{ application.sub_county }} Sub-county Office</p>
+            </div>
+
+            <div class="bg-white rounded-[20px] shadow-sm border border-slate-200 p-6">
+                <h3 class="text-sm font-bold uppercase tracking-wide text-slate-400 mb-4">Notification Preferences</h3>
+                <div class="space-y-4">
+                    <label class="flex items-start gap-3 cursor-pointer">
+                        {{ form.notify_by_phone }}
+                        <span class="text-sm font-medium text-slate-700">Notify me by phone</span>
+                    </label>
+                    <div id="phoneField" class="pl-7 {% if not form.notify_by_phone.value %}hidden{% endif %}">
+                        {{ form.phone }}
+                        {% if form.phone.errors %}<p class="dp-field-error text-red-600 text-sm font-semibold mt-1">{{ form.phone.errors.0 }}</p>{% endif %}
+                    </div>
+
+                    <label class="flex items-start gap-3 cursor-pointer">
+                        {{ form.notify_by_email }}
+                        <span class="text-sm font-medium text-slate-700">Notify me by email</span>
+                    </label>
+                    <div id="emailField" class="pl-7 {% if not form.notify_by_email.value %}hidden{% endif %}">
+                        {{ form.email }}
+                        {% if form.email.errors %}<p class="dp-field-error text-red-600 text-sm font-semibold mt-1">{{ form.email.errors.0 }}</p>{% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="space-y-6">
+            <div class="bg-white rounded-[20px] shadow-sm border border-slate-200 p-6">
+                <h3 class="text-sm font-bold uppercase tracking-wide text-slate-400 mb-4">Certification</h3>
+                <label class="flex items-start gap-3 cursor-pointer">
+                    {{ form.certified }}
+                    <span class="text-sm font-medium text-slate-700">{{ form.certified.label }}</span>
+                </label>
+                {% if form.certified.errors %}<p class="dp-field-error text-red-600 text-sm font-semibold mt-2">{{ form.certified.errors.0 }}</p>{% endif %}
+            </div>
+
+            <div class="flex flex-col gap-3">
+                <button type="submit" name="action" value="next"
+                        class="inline-flex items-center justify-center gap-2 px-4 py-3 rounded-2xl bg-[#0A926D] text-white font-semibold shadow-sm hover:bg-[#087a5c]">
+                    Next <i class="fa-solid fa-arrow-right"></i>
+                </button>
+                <button type="submit" name="action" value="cancel"
+                        class="inline-flex items-center justify-center gap-2 px-4 py-3 rounded-2xl bg-white border border-slate-200 text-slate-600 font-semibold hover:border-[#0A926D] hover:text-[#0A926D]">
+                    Cancel
+                </button>
+                <a href="{% url 'document_processing:application_edit' application.pk %}"
+                   class="inline-flex items-center justify-center gap-2 px-4 py-3 rounded-2xl text-slate-500 font-semibold hover:text-[#0A926D]">
+                    <i class="fa-solid fa-arrow-left"></i> Back to Application
+                </a>
+            </div>
+        </div>
+    </div>
+</form>
+{% endblock %}
+
+{% block page_js %}
+<script>
+    (function () {
+        function toggle(fieldId, checkbox) {
+            var field = document.getElementById(fieldId);
+            if (!field) return;
+            field.classList.toggle("hidden", !checkbox.checked);
+        }
+        var phoneCb = document.querySelector("#id_notify_by_phone");
+        var emailCb = document.querySelector("#id_notify_by_email");
+        if (phoneCb) phoneCb.addEventListener("change", function () { toggle("phoneField", phoneCb); });
+        if (emailCb) emailCb.addEventListener("change", function () { toggle("emailField", emailCb); });
+    })();
+</script>
+{% endblock %}
