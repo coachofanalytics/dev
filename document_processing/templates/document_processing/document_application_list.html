@@ -18,12 +18,13 @@
 </div>
 
 <form method="GET" class="bg-white rounded-[20px] shadow-sm border border-slate-200 p-4 md:p-5 mb-6">
-    <div class="grid grid-cols-1 lg:grid-cols-[minmax(0,1.5fr)_180px_auto] gap-3 items-center">
+    <div class="grid grid-cols-1 lg:grid-cols-[minmax(0,1.5fr)_180px_180px_auto] gap-3 items-center">
         <div class="flex items-center gap-3 rounded-2xl border border-slate-200 px-4 py-3 bg-slate-50">
-            <select class="bg-transparent border-0 p-0 text-slate-700 font-medium focus:ring-0 focus:outline-none w-40">
-                <option>Application No.</option>
-                <option>Service</option>
-                <option>Applicant</option>
+            <select name="field" class="bg-transparent border-0 p-0 text-slate-700 font-medium focus:ring-0 focus:outline-none w-40">
+                <option value="all" {% if field == 'all' %}selected{% endif %}>All fields</option>
+                <option value="application_no" {% if field == 'application_no' %}selected{% endif %}>Application No.</option>
+                <option value="service" {% if field == 'service' %}selected{% endif %}>Service</option>
+                <option value="applicant" {% if field == 'applicant' %}selected{% endif %}>Applicant</option>
             </select>
             <div class="w-px h-6 bg-slate-200"></div>
             <input type="text"
@@ -36,14 +37,18 @@
             </button>
         </div>
 
-        <select class="form-control h-12 rounded-2xl border-slate-200 text-slate-700 font-medium">
-            <option>All Status</option>
-            <option>Pending</option>
-            <option>Approved</option>
-            <option>Rejected</option>
+        <select name="status" class="form-control h-12 rounded-2xl border-slate-200 text-slate-700 font-medium">
+            <option value="">All Status</option>
+            {% for value, label in status_choices %}
+                <option value="{{ value }}" {% if status_filter == value %}selected{% endif %}>{{ label }}</option>
+            {% endfor %}
         </select>
 
-        <a href="#" class="inline-flex items-center justify-center gap-2 h-12 px-5 rounded-2xl bg-[#0A926D] text-white font-semibold shadow-sm hover:bg-[#087a5c] hover:text-white">
+        <a href="{% url 'document_processing:applications' %}" class="inline-flex items-center justify-center gap-2 h-12 px-4 rounded-2xl bg-white border border-slate-200 text-slate-600 font-semibold hover:border-[#0A926D] hover:text-[#0A926D]">
+            <i class="fa-solid fa-filter"></i> Filter
+        </a>
+
+        <a href="{% url 'document_processing:application_create' %}" class="inline-flex items-center justify-center gap-2 h-12 px-5 rounded-2xl bg-[#0A926D] text-white font-semibold shadow-sm hover:bg-[#087a5c] hover:text-white">
             <i class="fa-solid fa-plus"></i>
             New Application
         </a>
@@ -68,8 +73,8 @@
             <tbody>
                 {% for application in page_obj %}
                 <tr class="border-b border-slate-100 hover:bg-blue-50/60 transition {% if forloop.first %}border-l-4 border-l-[#2f63f4]{% endif %}">
-                    <td class="py-5 px-6 font-semibold text-slate-900 whitespace-nowrap">{{ application.id }}</td>
-                    <td class="py-5 px-6 text-slate-700 max-w-[260px]">{{ application.get_service_type_display }}</td>
+                    <td class="py-5 px-6 font-semibold text-slate-900 whitespace-nowrap">{{ application.application_number|default:application.id }}</td>
+                    <td class="py-5 px-6 text-slate-700 max-w-[260px]">{{ application.get_service_display }}</td>
                     <td class="py-5 px-6 text-slate-700">{{ application.first_name }} {{ application.last_name }}</td>
                     <td class="py-5 px-6">
                         <span class="inline-flex items-center rounded-xl border border-emerald-300 bg-emerald-50 px-4 py-2 font-semibold text-emerald-700">
@@ -78,18 +83,22 @@
                         </span>
                     </td>
                     <td class="py-5 px-6 text-slate-900 font-semibold whitespace-nowrap">KES {{ application.fee }}</td>
-                    <td class="py-5 px-6 text-slate-600 whitespace-nowrap">{{ application.submitted_at }}</td>
+                    <td class="py-5 px-6 text-slate-600 whitespace-nowrap">{{ application.submitted_at|date:"M d, Y"|default:"—" }}</td>
                     <td class="py-5 px-6">
                         <div class="flex items-center gap-4 text-slate-400">
-                            <button type="button" class="hover:text-[#0A926D]" title="Download">
-                                <i class="fa-solid fa-download"></i>
-                            </button>
-                            <button type="button" class="hover:text-[#0A926D]" title="Refresh">
-                                <i class="fa-solid fa-rotate-right"></i>
-                            </button>
-                            <button type="button" class="hover:text-[#0A926D]" title="View">
+                            <a href="{% url 'document_processing:application_detail' application.pk %}" class="hover:text-[#0A926D]" title="View details">
                                 <i class="fa-regular fa-eye"></i>
-                            </button>
+                            </a>
+                            {% if application.status == 'paid' or application.status == 'completed' or application.status == 'approved' %}
+                            <a href="{% url 'document_processing:documents' %}" class="hover:text-[#0A926D]" title="Download receipt">
+                                <i class="fa-solid fa-download"></i>
+                            </a>
+                            {% endif %}
+                            {% if application.status == 'draft' %}
+                            <a href="{% url 'document_processing:application_edit' application.pk %}" class="hover:text-[#0A926D]" title="Continue">
+                                <i class="fa-solid fa-pen"></i>
+                            </a>
+                            {% endif %}
                         </div>
                     </td>
                 </tr>
@@ -110,10 +119,10 @@
     <span>Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
     <div class="flex items-center gap-2">
         {% if page_obj.has_previous %}
-            <a href="#" class="px-4 py-2 rounded-xl bg-white border border-slate-200 hover:border-[#0A926D] hover:text-[#0A926D]">Previous</a>
+            <a href="?page={{ page_obj.previous_page_number }}{% if search %}&search={{ search }}{% endif %}{% if status_filter %}&status={{ status_filter }}{% endif %}{% if field %}&field={{ field }}{% endif %}" class="px-4 py-2 rounded-xl bg-white border border-slate-200 hover:border-[#0A926D] hover:text-[#0A926D]">Previous</a>
         {% endif %}
         {% if page_obj.has_next %}
-            <a href="#" class="px-4 py-2 rounded-xl bg-white border border-slate-200 hover:border-[#0A926D] hover:text-[#0A926D]">Next</a>
+            <a href="?page={{ page_obj.next_page_number }}{% if search %}&search={{ search }}{% endif %}{% if status_filter %}&status={{ status_filter }}{% endif %}{% if field %}&field={{ field }}{% endif %}" class="px-4 py-2 rounded-xl bg-white border border-slate-200 hover:border-[#0A926D] hover:text-[#0A926D]">Next</a>
         {% endif %}
     </div>
 </div>
