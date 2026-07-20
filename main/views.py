@@ -186,10 +186,10 @@ def hendler403(request,exception):
     return render(request, "main/errors/403.html")
 
 def hendler404(request,exception):
-    return render(request, "main/errors/404.html")
+    return render(request, "main/errors/404.html", status=404)
 
 def hendler404(request,exception):
-    return render(request, "main/errors/404.html")
+    return render(request, "main/errors/404.html", status=404)
 
 def hendler500(request):
     return render(request, "main/errors/500.html")
