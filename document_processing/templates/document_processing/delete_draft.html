@@ -1,0 +1,31 @@
+{% extends 'document_processing/base.html' %}
+
+{% block page_title %}Delete Draft{% endblock %}
+{% block page_heading %}Delete Draft{% endblock %}
+
+{% block page_content %}
+<div class="max-w-xl mx-auto">
+    <div class="bg-white rounded-[20px] shadow-sm border border-slate-200 p-8 text-center">
+        <div class="w-16 h-16 rounded-2xl bg-red-50 text-red-500 flex items-center justify-center text-2xl mx-auto mb-5">
+            <i class="fa-regular fa-trash-can"></i>
+        </div>
+        <h2 class="text-xl font-bold text-slate-900">Delete this draft?</h2>
+        <p class="text-slate-500 mt-2">
+            Draft <span class="font-semibold text-slate-700">{{ draft.application_number|default:draft.id }}</span>
+            ({{ draft.get_service_display }}) will be permanently removed. This action cannot be undone.
+        </p>
+
+        <form method="POST" class="mt-7 flex items-center justify-center gap-3">
+            {% csrf_token %}
+            <a href="{% url 'document_processing:drafts' %}"
+               class="px-5 py-2.5 rounded-2xl bg-white border border-slate-200 text-slate-600 font-semibold hover:border-slate-300">
+                Cancel
+            </a>
+            <button type="submit"
+                    class="px-5 py-2.5 rounded-2xl bg-red-600 text-white font-semibold shadow-sm hover:bg-red-700">
+                <i class="fa-regular fa-trash-can mr-1"></i> Delete Draft
+            </button>
+        </form>
+    </div>
+</div>
+{% endblock %}
