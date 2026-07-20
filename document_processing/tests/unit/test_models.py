@@ -31,10 +31,10 @@ class ApplicationModelTest(TestCase):
             service="passport",
             first_name="John",
             last_name="Doe",
-            id_number="123456789",
-            district="Gasabo",
+            id_number="1234567",
+            district="gasabo",
             sub_county="Kimironko",
-            reason="Lost passport",
+            reason="lost",
         )
         defaults.update(kwargs)
         return Application.objects.create(**defaults)
@@ -44,11 +44,11 @@ class ApplicationModelTest(TestCase):
         app = self._make_application()
         self.assertEqual(app.first_name, "John")
         self.assertEqual(app.last_name, "Doe")
-        self.assertEqual(app.id_number, "123456789")
+        self.assertEqual(app.id_number, "1234567")
         self.assertEqual(app.service, "passport")
-        self.assertEqual(app.district, "Gasabo")
+        self.assertEqual(app.district, "gasabo")
         self.assertEqual(app.sub_county, "Kimironko")
-        self.assertEqual(app.reason, "Lost passport")
+        self.assertEqual(app.reason, "lost")
 
     def test_application_str(self):
         app = self._make_application()
@@ -84,7 +84,7 @@ class ApplicationModelTest(TestCase):
         app = self._make_application()
         self.assertEqual(app.phone, "")
         self.assertEqual(app.email, "")
-        self.assertIsNone(app.application_number)
+        self.assertIsNotNone(app.application_number)
         self.assertIsNone(app.submitted_at)
 
     # --- Fee handling -----------------------------------------------------
@@ -115,11 +115,10 @@ class ApplicationModelTest(TestCase):
         with self.assertRaises(Exception):
             self._make_application(application_number="APP-001")
 
-    def test_application_number_can_be_null_twice(self):
-        a = self._make_application(application_number=None)
-        b = self._make_application(application_number=None)
-        self.assertIsNone(a.application_number)
-        self.assertIsNone(b.application_number)
+    def test_application_number_auto_generated(self):
+        a = self._make_application()
+        self.assertIsNotNone(a.application_number)
+        self.assertTrue(a.application_number.startswith("DC48-"))
 
     # --- Field length constraints -----------------------------------------
     def test_id_number_max_length(self):
@@ -130,11 +129,9 @@ class ApplicationModelTest(TestCase):
             app2.full_clean()
 
     def test_reason_max_length(self):
-        app = self._make_application(reason="x" * 255)
-        app.full_clean()
-        app2 = self._make_application(reason="x" * 256)
-        with self.assertRaises(ValidationError):
-            app2.full_clean()
+        # reason is a choices field; verify the DB column max_length is 255.
+        field = Application._meta.get_field("reason")
+        self.assertEqual(field.max_length, 255)
 
     # --- Timestamps -------------------------------------------------------
     def test_created_at_set_on_save(self):
