@@ -1,0 +1,86 @@
+{% extends 'document_processing/base.html' %}
+
+{% block page_title %}Saved Drafts{% endblock %}
+{% block page_heading %}Saved Drafts{% endblock %}
+
+{% block page_subheading %}
+<p class="text-slate-500 text-base mt-2">
+    Pick up where you left off. Continue an unfinished application or remove it.
+</p>
+{% endblock %}
+
+{% block page_content %}
+<div class="bg-white rounded-[20px] shadow-sm border border-slate-200 overflow-hidden">
+    <div class="overflow-x-auto">
+        <table class="w-full min-w-[820px] text-sm">
+            <thead>
+                <tr class="border-b border-slate-200 bg-slate-50 text-slate-500 uppercase tracking-wide text-xs font-bold">
+                    <th class="text-left py-4 px-6">Draft ID</th>
+                    <th class="text-left py-4 px-6">Service</th>
+                    <th class="text-left py-4 px-6">Last Modified</th>
+                    <th class="text-left py-4 px-6">Progress</th>
+                    <th class="text-left py-4 px-6">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for draft in page_obj %}
+                <tr class="border-b border-slate-100 hover:bg-blue-50/60 transition">
+                    <td class="py-5 px-6 font-semibold text-slate-900 whitespace-nowrap">{{ draft.application_number|default:draft.id }}</td>
+                    <td class="py-5 px-6 text-slate-700">{{ draft.get_service_display }}</td>
+                    <td class="py-5 px-6 text-slate-600 whitespace-nowrap">{{ draft.updated_at|date:"M d, Y H:i" }}</td>
+                    <td class="py-5 px-6">
+                        <div class="flex items-center gap-3 min-w-[160px]">
+                            <div class="flex-1 h-2 rounded-full bg-slate-100 overflow-hidden">
+                                <div class="h-full rounded-full bg-[#0A926D]" style="width: {{ draft.completion_percentage }}%;"></div>
+                            </div>
+                            <span class="text-xs font-semibold text-slate-600">{{ draft.completion_percentage }}%</span>
+                        </div>
+                    </td>
+                    <td class="py-5 px-6">
+                        <div class="flex items-center gap-3">
+                            <a href="{% url 'document_processing:application_edit' draft.pk %}"
+                               class="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-[#2f63f4] text-white text-sm font-semibold hover:bg-[#234ec4]">
+                                <i class="fa-solid fa-play"></i> Continue
+                            </a>
+                            <a href="{% url 'document_processing:delete_draft' draft.pk %}"
+                               class="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-white border border-red-200 text-red-600 text-sm font-semibold hover:bg-red-50">
+                                <i class="fa-regular fa-trash-can"></i> Delete
+                            </a>
+                        </div>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="5" class="text-center py-16">
+                        <div class="flex flex-col items-center gap-3">
+                            <div class="w-14 h-14 rounded-2xl bg-slate-100 flex items-center justify-center text-slate-400 text-xl">
+                                <i class="fa-regular fa-pen-to-square"></i>
+                            </div>
+                            <p class="text-slate-500">You have no saved drafts yet.</p>
+                            <a href="{% url 'document_processing:application_create' %}"
+                               class="inline-flex items-center gap-2 px-5 py-2.5 rounded-2xl bg-[#0A926D] text-white font-semibold shadow-sm hover:bg-[#087a5c]">
+                                <i class="fa-solid fa-plus"></i> Start New Application
+                            </a>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+{% if page_obj.paginator.num_pages > 1 %}
+<div class="mt-6 flex flex-col md:flex-row md:items-center md:justify-between gap-3 text-sm text-slate-600">
+    <span>Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
+    <div class="flex items-center gap-2">
+        {% if page_obj.has_previous %}
+            <a href="?page={{ page_obj.previous_page_number }}" class="px-4 py-2 rounded-xl bg-white border border-slate-200 hover:border-[#0A926D] hover:text-[#0A926D]">Previous</a>
+        {% endif %}
+        {% if page_obj.has_next %}
+            <a href="?page={{ page_obj.next_page_number }}" class="px-4 py-2 rounded-xl bg-white border border-slate-200 hover:border-[#0A926D] hover:text-[#0A926D]">Next</a>
+        {% endif %}
+    </div>
+</div>
+{% endif %}
+{% endblock %}
