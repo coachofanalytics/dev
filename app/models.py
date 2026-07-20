@@ -3,6 +3,14 @@ from sqlmodel import SQLModel, Field, Relationship
 from typing import Optional
 from datetime import datetime
 from sqlmodel import SQLModel, Field
+from sqlalchemy import Integer, String
+from sqlalchemy.orm import Mapped, mapped_column
+from datetime import datetime, timezone
+
+from sqlmodel import Field, SQLModel
+   
+
+
 
 class Pricing(SQLModel, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
@@ -63,6 +71,187 @@ class JobDetails(SQLModel, table=True):
 
     created_at: datetime = Field(default_factory=datetime.utcnow)
     updated_at: datetime = Field(default_factory=datetime.utcnow)
-    
 
 
+
+
+
+def utc_now() -> datetime:
+    return datetime.now(timezone.utc)
+
+
+class Score(SQLModel, table=True):
+    __tablename__ = "accounts_score"
+
+    id: int | None = Field(
+        default=None,
+        primary_key=True,
+    )
+
+    email: str = Field(
+        max_length=255,
+        nullable=False,
+        index=True,
+    )
+
+    gender: str | None = Field(
+        default=None,
+        max_length=30,
+        nullable=True,
+    )
+
+    phone: str = Field(
+        max_length=20,
+        nullable=False,
+        index=True,
+    )
+
+    address: str = Field(
+        max_length=255,
+        nullable=False,
+    )
+
+    city: str = Field(
+        max_length=100,
+        nullable=False,
+        index=True,
+    )
+
+    state: str = Field(
+        max_length=100,
+        nullable=False,
+        index=True,
+    )
+
+    zipcode: str = Field(
+        max_length=20,
+        nullable=False,
+    )
+
+    country: str = Field(
+        max_length=100,
+        nullable=False,
+        index=True,
+    )
+
+    category: str = Field(
+        max_length=100,
+        nullable=False,
+        index=True,
+    )
+
+    sub_category: int = Field(
+        nullable=False,
+        index=True,
+    )
+
+    created_at: datetime = Field(
+        default_factory=utc_now,
+        nullable=False,
+    )
+
+    updated_at: datetime = Field(
+        default_factory=utc_now,
+        nullable=False,
+    )
+
+
+
+
+class UserGroupLink(SQLModel, table=True):
+    """
+    Junction table connecting users and groups.
+    """
+
+    __tablename__ = "user_group_links"
+
+    user_id: int = Field(
+        foreign_key="customer_users.id",
+        primary_key=True,
+        ondelete="CASCADE",
+    )
+
+    group_id: int = Field(
+        foreign_key="user_groups.id",
+        primary_key=True,
+        ondelete="CASCADE",
+    )
+
+
+class CustomerUser(SQLModel, table=True):
+    """
+    Basic user model.
+    """
+
+    __tablename__ = "customer_users"
+
+    id: Optional[int] = Field(
+        default=None,
+        primary_key=True,
+    )
+
+    username: str = Field(
+        min_length=2,
+        max_length=150,
+        unique=True,
+        index=True,
+    )
+
+    email: str = Field(
+        max_length=255,
+        unique=True,
+        index=True,
+    )
+
+    is_admin: bool = Field(
+        default=False,
+    )
+
+    is_active: bool = Field(
+        default=True,
+    )
+
+    groups: list["UserGroups"] = Relationship(
+        back_populates="users",
+        link_model=UserGroupLink,
+    )
+
+
+class UserGroups(SQLModel, table=True):
+    """
+    User group model.
+    """
+
+    __tablename__ = "user_groups"
+
+    id: Optional[int] = Field(
+        default=None,
+        primary_key=True,
+    )
+
+    name: str = Field(
+        min_length=2,
+        max_length=150,
+        unique=True,
+        index=True,
+    )
+
+    description: Optional[str] = Field(
+        default=None,
+        max_length=500,
+    )
+
+    is_active: bool = Field(
+        default=True,
+        index=True,
+    )
+
+    is_featured: bool = Field(
+        default=False,
+        index=True,
+    )
+
+    users: list["CustomerUser"] = Relationship(
+        back_populates="groups",
+        link_model=UserGroupLink,
+    )

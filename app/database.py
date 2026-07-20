@@ -1,31 +1,41 @@
-import os
-from sqlmodel import SQLModel, create_engine, Session
-from dotenv import load_dotenv
+from sqlalchemy import create_engine
+from sqlalchemy.orm import declarative_base, sessionmaker
+from collections.abc import Generator
+from sqlmodel import Session, create_engine
 
-load_dotenv()
 
-DATABASE_URL = os.getenv("DATABASE_URL", "sqlite:///./job_details.db")
-
-# Heroku sometimes gives postgres://, but SQLAlchemy expects postgresql://
-if DATABASE_URL.startswith("postgres://"):
-    DATABASE_URL = DATABASE_URL.replace("postgres://", "postgresql+psycopg://", 1)
-
-connect_args = {}
-
-if DATABASE_URL.startswith("sqlite"):
-    connect_args = {"check_same_thread": False}
+DATABASE_URL = "sqlite:///./fastapi.db"
 
 engine = create_engine(
     DATABASE_URL,
-    echo=True,
-    connect_args=connect_args
+    connect_args={"check_same_thread": False},
 )
 
+SessionLocal = sessionmaker(
+    autocommit=False,
+    autoflush=False,
+    bind=engine,
+)
 
-def create_db_and_tables():
-    SQLModel.metadata.create_all(engine)
+Base = declarative_base()
 
 
-def get_session():
+def get_db():
+    db = SessionLocal()
+
+    try:
+        yield db
+    finally:
+        db.close()
+
+
+
+
+DATABASE_URL ="sqlite:///user_groups.db"
+
+engine = create_engine(DATABASE_URL,echo=True,connect_args={"check_same_thread":False}) 
+
+
+def get_db():
     with Session(engine) as session:
         yield session
