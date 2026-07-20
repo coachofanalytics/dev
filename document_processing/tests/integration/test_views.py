@@ -17,7 +17,7 @@ class ApplicationIntegrationTests(TestCase):
             password='password123'
         )
 
-        self.url = reverse('applications')
+        self.url = reverse('document_processing:applications')
 
     def create_application(self):
         return Application.objects.create(
@@ -25,10 +25,10 @@ class ApplicationIntegrationTests(TestCase):
             service='passport',
             first_name='John',
             last_name='Doe',
-            id_number='123456789',
-            district='Gasabo',
-            sub_county='Gasabo',
-            reason='Testing',
+            id_number='1234567',
+            district='gasabo',
+            sub_county='Kimironko',
+            reason='lost',
             status='submitted',
             fee=Decimal('5000')
         )
