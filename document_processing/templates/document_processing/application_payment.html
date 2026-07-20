@@ -1,0 +1,225 @@
+{% extends 'document_processing/base.html' %}
+
+{% block page_title %}Payment{% endblock %}
+{% block page_heading %}Payment{% endblock %}
+
+{% block page_subheading %}
+<p class="text-slate-500 text-base mt-2">
+    {{ application.applicant_name }} &middot; {{ application.get_service_display }}
+</p>
+{% endblock %}
+
+{% block page_content %}
+<style>
+    .dp-step {
+        display: flex; align-items: center; gap: 0.75rem; flex: 1;
+    }
+    .dp-step-circle {
+        width: 38px; height: 38px; border-radius: 9999px;
+        display: flex; align-items: center; justify-content: center;
+        font-weight: 700; border: 2px solid #e2e8f0; color: #94a3b8; background: #fff;
+    }
+    .dp-step.active .dp-step-circle, .dp-step.done .dp-step-circle {
+        border-color: #0A926D; background: #0A926D; color: #fff;
+    }
+    .dp-step-label { font-weight: 600; color: #64748b; }
+    .dp-step.active .dp-step-label, .dp-step.done .dp-step-label { color: #0f172a; }
+
+    .dp-modal-overlay {
+        position: fixed; inset: 0; background: rgba(15,23,42,0.55);
+        display: none; align-items: center; justify-content: center; z-index: 100; padding: 1rem;
+    }
+    .dp-modal-overlay.open { display: flex; }
+    .dp-pay-option {
+        display: flex; align-items: center; gap: 0.85rem; width: 100%;
+        padding: 0.9rem 1rem; border-radius: 14px; border: 1px solid #e2e8f0;
+        background: #f8fafc; cursor: pointer; font-weight: 600; color: #334155; text-align: left;
+    }
+    .dp-pay-option:hover { border-color: #0A926D; }
+    .dp-pay-option.selected { border-color: #0A926D; background: rgba(10,146,109,0.06); color: #0A926D; }
+    .dp-pay-option input { display: none; }
+</style>
+
+<!-- Stepper -->
+<div class="bg-white rounded-[20px] shadow-sm border border-slate-200 px-6 py-5 mb-6">
+    <div class="flex items-center">
+        <div class="dp-step done">
+            <div class="dp-step-circle"><i class="fa-solid fa-check"></i></div>
+            <span class="dp-step-label">Application</span>
+        </div>
+        <div class="flex-1 h-0.5 bg-slate-100 mx-2"></div>
+        <div class="dp-step done">
+            <div class="dp-step-circle"><i class="fa-solid fa-check"></i></div>
+            <span class="dp-step-label">Summary</span>
+        </div>
+        <div class="flex-1 h-0.5 bg-slate-100 mx-2"></div>
+        <div class="dp-step active">
+            <div class="dp-step-circle">3</div>
+            <span class="dp-step-label">Payment</span>
+        </div>
+    </div>
+</div>
+
+{% if payment and payment.status == 'paid' %}
+<!-- Success / next steps -->
+<div class="bg-white rounded-[20px] shadow-sm border border-slate-200 p-8 text-center">
+    <div class="w-16 h-16 rounded-2xl bg-emerald-50 text-emerald-500 flex items-center justify-center text-2xl mx-auto mb-4">
+        <i class="fa-solid fa-circle-check"></i>
+    </div>
+    <h2 class="text-xl font-bold text-slate-900">Request submitted successfully</h2>
+    <p class="text-slate-500 mt-2 max-w-md mx-auto">
+        Your payment of <span class="font-semibold text-slate-700">KES {{ application.service_fee }}</span>
+        was received. We are now processing your
+        <span class="font-semibold text-slate-700">{{ application.get_service_display }}</span>.
+        You will be notified once your document is ready.
+    </p>
+    <div class="mt-6 flex items-center justify-center gap-3">
+        <a href="{% url 'document_processing:applications' %}"
+           class="inline-flex items-center gap-2 px-5 py-3 rounded-2xl bg-[#0A926D] text-white font-semibold shadow-sm hover:bg-[#087a5c]">
+            Back to Applications
+        </a>
+        <a href="{% url 'document_processing:documents' %}"
+           class="inline-flex items-center gap-2 px-5 py-3 rounded-2xl bg-white border border-slate-200 text-slate-700 font-semibold hover:border-[#0A926D] hover:text-[#0A926D]">
+            View Documents
+        </a>
+    </div>
+</div>
+{% else %}
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+    <div class="lg:col-span-2 space-y-6">
+        <div class="bg-white rounded-[20px] shadow-sm border border-slate-200 p-6">
+            <div class="flex items-center gap-3 text-emerald-600 mb-3">
+                <i class="fa-solid fa-circle-check text-xl"></i>
+                <h2 class="text-lg font-bold text-slate-900">Service request submitted</h2>
+            </div>
+            <p class="text-slate-500 text-sm">
+                Your application has been received. Complete the payment below to begin processing.
+                Once paid, your request moves to <span class="font-semibold text-slate-700">Processing</span>
+                and you will get a notification when the document is ready for download.
+            </p>
+        </div>
+    </div>
+
+    <div class="space-y-6">
+        <div class="bg-white rounded-[20px] shadow-sm border border-slate-200 p-6">
+            <h3 class="text-sm font-bold uppercase tracking-wide text-slate-400 mb-4">Payment Information</h3>
+            <dl class="space-y-3 text-sm">
+                <div class="flex justify-between">
+                    <dt class="text-slate-400">Service fee</dt>
+                    <dd class="font-bold text-slate-900">KES {{ application.service_fee }}</dd>
+                </div>
+                <div class="flex justify-between">
+                    <dt class="text-slate-400">Bill ID</dt>
+                    <dd class="font-semibold text-slate-800">{{ application.application_number }}</dd>
+                </div>
+            </dl>
+            <button type="button" id="openPayModal"
+                    class="mt-5 w-full inline-flex items-center justify-center gap-2 px-4 py-3 rounded-2xl bg-[#0A926D] text-white font-semibold shadow-sm hover:bg-[#087a5c]">
+                <i class="fa-solid fa-wallet"></i> Pay Now
+            </button>
+            <a href="{% url 'document_processing:application_summary' application.pk %}"
+               class="mt-3 w-full inline-flex items-center justify-center gap-2 px-4 py-3 rounded-2xl text-slate-500 font-semibold hover:text-[#0A926D]">
+                <i class="fa-solid fa-arrow-left"></i> Back
+            </a>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<!-- Payment method modal -->
+<div class="dp-modal-overlay" id="payModal" role="dialog" aria-modal="true" aria-labelledby="payModalTitle">
+    <div class="bg-white rounded-[24px] shadow-xl w-full max-w-md p-6">
+        <div class="flex items-center justify-between mb-5">
+            <h3 id="payModalTitle" class="text-lg font-bold text-slate-900">How would you like to pay?</h3>
+            <button type="button" id="closePayModal" class="w-9 h-9 rounded-xl bg-slate-100 text-slate-500 hover:bg-slate-200" aria-label="Close">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+        </div>
+
+        <form method="POST" action="{% url 'document_processing:process_payment' application.pk %}" id="payForm">
+            {% csrf_token %}
+            <div class="space-y-3" id="payOptions">
+                <label class="dp-pay-option">
+                    <input type="radio" name="method" value="mtn">
+                    <i class="fa-solid fa-mobile-screen-button text-[#f59e0b]"></i> MTN Mobile Money
+                </label>
+                <label class="dp-pay-option">
+                    <input type="radio" name="method" value="airtel">
+                    <i class="fa-solid fa-mobile-screen-button text-[#dc2626]"></i> Airtel Money
+                </label>
+                <label class="dp-pay-option">
+                    <input type="radio" name="method" value="card">
+                    <i class="fa-solid fa-credit-card text-[#2f63f4]"></i> Debit/Credit Card
+                </label>
+                <label class="dp-pay-option">
+                    <input type="radio" name="method" value="cash">
+                    <i class="fa-solid fa-money-bill-wave text-emerald-600"></i> Cash/Agents
+                </label>
+                <label class="dp-pay-option">
+                    <input type="radio" name="method" value="bank">
+                    <i class="fa-solid fa-building-columns text-slate-600"></i> Bank Accounts
+                </label>
+            </div>
+
+            <div id="mobileMoneyPanel" class="mt-4 hidden">
+                <div class="rounded-xl bg-amber-50 border border-amber-200 p-3 text-sm text-amber-800 mb-3">
+                    <i class="fa-solid fa-circle-info mr-1"></i>
+                    Dial <span class="font-bold">*182*1*1*{{ application.application_number }}#</span> on your phone to pay,
+                    or enter your number below and we will prompt you.
+                </div>
+                <label class="block text-sm font-semibold text-slate-700 mb-1.5">Mobile money phone number</label>
+                {{ form.payer_phone }}
+                {% if form.payer_phone.errors %}<p class="dp-field-error text-red-600 text-sm font-semibold mt-1">{{ form.payer_phone.errors.0 }}</p>{% endif %}
+            </div>
+
+            <div class="mt-5">
+                <button type="submit" id="paySubmitBtn"
+                        class="w-full inline-flex items-center justify-center gap-2 px-4 py-3 rounded-2xl bg-[#0A926D] text-white font-semibold shadow-sm hover:bg-[#087a5c] disabled:opacity-50">
+                    Pay KES {{ application.service_fee }}
+                </button>
+            </div>
+            <p class="text-xs text-slate-400 mt-3 text-center">
+                Payments are encrypted and verified before confirmation.
+            </p>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block page_js %}
+<script>
+    (function () {
+        var modal = document.getElementById("payModal");
+        var openBtn = document.getElementById("openPayModal");
+        var closeBtn = document.getElementById("closePayModal");
+        var options = document.querySelectorAll("#payOptions input[type=radio]");
+        var panel = document.getElementById("mobileMoneyPanel");
+        var submitBtn = document.getElementById("paySubmitBtn");
+
+        function openModal() { modal.classList.add("open"); }
+        function closeModal() { modal.classList.remove("open"); }
+
+        if (openBtn) openBtn.addEventListener("click", openModal);
+        if (closeBtn) closeBtn.addEventListener("click", closeModal);
+        // Close only via explicit control to avoid losing input.
+        modal.addEventListener("click", function (e) {
+            if (e.target === modal) { /* keep open */ }
+        });
+        document.addEventListener("keydown", function (e) {
+            if (e.key === "Escape" && modal.classList.contains("open")) closeModal();
+        });
+
+        options.forEach(function (opt) {
+            opt.addEventListener("change", function () {
+                document.querySelectorAll(".dp-pay-option").forEach(function (l) {
+                    l.classList.remove("selected");
+                });
+                opt.closest(".dp-pay-option").classList.add("selected");
+                var isMobile = (opt.value === "mtn" || opt.value === "airtel");
+                panel.classList.toggle("hidden", !isMobile);
+                submitBtn.textContent = "Pay KES {{ application.service_fee }}";
+            });
+        });
+    })();
+</script>
+{% endblock %}
