@@ -35,6 +35,113 @@
         color: #0f172a;
     }
 
+    /* Top header */
+    .dp-header {
+        position: sticky;
+        top: 0;
+        z-index: 40;
+        background: #ffffff;
+        border-bottom: 1px solid #e5eaf2;
+    }
+
+    .dp-header-inner {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        height: 68px;
+        padding: 0 24px;
+    }
+
+    .dp-mobile-toggle {
+        display: none;
+        width: 42px;
+        height: 42px;
+        border-radius: 12px;
+        border: 1px solid #e5eaf2;
+        background: #f8fafc;
+        color: #0f172a;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+    }
+
+    .dp-user-menu {
+        position: relative;
+    }
+
+    .dp-user-trigger {
+        display: flex;
+        align-items: center;
+        gap: 0.6rem;
+        padding: 0.4rem 0.6rem;
+        border-radius: 14px;
+        border: 1px solid #e5eaf2;
+        background: #f8fafc;
+        cursor: pointer;
+        color: #0f172a;
+        font-weight: 600;
+    }
+
+    .dp-user-trigger:hover {
+        background: #f1f7ff;
+    }
+
+    .dp-user-dropdown {
+        position: absolute;
+        right: 0;
+        top: calc(100% + 8px);
+        width: 220px;
+        background: #fff;
+        border: 1px solid #e5eaf2;
+        border-radius: 16px;
+        box-shadow: 0 18px 40px rgba(15, 23, 42, 0.12);
+        padding: 0.5rem;
+        display: none;
+    }
+
+    .dp-user-dropdown.open {
+        display: block;
+    }
+
+    .dp-user-dropdown a,
+    .dp-user-dropdown button {
+        display: flex;
+        align-items: center;
+        gap: 0.6rem;
+        width: 100%;
+        text-align: left;
+        padding: 0.7rem 0.8rem;
+        border-radius: 10px;
+        color: #334155;
+        text-decoration: none;
+        background: transparent;
+        border: 0;
+        font-weight: 600;
+        cursor: pointer;
+    }
+
+    .dp-user-dropdown a:hover,
+    .dp-user-dropdown button:hover {
+        background: #f1f7ff;
+        color: #0A926D;
+    }
+
+    .dp-language-select {
+        height: 42px;
+        border-radius: 12px;
+        border: 1px solid #e5eaf2;
+        background: #f8fafc;
+        padding: 0 0.75rem;
+        color: #0f172a;
+        font-weight: 600;
+        cursor: pointer;
+    }
+
+    /* Sidebar collapse on mobile */
+    .document-processing-sidebar.dp-collapsed {
+        display: none;
+    }
+
     @media (max-width: 1024px) {
         .document-processing-sidebar {
             width: 280px;
@@ -61,11 +168,71 @@
         .document-processing-main {
             padding: 20px 16px 32px;
         }
+
+        .dp-mobile-toggle {
+            display: inline-flex;
+        }
     }
 </style>
 
+<header class="dp-header">
+    <div class="dp-header-inner">
+        <button type="button" class="dp-mobile-toggle" id="dpSidebarToggle"
+                aria-label="Toggle navigation" aria-expanded="false">
+            <i class="fa-solid fa-bars"></i>
+        </button>
+
+        <div class="flex items-center gap-3">
+            <div class="w-9 h-9 rounded-xl bg-[#0A926D]/10 flex items-center justify-center text-[#0A926D]">
+                <i class="fa-regular fa-file-lines"></i>
+            </div>
+            <div class="leading-tight">
+                <p class="text-sm font-extrabold text-slate-900">Document Processing</p>
+                <p class="text-[11px] text-slate-400">DC48K Portal</p>
+            </div>
+        </div>
+
+        <div class="ml-auto flex items-center gap-3">
+            <label class="sr-only" for="dpLanguage">Language</label>
+            <select class="dp-language-select" id="dpLanguage" aria-label="Language selector">
+                <option value="en">English</option>
+                <option value="sw">Kiswahili</option>
+                <option value="fr">Français</option>
+            </select>
+
+            <div class="dp-user-menu">
+                <button type="button" class="dp-user-trigger" id="dpUserTrigger"
+                        aria-haspopup="true" aria-expanded="false">
+                    <span class="w-8 h-8 rounded-full bg-[#0A926D] text-white flex items-center justify-center text-sm font-bold">
+                        {{ request.user.first_name|default:request.user.username|first|upper }}
+                    </span>
+                    <span class="hidden sm:block text-sm">
+                        {{ request.user.first_name|default:request.user.username }}
+                    </span>
+                    <i class="fa-solid fa-chevron-down text-xs text-slate-400"></i>
+                </button>
+                <div class="dp-user-dropdown" id="dpUserDropdown" role="menu">
+                    <a href="#" role="menuitem">
+                        <i class="fa-regular fa-user"></i> Profile Settings
+                    </a>
+                    <a href="#" role="menuitem">
+                        <i class="fa-regular fa-bell"></i> Notifications
+                    </a>
+                    <a href="#" role="menuitem">
+                        <i class="fa-solid fa-circle-question"></i> Support
+                    </a>
+                    <div class="my-1 border-t border-slate-100"></div>
+                    <a href="{% url 'accounts:account-logout' %}" role="menuitem" class="!text-red-600">
+                        <i class="fa-solid fa-arrow-right-from-bracket"></i> Sign Out
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</header>
+
 <section class="document-processing-shell">
-    <aside class="document-processing-sidebar">
+    <aside class="document-processing-sidebar" id="dpSidebar">
         {% include 'document_processing/components/sidebar.html' with active_item=active_sidebar|default:'applications' %}
     </aside>
 
@@ -86,4 +253,33 @@
 </section>
 {% endblock %}
 
-{% block page_js %}{% endblock %}
+{% block page_js %}
+<script>
+    (function () {
+        var trigger = document.getElementById("dpUserTrigger");
+        var dropdown = document.getElementById("dpUserDropdown");
+        if (trigger && dropdown) {
+            trigger.addEventListener("click", function (e) {
+                e.stopPropagation();
+                var open = dropdown.classList.toggle("open");
+                trigger.setAttribute("aria-expanded", open ? "true" : "false");
+            });
+            document.addEventListener("click", function (e) {
+                if (!dropdown.contains(e.target) && !trigger.contains(e.target)) {
+                    dropdown.classList.remove("open");
+                    trigger.setAttribute("aria-expanded", "false");
+                }
+            });
+        }
+
+        var sidebarToggle = document.getElementById("dpSidebarToggle");
+        var sidebar = document.getElementById("dpSidebar");
+        if (sidebarToggle && sidebar) {
+            sidebarToggle.addEventListener("click", function () {
+                var collapsed = sidebar.classList.toggle("dp-collapsed");
+                sidebarToggle.setAttribute("aria-expanded", collapsed ? "false" : "true");
+            });
+        }
+    })();
+</script>
+{% endblock %}
