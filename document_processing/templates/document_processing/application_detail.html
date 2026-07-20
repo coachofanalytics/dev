@@ -1,0 +1,92 @@
+{% extends 'document_processing/base.html' %}
+
+{% block page_title %}Application Details{% endblock %}
+{% block page_heading %}{{ application.application_number|default:application.id }}{% endblock %}
+
+{% block page_subheading %}
+<p class="text-slate-500 text-base mt-2">
+    {{ application.get_service_display }} &middot; Submitted by {{ application.applicant_name }}
+</p>
+{% endblock %}
+
+{% block page_content %}
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+    <div class="lg:col-span-2 space-y-6">
+        <div class="bg-white rounded-[20px] shadow-sm border border-slate-200 p-6">
+            <h3 class="text-sm font-bold uppercase tracking-wide text-slate-400 mb-4">Requester Details</h3>
+            <dl class="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-4 text-sm">
+                <div>
+                    <dt class="text-slate-400">First name</dt>
+                    <dd class="font-semibold text-slate-800">{{ application.first_name }}</dd>
+                </div>
+                <div>
+                    <dt class="text-slate-400">Last name</dt>
+                    <dd class="font-semibold text-slate-800">{{ application.last_name }}</dd>
+                </div>
+                <div>
+                    <dt class="text-slate-400">ID number</dt>
+                    <dd class="font-semibold text-slate-800">{{ application.id_number }}</dd>
+                </div>
+                <div>
+                    <dt class="text-slate-400">Reason</dt>
+                    <dd class="font-semibold text-slate-800">{{ application.get_reason_display|default:application.reason }}</dd>
+                </div>
+                <div>
+                    <dt class="text-slate-400">District</dt>
+                    <dd class="font-semibold text-slate-800">{{ application.get_district_display|default:application.district }}</dd>
+                </div>
+                <div>
+                    <dt class="text-slate-400">Sub-county</dt>
+                    <dd class="font-semibold text-slate-800">{{ application.sub_county }}</dd>
+                </div>
+            </dl>
+        </div>
+
+        <div class="bg-white rounded-[20px] shadow-sm border border-slate-200 p-6">
+            <h3 class="text-sm font-bold uppercase tracking-wide text-slate-400 mb-4">Processing / Collection Office</h3>
+            <p class="text-slate-700">{{ application.get_district_display|default:application.district }} District &mdash; {{ application.sub_county }} Sub-county Office</p>
+        </div>
+    </div>
+
+    <div class="space-y-6">
+        <div class="bg-white rounded-[20px] shadow-sm border border-slate-200 p-6">
+            <h3 class="text-sm font-bold uppercase tracking-wide text-slate-400 mb-4">Status</h3>
+            <span class="inline-flex items-center rounded-xl border border-emerald-300 bg-emerald-50 px-4 py-2 font-semibold text-emerald-700">
+                {{ application.get_status_display }}
+            </span>
+            <dl class="mt-4 space-y-3 text-sm">
+                <div class="flex justify-between">
+                    <dt class="text-slate-400">Fee</dt>
+                    <dd class="font-semibold text-slate-800">KES {{ application.fee }}</dd>
+                </div>
+                <div class="flex justify-between">
+                    <dt class="text-slate-400">Submitted</dt>
+                    <dd class="font-semibold text-slate-800">{{ application.submitted_at|date:"M d, Y"|default:"—" }}</dd>
+                </div>
+                <div class="flex justify-between">
+                    <dt class="text-slate-400">Payment</dt>
+                    <dd class="font-semibold text-slate-800">{{ application.payment_status|title }}</dd>
+                </div>
+            </dl>
+        </div>
+
+        <div class="flex flex-col gap-3">
+            {% if application.status == 'draft' %}
+            <a href="{% url 'document_processing:application_edit' application.pk %}"
+               class="inline-flex items-center justify-center gap-2 px-4 py-3 rounded-2xl bg-[#2f63f4] text-white font-semibold hover:bg-[#234ec4]">
+                <i class="fa-solid fa-pen"></i> Continue Editing
+            </a>
+            {% elif application.status == 'paid' or application.status == 'completed' or application.status == 'approved' %}
+            <a href="{% url 'document_processing:documents' %}"
+               class="inline-flex items-center justify-center gap-2 px-4 py-3 rounded-2xl bg-[#0A926D] text-white font-semibold hover:bg-[#087a5c]">
+                <i class="fa-solid fa-folder-open"></i> View Documents
+            </a>
+            {% endif %}
+            <a href="{% url 'document_processing:applications' %}"
+               class="inline-flex items-center justify-center gap-2 px-4 py-3 rounded-2xl bg-white border border-slate-200 text-slate-600 font-semibold hover:border-[#0A926D] hover:text-[#0A926D]">
+                <i class="fa-solid fa-arrow-left"></i> Back to Applications
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}
