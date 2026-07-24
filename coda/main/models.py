@@ -4,8 +4,7 @@ from django.utils.translation import gettext_lazy as _
 from django.db.models import Q
 from django.db.models.signals import pre_save
 from django.core.validators import MinValueValidator, MaxValueValidator
-
-# Optional import for lightweight branches
+from django.conf import settings
 try:
     from professional_services.models import ActivityLinks, FeaturedActivity, FeaturedCategory, FeaturedSubCategory
 except ImportError:
@@ -659,6 +658,28 @@ class Search(models.Model):
 
     def __str__(self):
         return self.question
+
+class SearchHistory(models.Model):
+    searched_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL, 
+        on_delete=models.CASCADE,
+        related_name="search_history"
+    )
+    question=models.TextField()
+    topic=models.CharField(
+        max_length=255,
+        blank=True,
+        null=True
+    )
+    search_at=models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering=["-search_at"]
+        verbose_name_plural="Search Histories"
+
+    def __str__(self):
+        return f"{self.searched_by.username} - {self.question[:50]}"
+
 
 
 class WCAGStandardWebsite(models.Model):
