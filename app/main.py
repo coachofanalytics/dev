@@ -11,6 +11,7 @@ from .database import get_db
 from .models import JobDetails
 from .routers import search
 from .schemas import JobDetailsCreate, JobDetailsUpdate
+# from app.routers import job_details
 
 
 from fastapi import FastAPI
@@ -21,6 +22,33 @@ from sqlmodel import SQLModel
 
 from app.database import engine
 from app.routers import user_groups
+from fastapi import FastAPI
+from sqlmodel import SQLModel
+
+from app.database import engine
+# from app.routers import job_details
+
+
+app = FastAPI(
+    title="FastAPI Application"
+)
+
+
+@app.on_event("startup")
+def startup_event():
+    SQLModel.metadata.create_all(engine)
+
+
+@app.get("/")
+def read_root():
+    return {
+        "message": "Welcome to FastAPI"
+    }
+
+
+# app.include_router(
+#     job_details.router
+# )
 
 
 app = FastAPI(
