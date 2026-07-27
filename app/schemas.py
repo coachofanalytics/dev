@@ -220,24 +220,16 @@ model_config = ConfigDict(
     from_attributes=True,
 )
 
-    
 from typing import Optional
 
 from pydantic import BaseModel, ConfigDict, Field
 
 
 class CustomerUserCreate(BaseModel):
-    username: str = Field(
-        min_length=2,
-        max_length=150,
-    )
-
-    email: str = Field(
-        min_length=5,
-        max_length=255,
-    )
-
-    is_admin: bool = False
+    username: str
+    email: str
+    first_name: Optional[str] = None
+    last_name: Optional[str] = None
     is_active: bool = True
 
 
@@ -245,11 +237,12 @@ class CustomerUserResponse(BaseModel):
     id: int
     username: str
     email: str
-    is_admin: bool
+    first_name: Optional[str] = None
+    last_name: Optional[str] = None
     is_active: bool
 
     model_config = ConfigDict(
-        from_attributes=True,
+        from_attributes=True
     )
 
 
@@ -259,38 +252,21 @@ class UserSummary(BaseModel):
     email: str
 
     model_config = ConfigDict(
-        from_attributes=True,
+        from_attributes=True
     )
 
 
 class UserGroupCreate(BaseModel):
-    name: str = Field(
-        min_length=2,
-        max_length=150,
-    )
-
-    description: Optional[str] = Field(
-        default=None,
-        max_length=500,
-    )
-
+    name: str
+    description: Optional[str] = None
     is_active: bool = True
     is_featured: bool = False
-    user_ids: list[int]
+    user_ids: list[int] = Field(default_factory=list)
 
 
 class UserGroupUpdate(BaseModel):
-    name: Optional[str] = Field(
-        default=None,
-        min_length=2,
-        max_length=150,
-    )
-
-    description: Optional[str] = Field(
-        default=None,
-        max_length=500,
-    )
-
+    name: Optional[str] = None
+    description: Optional[str] = None
     is_active: Optional[bool] = None
     is_featured: Optional[bool] = None
     user_ids: Optional[list[int]] = None
@@ -310,19 +286,20 @@ class UserGroupResponse(BaseModel):
     description: Optional[str] = None
     is_active: bool
     is_featured: bool
-    users: list[UserSummary] = []
+    users: list[UserSummary] = Field(default_factory=list)
 
     model_config = ConfigDict(
-        from_attributes=True,
+        from_attributes=True
     )
 
 
 class ActiveGroupResponse(BaseModel):
     id: int
     name: str
+    description: Optional[str] = None
 
     model_config = ConfigDict(
-        from_attributes=True,
+        from_attributes=True
     )
 
 

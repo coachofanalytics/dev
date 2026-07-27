@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>Edit User Group</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            background: #f7f8fb;
+            font-family: Arial, sans-serif;
+            color: #17356b;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 40px 30px 60px;
+        }
+
+        .header {
+            margin-bottom: 28px;
+        }
+
+        h1 {
+            margin: 0;
+            font-size: 31px;
+        }
+
+        .subtitle {
+            margin: 8px 0 0;
+            color: #64748b;
+        }
+
+        .card {
+            background: white;
+            border: 1px solid #e5e7eb;
+            border-radius: 14px;
+            padding: 30px;
+            box-shadow: 0 2px 4px rgba(15, 23, 42, 0.05);
+        }
+
+        .field {
+            margin-bottom: 22px;
+        }
+
+        .field label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 700;
+        }
+
+        .field input[type="text"],
+        .field textarea {
+            width: 100%;
+            padding: 13px;
+            border: 1px solid #cbd5e1;
+            border-radius: 8px;
+            font-size: 15px;
+            font-family: Arial, sans-serif;
+        }
+
+        .field textarea {
+            min-height: 140px;
+            resize: vertical;
+        }
+
+        .field input:focus,
+        .field textarea:focus {
+            outline: none;
+            border-color: #17356b;
+        }
+
+        .checks {
+            display: flex;
+            gap: 30px;
+            margin-top: 10px;
+            margin-bottom: 26px;
+        }
+
+        .check-item {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+            font-weight: 700;
+        }
+
+        .check-item input {
+            width: 18px;
+            height: 18px;
+        }
+
+        .actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 12px;
+            margin-top: 25px;
+        }
+
+        .btn {
+            display: inline-block;
+            border: 0;
+            border-radius: 8px;
+            padding: 12px 20px;
+            font-weight: 700;
+            text-decoration: none;
+            cursor: pointer;
+        }
+
+        .btn-primary {
+            background: #efac3b;
+            color: white;
+        }
+
+        .btn-secondary {
+            background: #e2e8f0;
+            color: #17356b;
+        }
+
+        .error {
+            margin-bottom: 22px;
+            padding: 14px;
+            background: #fee2e2;
+            color: #991b1b;
+            border-radius: 8px;
+            border: 1px solid #fecaca;
+        }
+
+        @media (max-width: 700px) {
+            .container {
+                padding: 25px 18px;
+            }
+
+            .checks {
+                flex-direction: column;
+                gap: 15px;
+            }
+
+            .actions {
+                flex-direction: column-reverse;
+            }
+
+            .btn {
+                width: 100%;
+                text-align: center;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <main class="container">
+
+        <header class="header">
+            <h1>Edit Group</h1>
+
+            <p class="subtitle">
+                Update the group information and visibility.
+            </p>
+        </header>
+
+        <section class="card">
+
+            {% if error %}
+
+                <div class="error">
+                    {{ error }}
+                </div>
+
+            {% endif %}
+
+            <form
+                method="post"
+                action="/accounts/user-groups/pages/{{ group.id }}/edit"
+            >
+
+                <div class="field">
+                    <label for="name">
+                        Group Name
+                    </label>
+
+                    <input
+                        id="name"
+                        type="text"
+                        name="name"
+                        required
+                        value="{{ group.name }}"
+                    >
+                </div>
+
+                <div class="field">
+                    <label for="description">
+                        Description
+                    </label>
+
+                    <textarea
+                        id="description"
+                        name="description"
+                        placeholder="Describe the purpose of this group."
+                    >{{ group.description or "" }}</textarea>
+                </div>
+
+                <div class="checks">
+
+                    <label class="check-item">
+                        <input
+                            type="checkbox"
+                            name="is_active"
+                            {% if group.is_active %}
+                                checked
+                            {% endif %}
+                        >
+
+                        Active
+                    </label>
+
+                    <label class="check-item">
+                        <input
+                            type="checkbox"
+                            name="is_featured"
+                            {% if group.is_featured %}
+                                checked
+                            {% endif %}
+                        >
+
+                        Featured
+                    </label>
+
+                </div>
+
+                <div class="actions">
+
+                    <a
+                        class="btn btn-secondary"
+                        href="/accounts/user-groups/pages/{{ group.id }}"
+                    >
+                        Cancel
+                    </a>
+
+                    <button
+                        class="btn btn-primary"
+                        type="submit"
+                    >
+                        Save Changes
+                    </button>
+
+                </div>
+
+            </form>
+
+        </section>
+
+    </main>
+</body>
+</html>

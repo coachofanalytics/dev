@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>User Groups Management</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            background: #f7f8fb;
+            font-family: Arial, sans-serif;
+            color: #17356b;
+        }
+
+        .page-container {
+            max-width: 1220px;
+            margin: 0 auto;
+            padding: 28px 30px 50px;
+        }
+
+        .page-header {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            gap: 20px;
+            margin-bottom: 34px;
+        }
+
+        .page-title {
+            margin: 0;
+            color: #17356b;
+            font-size: 31px;
+            font-weight: 800;
+        }
+
+        .page-subtitle {
+            margin: 6px 0 0;
+            color: #334155;
+            font-size: 15px;
+        }
+
+        .create-button {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 9px;
+            background: #efac3b;
+            color: #ffffff;
+            font-size: 15px;
+            font-weight: 700;
+            text-decoration: none;
+            cursor: pointer;
+        }
+
+        .create-button:hover {
+            background: #dd9826;
+        }
+
+        .plus {
+            font-size: 23px;
+            font-weight: 400;
+            line-height: 1;
+        }
+
+        .summary-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 24px;
+            margin-bottom: 32px;
+        }
+
+        .summary-card {
+            min-height: 105px;
+            padding: 24px 26px;
+            background: #ffffff;
+            border: 1px solid #e6e9ef;
+            border-radius: 14px;
+            box-shadow: 0 2px 4px rgba(15, 23, 42, 0.05);
+        }
+
+        .summary-card.active-card {
+            border-left: 4px solid #17356b;
+        }
+
+        .summary-card.featured-card {
+            border-left: 4px solid #efac3b;
+        }
+
+        .summary-card.users-card {
+            border-left: 4px solid #17b878;
+        }
+
+        .summary-label {
+            margin: 0 0 7px;
+            color: #587092;
+            font-size: 12px;
+            font-weight: 800;
+            text-transform: uppercase;
+        }
+
+        .summary-value {
+            margin: 0;
+            color: #17356b;
+            font-size: 31px;
+            font-weight: 800;
+        }
+
+        .table-card {
+            overflow: hidden;
+            background: #ffffff;
+            border: 1px solid #e7eaf0;
+            border-radius: 14px;
+            box-shadow: 0 2px 4px rgba(15, 23, 42, 0.04);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        thead {
+            background: #f8fafc;
+        }
+
+        th {
+            padding: 17px 24px;
+            color: #587092;
+            font-size: 11px;
+            font-weight: 800;
+            text-align: left;
+            text-transform: uppercase;
+        }
+
+        td {
+            padding: 18px 24px;
+            border-top: 1px solid #edf0f4;
+            color: #17356b;
+            font-size: 14px;
+        }
+
+        .group-name {
+            font-size: 16px;
+            font-weight: 700;
+        }
+
+        .group-name.inactive-name {
+            color: #a0afc7;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 6px 10px;
+            border-radius: 999px;
+            font-size: 10px;
+            font-weight: 800;
+            text-transform: uppercase;
+        }
+
+        .status-active {
+            background: #ccf8e3;
+            color: #008957;
+        }
+
+        .status-inactive {
+            background: #eef3f8;
+            color: #7890ae;
+        }
+
+        .featured-star {
+            color: #efac3b;
+            font-size: 21px;
+            line-height: 1;
+        }
+
+        .not-featured-star {
+            color: #cbd7e5;
+            font-size: 21px;
+            line-height: 1;
+        }
+
+        .member-count {
+            color: #344866;
+        }
+
+        .actions {
+            text-align: right;
+            white-space: nowrap;
+        }
+
+        .edit-link,
+        .remove-button {
+            border: none;
+            background: transparent;
+            font-size: 13px;
+            font-weight: 700;
+            text-decoration: none;
+            cursor: pointer;
+        }
+
+        .edit-link {
+            margin-right: 15px;
+            color: #17356b;
+        }
+
+        .remove-button {
+            padding: 0;
+            color: #ff3131;
+        }
+
+        .empty-state {
+            padding: 55px 25px;
+            text-align: center;
+            color: #64748b;
+        }
+
+        @media (max-width: 850px) {
+            .summary-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .page-header {
+                flex-direction: column;
+            }
+
+            .table-card {
+                overflow-x: auto;
+            }
+
+            table {
+                min-width: 760px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <main class="page-container">
+
+        <header class="page-header">
+            <div>
+                <h1 class="page-title">
+                    User Groups Management
+                </h1>
+
+                <p class="page-subtitle">
+                    Organize users into cohorts and teams for targeted operations.
+                </p>
+            </div>
+
+            <a
+                href="/accounts/user-groups/pages/create"
+                class="create-button"
+            >
+                <span class="plus">+</span>
+                Create New Group
+            </a>
+        </header>
+
+        <section class="summary-grid">
+
+            <article class="summary-card active-card">
+                <p class="summary-label">
+                    Active Cohorts
+                </p>
+
+                <p class="summary-value">
+                    {{ active_groups_count }}
+                </p>
+            </article>
+
+            <article class="summary-card featured-card">
+                <p class="summary-label">
+                    Featured Groups
+                </p>
+
+                <p class="summary-value">
+                    {{ featured_groups_count }}
+                </p>
+            </article>
+
+            <article class="summary-card users-card">
+                <p class="summary-label">
+                    Total Users Assigned
+                </p>
+
+                <p class="summary-value">
+                    {{ total_users_assigned }}
+                </p>
+            </article>
+
+        </section>
+
+        <section class="table-card">
+            {% if groups %}
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Group Name</th>
+                            <th>Status</th>
+                            <th>Featured</th>
+                            <th>Members</th>
+                            <th style="text-align: right;">
+                                Actions
+                            </th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+                        {% for group in groups %}
+                            <tr>
+                                <td>
+                                    <span
+                                        class="
+                                            group-name
+                                            {% if not group.is_active %}
+                                                inactive-name
+                                            {% endif %}
+                                        "
+                                    >
+                                        {{ group.name }}
+                                    </span>
+                                </td>
+
+                                <td>
+                                    {% if group.is_active %}
+                                        <span class="status-badge status-active">
+                                            Active
+                                        </span>
+                                    {% else %}
+                                        <span class="status-badge status-inactive">
+                                            Inactive
+                                        </span>
+                                    {% endif %}
+                                </td>
+
+                                <td>
+                                    {% if group.is_featured %}
+                                        <span
+                                            class="featured-star"
+                                            title="Featured group"
+                                        >
+                                            ★
+                                        </span>
+                                    {% else %}
+                                        <span
+                                            class="not-featured-star"
+                                            title="Not featured"
+                                        >
+                                            ★
+                                        </span>
+                                    {% endif %}
+                                </td>
+
+                                <td>
+                                    <span class="member-count">
+                                        {{ group.users | length }} Users
+                                    </span>
+                                </td>
+
+                                <td class="actions">
+                                    <a
+                                        href="/accounts/user-groups/pages/{{ group.id }}/edit"
+                                        class="edit-link"
+                                    >
+                                        Edit
+                                    </a>
+
+                                    <form
+                                        method="post"
+                                        action="/accounts/user-groups/pages/{{ group.id }}/delete"
+                                        style="display: inline;"
+                                    >
+                                        <button
+                                            type="submit"
+                                            class="remove-button"
+                                            onclick="
+                                                return confirm(
+                                                    'Are you sure you want to remove this group?'
+                                                );
+                                            "
+                                        >
+                                            Remove
+                                        </button>
+                                    </form>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            {% else %}
+                <div class="empty-state">
+                    No user groups have been created yet.
+                </div>
+            {% endif %}
+        </section>
+
+    </main>
+</body>
+</html>

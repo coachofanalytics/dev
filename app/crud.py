@@ -3,6 +3,33 @@ from sqlmodel import Session, select
 from . import models, schemas
 from datetime import datetime, timezone
 
+from fastapi import HTTPException
+from sqlmodel import Session
+
+from app import models
+
+from sqlmodel import Session, select
+
+from app import models, schemas
+
+
+def get_group_or_404(
+    db: Session,
+    group_id: int,
+):
+    group = db.get(
+        models.UserGroups,
+        group_id,
+    )
+
+    if not group:
+        raise HTTPException(
+            status_code=404,
+            detail="Group not found",
+        )
+
+    return group
+
 
 def get_search_record(
     db: Session,
@@ -229,3 +256,284 @@ def update_score(
     db.refresh(db_score)
 
     return db_score
+
+    from fastapi import HTTPException
+from sqlmodel import Session, select
+
+from app import models, schemas
+
+
+def create_user_group(
+    db: Session,
+    payload: schemas.UserGroupCreate,
+):
+    existing_group = db.exec(
+        select(models.UserGroups).where(
+            models.UserGroups.name == payload.name
+        )
+    ).first()
+
+    if existing_group:
+        raise HTTPException(
+            status_code=400,
+            detail="A group with this name already exists.",
+        )
+
+    if payload.is_featured and not payload.is_active:
+        raise HTTPException(
+            status_code=400,
+            detail="An inactive group cannot be featured.",
+        )
+
+    group = models.UserGroups(
+        name=payload.name,
+        description=payload.description,
+        is_active=payload.is_active,
+        is_featured=payload.is_featured,
+    )
+
+    if payload.user_ids:
+        users = []
+
+        for user_id in payload.user_ids:
+            user = db.get(
+                models.CustomerUser,
+                user_id,
+            )
+
+            if not user:
+                raise HTTPException(
+                    status_code=404,
+                    detail=f"User with ID {user_id} was not found.",
+                )
+
+            users.append(user)
+
+        group.users = users
+
+    db.add(group)
+    db.commit()
+    db.refresh(group)
+
+    return group
+
+    from fastapi import HTTPException
+from sqlmodel import Session, select
+
+from app import models, schemas
+
+
+def create_customer_user(
+    db: Session,
+    payload: schemas.CustomerUserCreate,
+):
+    existing_username = db.exec(
+        select(models.CustomerUser).where(
+            models.CustomerUser.username == payload.username
+        )
+    ).first()
+
+    if existing_username:
+        raise HTTPException(
+            status_code=400,
+            detail="A user with this username already exists.",
+        )
+
+    existing_email = db.exec(
+        select(models.CustomerUser).where(
+            models.CustomerUser.email == payload.email
+        )
+    ).first()
+
+    if existing_email:
+        raise HTTPException(
+            status_code=400,
+            detail="A user with this email already exists.",
+        )
+
+    user = models.CustomerUser(
+        username=payload.username,
+        email=payload.email,
+        first_name=payload.first_name,
+        last_name=payload.last_name,
+        is_active=payload.is_active,
+    )
+
+    db.add(user)
+    db.commit()
+    db.refresh(user)
+
+    return user
+from fastapi import HTTPException
+from sqlmodel import Session
+
+from app import models
+
+
+def get_user_or_404(
+    db: Session,
+    user_id: int,
+):
+    user = db.get(
+        models.CustomerUser,
+        user_id,
+    )
+
+    if not user:
+        raise HTTPException(
+            status_code=404,
+            detail="User not found",
+        )
+
+    return user
+
+
+def add_user_to_group(
+    db: Session,
+    group_id: int,
+    user_id: int,
+):
+    group = get_group_or_404(
+        db,
+        group_id,
+    )
+
+    user = get_user_or_404(
+        db,
+        user_id,
+    )
+
+    if user in group.users:
+        raise HTTPException(
+            status_code=400,
+            detail="User is already assigned to this group.",
+        )
+
+    group.users.append(user)
+
+    db.add(group)
+    db.commit()
+    db.refresh(group)
+
+    _ = group.users
+
+    return group
+from fastapi import HTTPException
+
+
+def validate_group_status(
+    is_active: bool,
+    is_featured: bool,
+):
+    if is_featured and not is_active:
+        raise HTTPException(
+            status_code=400,
+            detail="An inactive group cannot be featured.",
+        )
+
+
+from fastapi import HTTPException
+from sqlmodel import Session, select
+
+from app import models, schemas
+
+
+def update_user_group(
+    db: Session,
+    group_id: int,
+    payload: schemas.UserGroupUpdate,
+):
+    group = get_group_or_404(
+        db,
+        group_id,
+    )
+
+    update_data = (
+        payload.model_dump(exclude_unset=True)
+        if hasattr(payload, "model_dump")
+        else payload.dict(exclude_unset=True)
+    )
+
+    new_name = update_data.get("name")
+
+    if new_name and new_name != group.name:
+        existing_group = db.exec(
+            select(models.UserGroups).where(
+                models.UserGroups.name == new_name
+            )
+        ).first()
+
+        if existing_group:
+            raise HTTPException(
+                status_code=400,
+                detail="A group with this name already exists.",
+            )
+
+    final_is_active = update_data.get(
+        "is_active",
+        group.is_active,
+    )
+
+    final_is_featured = update_data.get(
+        "is_featured",
+        group.is_featured,
+    )
+
+    validate_group_status(
+        final_is_active,
+        final_is_featured,
+    )
+
+    user_ids = update_data.pop(
+        "user_ids",
+        None,
+    )
+
+    for field_name, value in update_data.items():
+        setattr(
+            group,
+            field_name,
+            value,
+        )
+
+    if user_ids is not None:
+        users = []
+
+        for user_id in user_ids:
+            user = get_user_or_404(
+                db,
+                user_id,
+            )
+            users.append(user)
+
+        group.users = users
+
+    db.add(group)
+    db.commit()
+    db.refresh(group)
+
+    _ = group.users
+
+    return group
+from sqlmodel import Session
+
+from app import models
+
+
+def delete_user_group(
+    db: Session,
+    group_id: int,
+):
+    group = get_group_or_404(
+        db,
+        group_id,
+    )
+
+    # Clear relationships first.
+    group.users.clear()
+
+    db.add(group)
+    db.commit()
+
+    db.delete(group)
+    db.commit()

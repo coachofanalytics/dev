@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>User Group Details</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            background: #f7f8fb;
+            font-family: Arial, sans-serif;
+            color: #17356b;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 40px 30px 60px;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 20px;
+            margin-bottom: 28px;
+        }
+
+        h1 {
+            margin: 0;
+            font-size: 31px;
+        }
+
+        .subtitle {
+            margin: 8px 0 0;
+            color: #64748b;
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .card {
+            background: white;
+            border: 1px solid #e5e7eb;
+            border-radius: 14px;
+            padding: 30px;
+            box-shadow: 0 2px 4px rgba(15, 23, 42, 0.05);
+        }
+
+        .details-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .detail-item {
+            padding: 18px;
+            background: #f8fafc;
+            border-radius: 10px;
+        }
+
+        .detail-label {
+            display: block;
+            margin-bottom: 8px;
+            color: #64748b;
+            font-size: 13px;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+
+        .detail-value {
+            font-size: 16px;
+            font-weight: 700;
+        }
+
+        .badge {
+            display: inline-block;
+            border-radius: 999px;
+            padding: 6px 10px;
+            font-size: 12px;
+            font-weight: 800;
+        }
+
+        .active {
+            background: #ccf8e3;
+            color: #008957;
+        }
+
+        .inactive {
+            background: #eef3f8;
+            color: #7890ae;
+        }
+
+        .featured {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .not-featured {
+            background: #eef3f8;
+            color: #64748b;
+        }
+
+        .members-section {
+            margin-top: 25px;
+        }
+
+        .members-title {
+            margin-bottom: 15px;
+        }
+
+        .member-list {
+            margin: 0;
+            padding: 0;
+            list-style: none;
+        }
+
+        .member-list li {
+            padding: 14px 0;
+            border-bottom: 1px solid #edf0f4;
+        }
+
+        .member-list li:last-child {
+            border-bottom: 0;
+        }
+
+        .member-name {
+            font-weight: 700;
+        }
+
+        .member-email {
+            margin-top: 4px;
+            color: #64748b;
+            font-size: 14px;
+        }
+
+        .empty-state {
+            padding: 24px;
+            background: #f8fafc;
+            border-radius: 10px;
+            color: #64748b;
+            text-align: center;
+        }
+
+        .actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 12px;
+            margin-top: 30px;
+        }
+
+        .btn {
+            display: inline-block;
+            border: 0;
+            border-radius: 8px;
+            padding: 12px 20px;
+            font-weight: 700;
+            text-decoration: none;
+            cursor: pointer;
+        }
+
+        .btn-primary {
+            background: #efac3b;
+            color: white;
+        }
+
+        .btn-secondary {
+            background: #e2e8f0;
+            color: #17356b;
+        }
+
+        .btn-danger {
+            background: #ef4444;
+            color: white;
+        }
+
+        .delete-form {
+            margin: 0;
+        }
+
+        @media (max-width: 700px) {
+            .container {
+                padding: 25px 18px;
+            }
+
+            .header {
+                flex-direction: column;
+            }
+
+            .header-actions {
+                width: 100%;
+                flex-direction: column;
+            }
+
+            .details-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .actions {
+                flex-direction: column;
+            }
+
+            .btn {
+                width: 100%;
+                text-align: center;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <main class="container">
+
+        <header class="header">
+            <div>
+                <h1>{{ group.name }}</h1>
+
+                <p class="subtitle">
+                    {{ group.description or "No description provided." }}
+                </p>
+            </div>
+
+            <div class="header-actions">
+                <a
+                    class="btn btn-secondary"
+                    href="/accounts/user-groups/pages/list"
+                >
+                    Back to List
+                </a>
+
+                <a
+                    class="btn btn-primary"
+                    href="/accounts/user-groups/pages/{{ group.id }}/edit"
+                >
+                    Edit Group
+                </a>
+            </div>
+        </header>
+
+        <section class="card">
+
+            <div class="details-grid">
+
+                <div class="detail-item">
+                    <span class="detail-label">
+                        Group ID
+                    </span>
+
+                    <span class="detail-value">
+                        {{ group.id }}
+                    </span>
+                </div>
+
+                <div class="detail-item">
+                    <span class="detail-label">
+                        Status
+                    </span>
+
+                    {% if group.is_active %}
+
+                        <span class="badge active">
+                            Active
+                        </span>
+
+                    {% else %}
+
+                        <span class="badge inactive">
+                            Inactive
+                        </span>
+
+                    {% endif %}
+                </div>
+
+                <div class="detail-item">
+                    <span class="detail-label">
+                        Featured
+                    </span>
+
+                    {% if group.is_featured %}
+
+                        <span class="badge featured">
+                            Featured
+                        </span>
+
+                    {% else %}
+
+                        <span class="badge not-featured">
+                            Not Featured
+                        </span>
+
+                    {% endif %}
+                </div>
+
+                <div class="detail-item">
+                    <span class="detail-label">
+                        Members
+                    </span>
+
+                    <span class="detail-value">
+                        {{ group.users | length }}
+                    </span>
+                </div>
+
+            </div>
+
+            <div class="members-section">
+                <h2 class="members-title">
+                    Assigned Members
+                </h2>
+
+                {% if group.users %}
+
+                    <ul class="member-list">
+
+                        {% for user in group.users %}
+
+                            <li>
+                                <div class="member-name">
+                                    {{ user.username }}
+                                </div>
+
+                                <div class="member-email">
+                                    {{ user.email }}
+                                </div>
+                            </li>
+
+                        {% endfor %}
+
+                    </ul>
+
+                {% else %}
+
+                    <div class="empty-state">
+                        No users are assigned to this group.
+                    </div>
+
+                {% endif %}
+            </div>
+
+            <div class="actions">
+
+                <form
+                    class="delete-form"
+                    method="post"
+                    action="/accounts/user-groups/pages/{{ group.id }}/delete"
+                    onsubmit="return confirm(
+                        'Are you sure you want to delete this group?'
+                    );"
+                >
+                    <button
+                        class="btn btn-danger"
+                        type="submit"
+                    >
+                        Delete Group
+                    </button>
+                </form>
+
+            </div>
+
+        </section>
+
+    </main>
+</body>
+</html>
