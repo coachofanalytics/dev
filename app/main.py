@@ -56,12 +56,15 @@ app.include_router(scores.router)
 app.include_router(user_groups.router)
 
 
-@app.get("/")
-def read_root():
-    return {
-        "message": "FastAPI application is running."
-    }
+from fastapi.responses import RedirectResponse
 
+
+@app.get("/", include_in_schema=False)
+def read_root():
+    return RedirectResponse(
+        url="/accounts/user-groups/pages/list",
+        status_code=302,
+    )
 
 # ==========================================================
 # ACCOUNT PROFILE ROUTES
