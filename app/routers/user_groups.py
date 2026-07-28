@@ -53,7 +53,6 @@ def user_groups_page(
     total_users_assigned = 0
 
     for group in groups:
-        # Load the users relationship.
         _ = group.users
 
         if group.is_active:
@@ -65,9 +64,9 @@ def user_groups_page(
         total_users_assigned += len(group.users)
 
     return templates.TemplateResponse(
+        request,
         "usergroup_list.html",
         {
-            "request": request,
             "groups": groups,
             "active_groups_count": active_groups_count,
             "featured_groups_count": featured_groups_count,
@@ -89,9 +88,9 @@ def create_group_page(
     request: Request,
 ):
     return templates.TemplateResponse(
+        request,
         "usergroup_create.html",
         {
-            "request": request,
             "error": None,
             "form_data": None,
         },
@@ -115,12 +114,40 @@ def create_group_from_page(
     is_featured: Optional[str] = Form(None),
     db: Session = Depends(get_db),
 ):
+    name = name.strip()
+    description = description.strip()
+
     form_data = {
         "name": name,
         "description": description,
         "is_active": is_active is not None,
         "is_featured": is_featured is not None,
     }
+
+    duplicate_statement = select(
+        models.UserGroups
+    ).where(
+        models.UserGroups.name == name
+    )
+
+    existing_group = db.exec(
+        duplicate_statement
+    ).first()
+
+    if existing_group is not None:
+        error_message = (
+            f'A group named "{name}" already exists.'
+        )
+
+        return templates.TemplateResponse(
+            request,
+            "usergroup_create.html",
+            {
+                "error": error_message,
+                "form_data": form_data,
+            },
+            status_code=400,
+        )
 
     try:
         payload = schemas.UserGroupCreate(
@@ -137,17 +164,19 @@ def create_group_from_page(
         )
 
     except Exception as exc:
-        error_message = getattr(
+        db.rollback()
+
+        raw_error = getattr(
             exc,
             "detail",
             str(exc),
         )
 
         return templates.TemplateResponse(
+            request,
             "usergroup_create.html",
             {
-                "request": request,
-                "error": error_message,
+                "error": str(raw_error),
                 "form_data": form_data,
             },
             status_code=400,
@@ -181,9 +210,9 @@ def group_detail_page(
     _ = group.users
 
     return templates.TemplateResponse(
+        request,
         "usergroup_detail.html",
         {
-            "request": request,
             "group": group,
         },
     )
@@ -211,9 +240,9 @@ def edit_group_page(
     _ = group.users
 
     return templates.TemplateResponse(
+        request,
         "usergroup_edit.html",
         {
-            "request": request,
             "group": group,
             "error": None,
         },
@@ -238,7 +267,26 @@ def update_group_from_page(
     is_featured: Optional[str] = Form(None),
     db: Session = Depends(get_db),
 ):
+    name = name.strip()
+    description = description.strip()
+
     try:
+        duplicate_statement = select(
+            models.UserGroups
+        ).where(
+            models.UserGroups.name == name,
+            models.UserGroups.id != group_id,
+        )
+
+        existing_group = db.exec(
+            duplicate_statement
+        ).first()
+
+        if existing_group is not None:
+            raise ValueError(
+                f'A group named "{name}" already exists.'
+            )
+
         payload = schemas.UserGroupUpdate(
             name=name,
             description=description,
@@ -253,6 +301,8 @@ def update_group_from_page(
         )
 
     except Exception as exc:
+        db.rollback()
+
         error_message = getattr(
             exc,
             "detail",
@@ -266,18 +316,17 @@ def update_group_from_page(
 
         _ = group.users
 
-        # Show submitted values again when validation fails.
         group.name = name
         group.description = description
         group.is_active = is_active is not None
         group.is_featured = is_featured is not None
 
         return templates.TemplateResponse(
+            request,
             "usergroup_edit.html",
             {
-                "request": request,
                 "group": group,
-                "error": error_message,
+                "error": str(error_message),
             },
             status_code=400,
         )
@@ -477,8 +526,6 @@ def create_group(
 # ==========================================================
 # API: GET ONE GROUP
 # GET /accounts/user-groups/{group_id}
-#
-# Keep this below /pages, /users, /active and /featured.
 # ==========================================================
 
 @router.get(

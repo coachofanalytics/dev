@@ -132,8 +132,9 @@
             padding: 14px;
             background: #fee2e2;
             color: #991b1b;
-            border-radius: 8px;
             border: 1px solid #fecaca;
+            border-radius: 8px;
+            font-weight: 600;
         }
 
         @media (max-width: 700px) {
@@ -172,11 +173,13 @@
         <section class="card">
 
             {% if error %}
-
-                <div class="error">
+                <div
+                    class="error"
+                    role="alert"
+                    data-testid="user-group-error"
+                >
                     {{ error }}
                 </div>
-
             {% endif %}
 
             <form
@@ -194,7 +197,7 @@
                         type="text"
                         name="name"
                         required
-                        value="{{ form_data.name if form_data else '' }}"
+                        value="{{ form_data.get('name', '') if form_data else '' }}"
                         placeholder="Example: Cohort 01"
                     >
                 </div>
@@ -208,7 +211,7 @@
                         id="description"
                         name="description"
                         placeholder="Describe the purpose of this group."
-                    >{{ form_data.description if form_data else '' }}</textarea>
+                    >{{ form_data.get('description', '') if form_data else '' }}</textarea>
                 </div>
 
                 <div class="checks">
@@ -217,7 +220,7 @@
                         <input
                             type="checkbox"
                             name="is_active"
-                            {% if not form_data or form_data.is_active %}
+                            {% if not form_data or form_data.get('is_active', False) %}
                                 checked
                             {% endif %}
                         >
@@ -229,7 +232,7 @@
                         <input
                             type="checkbox"
                             name="is_featured"
-                            {% if form_data and form_data.is_featured %}
+                            {% if form_data and form_data.get('is_featured', False) %}
                                 checked
                             {% endif %}
                         >
