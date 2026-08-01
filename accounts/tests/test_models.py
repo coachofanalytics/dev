@@ -3,8 +3,15 @@ from django.urls import reverse
 import datetime 
 
 
+from decimal import Decimal
+
+# from django.test import TestCase
+# from django.utils import timezone
+
+# Change line 261 to:
+from ..models import Transaction
     # import pytest
-from django.utils import timezone
+# from django.utils import timezone
 from django.contrib.auth import get_user_model
 from accounts.models import PaymentHistory
 
@@ -246,15 +253,7 @@ class TrackerModelTest(TestCase):
         self.assertEqual(str(self.tracker), expected)
 
 
-        from decimal import Decimal
-
-from django.test import TestCase
-from django.contrib.auth import get_user_model
-from django.utils import timezone
-
-from .models import Transaction
-
-
+        
 class TransactionModelTest(TestCase):
 
     def setUp(self):
@@ -311,3 +310,238 @@ class TransactionModelTest(TestCase):
     def test_transaction_string_method(self):
         expected = "Income - 15000.00 - MPESA"
         self.assertEqual(str(self.transaction), expected)
+
+
+
+
+class TransactionModelTest(TestCase):
+    """Test cases for the Transaction model."""
+
+    def setUp(self):
+        self.transaction = Transaction.objects.create(
+            sender=None,
+            department="Finance",
+            receiver="CODA Analytics Ltd",
+            phone="+254712345678",
+            type="Income",
+            activity_date=timezone.now(),
+            receipt_link="https://example.com/receipts/TRX-001",
+            qty=Decimal("2.00"),
+            amount=Decimal("5000.00"),
+            transaction_cost=Decimal("50.00"),
+            description="Payment received for consulting services.",
+            payment_method="MPESA",
+        )
+
+    def test_transaction_creation(self):
+        """A transaction should be created successfully."""
+
+        self.assertEqual(Transaction.objects.count(), 1)
+        self.assertEqual(self.transaction.department, "Finance")
+        self.assertEqual(
+            self.transaction.receiver,
+            "CODA Analytics Ltd",
+        )
+        self.assertEqual(self.transaction.type, "Income")
+        self.assertEqual(
+            self.transaction.payment_method,
+            "MPESA",
+        )
+
+    def test_sender_can_be_null(self):
+        """Sender should be optional."""
+
+        self.assertIsNone(self.transaction.sender)
+
+    def test_optional_fields_can_be_null(self):
+        """Optional transaction fields should accept null values."""
+
+        transaction = Transaction.objects.create(
+            sender=None,
+            department=None,
+            receiver=None,
+            phone=None,
+            receipt_link=None,
+            qty=None,
+            amount=None,
+            description=None,
+        )
+
+        self.assertIsNone(transaction.sender)
+        self.assertIsNone(transaction.department)
+        self.assertIsNone(transaction.receiver)
+        self.assertIsNone(transaction.phone)
+        self.assertIsNone(transaction.receipt_link)
+        self.assertIsNone(transaction.qty)
+        self.assertIsNone(transaction.amount)
+        self.assertIsNone(transaction.description)
+
+    def test_default_type_is_other(self):
+        """Transaction type should default to Other."""
+
+        transaction = Transaction.objects.create(
+            receiver="Test Receiver",
+            amount=Decimal("1000.00"),
+        )
+
+        self.assertEqual(transaction.type, "Other")
+
+    def test_default_payment_method_is_cash(self):
+        """Payment method should default to Cash."""
+
+        transaction = Transaction.objects.create(
+            receiver="Test Receiver",
+            amount=Decimal("1000.00"),
+        )
+
+        self.assertEqual(transaction.payment_method, "Cash")
+
+    def test_default_transaction_cost_is_zero(self):
+        """Transaction cost should default to zero."""
+
+        transaction = Transaction.objects.create(
+            receiver="Test Receiver",
+            amount=Decimal("1000.00"),
+        )
+
+        self.assertEqual(
+            transaction.transaction_cost,
+            Decimal("0.00"),
+        )
+
+    def test_total_amount_property(self):
+        """Total amount should include transaction cost."""
+
+        expected_total = Decimal("5050.00")
+
+        self.assertEqual(
+            self.transaction.total_amount,
+            expected_total,
+        )
+
+    def test_total_amount_when_amount_is_null(self):
+        """Null amount should be treated as zero."""
+
+        transaction = Transaction.objects.create(
+            receiver="Test Receiver",
+            amount=None,
+            transaction_cost=Decimal("25.00"),
+        )
+
+        self.assertEqual(
+            transaction.total_amount,
+            Decimal("25.00"),
+        )
+
+    def test_total_amount_when_cost_is_zero(self):
+        """Total should equal the amount when cost is zero."""
+
+        transaction = Transaction.objects.create(
+            receiver="Test Receiver",
+            amount=Decimal("2500.00"),
+            transaction_cost=Decimal("0.00"),
+        )
+
+        self.assertEqual(
+            transaction.total_amount,
+            Decimal("2500.00"),
+        )
+
+    def test_string_representation(self):
+        """The model should return a readable string."""
+
+        expected = "Income - 5000.00 - MPESA"
+
+        self.assertEqual(str(self.transaction), expected)
+
+    def test_activity_date_is_created(self):
+        """Activity date should be populated automatically."""
+
+        transaction = Transaction.objects.create(
+            receiver="Test Receiver",
+            amount=Decimal("500.00"),
+        )
+
+        self.assertIsNotNone(transaction.activity_date)
+
+    def test_created_at_is_generated(self):
+        """Created timestamp should be generated."""
+
+        self.assertIsNotNone(self.transaction.created_at)
+
+    def test_updated_at_is_generated(self):
+        """Updated timestamp should be generated."""
+
+        self.assertIsNotNone(self.transaction.updated_at)
+
+    def test_valid_payment_method(self):
+        """A supported payment method should pass validation."""
+
+        self.transaction.full_clean()
+
+    def test_invalid_payment_method(self):
+        """An unsupported payment method should fail validation."""
+
+        transaction = Transaction(
+            receiver="Test Receiver",
+            amount=Decimal("100.00"),
+            payment_method="Bitcoin",
+        )
+
+        with self.assertRaises(ValidationError):
+            transaction.full_clean()
+
+    def test_invalid_transaction_type(self):
+        """An unsupported transaction type should fail validation."""
+
+        transaction = Transaction(
+            receiver="Test Receiver",
+            amount=Decimal("100.00"),
+            type="Unknown",
+        )
+
+        with self.assertRaises(ValidationError):
+            transaction.full_clean()
+
+    def test_transactions_ordered_by_activity_date(self):
+        """Newest transactions should appear first."""
+
+        older_transaction = Transaction.objects.create(
+            receiver="Older Receiver",
+            amount=Decimal("100.00"),
+            activity_date=timezone.now() - timedelta(days=5),
+        )
+
+        newer_transaction = Transaction.objects.create(
+            receiver="Newer Receiver",
+            amount=Decimal("200.00"),
+            activity_date=timezone.now() + timedelta(days=1),
+        )
+
+        transactions = list(Transaction.objects.all())
+
+        self.assertEqual(transactions[0], newer_transaction)
+        self.assertIn(older_transaction, transactions)
+
+    def test_verbose_names(self):
+        """The model should have correct admin names."""
+
+        self.assertEqual(
+            Transaction._meta.verbose_name,
+            "Transaction",
+        )
+        self.assertEqual(
+            Transaction._meta.verbose_name_plural,
+            "Transactions",
+        )
+        from decimal import Decimal
+
+
+@property
+def total_amount(self):
+    """Return the transaction amount plus its transaction cost."""
+
+    amount = self.amount or Decimal("0.00")
+    cost = self.transaction_cost or Decimal("0.00")
+
+    return amount + cost

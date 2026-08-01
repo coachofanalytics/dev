@@ -4,10 +4,10 @@ from django.contrib.auth.forms import UserChangeForm, UserCreationForm
 # <<<<<<< HEAD
 from .models import CustomerUser
 from django.contrib import admin
-from .models import PaymentHistory,Transaction
+from .models import PaymentHistory
 
 # =======
-from .models import CustomerUser, LoginHistory
+from .models import CustomerUser, LoginHistory,Transaction
 # >>>>>>> e79fe45578418c384fbb84ca7760d91bef020a33
 
 
@@ -150,22 +150,24 @@ class PaymentHistoryAdmin(admin.ModelAdmin):
 admin.site.register(LoginHistory, LoginHistoryAdmin)
 # >>>>>>> e79fe45578418c384fbb84ca7760d91bef020a33
 
+from django.contrib import admin
+
+from .models import Transaction
 
 
 @admin.register(Transaction)
 class TransactionAdmin(admin.ModelAdmin):
     list_display = (
         "id",
-        "sender",
-        "department",
-        "receiver",
-        "phone",
         "type",
+        "sender",
+        "receiver",
+        "department",
         "amount",
         "transaction_cost",
+        "display_total_amount",
         "payment_method",
         "activity_date",
-        "created_at",
     )
 
     list_filter = (
@@ -179,19 +181,89 @@ class TransactionAdmin(admin.ModelAdmin):
     search_fields = (
         "receiver",
         "phone",
+        "department",
         "description",
-        "sender__email",
+        "receipt_link",
         "sender__username",
+        "sender__email",
     )
 
     readonly_fields = (
+        "display_total_amount",
         "created_at",
         "updated_at",
     )
+
+    autocomplete_fields = ("sender",)
+
+    date_hierarchy = "activity_date"
 
     ordering = (
         "-activity_date",
         "-created_at",
     )
 
-    date_hierarchy = "activity_date"
+    list_per_page = 25
+
+    fieldsets = (
+        (
+            "Transaction Details",
+            {
+                "fields": (
+                    "type",
+                    "sender",
+                    "department",
+                    "receiver",
+                    "phone",
+                    "activity_date",
+                )
+            },
+        ),
+        (
+            "Financial Information",
+            {
+                "fields": (
+                    "qty",
+                    "amount",
+                    "transaction_cost",
+                    "display_total_amount",
+                    "payment_method",
+                )
+            },
+        ),
+        (
+            "Supporting Information",
+            {
+                "fields": (
+                    "receipt_link",
+                    "description",
+                )
+            },
+        ),
+        (
+            "System Information",
+            {
+                "classes": ("collapse",),
+                "fields": (
+                    "created_at",
+                    "updated_at",
+                ),
+            },
+        ),
+    )
+
+    @admin.display(description="Total Amount", ordering="amount")
+    def display_total_amount(self, obj):
+        return obj.total_amount
+
+
+
+
+
+
+
+
+
+
+
+

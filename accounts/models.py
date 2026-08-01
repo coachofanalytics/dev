@@ -285,9 +285,12 @@ class LoginHistory (models.Model):
     
 
 
-from django.db import models
+from decimal import Decimal
+
 from django.conf import settings
+from django.db import models
 from django.utils import timezone
+
 
 
 class Transaction(models.Model):
@@ -317,61 +320,83 @@ class Transaction(models.Model):
         on_delete=models.SET_NULL,
         null=True,
         blank=True,
-        related_name="sent_transactions"
+        related_name="sent_transactions",
     )
 
     department = models.CharField(
-    max_length=100,
-    null=True,
-    blank=True
-)
-    
+        max_length=100,
+        null=True,
+        blank=True,
+    )
 
-    receiver = models.CharField(max_length=100, null=True, blank=True)
-    phone = models.CharField(max_length=50, null=True, blank=True)
+    receiver = models.CharField(
+        max_length=100,
+        null=True,
+        blank=True,
+    )
+
+    phone = models.CharField(
+        max_length=50,
+        null=True,
+        blank=True,
+    )
 
     type = models.CharField(
         max_length=100,
         choices=TYPE_CHOICES,
         default="Other",
         null=True,
-        blank=True
+        blank=True,
     )
 
-    activity_date = models.DateTimeField(default=timezone.now)
+    activity_date = models.DateTimeField(
+        default=timezone.now,
+    )
 
-    receipt_link = models.CharField(max_length=255, null=True, blank=True)
+    receipt_link = models.CharField(
+        max_length=255,
+        null=True,
+        blank=True,
+    )
 
     qty = models.DecimalField(
         max_digits=10,
         decimal_places=2,
         null=True,
-        blank=True
+        blank=True,
     )
 
     amount = models.DecimalField(
         max_digits=10,
         decimal_places=2,
         null=True,
-        blank=True
+        blank=True,
     )
 
     transaction_cost = models.DecimalField(
         max_digits=10,
         decimal_places=2,
-        default=0
+        default=Decimal("0.00"),
     )
 
-    description = models.TextField(null=True, blank=True)
+    description = models.TextField(
+        null=True,
+        blank=True,
+    )
 
     payment_method = models.CharField(
         max_length=50,
         choices=PAY_CHOICES,
-        default="Cash"
+        default="Cash",
     )
 
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
+    created_at = models.DateTimeField(
+        auto_now_add=True,
+    )
+
+    updated_at = models.DateTimeField(
+        auto_now=True,
+    )
 
     class Meta:
         verbose_name = "Transaction"
@@ -379,13 +404,12 @@ class Transaction(models.Model):
         ordering = ["-activity_date", "-created_at"]
 
     def __str__(self):
-        return f"{self.type} - {self.amount} - {self.payment_method}"
+        amount = self.amount or Decimal("0.00")
+        return f"{self.type} - {amount} - {self.payment_method}"
 
     @property
     def total_amount(self):
-        """
-        Total amount including transaction cost.
-        """
-        amount = self.amount or 0
-        cost = self.transaction_cost or 0
+        """Return the transaction amount plus transaction cost."""
+        amount = self.amount or Decimal("0.00")
+        cost = self.transaction_cost or Decimal("0.00")
         return amount + cost
