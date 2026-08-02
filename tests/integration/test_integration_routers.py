@@ -164,3 +164,124 @@ def test_user_groups_delete_from_html_form(client, session):
     )
 
     assert deleted_group is None
+
+def valid_customer_user_form():
+    return {
+        "username": "integration-user",
+        "email": "integration@example.com",
+        "city": "Nairobi",
+        "state": "Nairobi County",
+        "country": "Kenya",
+        "category": "applicant",
+        "is_admin": "false",
+        "is_employee": "false",
+        "is_client": "false",
+        "is_applicant": "true",
+    }
+
+
+def test_customer_user_can_be_created(
+    client,
+):
+    response = client.post(
+        "/accounts/customer-users/",
+        headers={
+            "X-Admin": "true",
+        },
+        data=valid_customer_user_form(),
+        files={
+            "resume_file": (
+                "resume.pdf",
+                b"%PDF-1.4 integration resume",
+                "application/pdf",
+            ),
+        },
+    )
+
+    assert response.status_code == 201
+
+    body = response.json()
+
+    assert body["username"] == "integration-user"
+    assert body["city"] == "Nairobi"
+    assert body["category"] == "applicant"
+    assert body["is_applicant"] is True
+    assert body["resume_file"].endswith(
+        ".pdf"
+    )
+
+
+def test_customer_user_list_returns_created_user(
+    client,
+):
+    create_response = client.post(
+        "/accounts/customer-users/",
+        headers={
+            "X-Admin": "true",
+        },
+        data={
+            **valid_customer_user_form(),
+            "username": "list-user",
+            "email": "list@example.com",
+        },
+        files={
+            "resume_file": (
+                "resume.pdf",
+                b"%PDF-1.4 list resume",
+                "application/pdf",
+            ),
+        },
+    )
+
+    assert create_response.status_code == 201
+
+    response = client.get(
+        "/accounts/customer-users/",
+        headers={
+            "X-Admin": "true",
+        },
+    )
+
+    assert response.status_code == 200
+
+    usernames = [
+        item["username"]
+        for item in response.json()
+    ]
+
+    assert "list-user" in usernames
+
+
+def test_customer_user_detail_page_loads(
+    client,
+):
+    create_response = client.post(
+        "/accounts/customer-users/",
+        headers={
+            "X-Admin": "true",
+        },
+        data={
+            **valid_customer_user_form(),
+            "username": "detail-user",
+            "email": "detail@example.com",
+        },
+        files={
+            "resume_file": (
+                "resume.pdf",
+                b"%PDF-1.4 detail resume",
+                "application/pdf",
+            ),
+        },
+    )
+
+    customer_user_id = create_response.json()["id"]
+
+    response = client.get(
+        (
+            "/accounts/customer-users/"
+            f"pages/{customer_user_id}"
+        )
+    )
+
+    assert response.status_code == 200
+    assert "detail-user" in response.text

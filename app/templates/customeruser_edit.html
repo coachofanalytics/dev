@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>Edit Customer User</title>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f5f7fa;
+            padding: 30px;
+        }
+
+        .container {
+            max-width: 760px;
+            margin: auto;
+            background: white;
+            padding: 28px;
+        }
+
+        .field {
+            margin-bottom: 16px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 6px;
+            font-weight: bold;
+        }
+
+        input,
+        select {
+            width: 100%;
+            box-sizing: border-box;
+            padding: 10px;
+        }
+
+        .roles label {
+            display: inline-block;
+            margin-right: 18px;
+            font-weight: normal;
+        }
+
+        .roles input {
+            width: auto;
+        }
+
+        .error {
+            background: #ffe8e8;
+            border: 1px solid #cc0000;
+            padding: 12px;
+            margin-bottom: 16px;
+        }
+
+        .button {
+            display: inline-block;
+            background: #1e40af;
+            color: white;
+            padding: 10px 16px;
+            text-decoration: none;
+            border: none;
+            cursor: pointer;
+        }
+    </style>
+</head>
+
+<body>
+    <main class="container">
+        <h1>Edit Customer User</h1>
+
+        {% if error %}
+            <div
+                class="error"
+                role="alert"
+            >
+                {{ error }}
+            </div>
+        {% endif %}
+
+        <form
+            method="post"
+            action="/accounts/customer-users/pages/{{ customer_user.id }}/edit"
+            enctype="multipart/form-data"
+        >
+            <div class="field">
+                <label for="username">
+                    Username
+                </label>
+
+                <input
+                    id="username"
+                    name="username"
+                    type="text"
+                    value="{{ customer_user.username }}"
+                    required
+                >
+            </div>
+
+            <div class="field">
+                <label for="email">
+                    Email
+                </label>
+
+                <input
+                    id="email"
+                    name="email"
+                    type="email"
+                    value="{{ customer_user.email }}"
+                    required
+                >
+            </div>
+
+            <div class="field">
+                <label for="city">
+                    City
+                </label>
+
+                <input
+                    id="city"
+                    name="city"
+                    type="text"
+                    value="{{ customer_user.city }}"
+                    required
+                >
+            </div>
+
+            <div class="field">
+                <label for="state">
+                    State/County
+                </label>
+
+                <input
+                    id="state"
+                    name="state"
+                    type="text"
+                    value="{{ customer_user.state }}"
+                    required
+                >
+            </div>
+
+            <div class="field">
+                <label for="country">
+                    Country
+                </label>
+
+                <input
+                    id="country"
+                    name="country"
+                    type="text"
+                    value="{{ customer_user.country }}"
+                    required
+                >
+            </div>
+
+            <div class="field">
+                <label for="category">
+                    Category
+                </label>
+
+                <select
+                    id="category"
+                    name="category"
+                    required
+                >
+                    {% for option in [
+                        "administrator",
+                        "employee",
+                        "client",
+                        "applicant"
+                    ] %}
+                        <option
+                            value="{{ option }}"
+                            {% if customer_user.category == option %}
+                                selected
+                            {% endif %}
+                        >
+                            {{ option|title }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <fieldset class="field roles">
+                <legend>Roles</legend>
+
+                <label>
+                    <input
+                        type="checkbox"
+                        name="is_admin"
+                        value="true"
+                        {% if customer_user.is_admin %}
+                            checked
+                        {% endif %}
+                    >
+                    Administrator
+                </label>
+
+                <label>
+                    <input
+                        type="checkbox"
+                        name="is_employee"
+                        value="true"
+                        {% if customer_user.is_employee %}
+                            checked
+                        {% endif %}
+                    >
+                    Employee
+                </label>
+
+                <label>
+                    <input
+                        type="checkbox"
+                        name="is_client"
+                        value="true"
+                        {% if customer_user.is_client %}
+                            checked
+                        {% endif %}
+                    >
+                    Client
+                </label>
+
+                <label>
+                    <input
+                        type="checkbox"
+                        name="is_applicant"
+                        value="true"
+                        {% if customer_user.is_applicant %}
+                            checked
+                        {% endif %}
+                    >
+                    Applicant
+                </label>
+            </fieldset>
+
+            <div class="field">
+                <label for="resume_file">
+                    Replace resume
+                </label>
+
+                <input
+                    id="resume_file"
+                    name="resume_file"
+                    type="file"
+                    accept=".pdf,.doc,.docx"
+                >
+
+                <small>
+                    Leave empty to keep the existing resume.
+                </small>
+            </div>
+
+            <button
+                class="button"
+                type="submit"
+            >
+                Save Changes
+            </button>
+
+            <a
+                class="button"
+                href="/accounts/customer-users/pages/{{ customer_user.id }}"
+            >
+                Cancel
+            </a>
+        </form>
+    </main>
+</body>
+</html>

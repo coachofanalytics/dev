@@ -1,0 +1,862 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>Customer Users</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        :root {
+            --coda-blue: #17356b;
+            --coda-blue-light: #294b86;
+            --coda-gold: #efac3b;
+            --coda-green: #10b981;
+            --coda-red: #dc2626;
+            --page-background: #f7f8fb;
+            --card-background: #ffffff;
+            --border-color: #dce3ec;
+            --muted-text: #64748b;
+            --table-header: #f5f7fa;
+        }
+
+        body {
+            margin: 0;
+            background: var(--page-background);
+            color: var(--coda-blue);
+            font-family: Arial, sans-serif;
+        }
+
+        .page-container {
+            width: 100%;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 28px 32px 60px;
+        }
+
+        .page-header {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            gap: 24px;
+            margin-bottom: 30px;
+        }
+
+        .page-title {
+            margin: 0;
+            font-size: 34px;
+            font-weight: 800;
+            letter-spacing: -0.5px;
+        }
+
+        .page-subtitle {
+            margin: 8px 0 0;
+            color: var(--muted-text);
+            font-size: 16px;
+        }
+
+        .primary-button {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            min-height: 46px;
+            padding: 12px 20px;
+            border: 0;
+            border-radius: 9px;
+            background: var(--coda-gold);
+            color: #ffffff;
+            font-size: 15px;
+            font-weight: 700;
+            text-decoration: none;
+            cursor: pointer;
+            transition:
+                transform 0.2s ease,
+                background 0.2s ease;
+        }
+
+        .primary-button:hover {
+            background: #dc982d;
+            transform: translateY(-1px);
+        }
+
+        .summary-grid {
+            display: grid;
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+            gap: 18px;
+            margin-bottom: 24px;
+        }
+
+        .summary-card {
+            min-height: 125px;
+            padding: 24px;
+            background: var(--card-background);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            box-shadow: 0 3px 10px rgba(15, 23, 42, 0.05);
+        }
+
+        .summary-card.total {
+            border-left: 5px solid var(--coda-blue);
+        }
+
+        .summary-card.admins {
+            border-left: 5px solid var(--coda-gold);
+        }
+
+        .summary-card.clients {
+            border-left: 5px solid var(--coda-green);
+        }
+
+        .summary-card.applicants {
+            border-left: 5px solid var(--coda-blue-light);
+        }
+
+        .summary-label {
+            margin: 0 0 12px;
+            color: var(--muted-text);
+            font-size: 13px;
+            font-weight: 800;
+            letter-spacing: 0.4px;
+            text-transform: uppercase;
+        }
+
+        .summary-value {
+            margin: 0;
+            font-size: 32px;
+            font-weight: 800;
+            color: var(--coda-blue);
+        }
+
+        .content-card {
+            background: var(--card-background);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            box-shadow: 0 3px 10px rgba(15, 23, 42, 0.05);
+            overflow: hidden;
+        }
+
+        .filter-section {
+            padding: 24px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .section-heading {
+            margin: 0 0 18px;
+            font-size: 19px;
+            font-weight: 800;
+        }
+
+        .filter-grid {
+            display: grid;
+            grid-template-columns:
+                minmax(170px, 1fr)
+                minmax(170px, 1fr)
+                minmax(170px, 1fr)
+                minmax(170px, 1fr)
+                auto;
+            gap: 14px;
+            align-items: end;
+        }
+
+        .filter-field label {
+            display: block;
+            margin-bottom: 7px;
+            font-size: 14px;
+            font-weight: 700;
+        }
+
+        .filter-field input,
+        .filter-field select {
+            width: 100%;
+            min-height: 44px;
+            padding: 10px 12px;
+            border: 1px solid #cbd5e1;
+            border-radius: 8px;
+            background: #ffffff;
+            color: #1f2937;
+            font-size: 14px;
+        }
+
+        .filter-field input:focus,
+        .filter-field select:focus {
+            outline: none;
+            border-color: var(--coda-blue);
+            box-shadow: 0 0 0 3px rgba(23, 53, 107, 0.08);
+        }
+
+        .filter-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .filter-button,
+        .clear-button {
+            min-height: 44px;
+            padding: 10px 17px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 700;
+            cursor: pointer;
+            text-decoration: none;
+        }
+
+        .filter-button {
+            border: 0;
+            background: var(--coda-blue);
+            color: #ffffff;
+        }
+
+        .filter-button:hover {
+            background: #0f2959;
+        }
+
+        .clear-button {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border: 1px solid #cbd5e1;
+            background: #ffffff;
+            color: var(--coda-blue);
+        }
+
+        .table-heading {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 22px 24px;
+        }
+
+        .table-heading h2 {
+            margin: 0;
+            font-size: 20px;
+        }
+
+        .table-wrapper {
+            width: 100%;
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            min-width: 1100px;
+            border-collapse: collapse;
+        }
+
+        th,
+        td {
+            padding: 17px 20px;
+            border-top: 1px solid var(--border-color);
+            text-align: left;
+            vertical-align: middle;
+        }
+
+        th {
+            background: var(--table-header);
+            color: #526987;
+            font-size: 12px;
+            font-weight: 800;
+            letter-spacing: 0.35px;
+            text-transform: uppercase;
+        }
+
+        td {
+            color: #24364f;
+            font-size: 14px;
+        }
+
+        .user-name {
+            color: var(--coda-blue);
+            font-size: 15px;
+            font-weight: 800;
+        }
+
+        .user-email {
+            margin-top: 4px;
+            color: var(--muted-text);
+            font-size: 13px;
+        }
+
+        .location-text {
+            line-height: 1.5;
+        }
+
+        .category-badge,
+        .role-badge {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            margin: 2px 4px 2px 0;
+            padding: 5px 9px;
+            border-radius: 999px;
+            font-size: 11px;
+            font-weight: 800;
+        }
+
+        .category-badge {
+            background: #e8eef9;
+            color: var(--coda-blue);
+        }
+
+        .role-admin {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .role-employee {
+            background: #dbeafe;
+            color: #1d4ed8;
+        }
+
+        .role-client {
+            background: #d1fae5;
+            color: #047857;
+        }
+
+        .role-applicant {
+            background: #ede9fe;
+            color: #6d28d9;
+        }
+
+        .status-active {
+            display: inline-flex;
+            padding: 5px 10px;
+            border-radius: 999px;
+            background: #d1fae5;
+            color: #047857;
+            font-size: 11px;
+            font-weight: 800;
+        }
+
+        .status-inactive {
+            display: inline-flex;
+            padding: 5px 10px;
+            border-radius: 999px;
+            background: #e5e7eb;
+            color: #475569;
+            font-size: 11px;
+            font-weight: 800;
+        }
+
+        .action-links {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .action-link {
+            color: var(--coda-blue);
+            font-weight: 700;
+            text-decoration: none;
+        }
+
+        .action-link:hover {
+            text-decoration: underline;
+        }
+
+        .resume-link {
+            color: var(--coda-green);
+            font-weight: 700;
+            text-decoration: none;
+        }
+
+        .delete-form {
+            display: inline;
+            margin: 0;
+        }
+
+        .delete-button {
+            padding: 0;
+            border: 0;
+            background: transparent;
+            color: var(--coda-red);
+            font-size: 14px;
+            font-weight: 700;
+            cursor: pointer;
+        }
+
+        .empty-state {
+            padding: 60px 25px;
+            border-top: 1px solid var(--border-color);
+            text-align: center;
+        }
+
+        .empty-icon {
+            width: 56px;
+            height: 56px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 16px;
+            border-radius: 50%;
+            background: #e8eef9;
+            color: var(--coda-blue);
+            font-size: 25px;
+        }
+
+        .empty-state h3 {
+            margin: 0 0 8px;
+            font-size: 20px;
+        }
+
+        .empty-state p {
+            margin: 0 0 20px;
+            color: var(--muted-text);
+        }
+
+        @media (max-width: 1100px) {
+            .summary-grid {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+
+            .filter-grid {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+
+            .filter-actions {
+                grid-column: 1 / -1;
+            }
+        }
+
+        @media (max-width: 700px) {
+            .page-container {
+                padding: 22px 16px 40px;
+            }
+
+            .page-header {
+                flex-direction: column;
+            }
+
+            .primary-button {
+                width: 100%;
+            }
+
+            .summary-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .filter-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .filter-actions {
+                flex-direction: column;
+            }
+
+            .filter-button,
+            .clear-button {
+                width: 100%;
+            }
+
+            .page-title {
+                font-size: 29px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <main class="page-container">
+
+        <header class="page-header">
+            <div>
+                <h1 class="page-title">
+                    Customer Users
+                </h1>
+
+                <p class="page-subtitle">
+                    Manage customer locations, categories, roles,
+                    access details and professional resumes.
+                </p>
+            </div>
+
+            <a
+                class="primary-button"
+                href="/accounts/customer-users/pages/create"
+            >
+                <span>+</span>
+                Create Customer User
+            </a>
+        </header>
+
+        {% set total_users = customer_users|length %}
+        {% set admin_count = customer_users
+            |selectattr("is_admin")
+            |list
+            |length
+        %}
+        {% set client_count = customer_users
+            |selectattr("is_client")
+            |list
+            |length
+        %}
+        {% set applicant_count = customer_users
+            |selectattr("is_applicant")
+            |list
+            |length
+        %}
+
+        <section class="summary-grid">
+
+            <article class="summary-card total">
+                <p class="summary-label">
+                    Total Customer Users
+                </p>
+
+                <p class="summary-value">
+                    {{ total_users }}
+                </p>
+            </article>
+
+            <article class="summary-card admins">
+                <p class="summary-label">
+                    Administrators
+                </p>
+
+                <p class="summary-value">
+                    {{ admin_count }}
+                </p>
+            </article>
+
+            <article class="summary-card clients">
+                <p class="summary-label">
+                    Clients
+                </p>
+
+                <p class="summary-value">
+                    {{ client_count }}
+                </p>
+            </article>
+
+            <article class="summary-card applicants">
+                <p class="summary-label">
+                    Applicants
+                </p>
+
+                <p class="summary-value">
+                    {{ applicant_count }}
+                </p>
+            </article>
+
+        </section>
+
+        <section class="content-card">
+
+            <div class="filter-section">
+                <h2 class="section-heading">
+                    Search and Filter
+                </h2>
+
+                <form
+                    method="get"
+                    action="/accounts/customer-users/pages/list"
+                >
+                    <div class="filter-grid">
+
+                        <div class="filter-field">
+                            <label for="city">
+                                City
+                            </label>
+
+                            <input
+                                id="city"
+                                type="text"
+                                name="city"
+                                value="{{ city }}"
+                                placeholder="Enter city"
+                            >
+                        </div>
+
+                        <div class="filter-field">
+                            <label for="state">
+                                State
+                            </label>
+
+                            <input
+                                id="state"
+                                type="text"
+                                name="state"
+                                value="{{ state }}"
+                                placeholder="Enter state"
+                            >
+                        </div>
+
+                        <div class="filter-field">
+                            <label for="country">
+                                Country
+                            </label>
+
+                            <input
+                                id="country"
+                                type="text"
+                                name="country"
+                                value="{{ country }}"
+                                placeholder="Enter country"
+                            >
+                        </div>
+
+                        <div class="filter-field">
+                            <label for="category">
+                                Category
+                            </label>
+
+                            <select
+                                id="category"
+                                name="category"
+                            >
+                                <option value="">
+                                    All categories
+                                </option>
+
+                                <option
+                                    value="administrator"
+                                    {% if category == "administrator" %}
+                                        selected
+                                    {% endif %}
+                                >
+                                    Administrator
+                                </option>
+
+                                <option
+                                    value="employee"
+                                    {% if category == "employee" %}
+                                        selected
+                                    {% endif %}
+                                >
+                                    Employee
+                                </option>
+
+                                <option
+                                    value="client"
+                                    {% if category == "client" %}
+                                        selected
+                                    {% endif %}
+                                >
+                                    Client
+                                </option>
+
+                                <option
+                                    value="applicant"
+                                    {% if category == "applicant" %}
+                                        selected
+                                    {% endif %}
+                                >
+                                    Applicant
+                                </option>
+                            </select>
+                        </div>
+
+                        <div class="filter-actions">
+                            <button
+                                class="filter-button"
+                                type="submit"
+                            >
+                                Filter
+                            </button>
+
+                            <a
+                                class="clear-button"
+                                href="/accounts/customer-users/pages/list"
+                            >
+                                Clear
+                            </a>
+                        </div>
+
+                    </div>
+                </form>
+            </div>
+
+            <div class="table-heading">
+                <h2>
+                    Customer User Records
+                </h2>
+            </div>
+
+            {% if customer_users %}
+
+                <div class="table-wrapper">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>User</th>
+                                <th>Location</th>
+                                <th>Category</th>
+                                <th>Roles</th>
+                                <th>Status</th>
+                                <th>Resume</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+
+                        <tbody>
+                            {% for customer_user in customer_users %}
+                                <tr>
+                                    <td>
+                                        <div class="user-name">
+                                            {{ customer_user.username }}
+                                        </div>
+
+                                        <div class="user-email">
+                                            {{ customer_user.email }}
+                                        </div>
+                                    </td>
+
+                                    <td>
+                                        <div class="location-text">
+                                            {{ customer_user.city }},
+                                            {{ customer_user.state }}
+                                            <br>
+                                            {{ customer_user.country }}
+                                        </div>
+                                    </td>
+
+                                    <td>
+                                        <span class="category-badge">
+                                            {{ customer_user.category|title }}
+                                        </span>
+                                    </td>
+
+                                    <td>
+                                        {% if customer_user.is_admin %}
+                                            <span
+                                                class="role-badge role-admin"
+                                            >
+                                                Admin
+                                            </span>
+                                        {% endif %}
+
+                                        {% if customer_user.is_employee %}
+                                            <span
+                                                class="role-badge role-employee"
+                                            >
+                                                Employee
+                                            </span>
+                                        {% endif %}
+
+                                        {% if customer_user.is_client %}
+                                            <span
+                                                class="role-badge role-client"
+                                            >
+                                                Client
+                                            </span>
+                                        {% endif %}
+
+                                        {% if customer_user.is_applicant %}
+                                            <span
+                                                class="role-badge role-applicant"
+                                            >
+                                                Applicant
+                                            </span>
+                                        {% endif %}
+                                    </td>
+
+                                    <td>
+                                        {% if customer_user.is_active %}
+                                            <span class="status-active">
+                                                Active
+                                            </span>
+                                        {% else %}
+                                            <span class="status-inactive">
+                                                Inactive
+                                            </span>
+                                        {% endif %}
+                                    </td>
+
+                                    <td>
+                                        {% if customer_user.resume_file %}
+                                            <a
+                                                class="resume-link"
+                                                href="/accounts/customer-users/{{ customer_user.id }}/resume/download"
+                                            >
+                                                Download
+                                            </a>
+                                        {% else %}
+                                            <span>
+                                                No resume
+                                            </span>
+                                        {% endif %}
+                                    </td>
+
+                                    <td>
+                                        <div class="action-links">
+
+                                            <a
+                                                class="action-link"
+                                                href="/accounts/customer-users/pages/{{ customer_user.id }}"
+                                            >
+                                                View
+                                            </a>
+
+                                            <a
+                                                class="action-link"
+                                                href="/accounts/customer-users/pages/{{ customer_user.id }}/edit"
+                                            >
+                                                Edit
+                                            </a>
+
+                                            <form
+                                                class="delete-form"
+                                                method="post"
+                                                action="/accounts/customer-users/pages/{{ customer_user.id }}/delete"
+                                                onsubmit="
+                                                    return confirm(
+                                                        'Delete this customer user?'
+                                                    );
+                                                "
+                                            >
+                                                <button
+                                                    class="delete-button"
+                                                    type="submit"
+                                                >
+                                                    Delete
+                                                </button>
+                                            </form>
+
+                                        </div>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+
+            {% else %}
+
+                <div class="empty-state">
+                    <div class="empty-icon">
+                        👤
+                    </div>
+
+                    <h3>
+                        No customer users found
+                    </h3>
+
+                    <p>
+                        Create a customer profile or change
+                        the current search filters.
+                    </p>
+
+                    <a
+                        class="primary-button"
+                        href="/accounts/customer-users/pages/create"
+                    >
+                        + Create Customer User
+                    </a>
+                </div>
+
+            {% endif %}
+
+        </section>
+
+    </main>
+</body>
+</html>

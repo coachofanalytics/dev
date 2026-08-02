@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>Create Customer User</title>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f5f7fa;
+            margin: 0;
+            padding: 30px;
+        }
+
+        .container {
+            max-width: 760px;
+            margin: auto;
+            background: white;
+            padding: 28px;
+            border-radius: 8px;
+        }
+
+        .field {
+            margin-bottom: 16px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 6px;
+            font-weight: bold;
+        }
+
+        input,
+        select {
+            width: 100%;
+            box-sizing: border-box;
+            padding: 10px;
+        }
+
+        .roles label {
+            display: inline-block;
+            margin-right: 18px;
+            font-weight: normal;
+        }
+
+        .roles input {
+            width: auto;
+        }
+
+        .error {
+            background: #ffe8e8;
+            border: 1px solid #cc0000;
+            padding: 12px;
+            margin-bottom: 16px;
+        }
+
+        .actions {
+            margin-top: 22px;
+        }
+
+        button,
+        .button {
+            display: inline-block;
+            background: #1e40af;
+            color: white;
+            border: none;
+            padding: 10px 18px;
+            text-decoration: none;
+            cursor: pointer;
+        }
+
+        .secondary {
+            background: #555;
+        }
+    </style>
+</head>
+
+<body>
+    <main class="container">
+        <h1>Create Customer User</h1>
+
+        {% if error %}
+            <div
+                class="error"
+                role="alert"
+                data-testid="customer-user-error"
+            >
+                {{ error }}
+            </div>
+        {% endif %}
+
+        <form
+            method="post"
+            action="/accounts/customer-users/pages/create"
+            enctype="multipart/form-data"
+        >
+            <div class="field">
+                <label for="username">
+                    Username
+                </label>
+
+                <input
+                    id="username"
+                    name="username"
+                    type="text"
+                    value="{{ form_data.get('username', '') }}"
+                    required
+                >
+            </div>
+
+            <div class="field">
+                <label for="email">
+                    Email
+                </label>
+
+                <input
+                    id="email"
+                    name="email"
+                    type="email"
+                    value="{{ form_data.get('email', '') }}"
+                    required
+                >
+            </div>
+
+            <div class="field">
+                <label for="city">
+                    City
+                </label>
+
+                <input
+                    id="city"
+                    name="city"
+                    type="text"
+                    value="{{ form_data.get('city', '') }}"
+                    required
+                >
+            </div>
+
+            <div class="field">
+                <label for="state">
+                    State/County
+                </label>
+
+                <input
+                    id="state"
+                    name="state"
+                    type="text"
+                    value="{{ form_data.get('state', '') }}"
+                    required
+                >
+            </div>
+
+            <div class="field">
+                <label for="country">
+                    Country
+                </label>
+
+                <input
+                    id="country"
+                    name="country"
+                    type="text"
+                    value="{{ form_data.get('country', '') }}"
+                    required
+                >
+            </div>
+
+            <div class="field">
+                <label for="category">
+                    Category
+                </label>
+
+                <select
+                    id="category"
+                    name="category"
+                    required
+                >
+                    <option value="">
+                        Select category
+                    </option>
+
+                    {% for option in [
+                        "administrator",
+                        "employee",
+                        "client",
+                        "applicant"
+                    ] %}
+                        <option
+                            value="{{ option }}"
+                            {% if form_data.get('category') == option %}
+                                selected
+                            {% endif %}
+                        >
+                            {{ option|title }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <fieldset class="field roles">
+                <legend>Roles</legend>
+
+                <label>
+                    <input
+                        type="checkbox"
+                        name="is_admin"
+                        value="true"
+                        {% if form_data.get('is_admin') %}
+                            checked
+                        {% endif %}
+                    >
+                    Administrator
+                </label>
+
+                <label>
+                    <input
+                        type="checkbox"
+                        name="is_employee"
+                        value="true"
+                        {% if form_data.get('is_employee') %}
+                            checked
+                        {% endif %}
+                    >
+                    Employee
+                </label>
+
+                <label>
+                    <input
+                        type="checkbox"
+                        name="is_client"
+                        value="true"
+                        {% if form_data.get('is_client') %}
+                            checked
+                        {% endif %}
+                    >
+                    Client
+                </label>
+
+                <label>
+                    <input
+                        type="checkbox"
+                        name="is_applicant"
+                        value="true"
+                        {% if form_data.get('is_applicant') %}
+                            checked
+                        {% endif %}
+                    >
+                    Applicant
+                </label>
+            </fieldset>
+
+            <div class="field">
+                <label for="resume_file">
+                    Resume
+                </label>
+
+                <input
+                    id="resume_file"
+                    name="resume_file"
+                    type="file"
+                    accept=".pdf,.doc,.docx"
+                    required
+                >
+
+                <small>
+                    PDF, DOC or DOCX. Maximum size: 5 MB.
+                </small>
+            </div>
+
+            <div class="actions">
+                <button type="submit">
+                    Save Customer User
+                </button>
+
+                <a
+                    class="button secondary"
+                    href="/accounts/customer-users/pages/list"
+                >
+                    Cancel
+                </a>
+            </div>
+        </form>
+    </main>
+</body>
+</html>

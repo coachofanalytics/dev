@@ -9,8 +9,11 @@ from sqlmodel import Session
 from app import models
 
 from sqlmodel import Session, select
+from fastapi import HTTPException, status
 
 from app import models, schemas
+from app.services.customer_user_service import (
+    validate_roles,)
 
 
 def get_group_or_404(
@@ -537,3 +540,303 @@ def delete_user_group(
 
     db.delete(group)
     db.commit()
+
+def get_customer_user(
+    db: Session,
+    customer_user_id: int,
+) -> models.CustomerUser | None:
+    return db.get(
+        models.CustomerUser,
+        customer_user_id,
+    )
+
+
+def get_customer_user_or_404(
+    db: Session,
+    customer_user_id: int,
+) -> models.CustomerUser:
+    customer_user = get_customer_user(
+        db,
+        customer_user_id,
+    )
+
+    if customer_user is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Customer user not found.",
+        )
+
+    return customer_user
+
+
+def get_customer_user_by_username(
+    db: Session,
+    username: str,
+) -> models.CustomerUser | None:
+    statement = select(
+        models.CustomerUser
+    ).where(
+        models.CustomerUser.username == username
+    )
+
+    return db.exec(statement).first()
+
+
+def get_customer_user_by_email(
+    db: Session,
+    email: str,
+) -> models.CustomerUser | None:
+    statement = select(
+        models.CustomerUser
+    ).where(
+        models.CustomerUser.email == email
+    )
+
+    return db.exec(statement).first()
+
+
+def list_customer_users(
+    db: Session,
+    *,
+    city: str | None = None,
+    state_name: str | None = None,
+    country: str | None = None,
+    category: str | None = None,
+    is_admin: bool | None = None,
+    is_employee: bool | None = None,
+    is_client: bool | None = None,
+    is_applicant: bool | None = None,
+    skip: int = 0,
+    limit: int = 100,
+) -> list[models.CustomerUser]:
+    statement = select(
+        models.CustomerUser
+    )
+
+    if city:
+        statement = statement.where(
+            models.CustomerUser.city == city
+        )
+
+    if state_name:
+        statement = statement.where(
+            models.CustomerUser.state == state_name
+        )
+
+    if country:
+        statement = statement.where(
+            models.CustomerUser.country == country
+        )
+
+    if category:
+        statement = statement.where(
+            models.CustomerUser.category == category
+        )
+
+    if is_admin is not None:
+        statement = statement.where(
+            models.CustomerUser.is_admin == is_admin
+        )
+
+    if is_employee is not None:
+        statement = statement.where(
+            models.CustomerUser.is_employee
+            == is_employee
+        )
+
+    if is_client is not None:
+        statement = statement.where(
+            models.CustomerUser.is_client == is_client
+        )
+
+    if is_applicant is not None:
+        statement = statement.where(
+            models.CustomerUser.is_applicant
+            == is_applicant
+        )
+
+    statement = (
+        statement
+        .order_by(models.CustomerUser.id.desc())
+        .offset(skip)
+        .limit(limit)
+    )
+
+    return list(
+        db.exec(statement).all()
+    )
+
+
+def create_customer_user(
+    db: Session,
+    payload: schemas.CustomerUserCreate,
+    resume_path: str,
+) -> models.CustomerUser:
+    if get_customer_user_by_username(
+        db,
+        payload.username,
+    ):
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="The username already exists.",
+        )
+
+    if get_customer_user_by_email(
+        db,
+        str(payload.email),
+    ):
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="The email address already exists.",
+        )
+
+    validate_roles(
+        is_admin=payload.is_admin,
+        is_employee=payload.is_employee,
+        is_client=payload.is_client,
+        is_applicant=payload.is_applicant,
+    )
+
+    customer_user = models.CustomerUser(
+        username=payload.username,
+        email=str(payload.email),
+        city=payload.city,
+        state=payload.state,
+        country=payload.country,
+        category=payload.category,
+        is_admin=payload.is_admin,
+        is_employee=payload.is_employee,
+        is_client=payload.is_client,
+        is_applicant=payload.is_applicant,
+        resume_file=resume_path,
+    )
+
+    db.add(customer_user)
+
+    try:
+        db.commit()
+        db.refresh(customer_user)
+    except IntegrityError as exc:
+        db.rollback()
+
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail=(
+                "A customer user with this username "
+                "or email already exists."
+            ),
+        ) from exc
+    except Exception:
+        db.rollback()
+        raise
+
+    return customer_user
+
+
+def update_customer_user(
+    db: Session,
+    customer_user: models.CustomerUser,
+    payload: schemas.CustomerUserUpdate,
+    resume_path: str | None = None,
+) -> models.CustomerUser:
+    update_data = payload.model_dump(
+        exclude_unset=True,
+        exclude_none=True,
+    )
+
+    username = update_data.get("username")
+
+    if (
+        username
+        and username != customer_user.username
+    ):
+        existing_username = (
+            get_customer_user_by_username(
+                db,
+                username,
+            )
+        )
+
+        if existing_username:
+            raise HTTPException(
+                status_code=status.HTTP_409_CONFLICT,
+                detail="The username already exists.",
+            )
+
+    email = update_data.get("email")
+
+    if email:
+        email = str(email)
+        update_data["email"] = email
+
+    if (
+        email
+        and email != customer_user.email
+    ):
+        existing_email = (
+            get_customer_user_by_email(
+                db,
+                email,
+            )
+        )
+
+        if existing_email:
+            raise HTTPException(
+                status_code=status.HTTP_409_CONFLICT,
+                detail=(
+                    "The email address already exists."
+                ),
+            )
+
+    for field_name, value in update_data.items():
+        setattr(
+            customer_user,
+            field_name,
+            value,
+        )
+
+    if resume_path:
+        customer_user.resume_file = resume_path
+
+    validate_roles(
+        is_admin=customer_user.is_admin,
+        is_employee=customer_user.is_employee,
+        is_client=customer_user.is_client,
+        is_applicant=customer_user.is_applicant,
+    )
+
+    customer_user.updated_at = datetime.utcnow()
+
+    db.add(customer_user)
+
+    try:
+        db.commit()
+        db.refresh(customer_user)
+    except IntegrityError as exc:
+        db.rollback()
+
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail=(
+                "A customer user with this username "
+                "or email already exists."
+            ),
+        ) from exc
+    except Exception:
+        db.rollback()
+        raise
+
+    return customer_user
+
+
+def delete_customer_user(
+    db: Session,
+    customer_user: models.CustomerUser,
+) -> None:
+    db.delete(customer_user)
+
+    try:
+        db.commit()
+    except Exception:
+        db.rollback()
+        raise

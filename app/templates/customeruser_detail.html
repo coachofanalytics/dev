@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>Customer User Details</title>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f5f7fa;
+            padding: 30px;
+        }
+
+        .container {
+            max-width: 760px;
+            margin: auto;
+            background: white;
+            padding: 28px;
+        }
+
+        dt {
+            font-weight: bold;
+            margin-top: 14px;
+        }
+
+        dd {
+            margin-left: 0;
+            margin-top: 4px;
+        }
+
+        .button {
+            display: inline-block;
+            background: #1e40af;
+            color: white;
+            padding: 10px 16px;
+            text-decoration: none;
+            border: none;
+            cursor: pointer;
+        }
+
+        .danger {
+            background: #b91c1c;
+        }
+    </style>
+</head>
+
+<body>
+    <main class="container">
+        <h1>Customer User Details</h1>
+
+        <dl>
+            <dt>ID</dt>
+            <dd>{{ customer_user.id }}</dd>
+
+            <dt>Username</dt>
+            <dd>{{ customer_user.username }}</dd>
+
+            <dt>Email</dt>
+            <dd>{{ customer_user.email }}</dd>
+
+            <dt>City</dt>
+            <dd>{{ customer_user.city }}</dd>
+
+            <dt>State/County</dt>
+            <dd>{{ customer_user.state }}</dd>
+
+            <dt>Country</dt>
+            <dd>{{ customer_user.country }}</dd>
+
+            <dt>Category</dt>
+            <dd>{{ customer_user.category|title }}</dd>
+
+            <dt>Administrator</dt>
+            <dd>
+                {{ "Yes" if customer_user.is_admin else "No" }}
+            </dd>
+
+            <dt>Employee</dt>
+            <dd>
+                {{ "Yes" if customer_user.is_employee else "No" }}
+            </dd>
+
+            <dt>Client</dt>
+            <dd>
+                {{ "Yes" if customer_user.is_client else "No" }}
+            </dd>
+
+            <dt>Applicant</dt>
+            <dd>
+                {{ "Yes" if customer_user.is_applicant else "No" }}
+            </dd>
+
+            <dt>Resume</dt>
+            <dd>
+                <a
+                    href="/accounts/customer-users/{{ customer_user.id }}/resume/download"
+                >
+                    Download resume
+                </a>
+            </dd>
+        </dl>
+
+        <p>
+            <a
+                class="button"
+                href="/accounts/customer-users/pages/{{ customer_user.id }}/edit"
+            >
+                Edit
+            </a>
+
+            <a
+                class="button"
+                href="/accounts/customer-users/pages/list"
+            >
+                Back
+            </a>
+        </p>
+
+        <form
+            method="post"
+            action="/accounts/customer-users/pages/{{ customer_user.id }}/delete"
+            onsubmit="return confirm('Delete this customer user?');"
+        >
+            <button
+                class="button danger"
+                type="submit"
+            >
+                Delete
+            </button>
+        </form>
+    </main>
+</body>
+</html>

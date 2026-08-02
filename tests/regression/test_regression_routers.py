@@ -118,3 +118,172 @@ def test_user_groups_duplicate_form_preserves_submitted_values(
     assert response.status_code == 400
     assert "Existing CODA Group" in response.text
     assert "Submitted test description" in response.text
+
+    
+def customer_user_form(
+    username: str,
+    email: str,
+):
+    return {
+        "username": username,
+        "email": email,
+        "city": "Nairobi",
+        "state": "Nairobi County",
+        "country": "Kenya",
+        "category": "applicant",
+        "is_admin": "false",
+        "is_employee": "false",
+        "is_client": "false",
+        "is_applicant": "true",
+    }
+
+
+def customer_user_resume():
+    return {
+        "resume_file": (
+            "resume.pdf",
+            b"%PDF-1.4 regression resume",
+            "application/pdf",
+        ),
+    }
+
+
+def test_customer_user_create_requires_admin(
+    client,
+):
+    response = client.post(
+        "/accounts/customer-users/",
+        data=customer_user_form(
+            "unauthorized-user",
+            "unauthorized@example.com",
+        ),
+        files=customer_user_resume(),
+    )
+
+    assert response.status_code == 403
+
+
+def test_customer_user_duplicate_username_is_rejected(
+    client,
+):
+    first_response = client.post(
+        "/accounts/customer-users/",
+        headers={
+            "X-Admin": "true",
+        },
+        data=customer_user_form(
+            "duplicate-user",
+            "first@example.com",
+        ),
+        files=customer_user_resume(),
+    )
+
+    assert first_response.status_code == 201
+
+    second_response = client.post(
+        "/accounts/customer-users/",
+        headers={
+            "X-Admin": "true",
+        },
+        data=customer_user_form(
+            "duplicate-user",
+            "second@example.com",
+        ),
+        files=customer_user_resume(),
+    )
+
+    assert second_response.status_code == 409
+    assert "already exists" in (
+        second_response.json()["detail"].lower()
+    )
+
+
+def test_customer_user_duplicate_email_is_rejected(
+    client,
+):
+    first_response = client.post(
+        "/accounts/customer-users/",
+        headers={
+            "X-Admin": "true",
+        },
+        data=customer_user_form(
+            "first-email-user",
+            "duplicate-email@example.com",
+        ),
+        files=customer_user_resume(),
+    )
+
+    assert first_response.status_code == 201
+
+    second_response = client.post(
+        "/accounts/customer-users/",
+        headers={
+            "X-Admin": "true",
+        },
+        data=customer_user_form(
+            "second-email-user",
+            "duplicate-email@example.com",
+        ),
+        files=customer_user_resume(),
+    )
+
+    assert second_response.status_code == 409
+    assert "already exists" in (
+        second_response.json()["detail"].lower()
+    )
+
+
+def test_customer_user_invalid_resume_is_rejected(
+    client,
+):
+    response = client.post(
+        "/accounts/customer-users/",
+        headers={
+            "X-Admin": "true",
+        },
+        data=customer_user_form(
+            "invalid-resume-user",
+            "invalid-resume@example.com",
+        ),
+        files={
+            "resume_file": (
+                "resume.exe",
+                b"invalid file",
+                "application/octet-stream",
+            ),
+        },
+    )
+
+    assert response.status_code == 400
+
+
+def test_customer_user_without_role_is_rejected(
+    client,
+):
+    form_data = customer_user_form(
+        "no-role-user",
+        "no-role@example.com",
+    )
+
+    form_data.update(
+        {
+            "is_admin": "false",
+            "is_employee": "false",
+            "is_client": "false",
+            "is_applicant": "false",
+        }
+    )
+
+    response = client.post(
+        "/accounts/customer-users/",
+        headers={
+            "X-Admin": "true",
+        },
+        data=form_data,
+        files=customer_user_resume(),
+    )
+
+    assert response.status_code in {
+        400,
+        422,
+    }

@@ -62,3 +62,49 @@ def test_user_groups_create_schema_rejects_missing_name():
             is_featured=False,
             user_ids=[],
         )
+
+        from app import models
+
+
+def test_customer_user_model_has_required_fields():
+    customer_user = models.CustomerUser(
+        username="brenda",
+        email="brenda@example.com",
+        city="Nairobi",
+        state="Nairobi County",
+        country="Kenya",
+        category="applicant",
+        is_admin=False,
+        is_employee=False,
+        is_client=False,
+        is_applicant=True,
+        resume_file="resumes/brenda.pdf",
+    )
+
+    assert customer_user.username == "brenda"
+    assert customer_user.city == "Nairobi"
+    assert customer_user.state == "Nairobi County"
+    assert customer_user.country == "Kenya"
+    assert customer_user.category == "applicant"
+    assert customer_user.is_applicant is True
+    assert customer_user.is_admin is False
+    assert customer_user.resume_file.endswith(
+        ".pdf"
+    )
+
+
+def test_customer_user_role_defaults_are_false():
+    customer_user = models.CustomerUser(
+        username="default-user",
+        email="default@example.com",
+        city="Nairobi",
+        state="Nairobi County",
+        country="Kenya",
+        category="client",
+        resume_file="resumes/default.pdf",
+    )
+
+    assert customer_user.is_admin is False
+    assert customer_user.is_employee is False
+    assert customer_user.is_client is False
+    assert customer_user.is_applicant is False

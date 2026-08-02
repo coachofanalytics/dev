@@ -1,10 +1,6 @@
+from datetime import datetime
 from pathlib import Path
-
-output = Path("/mnt/data/main_with_account_profile.py")
-
-# code = r'''from datetime import datetime
-from pathlib import Path
-from typing import List, Optional
+from typing import Optional
 
 from fastapi import (
     Depends,
@@ -15,15 +11,30 @@ from fastapi import (
     Request,
     UploadFile,
 )
-from fastapi.responses import HTMLResponse, RedirectResponse
+from fastapi.responses import (
+    HTMLResponse,
+    RedirectResponse,
+)
 from fastapi.templating import Jinja2Templates
-from sqlmodel import SQLModel, Session, select
+from sqlmodel import (
+    SQLModel,
+    Session,
+    select,
+)
 
 from . import crud, database, models
 from .database import get_db
 from .models import JobDetails
-from .routers import scores, search, user_groups
-from .schemas import JobDetailsCreate, JobDetailsUpdate
+from .routers import (
+    customer_users,
+    scores,
+    search,
+    user_groups,
+)
+from .schemas import (
+    JobDetailsCreate,
+    JobDetailsUpdate,
+)
 
 
 # ==========================================================
@@ -37,34 +48,55 @@ app = FastAPI(
     openapi_url="/openapi.json",
 )
 
-templates = Jinja2Templates(directory="app/templates")
+templates = Jinja2Templates(
+    directory="app/templates"
+)
 
-UPLOAD_DIRECTORY = Path("app/uploads/resumes")
+UPLOAD_DIRECTORY = Path(
+    "app/uploads/resumes"
+)
+
 UPLOAD_DIRECTORY.mkdir(
     parents=True,
     exist_ok=True,
 )
 
 
-@app.on_event("startup")
-def startup_event():
-    SQLModel.metadata.create_all(database.engine)
+# ==========================================================
+# APPLICATION STARTUP
+# ==========================================================
 
+@app.on_event("startup")
+def on_startup():
+    SQLModel.metadata.create_all(
+        database.engine
+    )
+
+
+# ==========================================================
+# ROUTERS
+# ==========================================================
 
 app.include_router(search.router)
 app.include_router(scores.router)
 app.include_router(user_groups.router)
+app.include_router(customer_users.router)
 
 
-from fastapi.responses import RedirectResponse
+# ==========================================================
+# ROOT ROUTE
+# ==========================================================
 
-
-@app.get("/", include_in_schema=False)
+@app.get(
+    "/",
+    include_in_schema=False,
+)
 def read_root():
     return RedirectResponse(
         url="/accounts/user-groups/pages/list",
         status_code=302,
     )
+
 
 # ==========================================================
 # ACCOUNT PROFILE ROUTES
@@ -79,9 +111,9 @@ def account_profile_page(
     request: Request,
 ):
     return templates.TemplateResponse(
+        request,
         "account_profile.html",
         {
-            "request": request,
             "profile": None,
             "success": None,
             "error": None,
@@ -122,47 +154,69 @@ async def save_account_profile(
             ".docx",
         }
 
-        safe_filename = Path(resume.filename).name
-        extension = Path(safe_filename).suffix.lower()
+        safe_filename = Path(
+            resume.filename
+        ).name
+
+        extension = Path(
+            safe_filename
+        ).suffix.lower()
 
         if extension not in allowed_extensions:
             return templates.TemplateResponse(
+                request,
                 "account_profile.html",
                 {
-                    "request": request,
                     "profile": profile,
                     "success": None,
-                    "error": "Only PDF, DOC, and DOCX files are allowed.",
+                    "error": (
+                        "Only PDF, DOC, and DOCX files "
+                        "are allowed."
+                    ),
                 },
                 status_code=400,
             )
 
         file_content = await resume.read()
-        maximum_size = 5 * 1024 * 1024
+
+        maximum_size = (
+            5 * 1024 * 1024
+        )
 
         if len(file_content) > maximum_size:
             return templates.TemplateResponse(
+                request,
                 "account_profile.html",
                 {
-                    "request": request,
                     "profile": profile,
                     "success": None,
-                    "error": "The resume must not exceed 5 MB.",
+                    "error": (
+                        "The resume must not exceed 5 MB."
+                    ),
                 },
                 status_code=400,
             )
 
-        destination = UPLOAD_DIRECTORY / safe_filename
-        destination.write_bytes(file_content)
+        destination = (
+            UPLOAD_DIRECTORY / safe_filename
+        )
 
-        profile["resume_filename"] = safe_filename
+        destination.write_bytes(
+            file_content
+        )
+
+        profile["resume_filename"] = (
+            safe_filename
+        )
 
     return templates.TemplateResponse(
+        request,
         "account_profile.html",
         {
-            "request": request,
             "profile": profile,
-            "success": "Account profile saved successfully.",
+            "success": (
+                "Account profile saved successfully."
+            ),
             "error": None,
         },
     )
@@ -180,7 +234,10 @@ def search_dashboard(
     request: Request,
 ):
     with Session(database.engine) as db:
-        stats = crud.get_search_stats(db)
+        stats = crud.get_search_stats(
+            db
+        )
+
         records = crud.get_search_records(
             db=db,
             skip=0,
@@ -188,18 +245,26 @@ def search_dashboard(
         )
 
     return templates.TemplateResponse(
+        request,
         "search_dashboard.html",
         {
-            "request": request,
-            "total_records": stats["total_records"],
-            "uploaded_records": stats["uploaded_records"],
-            "pending_records": stats["pending_records"],
+            "total_records": (
+                stats["total_records"]
+            ),
+            "uploaded_records": (
+                stats["uploaded_records"]
+            ),
+            "pending_records": (
+                stats["pending_records"]
+            ),
             "records": records,
         },
     )
 
 
-@app.post("/search-dashboard/create")
+@app.post(
+    "/search-dashboard/create"
+)
 def create_search_record(
     topic: str = Form(...),
     question: str = Form(...),
@@ -242,15 +307,17 @@ def edit_record(
             )
 
     return templates.TemplateResponse(
+        request,
         "edit_record.html",
         {
-            "request": request,
             "record": record,
         },
     )
 
 
-@app.post("/search-dashboard/update/{record_id}")
+@app.post(
+    "/search-dashboard/update/{record_id}"
+)
 def update_record(
     record_id: int,
     topic: str = Form(...),
@@ -277,7 +344,9 @@ def update_record(
     )
 
 
-@app.post("/search-dashboard/delete/{record_id}")
+@app.post(
+    "/search-dashboard/delete/{record_id}"
+)
 def delete_search_dashboard_record(
     record_id: int,
 ):
@@ -314,21 +383,27 @@ def jobs_page(
     status: Optional[str] = None,
     session: Session = Depends(get_db),
 ):
-    statement = select(JobDetails)
+    statement = select(
+        JobDetails
+    )
 
     if search:
         statement = statement.where(
-            JobDetails.title.contains(search)
+            JobDetails.title.contains(
+                search
+            )
         )
 
     if project_type:
         statement = statement.where(
-            JobDetails.project_type == project_type
+            JobDetails.project_type
+            == project_type
         )
 
     if engagement_level:
         statement = statement.where(
-            JobDetails.engagement_level == engagement_level
+            JobDetails.engagement_level
+            == engagement_level
         )
 
     if status:
@@ -336,30 +411,50 @@ def jobs_page(
             JobDetails.status == status
         )
 
-    jobs = session.exec(statement).all()
+    jobs = session.exec(
+        statement
+    ).all()
+
     all_jobs = session.exec(
         select(JobDetails)
     ).all()
 
     total_jobs = len(all_jobs)
+
     open_jobs = len(
-        [job for job in all_jobs if job.status == "open"]
+        [
+            job
+            for job in all_jobs
+            if job.status == "open"
+        ]
     )
+
     draft_jobs = len(
-        [job for job in all_jobs if job.status == "draft"]
+        [
+            job
+            for job in all_jobs
+            if job.status == "draft"
+        ]
     )
+
     closed_jobs = len(
-        [job for job in all_jobs if job.status == "closed"]
+        [
+            job
+            for job in all_jobs
+            if job.status == "closed"
+        ]
     )
 
     return templates.TemplateResponse(
+        request,
         "JobDetails_list.html",
         {
-            "request": request,
             "jobs": jobs,
             "search": search,
             "project_type": project_type,
-            "engagement_level": engagement_level,
+            "engagement_level": (
+                engagement_level
+            ),
             "status": status,
             "total_jobs": total_jobs,
             "open_jobs": open_jobs,
@@ -378,10 +473,9 @@ def create_job_form(
     request: Request,
 ):
     return templates.TemplateResponse(
+        request,
         "JobDetails_create.html",
-        {
-            "request": request,
-        },
+        {},
     )
 
 
@@ -409,7 +503,10 @@ def create_job_from_form(
     if payment_max < payment_min:
         raise HTTPException(
             status_code=400,
-            detail="Maximum payment cannot be less than minimum payment",
+            detail=(
+                "Maximum payment cannot be less "
+                "than minimum payment"
+            ),
         )
 
     job = JobDetails(
@@ -424,8 +521,12 @@ def create_job_from_form(
         duration_value=duration_value,
         duration_unit=duration_unit,
         project_type=project_type,
-        engagement_level=engagement_level,
-        external_reference_links=external_reference_links,
+        engagement_level=(
+            engagement_level
+        ),
+        external_reference_links=(
+            external_reference_links
+        ),
         status=status,
     )
 
@@ -465,10 +566,14 @@ def job_detail_page(
     if job.skills_required:
         skills = [
             skill.strip()
-            for skill in job.skills_required.replace(
-                "\n",
-                ",",
-            ).split(",")
+            for skill in (
+                job.skills_required
+                .replace(
+                    "\n",
+                    ",",
+                )
+                .split(",")
+            )
             if skill.strip()
         ]
 
@@ -477,14 +582,17 @@ def job_detail_page(
     if job.external_reference_links:
         links = [
             link.strip()
-            for link in job.external_reference_links.splitlines()
+            for link in (
+                job.external_reference_links
+                .splitlines()
+            )
             if link.strip()
         ]
 
     return templates.TemplateResponse(
+        request,
         "JobDetails_detail.html",
         {
-            "request": request,
             "job": job,
             "skills": skills,
             "links": links,
@@ -514,9 +622,9 @@ def edit_job_form(
         )
 
     return templates.TemplateResponse(
+        request,
         "JobDetails_edit.html",
         {
-            "request": request,
             "job": job,
         },
     )
@@ -558,7 +666,10 @@ def update_job_from_form(
     if payment_max < payment_min:
         raise HTTPException(
             status_code=400,
-            detail="Maximum payment cannot be less than minimum payment",
+            detail=(
+                "Maximum payment cannot be less "
+                "than minimum payment"
+            ),
         )
 
     job.title = title
@@ -572,8 +683,12 @@ def update_job_from_form(
     job.duration_value = duration_value
     job.duration_unit = duration_unit
     job.project_type = project_type
-    job.engagement_level = engagement_level
-    job.external_reference_links = external_reference_links
+    job.engagement_level = (
+        engagement_level
+    )
+    job.external_reference_links = (
+        external_reference_links
+    )
     job.status = status
     job.updated_at = datetime.utcnow()
 
@@ -582,7 +697,10 @@ def update_job_from_form(
     session.refresh(job)
 
     return RedirectResponse(
-        url=f"/application/jobs/pages/{job.id}",
+        url=(
+            "/application/jobs/pages/"
+            f"{job.id}"
+        ),
         status_code=303,
     )
 
@@ -621,7 +739,7 @@ def delete_job_from_page(
 
 @app.get(
     "/application/jobs/",
-    response_model=List[JobDetails],
+    response_model=list[JobDetails],
     tags=["Job Details"],
 )
 def list_jobs(
@@ -631,21 +749,27 @@ def list_jobs(
     status: Optional[str] = None,
     session: Session = Depends(get_db),
 ):
-    statement = select(JobDetails)
+    statement = select(
+        JobDetails
+    )
 
     if search:
         statement = statement.where(
-            JobDetails.title.contains(search)
+            JobDetails.title.contains(
+                search
+            )
         )
 
     if project_type:
         statement = statement.where(
-            JobDetails.project_type == project_type
+            JobDetails.project_type
+            == project_type
         )
 
     if engagement_level:
         statement = statement.where(
-            JobDetails.engagement_level == engagement_level
+            JobDetails.engagement_level
+            == engagement_level
         )
 
     if status:
@@ -653,7 +777,9 @@ def list_jobs(
             JobDetails.status == status
         )
 
-    return session.exec(statement).all()
+    return session.exec(
+        statement
+    ).all()
 
 
 @app.post(
@@ -669,16 +795,17 @@ def create_job(
     if job.payment_max < job.payment_min:
         raise HTTPException(
             status_code=400,
-            detail="payment_max cannot be less than payment_min",
+            detail=(
+                "payment_max cannot be less "
+                "than payment_min"
+            ),
         )
 
-    job_data = (
-        job.model_dump()
-        if hasattr(job, "model_dump")
-        else job.dict()
-    )
+    job_data = job.model_dump()
 
-    db_job = JobDetails(**job_data)
+    db_job = JobDetails(
+        **job_data
+    )
 
     session.add(db_job)
     session.commit()
@@ -732,9 +859,9 @@ def update_job(
         )
 
     update_data = (
-        job_update.model_dump(exclude_unset=True)
-        if hasattr(job_update, "model_dump")
-        else job_update.dict(exclude_unset=True)
+        job_update.model_dump(
+            exclude_unset=True
+        )
     )
 
     for key, value in update_data.items():
@@ -747,7 +874,10 @@ def update_job(
     if job.payment_max < job.payment_min:
         raise HTTPException(
             status_code=400,
-            detail="payment_max cannot be less than payment_min",
+            detail=(
+                "payment_max cannot be less "
+                "than payment_min"
+            ),
         )
 
     job.updated_at = datetime.utcnow()
@@ -782,11 +912,7 @@ def delete_job(
     session.commit()
 
     return {
-        "message": "Job deleted successfully"
+        "message": (
+            "Job deleted successfully"
+        )
     }
-# '''
-
-# compile(code, str(output), "exec")
-# output.write_text(code, encoding="utf-8")
-
-# print(f"Created {output}")
