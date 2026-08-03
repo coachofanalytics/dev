@@ -1881,3 +1881,13 @@ def company_detail(request, company='coda'):
 #             return render(request, 'location.html', {'error': 'Invalid zipcode'})
 #     else:
 #         return render(request, 'location.html')
+class SearchHistoryListView(LoginRequiredMixin, ListView):
+    model = SearchHistory
+    template_name ="main/search_history/list.html"
+    context_object_main ="search_histories"
+
+    def get_queryset(self):
+        return SearchHistory.objects.filter(
+            searched_by=self.request.user
+            
+        )
