@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>Edit Score Record</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            background: #f7f8fb;
+            color: #17356b;
+            font-family: Arial, sans-serif;
+        }
+
+        .topbar {
+            padding: 18px 40px;
+            background: #243f73;
+            color: white;
+            font-size: 20px;
+            font-weight: 800;
+        }
+
+        .container {
+            max-width: 950px;
+            margin: 0 auto;
+            padding: 40px 25px;
+        }
+
+        .card {
+            padding: 28px;
+            background: white;
+            border: 1px solid #dce3ec;
+            border-radius: 10px;
+        }
+
+        h1 {
+            margin-top: 0;
+        }
+
+        .error {
+            margin-bottom: 20px;
+            padding: 13px;
+            border: 1px solid #fecaca;
+            border-radius: 7px;
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+        }
+
+        .field {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .field label {
+            margin-bottom: 7px;
+            font-weight: 700;
+        }
+
+        .field input,
+        .field select {
+            min-height: 44px;
+            padding: 10px 12px;
+            border: 1px solid #cbd5e1;
+            border-radius: 7px;
+            font-size: 14px;
+        }
+
+        .actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 12px;
+            grid-column: 1 / -1;
+            margin-top: 10px;
+        }
+
+        .button {
+            min-height: 44px;
+            padding: 11px 20px;
+            border: 0;
+            border-radius: 7px;
+            color: white;
+            font-weight: 800;
+            text-decoration: none;
+            cursor: pointer;
+        }
+
+        .save {
+            background: #efac3b;
+        }
+
+        .cancel {
+            display: inline-flex;
+            align-items: center;
+            background: #243f73;
+        }
+
+        @media (max-width: 700px) {
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .actions {
+                grid-column: 1;
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <header class="topbar">
+        CODA Score Management
+    </header>
+
+    <main class="container">
+
+        <section class="card">
+
+            <h1>Edit Score Record</h1>
+
+            {% if error %}
+                <div class="error">
+                    {{ error }}
+                </div>
+            {% endif %}
+
+            <form
+                method="post"
+                action="/accounts/scores/pages/{{ score.id }}/edit"
+            >
+                <div class="form-grid">
+
+                    <div class="field">
+                        <label for="email">
+                            Email
+                        </label>
+
+                        <input
+                            id="email"
+                            name="email"
+                            type="email"
+                            value="{{ score.email }}"
+                            required
+                        >
+                    </div>
+
+                    <div class="field">
+                        <label for="gender">
+                            Gender
+                        </label>
+
+                        <select
+                            id="gender"
+                            name="gender"
+                        >
+                            <option value="">
+                                Select gender
+                            </option>
+
+                            <option
+                                value="Male"
+                                {% if score.gender == "Male" %}
+                                    selected
+                                {% endif %}
+                            >
+                                Male
+                            </option>
+
+                            <option
+                                value="Female"
+                                {% if score.gender == "Female" %}
+                                    selected
+                                {% endif %}
+                            >
+                                Female
+                            </option>
+
+                            <option
+                                value="Other"
+                                {% if score.gender == "Other" %}
+                                    selected
+                                {% endif %}
+                            >
+                                Other
+                            </option>
+                        </select>
+                    </div>
+
+                    <div class="field">
+                        <label for="phone">
+                            Phone
+                        </label>
+
+                        <input
+                            id="phone"
+                            name="phone"
+                            type="text"
+                            value="{{ score.phone }}"
+                            required
+                        >
+                    </div>
+
+                    <div class="field">
+                        <label for="address">
+                            Address
+                        </label>
+
+                        <input
+                            id="address"
+                            name="address"
+                            type="text"
+                            value="{{ score.address }}"
+                            required
+                        >
+                    </div>
+
+                    <div class="field">
+                        <label for="city">
+                            City
+                        </label>
+
+                        <input
+                            id="city"
+                            name="city"
+                            type="text"
+                            value="{{ score.city }}"
+                            required
+                        >
+                    </div>
+
+                    <div class="field">
+                        <label for="state">
+                            State or County
+                        </label>
+
+                        <input
+                            id="state"
+                            name="state"
+                            type="text"
+                            value="{{ score.state }}"
+                            required
+                        >
+                    </div>
+
+                    <div class="field">
+                        <label for="zipcode">
+                            Zip Code
+                        </label>
+
+                        <input
+                            id="zipcode"
+                            name="zipcode"
+                            type="text"
+                            value="{{ score.zipcode }}"
+                            required
+                        >
+                    </div>
+
+                    <div class="field">
+                        <label for="country">
+                            Country
+                        </label>
+
+                        <input
+                            id="country"
+                            name="country"
+                            type="text"
+                            value="{{ score.country }}"
+                            required
+                        >
+                    </div>
+
+                    <div class="field">
+                        <label for="category">
+                            Category
+                        </label>
+
+                        <input
+                            id="category"
+                            name="category"
+                            type="text"
+                            value="{{ score.category }}"
+                            required
+                        >
+                    </div>
+
+                    <div class="field">
+                        <label for="sub_category">
+                            Sub-Category
+                        </label>
+
+                        <input
+                            id="sub_category"
+                            name="sub_category"
+                            type="number"
+                            min="1"
+                            value="{{ score.sub_category }}"
+                            required
+                        >
+                    </div>
+
+                    <div class="actions">
+                        <a
+                            class="button cancel"
+                            href="/accounts/scores/pages/{{ score.id }}"
+                        >
+                            Cancel
+                        </a>
+
+                        <button
+                            class="button save"
+                            type="submit"
+                        >
+                            Save Changes
+                        </button>
+                    </div>
+
+                </div>
+            </form>
+
+        </section>
+
+    </main>
+</body>
+</html>

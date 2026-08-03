@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>Create Score Record</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        :root {
+            --coda-blue: #243f73;
+            --coda-gold: #efac3b;
+            --page-bg: #f7f8fb;
+            --card-bg: #ffffff;
+            --border: #dce3ec;
+            --text: #17356b;
+            --muted: #64748b;
+        }
+
+        body {
+            margin: 0;
+            background: var(--page-bg);
+            color: var(--text);
+            font-family: Arial, sans-serif;
+        }
+
+        .topbar {
+            min-height: 58px;
+            display: flex;
+            align-items: center;
+            padding: 0 40px;
+            background: var(--coda-blue);
+            color: white;
+            font-size: 20px;
+            font-weight: 800;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 40px 24px 60px;
+        }
+
+        .page-header {
+            margin-bottom: 25px;
+        }
+
+        .page-header h1 {
+            margin: 0;
+            font-size: 30px;
+        }
+
+        .page-header p {
+            margin: 8px 0 0;
+            color: var(--muted);
+        }
+
+        .card {
+            padding: 28px;
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            box-shadow: 0 2px 5px rgba(15, 23, 42, 0.04);
+        }
+
+        .error {
+            margin-bottom: 20px;
+            padding: 13px 15px;
+            border: 1px solid #fecaca;
+            border-radius: 7px;
+            background: #fee2e2;
+            color: #991b1b;
+            font-weight: 700;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 20px 24px;
+        }
+
+        .section-label {
+            grid-column: 1 / -1;
+            padding-bottom: 8px;
+            border-bottom: 1px solid var(--border);
+            color: #526987;
+            font-size: 13px;
+            font-weight: 800;
+            text-transform: uppercase;
+        }
+
+        .field {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .field label {
+            margin-bottom: 7px;
+            font-weight: 700;
+        }
+
+        .field input,
+        .field select {
+            width: 100%;
+            min-height: 44px;
+            padding: 10px 12px;
+            border: 1px solid #cbd5e1;
+            border-radius: 7px;
+            background: white;
+            color: #1f2937;
+            font-size: 14px;
+        }
+
+        .field input:focus,
+        .field select:focus {
+            outline: none;
+            border-color: var(--coda-blue);
+            box-shadow: 0 0 0 3px rgba(36, 63, 115, 0.08);
+        }
+
+        .actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 12px;
+            grid-column: 1 / -1;
+            margin-top: 8px;
+        }
+
+        .button {
+            min-height: 44px;
+            padding: 11px 20px;
+            border: 0;
+            border-radius: 7px;
+            font-weight: 800;
+            text-decoration: none;
+            cursor: pointer;
+        }
+
+        .save-button {
+            background: var(--coda-gold);
+            color: white;
+        }
+
+        .cancel-button {
+            display: inline-flex;
+            align-items: center;
+            background: var(--coda-blue);
+            color: white;
+        }
+
+        @media (max-width: 760px) {
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .actions {
+                grid-column: 1;
+                flex-direction: column;
+            }
+
+            .button {
+                width: 100%;
+                text-align: center;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <header class="topbar">
+        CODA Score Management
+    </header>
+
+    <main class="container">
+
+        <section class="page-header">
+            <h1>Create Score Record</h1>
+
+            <p>
+                Add contact, location and classification information.
+            </p>
+        </section>
+
+        <section class="card">
+
+            {% if error %}
+                <div class="error">
+                    {{ error }}
+                </div>
+            {% endif %}
+
+            <form
+                method="post"
+                action="/accounts/scores/pages/create"
+            >
+                <div class="form-grid">
+
+                    <div class="section-label">
+                        Contact Information
+                    </div>
+
+                    <div class="field">
+                        <label for="email">
+                            Email Address
+                        </label>
+
+                        <input
+                            id="email"
+                            name="email"
+                            type="email"
+                            required
+                            value="{{ form_data.get('email', '') if form_data else '' }}"
+                        >
+                    </div>
+
+                    <div class="field">
+                        <label for="gender">
+                            Gender
+                        </label>
+
+                        <select
+                            id="gender"
+                            name="gender"
+                        >
+                            <option value="">
+                                Select gender
+                            </option>
+
+                            <option
+                                value="Male"
+                                {% if form_data and form_data.get('gender') == 'Male' %}
+                                    selected
+                                {% endif %}
+                            >
+                                Male
+                            </option>
+
+                            <option
+                                value="Female"
+                                {% if form_data and form_data.get('gender') == 'Female' %}
+                                    selected
+                                {% endif %}
+                            >
+                                Female
+                            </option>
+
+                            <option
+                                value="Other"
+                                {% if form_data and form_data.get('gender') == 'Other' %}
+                                    selected
+                                {% endif %}
+                            >
+                                Other
+                            </option>
+                        </select>
+                    </div>
+
+                    <div class="field">
+                        <label for="phone">
+                            Phone Number
+                        </label>
+
+                        <input
+                            id="phone"
+                            name="phone"
+                            type="text"
+                            required
+                            value="{{ form_data.get('phone', '') if form_data else '' }}"
+                            placeholder="+254700000000"
+                        >
+                    </div>
+
+                    <div class="field">
+                        <label for="address">
+                            Address
+                        </label>
+
+                        <input
+                            id="address"
+                            name="address"
+                            type="text"
+                            required
+                            value="{{ form_data.get('address', '') if form_data else '' }}"
+                        >
+                    </div>
+
+                    <div class="section-label">
+                        Location Details
+                    </div>
+
+                    <div class="field">
+                        <label for="city">
+                            City
+                        </label>
+
+                        <input
+                            id="city"
+                            name="city"
+                            type="text"
+                            required
+                            value="{{ form_data.get('city', '') if form_data else '' }}"
+                        >
+                    </div>
+
+                    <div class="field">
+                        <label for="state">
+                            State or County
+                        </label>
+
+                        <input
+                            id="state"
+                            name="state"
+                            type="text"
+                            required
+                            value="{{ form_data.get('state', '') if form_data else '' }}"
+                        >
+                    </div>
+
+                    <div class="field">
+                        <label for="zipcode">
+                            Zip Code
+                        </label>
+
+                        <input
+                            id="zipcode"
+                            name="zipcode"
+                            type="text"
+                            required
+                            value="{{ form_data.get('zipcode', '') if form_data else '' }}"
+                        >
+                    </div>
+
+                    <div class="field">
+                        <label for="country">
+                            Country
+                        </label>
+
+                        <input
+                            id="country"
+                            name="country"
+                            type="text"
+                            required
+                            value="{{ form_data.get('country', '') if form_data else '' }}"
+                        >
+                    </div>
+
+                    <div class="section-label">
+                        Classification
+                    </div>
+
+                    <div class="field">
+                        <label for="category">
+                            Category
+                        </label>
+
+                        <input
+                            id="category"
+                            name="category"
+                            type="text"
+                            required
+                            value="{{ form_data.get('category', '') if form_data else '' }}"
+                        >
+                    </div>
+
+                    <div class="field">
+                        <label for="sub_category">
+                            Sub-Category
+                        </label>
+
+                        <input
+                            id="sub_category"
+                            name="sub_category"
+                            type="number"
+                            min="1"
+                            required
+                            value="{{ form_data.get('sub_category', '') if form_data else '' }}"
+                        >
+                    </div>
+
+                    <div class="actions">
+                        <a
+                            class="button cancel-button"
+                            href="/accounts/scores/pages/list"
+                        >
+                            Cancel
+                        </a>
+
+                        <button
+                            class="button save-button"
+                            type="submit"
+                        >
+                            Save Record
+                        </button>
+                    </div>
+
+                </div>
+            </form>
+
+        </section>
+
+    </main>
+</body>
+</html>

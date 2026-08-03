@@ -8,6 +8,9 @@ from pydantic import ValidationError
 from app import schemas
 
 
+from app.schemas import ScoreCreate, ScoreUpdate
+
+
 def test_user_groups_create_schema_accepts_valid_data():
     payload = schemas.UserGroupCreate(
         name="DC48KENYA",
@@ -108,3 +111,64 @@ def test_customer_user_role_defaults_are_false():
     assert customer_user.is_employee is False
     assert customer_user.is_client is False
     assert customer_user.is_applicant is False
+
+
+
+
+def valid_score_data():
+    return {
+        "email": "admin@coda.com",
+        "gender": "Male",
+        "phone": "+254700000001",
+        "address": "CODA Office",
+        "city": "Nairobi",
+        "state": "Nairobi County",
+        "zipcode": "00100",
+        "country": "Kenya",
+        "category": "Finance",
+        "sub_category": 101,
+    }
+
+
+def test_score_create_schema_accepts_valid_data():
+    payload = ScoreCreate(
+        **valid_score_data()
+    )
+
+    assert payload.email == "admin@coda.com"
+    assert payload.phone == "+254700000001"
+    assert payload.sub_category == 101
+
+
+def test_score_create_schema_rejects_invalid_email():
+    data = valid_score_data()
+    data["email"] = "invalid-email"
+
+    with pytest.raises(ValidationError):
+        ScoreCreate(**data)
+
+
+def test_score_create_schema_rejects_invalid_phone():
+    data = valid_score_data()
+    data["phone"] = "123"
+
+    with pytest.raises(ValidationError):
+        ScoreCreate(**data)
+
+
+def test_score_create_schema_rejects_zero_sub_category():
+    data = valid_score_data()
+    data["sub_category"] = 0
+
+    with pytest.raises(ValidationError):
+        ScoreCreate(**data)
+
+
+def test_score_update_schema_accepts_partial_data():
+    payload = ScoreUpdate(
+        city="Mombasa",
+        category="Operations",
+    )
+
+    assert payload.city == "Mombasa"
+    assert payload.category == "Operations"

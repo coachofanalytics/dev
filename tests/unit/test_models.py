@@ -3,6 +3,11 @@
 # ==========================================================
 
 from app import models
+from app.models import (
+    CustomerUser,
+    Score,
+    UserGroups,
+)
 
 
 def test_user_groups_model_accepts_valid_data():
@@ -85,3 +90,59 @@ def test_customer_user_role_defaults_are_false():
     assert customer_user.is_employee is False
     assert customer_user.is_client is False
     assert customer_user.is_applicant is False
+
+from app.models import Score
+
+
+def test_score_model_accepts_valid_data():
+    score = Score(
+        email="admin@coda.com",
+        gender="Male",
+        phone="+254700000001",
+        address="CODA Office",
+        city="Nairobi",
+        state="Nairobi County",
+        zipcode="00100",
+        country="Kenya",
+        category="Finance",
+        sub_category=101,
+    )
+
+    assert score.email == "admin@coda.com"
+    assert score.city == "Nairobi"
+    assert score.category == "Finance"
+    assert score.sub_category == 101
+
+
+def test_score_model_allows_optional_gender():
+    score = Score(
+        email="client@coda.com",
+        gender=None,
+        phone="+254700000002",
+        address="Westlands",
+        city="Nairobi",
+        state="Nairobi County",
+        zipcode="00100",
+        country="Kenya",
+        category="Client",
+        sub_category=201,
+    )
+
+    assert score.gender is None
+
+
+def test_score_model_has_default_timestamps():
+    score = Score(
+        email="employee@coda.com",
+        phone="+254700000003",
+        address="Kitale Office",
+        city="Kitale",
+        state="Trans Nzoia",
+        zipcode="30200",
+        country="Kenya",
+        category="Employee",
+        sub_category=301,
+    )
+
+    assert score.created_at is not None
+    assert score.updated_at is not None

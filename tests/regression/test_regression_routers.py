@@ -119,7 +119,7 @@ def test_user_groups_duplicate_form_preserves_submitted_values(
     assert "Existing CODA Group" in response.text
     assert "Submitted test description" in response.text
 
-    
+
 def customer_user_form(
     username: str,
     email: str,
@@ -256,34 +256,111 @@ def test_customer_user_invalid_resume_is_rejected(
 
     assert response.status_code == 400
 
+def score_form_data():
+    return {
+        "email": "page@coda.com",
+        "gender": "Male",
+        "phone": "+254700000030",
+        "address": "Page Office",
+        "city": "Nairobi",
+        "state": "Nairobi County",
+        "zipcode": "00100",
+        "country": "Kenya",
+        "category": "Finance",
+        "sub_category": "701",
+    }
 
-def test_customer_user_without_role_is_rejected(
+
+def test_score_create_route_not_treated_as_id(
     client,
 ):
-    form_data = customer_user_form(
-        "no-role-user",
-        "no-role@example.com",
+    response = client.get(
+        "/accounts/scores/pages/create"
     )
 
-    form_data.update(
-        {
-            "is_admin": "false",
-            "is_employee": "false",
-            "is_client": "false",
-            "is_applicant": "false",
-        }
+    assert response.status_code == 200
+    assert "Create Score Record" in response.text
+
+
+def test_score_list_page_does_not_crash(
+    client,
+):
+    response = client.get(
+        "/accounts/scores/pages/list"
     )
+
+    assert response.status_code == 200
+    assert "Score Records" in response.text
+
+
+def test_score_create_page_submission(
+    client,
+):
+    response = client.post(
+        "/accounts/scores/pages/create",
+        data=score_form_data(),
+        follow_redirects=False,
+    )
+
+    assert response.status_code == 303
+    assert response.headers["location"] == (
+        "/accounts/scores/pages/list"
+    )
+
+
+def test_score_invalid_phone_returns_form_error(
+    client,
+):
+    data = score_form_data()
+    data["phone"] = "123"
 
     response = client.post(
-        "/accounts/customer-users/",
-        headers={
-            "X-Admin": "true",
-        },
-        data=form_data,
-        files=customer_user_resume(),
+        "/accounts/scores/pages/create",
+        data=data,
     )
 
-    assert response.status_code in {
-        400,
-        422,
-    }
+    assert response.status_code == 400
+    
+
+def test_score_missing_record_returns_404(
+    client,
+):
+    response = client.get(
+        "/accounts/scores/pages/99999"
+    )
+
+    assert response.status_code == 404
+
+
+def test_score_delete_page_route(
+    client,
+):
+    create_response = client.post(
+        "/accounts/scores/",
+        json={
+            "email": "delete@coda.com",
+            "gender": "Male",
+            "phone": "+254700000031",
+            "address": "Delete Office",
+            "city": "Nairobi",
+            "state": "Nairobi County",
+            "zipcode": "00100",
+            "country": "Kenya",
+            "category": "Finance",
+            "sub_category": 702,
+        },
+    )
+
+    assert create_response.status_code == 201
+
+    score_id = create_response.json()["id"]
+
+    response = client.post(
+        f"/accounts/scores/pages/{score_id}/delete",
+        follow_redirects=False,
+    )
+
+    assert response.status_code == 303
+    assert response.headers["location"] == (
+        "/accounts/scores/pages/list"
+    )

@@ -285,3 +285,100 @@ def test_customer_user_detail_page_loads(
 
     assert response.status_code == 200
     assert "detail-user" in response.text
+
+def score_api_payload():
+    return {
+        "email": "router@coda.com",
+        "gender": "Male",
+        "phone": "+254700000020",
+        "address": "Router Office",
+        "city": "Nairobi",
+        "state": "Nairobi County",
+        "zipcode": "00100",
+        "country": "Kenya",
+        "category": "Finance",
+        "sub_category": 601,
+    }
+
+
+def test_create_score_api(client):
+    response = client.post(
+        "/accounts/scores/",
+        json=score_api_payload(),
+    )
+
+    assert response.status_code == 201
+    assert response.json()["email"] == (
+        "router@coda.com"
+    )
+
+
+def test_list_scores_api(client):
+    client.post(
+        "/accounts/scores/",
+        json=score_api_payload(),
+    )
+
+    response = client.get(
+        "/accounts/scores/"
+    )
+
+    assert response.status_code == 200
+    assert len(response.json()) >= 1
+
+
+def test_get_score_api(client):
+    create_response = client.post(
+        "/accounts/scores/",
+        json=score_api_payload(),
+    )
+
+    score_id = create_response.json()["id"]
+
+    response = client.get(
+        f"/accounts/scores/{score_id}"
+    )
+
+    assert response.status_code == 200
+    assert response.json()["id"] == score_id
+
+
+def test_update_score_api(client):
+    create_response = client.post(
+        "/accounts/scores/",
+        json=score_api_payload(),
+    )
+
+    score_id = create_response.json()["id"]
+
+    response = client.patch(
+        f"/accounts/scores/{score_id}",
+        json={
+            "city": "Mombasa",
+            "category": "Operations",
+        },
+    )
+
+    assert response.status_code == 200
+    assert response.json()["city"] == "Mombasa"
+
+
+def test_delete_score_api(client):
+    create_response = client.post(
+        "/accounts/scores/",
+        json=score_api_payload(),
+    )
+
+    score_id = create_response.json()["id"]
+
+    response = client.delete(
+        f"/accounts/scores/{score_id}"
+    )
+
+    assert response.status_code == 200
+
+    get_response = client.get(
+        f"/accounts/scores/{score_id}"
+    )
+
+    assert get_response.status_code == 404

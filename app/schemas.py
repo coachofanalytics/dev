@@ -150,11 +150,16 @@ PHONE_PATTERN = re.compile(
 )
 
 
+PHONE_PATTERN = re.compile(
+    r"^\+?[1-9]\d{7,14}$"
+)
+
+
 def normalize_phone(
     value: str,
 ) -> str:
     cleaned = re.sub(
-        r"[\\s\\-()]",
+        r"[\s()\-]",
         "",
         value,
     )

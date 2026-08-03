@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>Score Record Details</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            background: #f7f8fb;
+            color: #17356b;
+            font-family: Arial, sans-serif;
+        }
+
+        .topbar {
+            padding: 18px 40px;
+            background: #243f73;
+            color: white;
+            font-size: 20px;
+            font-weight: 800;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 40px 25px;
+        }
+
+        .card {
+            padding: 28px;
+            background: white;
+            border: 1px solid #dce3ec;
+            border-radius: 10px;
+        }
+
+        h1 {
+            margin-top: 0;
+        }
+
+        .details-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+        }
+
+        .detail-item {
+            padding-bottom: 14px;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        .label {
+            margin-bottom: 5px;
+            color: #64748b;
+            font-size: 12px;
+            font-weight: 800;
+            text-transform: uppercase;
+        }
+
+        .value {
+            color: #24364f;
+            font-size: 15px;
+        }
+
+        .actions {
+            display: flex;
+            gap: 12px;
+            margin-top: 28px;
+        }
+
+        .button {
+            display: inline-block;
+            padding: 11px 18px;
+            border-radius: 7px;
+            background: #243f73;
+            color: white;
+            font-weight: 700;
+            text-decoration: none;
+        }
+
+        .gold {
+            background: #efac3b;
+        }
+
+        @media (max-width: 700px) {
+            .details-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <header class="topbar">
+        CODA Score Management
+    </header>
+
+    <main class="container">
+
+        <section class="card">
+            <h1>Score Record Details</h1>
+
+            <div class="details-grid">
+
+                <div class="detail-item">
+                    <div class="label">Email</div>
+                    <div class="value">{{ score.email }}</div>
+                </div>
+
+                <div class="detail-item">
+                    <div class="label">Gender</div>
+                    <div class="value">{{ score.gender or "Not provided" }}</div>
+                </div>
+
+                <div class="detail-item">
+                    <div class="label">Phone</div>
+                    <div class="value">{{ score.phone }}</div>
+                </div>
+
+                <div class="detail-item">
+                    <div class="label">Address</div>
+                    <div class="value">{{ score.address }}</div>
+                </div>
+
+                <div class="detail-item">
+                    <div class="label">City</div>
+                    <div class="value">{{ score.city }}</div>
+                </div>
+
+                <div class="detail-item">
+                    <div class="label">State</div>
+                    <div class="value">{{ score.state }}</div>
+                </div>
+
+                <div class="detail-item">
+                    <div class="label">Zip Code</div>
+                    <div class="value">{{ score.zipcode }}</div>
+                </div>
+
+                <div class="detail-item">
+                    <div class="label">Country</div>
+                    <div class="value">{{ score.country }}</div>
+                </div>
+
+                <div class="detail-item">
+                    <div class="label">Category</div>
+                    <div class="value">{{ score.category }}</div>
+                </div>
+
+                <div class="detail-item">
+                    <div class="label">Sub-Category</div>
+                    <div class="value">{{ score.sub_category }}</div>
+                </div>
+
+            </div>
+
+            <div class="actions">
+                <a
+                    class="button gold"
+                    href="/accounts/scores/pages/{{ score.id }}/edit"
+                >
+                    Edit Record
+                </a>
+
+                <a
+                    class="button"
+                    href="/accounts/scores/pages/list"
+                >
+                    Back to List
+                </a>
+            </div>
+        </section>
+
+    </main>
+</body>
+</html>

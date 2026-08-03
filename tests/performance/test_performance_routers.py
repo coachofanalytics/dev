@@ -63,3 +63,86 @@ def test_user_groups_repeated_list_requests(
     elapsed_time = time.perf_counter() - start_time
 
     assert elapsed_time < 5.0
+
+
+
+
+def performance_score_payload(
+    number: int,
+):
+    return {
+        "email": f"performance{number}@coda.com",
+        "gender": "Male",
+        "phone": f"+2547000{number:05d}",
+        "address": "Performance Office",
+        "city": "Nairobi",
+        "state": "Nairobi County",
+        "zipcode": "00100",
+        "country": "Kenya",
+        "category": "Performance",
+        "sub_category": number + 1,
+    }
+
+
+def test_score_create_performance(client):
+    start_time = time.perf_counter()
+
+    response = client.post(
+        "/accounts/scores/",
+        json=performance_score_payload(1),
+    )
+
+    elapsed = (
+        time.perf_counter() - start_time
+    )
+
+    assert response.status_code == 201
+    assert elapsed < 2.0
+
+
+def test_score_list_performance(client):
+    for number in range(1, 21):
+        response = client.post(
+            "/accounts/scores/",
+            json=performance_score_payload(
+                number
+            ),
+        )
+
+        assert response.status_code == 201
+
+    start_time = time.perf_counter()
+
+    response = client.get(
+        "/accounts/scores/"
+    )
+
+    elapsed = (
+        time.perf_counter() - start_time
+    )
+
+    assert response.status_code == 200
+    assert len(response.json()) >= 20
+    assert elapsed < 2.0
+
+
+def test_score_detail_performance(client):
+    create_response = client.post(
+        "/accounts/scores/",
+        json=performance_score_payload(50),
+    )
+
+    score_id = create_response.json()["id"]
+
+    start_time = time.perf_counter()
+
+    response = client.get(
+        f"/accounts/scores/{score_id}"
+    )
+
+    elapsed = (
+        time.perf_counter() - start_time
+    )
+
+    assert response.status_code == 200
+    assert elapsed < 1.0
