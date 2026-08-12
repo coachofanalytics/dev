@@ -1728,3 +1728,38 @@ class CommunityMessage(models.Model):
 
     class Meta:
         ordering = ['-created_at']
+
+
+# main/models.py
+
+from django.db import models
+
+
+class Volunteer(models.Model):
+    name = models.CharField(
+        max_length=100,
+        verbose_name="Full Name",
+    )
+
+    email = models.EmailField(
+        max_length=254,
+        verbose_name="Email Address",
+    )
+
+    motivation = models.TextField(
+        verbose_name="Motivation",
+        help_text="Explain why you want to volunteer.",
+    )
+
+    created_at = models.DateTimeField(
+        auto_now_add=True,
+        verbose_name="Submitted At",
+    )
+
+    class Meta:
+        ordering = ["-created_at"]
+        verbose_name = "Volunteer Application"
+        verbose_name_plural = "Volunteer Applications"
+
+    def __str__(self):
+        return f"{self.name} — {self.email}"

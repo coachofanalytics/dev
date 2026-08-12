@@ -40,6 +40,10 @@ admin.site.register(ConsularAssistancePage)
 admin.site.register(AppointmentRequest)
 admin.site.register(Doctor)
 
+from django.contrib import admin
+
+from .models import Volunteer
+
 
 @admin.register(ServiceRequest)
 class ServiceRequestAdmin(admin.ModelAdmin):
@@ -544,3 +548,12 @@ class LegalServiceAdmin(admin.ModelAdmin):
     )
     readonly_fields = ['created_at', 'updated_at']
 
+# main/admin.py
+
+
+@admin.register(Volunteer)
+class VolunteerAdmin(admin.ModelAdmin):
+    list_display = ("name", "email", "created_at")
+    search_fields = ("name", "email", "motivation")
+    ordering = ("-created_at",)
+    readonly_fields = ("created_at",)
