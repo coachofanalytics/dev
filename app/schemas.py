@@ -144,30 +144,53 @@ class JobDetailsResponse(JobDetailsRead):
 # ==========================================================
 # SCORE SCHEMAS
 # ==========================================================
-
-PHONE_PATTERN = re.compile(
-    r"^\\+?[1-9]\\d{7,14}$"
-)
+import re
 
 
 PHONE_PATTERN = re.compile(
-    r"^\+?[1-9]\d{7,14}$"
+    r"^\+[1-9]\d{7,14}$"
 )
 
 
 def normalize_phone(
     value: str,
 ) -> str:
+    if not value:
+        raise ValueError(
+            "Phone number is required."
+        )
+
     cleaned = re.sub(
-        r"[\s()\-]",
+        r"[\s()\-.]",
         "",
-        value,
+        value.strip(),
     )
+
+    # Kenyan local format: 0724364465
+    if (
+        cleaned.startswith("0")
+        and cleaned.isdigit()
+        and len(cleaned) == 10
+    ):
+        cleaned = "+254" + cleaned[1:]
+
+    # Kenyan international format without +
+    elif (
+        cleaned.startswith("254")
+        and cleaned.isdigit()
+        and len(cleaned) == 12
+    ):
+        cleaned = "+" + cleaned
+
+    # Other international numbers without +
+    elif cleaned.isdigit():
+        cleaned = "+" + cleaned
 
     if not PHONE_PATTERN.fullmatch(cleaned):
         raise ValueError(
-            "Phone number must contain 8 to 15 digits "
-            "and may begin with +."
+            "Phone number must contain 8 to 15 digits. "
+            "Kenyan numbers may use 07XXXXXXXX, "
+            "2547XXXXXXXX, or +2547XXXXXXXX."
         )
 
     return cleaned
