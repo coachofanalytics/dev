@@ -24,13 +24,17 @@ from sqlmodel import (
 
 from . import crud, database, models
 from .database import get_db
+from app.database import engine 
 from .models import JobDetails
 from .routers import (
-    customer_users,
     scores,
     search,
     user_groups,
+    customer_users,
+    careers,
+    transactions,
 )
+
 from .schemas import (
     JobDetailsCreate,
     JobDetailsUpdate,
@@ -81,6 +85,8 @@ app.include_router(search.router)
 app.include_router(scores.router)
 app.include_router(user_groups.router)
 app.include_router(customer_users.router)
+app.include_router(careers.router)
+app.include_router(transactions.router)
 
 
 # ==========================================================

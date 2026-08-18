@@ -2,138 +2,86 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <meta
-        name="viewport"
-        content="width=device-width, initial-scale=1.0"
-    >
-
-    <title>Customer User Details</title>
-
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            background: #f5f7fa;
-            padding: 30px;
-        }
-
-        .container {
-            max-width: 760px;
-            margin: auto;
-            background: white;
-            padding: 28px;
-        }
-
-        dt {
-            font-weight: bold;
-            margin-top: 14px;
-        }
-
-        dd {
-            margin-left: 0;
-            margin-top: 4px;
-        }
-
-        .button {
-            display: inline-block;
-            background: #1e40af;
-            color: white;
-            padding: 10px 16px;
-            text-decoration: none;
-            border: none;
-            cursor: pointer;
-        }
-
-        .danger {
-            background: #b91c1c;
-        }
-    </style>
+    <title>Transaction Details</title>
 </head>
 
 <body>
-    <main class="container">
-        <h1>Customer User Details</h1>
 
-        <dl>
-            <dt>ID</dt>
-            <dd>{{ customer_user.id }}</dd>
+    <h1>Transaction Details</h1>
 
-            <dt>Username</dt>
-            <dd>{{ customer_user.username }}</dd>
+    <p>
+        <strong>ID:</strong>
+        {{ transaction.id }}
+    </p>
 
-            <dt>Email</dt>
-            <dd>{{ customer_user.email }}</dd>
+    <p>
+        <strong>Receiver:</strong>
+        {{ transaction.receiver }}
+    </p>
 
-            <dt>City</dt>
-            <dd>{{ customer_user.city }}</dd>
+    <p>
+        <strong>Phone:</strong>
+        {{ transaction.phone }}
+    </p>
 
-            <dt>State/County</dt>
-            <dd>{{ customer_user.state }}</dd>
+    <p>
+        <strong>Type:</strong>
+        {{ transaction.type }}
+    </p>
 
-            <dt>Country</dt>
-            <dd>{{ customer_user.country }}</dd>
+    <p>
+        <strong>Activity Date:</strong>
+        {{ transaction.activity_date }}
+    </p>
 
-            <dt>Category</dt>
-            <dd>{{ customer_user.category|title }}</dd>
+    <p>
+        <strong>Quantity:</strong>
+        {{ transaction.qty }}
+    </p>
 
-            <dt>Administrator</dt>
-            <dd>
-                {{ "Yes" if customer_user.is_admin else "No" }}
-            </dd>
+    <p>
+        <strong>Amount:</strong>
+        {{ transaction.amount }}
+    </p>
 
-            <dt>Employee</dt>
-            <dd>
-                {{ "Yes" if customer_user.is_employee else "No" }}
-            </dd>
+    <p>
+        <strong>Transaction Cost:</strong>
+        {{ transaction.transaction_cost }}
+    </p>
 
-            <dt>Client</dt>
-            <dd>
-                {{ "Yes" if customer_user.is_client else "No" }}
-            </dd>
+    <p>
+        <strong>Payment Method:</strong>
+        {{ transaction.payment_method }}
+    </p>
 
-            <dt>Applicant</dt>
-            <dd>
-                {{ "Yes" if customer_user.is_applicant else "No" }}
-            </dd>
+    <p>
+        <strong>Category:</strong>
+        {{ transaction.category }}
+    </p>
 
-            <dt>Resume</dt>
-            <dd>
-                <a
-                    href="/accounts/customer-users/{{ customer_user.id }}/resume/download"
-                >
-                    Download resume
-                </a>
-            </dd>
-        </dl>
+    <p>
+        <strong>Total:</strong>
+        {{ transaction.total_transactions_amt }}
+    </p>
 
-        <p>
-            <a
-                class="button"
-                href="/accounts/customer-users/pages/{{ customer_user.id }}/edit"
-            >
-                Edit
-            </a>
+    <p>
+        <strong>Description:</strong>
+        {{ transaction.description }}
+    </p>
 
-            <a
-                class="button"
-                href="/accounts/customer-users/pages/list"
-            >
-                Back
-            </a>
-        </p>
+    <hr>
 
-        <form
-            method="post"
-            action="/accounts/customer-users/pages/{{ customer_user.id }}/delete"
-            onsubmit="return confirm('Delete this customer user?');"
-        >
-            <button
-                class="button danger"
-                type="submit"
-            >
-                Delete
-            </button>
-        </form>
-    </main>
+    <a href="/accounts/transactions/pages/list">
+        Back to List
+    </a>
+
+    |
+
+    <a href="/accounts/transactions/pages/{{ transaction.id }}/edit">
+        Edit
+    </a>
+
 </body>
 </html>

@@ -1,0 +1,696 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>Edit Transaction | CODA</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: #f5f8f6;
+            color: #17251d;
+        }
+
+        .header {
+            background: #073b24;
+            color: white;
+            padding: 18px 30px;
+        }
+
+        .header-inner {
+            max-width: 1000px;
+            margin: auto;
+
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+
+            gap: 20px;
+        }
+
+        .brand {
+            font-size: 21px;
+            font-weight: bold;
+        }
+
+        .header a {
+            color: white;
+            text-decoration: none;
+            font-weight: bold;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 35px auto;
+            padding: 0 20px 60px;
+        }
+
+        .eyebrow {
+            color: #118c4f;
+            font-size: 12px;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+
+        h1 {
+            margin: 7px 0;
+            font-size: 32px;
+        }
+
+        .subtitle {
+            color: #6d7972;
+            margin-bottom: 25px;
+        }
+
+        .card {
+            background: white;
+            border: 1px solid #dce5e0;
+            border-radius: 12px;
+            padding: 28px;
+        }
+
+        .error {
+            padding: 14px;
+            margin-bottom: 20px;
+
+            border-radius: 7px;
+
+            background: #fee2e2;
+            color: #991b1b;
+
+            font-weight: bold;
+        }
+
+        .section-title {
+            margin-top: 25px;
+            margin-bottom: 15px;
+            padding-bottom: 8px;
+
+            border-bottom: 1px solid #dce5e0;
+
+            color: #073b24;
+
+            font-size: 13px;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+
+        .section-title:first-child {
+            margin-top: 0;
+        }
+
+        .field {
+            margin-bottom: 18px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 7px;
+
+            font-size: 13px;
+            font-weight: bold;
+        }
+
+        input,
+        select,
+        textarea {
+            width: 100%;
+
+            padding: 12px;
+
+            border: 1px solid #ccd7d1;
+            border-radius: 7px;
+
+            background: white;
+            color: #17251d;
+
+            font-size: 14px;
+        }
+
+        input:focus,
+        select:focus,
+        textarea:focus {
+            outline: none;
+
+            border-color: #118c4f;
+
+            box-shadow:
+                0 0 0 3px
+                rgba(17, 140, 79, 0.08);
+        }
+
+        textarea {
+            min-height: 120px;
+            resize: vertical;
+        }
+
+        .help {
+            margin-top: 5px;
+
+            color: #7c8982;
+
+            font-size: 11px;
+        }
+
+        .actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 12px;
+
+            margin-top: 28px;
+            padding-top: 20px;
+
+            border-top: 1px solid #e2e8e5;
+        }
+
+        .btn {
+            padding: 12px 20px;
+
+            border: none;
+            border-radius: 7px;
+
+            font-weight: bold;
+            text-decoration: none;
+
+            cursor: pointer;
+        }
+
+        .btn-cancel {
+            background: #e5ebe8;
+            color: #073b24;
+        }
+
+        .btn-save {
+            background: #118c4f;
+            color: white;
+        }
+
+        .btn-save:hover {
+            background: #0d743f;
+        }
+
+        .btn-cancel:hover {
+            background: #dce5e0;
+        }
+
+        @media (max-width: 600px) {
+
+            .header-inner {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .actions {
+                flex-direction: column;
+            }
+
+            .btn {
+                width: 100%;
+                text-align: center;
+            }
+        }
+    </style>
+</head>
+
+
+<body>
+
+<header class="header">
+
+    <div class="header-inner">
+
+        <div class="brand">
+            CODA Transaction Management
+        </div>
+
+        <a
+            href="/accounts/transactions/pages/list"
+        >
+            Back to Ledger
+        </a>
+
+    </div>
+
+</header>
+
+
+<main class="container">
+
+    <div class="eyebrow">
+        Accounts Module
+    </div>
+
+    <h1>
+        Edit Transaction #{{ transaction.id }}
+    </h1>
+
+    <p class="subtitle">
+        Modify the transaction information and save your changes.
+    </p>
+
+
+    <div class="card">
+
+        {% if error %}
+
+            <div class="error">
+                {{ error }}
+            </div>
+
+        {% endif %}
+
+
+        <form
+            method="post"
+            action="/accounts/transactions/pages/edit?id={{ transaction.id }}"
+        >
+
+
+            <!-- ========================================= -->
+            <!-- TRANSACTION INFORMATION -->
+            <!-- ========================================= -->
+
+            <div class="section-title">
+                Transaction Information
+            </div>
+
+
+            <div class="field">
+
+                <label>
+                    Activity Date *
+                </label>
+
+                <input
+                    type="datetime-local"
+                    name="activity_date"
+                    required
+                    value="{{ transaction.activity_date.strftime('%Y-%m-%dT%H:%M') }}"
+                >
+
+            </div>
+
+
+            <div class="field">
+
+                <label>
+                    Transaction Type
+                </label>
+
+                <input
+                    type="text"
+                    name="type"
+                    maxlength="100"
+                    value="{{ transaction.type or '' }}"
+                    placeholder="Example: Purchase"
+                >
+
+            </div>
+
+
+            <!-- ========================================= -->
+            <!-- SENDER -->
+            <!-- ========================================= -->
+
+            <div class="section-title">
+                Sender Information
+            </div>
+
+
+            <div class="field">
+
+                <label>
+                    Sender ID
+                </label>
+
+                <input
+                    type="number"
+                    name="sender_id"
+                    min="1"
+                    value="{{ transaction.sender_id or '' }}"
+                    placeholder="Existing CustomerUser ID"
+                >
+
+                <div class="help">
+                    Must reference an existing CustomerUser.
+                    Leave blank if not applicable.
+                </div>
+
+            </div>
+
+
+            <!-- ========================================= -->
+            <!-- DEPARTMENT -->
+            <!-- ========================================= -->
+
+            <div class="section-title">
+                Department Information
+            </div>
+
+
+            <div class="field">
+
+                <label>
+                    Department ID
+                </label>
+
+                <input
+                    type="number"
+                    name="department_id"
+                    min="1"
+                    value="{{ transaction.department_id or '' }}"
+                    placeholder="Existing Department ID"
+                >
+
+                <div class="help">
+                    Must reference an existing department.
+                    Leave blank if not applicable.
+                </div>
+
+            </div>
+
+
+            <!-- ========================================= -->
+            <!-- RECEIVER -->
+            <!-- ========================================= -->
+
+            <div class="section-title">
+                Receiver Information
+            </div>
+
+
+            <div class="field">
+
+                <label>
+                    Receiver
+                </label>
+
+                <input
+                    type="text"
+                    name="receiver"
+                    maxlength="100"
+                    value="{{ transaction.receiver or '' }}"
+                    placeholder="Receiver name"
+                >
+
+            </div>
+
+
+            <div class="field">
+
+                <label>
+                    Phone Number
+                </label>
+
+                <input
+                    type="text"
+                    name="phone"
+                    maxlength="50"
+                    value="{{ transaction.phone or '' }}"
+                    placeholder="Example: +254700000000"
+                >
+
+            </div>
+
+
+            <!-- ========================================= -->
+            <!-- PAYMENT -->
+            <!-- ========================================= -->
+
+            <div class="section-title">
+                Payment Information
+            </div>
+
+
+            <div class="field">
+
+                <label>
+                    Payment Method *
+                </label>
+
+                <select
+                    name="payment_method"
+                    required
+                >
+
+                    <option
+                        value="Mpesa"
+                        {% if transaction.payment_method == "Mpesa" %}
+                            selected
+                        {% endif %}
+                    >
+                        Mpesa
+                    </option>
+
+                    <option
+                        value="Bank Transfer"
+                        {% if transaction.payment_method == "Bank Transfer" %}
+                            selected
+                        {% endif %}
+                    >
+                        Bank Transfer
+                    </option>
+
+                    <option
+                        value="Cash"
+                        {% if transaction.payment_method == "Cash" %}
+                            selected
+                        {% endif %}
+                    >
+                        Cash
+                    </option>
+
+                    <option
+                        value="Card"
+                        {% if transaction.payment_method == "Card" %}
+                            selected
+                        {% endif %}
+                    >
+                        Card
+                    </option>
+
+                    <option
+                        value="Other"
+                        {% if transaction.payment_method == "Other" %}
+                            selected
+                        {% endif %}
+                    >
+                        Other
+                    </option>
+
+                </select>
+
+            </div>
+
+
+            <div class="field">
+
+                <label>
+                    Category *
+                </label>
+
+                <select
+                    name="category"
+                    required
+                >
+
+                    <option
+                        value="Income"
+                        {% if transaction.category == "Income" %}
+                            selected
+                        {% endif %}
+                    >
+                        Income
+                    </option>
+
+                    <option
+                        value="Expense"
+                        {% if transaction.category == "Expense" %}
+                            selected
+                        {% endif %}
+                    >
+                        Expense
+                    </option>
+
+                    <option
+                        value="Transfer"
+                        {% if transaction.category == "Transfer" %}
+                            selected
+                        {% endif %}
+                    >
+                        Transfer
+                    </option>
+
+                    <option
+                        value="Refund"
+                        {% if transaction.category == "Refund" %}
+                            selected
+                        {% endif %}
+                    >
+                        Refund
+                    </option>
+
+                    <option
+                        value="Other"
+                        {% if transaction.category == "Other" %}
+                            selected
+                        {% endif %}
+                    >
+                        Other
+                    </option>
+
+                </select>
+
+            </div>
+
+
+            <!-- ========================================= -->
+            <!-- AMOUNT -->
+            <!-- ========================================= -->
+
+            <div class="section-title">
+                Amount Information
+            </div>
+
+
+            <div class="field">
+
+                <label>
+                    Quantity
+                </label>
+
+                <input
+                    type="number"
+                    name="qty"
+                    step="0.01"
+                    min="0"
+                    value="{{ transaction.qty if transaction.qty is not none else '' }}"
+                >
+
+            </div>
+
+
+            <div class="field">
+
+                <label>
+                    Amount
+                </label>
+
+                <input
+                    type="number"
+                    name="amount"
+                    step="0.01"
+                    min="0"
+                    value="{{ transaction.amount if transaction.amount is not none else '' }}"
+                >
+
+            </div>
+
+
+            <div class="field">
+
+                <label>
+                    Transaction Cost
+                </label>
+
+                <input
+                    type="number"
+                    name="transaction_cost"
+                    step="0.01"
+                    min="0"
+                    value="{{ transaction.transaction_cost if transaction.transaction_cost is not none else '0.00' }}"
+                >
+
+            </div>
+
+
+            <!-- ========================================= -->
+            <!-- RECEIPT -->
+            <!-- ========================================= -->
+
+            <div class="section-title">
+                Receipt Information
+            </div>
+
+
+            <div class="field">
+
+                <label>
+                    Receipt Reference / Link
+                </label>
+
+                <input
+                    type="text"
+                    name="receipt_link"
+                    maxlength="255"
+                    value="{{ transaction.receipt_link or '' }}"
+                    placeholder="Example: REC-001"
+                >
+
+            </div>
+
+
+            <!-- ========================================= -->
+            <!-- DESCRIPTION -->
+            <!-- ========================================= -->
+
+            <div class="section-title">
+                Description
+            </div>
+
+
+            <div class="field">
+
+                <label>
+                    Description
+                </label>
+
+                <textarea
+                    name="description"
+                    placeholder="Transaction description"
+                >{{ transaction.description or '' }}</textarea>
+
+            </div>
+
+
+            <!-- ========================================= -->
+            <!-- ACTIONS -->
+            <!-- ========================================= -->
+
+            <div class="actions">
+
+                <a
+                    href="/accounts/transactions/pages/list"
+                    class="btn btn-cancel"
+                >
+                    Cancel
+                </a>
+
+                <button
+                    type="submit"
+                    class="btn btn-save"
+                >
+                    Update Transaction
+                </button>
+
+            </div>
+
+
+        </form>
+
+    </div>
+
+</main>
+
+</body>
+</html>

@@ -4,6 +4,7 @@ from sqlmodel import Session, create_engine
 
 
 DATABASE_URL = "sqlite:///./user_groups.db"
+DATABASE_URL = "sqlite:///./transaction.db"
 
 
 engine = create_engine(

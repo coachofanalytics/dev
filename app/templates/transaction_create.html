@@ -1,0 +1,517 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>New Transaction | CODA</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        :root {
+            --green-dark: #083b24;
+            --green: #118c4f;
+            --green-light: #e9f8ef;
+            --gold: #d89b24;
+            --bg: #f7faf8;
+            --border: #dfe7e3;
+            --text: #12221a;
+            --muted: #728078;
+            --danger-bg: #fee2e2;
+            --danger: #991b1b;
+        }
+
+        body {
+            margin: 0;
+            background:
+                radial-gradient(
+                    circle at 1px 1px,
+                    rgba(20, 80, 45, 0.06) 1px,
+                    transparent 0
+                );
+            background-size: 18px 18px;
+            background-color: var(--bg);
+            font-family: Arial, sans-serif;
+            color: var(--text);
+        }
+
+        .topbar {
+            background: var(--green-dark);
+            color: white;
+            padding: 14px 0;
+        }
+
+        .topbar-inner {
+            max-width: 1200px;
+            margin: auto;
+            padding: 0 24px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .brand {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+        }
+
+        .logo {
+            width: 38px;
+            height: 38px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 8px;
+            background: white;
+            color: var(--green);
+            font-weight: 900;
+        }
+
+        .brand-title {
+            font-size: 18px;
+            font-weight: 900;
+        }
+
+        .brand-subtitle {
+            margin-top: 2px;
+            color: #a9ccb7;
+            font-size: 10px;
+            text-transform: uppercase;
+        }
+
+        .container {
+            max-width: 1100px;
+            margin: auto;
+            padding: 35px 24px 60px;
+        }
+
+        .page-header {
+            margin-bottom: 24px;
+        }
+
+        .eyebrow {
+            color: var(--green);
+            font-size: 12px;
+            font-weight: 900;
+            text-transform: uppercase;
+        }
+
+        h1 {
+            margin: 7px 0;
+            font-size: 34px;
+        }
+
+        .subtitle {
+            margin: 0;
+            color: var(--muted);
+        }
+
+        .card {
+            background: white;
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 28px;
+        }
+
+        .error {
+            margin-bottom: 22px;
+            padding: 14px;
+            border-radius: 8px;
+            background: var(--danger-bg);
+            color: var(--danger);
+            font-weight: 700;
+        }
+
+        .section-title {
+            grid-column: 1 / -1;
+            padding-bottom: 9px;
+            border-bottom: 1px solid var(--border);
+            color: var(--green-dark);
+            font-size: 13px;
+            font-weight: 900;
+            text-transform: uppercase;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px 24px;
+        }
+
+        .field {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .field label {
+            margin-bottom: 7px;
+            font-size: 13px;
+            font-weight: 800;
+        }
+
+        .field input,
+        .field select,
+        .field textarea {
+            width: 100%;
+            min-height: 44px;
+            padding: 11px 12px;
+            border: 1px solid #d5ded9;
+            border-radius: 7px;
+            background: white;
+            color: var(--text);
+            font-size: 14px;
+        }
+
+        .field textarea {
+            min-height: 120px;
+            resize: vertical;
+        }
+
+        .field input:focus,
+        .field select:focus,
+        .field textarea:focus {
+            outline: none;
+            border-color: var(--green);
+            box-shadow: 0 0 0 3px rgba(17, 140, 79, 0.08);
+        }
+
+        .full {
+            grid-column: 1 / -1;
+        }
+
+        .actions {
+            grid-column: 1 / -1;
+            display: flex;
+            justify-content: flex-end;
+            gap: 12px;
+            margin-top: 10px;
+        }
+
+        .button {
+            min-height: 44px;
+            padding: 12px 20px;
+            border: 0;
+            border-radius: 7px;
+            font-weight: 900;
+            text-decoration: none;
+            cursor: pointer;
+        }
+
+        .cancel {
+            background: #e7ece9;
+            color: var(--green-dark);
+        }
+
+        .save {
+            background: var(--green);
+            color: white;
+        }
+
+        @media (max-width: 750px) {
+            .grid {
+                grid-template-columns: 1fr;
+            }
+
+            .section-title,
+            .full,
+            .actions {
+                grid-column: 1;
+            }
+
+            .actions {
+                flex-direction: column;
+            }
+
+            .button {
+                width: 100%;
+                text-align: center;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+<header class="topbar">
+    <div class="topbar-inner">
+
+        <div class="brand">
+            <div class="logo">CO</div>
+
+            <div>
+                <div class="brand-title">
+                    CODA
+                </div>
+
+                <div class="brand-subtitle">
+                    Transaction Ledger
+                </div>
+            </div>
+        </div>
+
+        <a
+            href="/accounts/transactions/pages/list"
+            style="color:white;text-decoration:none;font-weight:800;"
+        >
+            Back to Ledger
+        </a>
+
+    </div>
+</header>
+
+<main class="container">
+
+    <section class="page-header">
+        <div class="eyebrow">
+            Accounts Module • Financial Traceability
+        </div>
+
+        <h1>
+            New Transaction
+        </h1>
+
+        <p class="subtitle">
+            Record a new incoming, outgoing, transfer,
+            or other financial transaction.
+        </p>
+    </section>
+
+    <section class="card">
+
+        {% if error %}
+            <div class="error">
+                {{ error }}
+            </div>
+        {% endif %}
+
+        <form
+            method="post"
+            action="/accounts/transactions/pages/create"
+        >
+
+            <div class="grid">
+
+                <div class="section-title">
+                    Transaction Information
+                </div>
+
+                <div class="field">
+                    <label>Activity Date *</label>
+
+                    <input
+                        type="datetime-local"
+                        name="activity_date"
+                        required
+                        value="{{ form_data.get('activity_date', '') if form_data else '' }}"
+                    >
+                </div>
+
+                <div class="field">
+                    <label>Transaction Type</label>
+
+                    <input
+                        type="text"
+                        name="type"
+                        placeholder="Purchase, Salary, Transfer..."
+                        value="{{ form_data.get('type', '') if form_data else '' }}"
+                    >
+                </div>
+
+                <div class="field">
+                    <label>Category *</label>
+
+                    <select
+                        name="category"
+                        required
+                    >
+                        <option value="">
+                            Select category
+                        </option>
+
+                        <option value="Income">
+                            Income
+                        </option>
+
+                        <option value="Expense">
+                            Expense
+                        </option>
+
+                        <option value="Transfer">
+                            Transfer
+                        </option>
+
+                        <option value="Refund">
+                            Refund
+                        </option>
+
+                        <option value="Other">
+                            Other
+                        </option>
+                    </select>
+                </div>
+
+                <div class="field">
+                    <label>Payment Method *</label>
+
+                    <select
+                        name="payment_method"
+                        required
+                    >
+                        <option value="Other">Other</option>
+                        <option value="Mpesa">Mpesa</option>
+                        <option value="Bank Transfer">Bank Transfer</option>
+                        <option value="Cash">Cash</option>
+                        <option value="Card">Card</option>
+                    </select>
+                </div>
+
+                <div class="section-title">
+                    Sender and Department
+                </div>
+
+                <div class="field">
+                    <label>Sender ID</label>
+
+                    <input
+                        type="number"
+                        name="sender_id"
+                        min="1"
+                        value="{{ form_data.get('sender_id', '') if form_data else '' }}"
+                    >
+                </div>
+
+                <div class="field">
+                    <label>Department ID</label>
+
+                    <input
+                        type="number"
+                        name="department_id"
+                        min="1"
+                        value="{{ form_data.get('department_id', '') if form_data else '' }}"
+                    >
+                </div>
+
+                <div class="section-title">
+                    Receiver Information
+                </div>
+
+                <div class="field">
+                    <label>Receiver</label>
+
+                    <input
+                        type="text"
+                        name="receiver"
+                        maxlength="100"
+                        value="{{ form_data.get('receiver', '') if form_data else '' }}"
+                    >
+                </div>
+
+                <div class="field">
+                    <label>Phone</label>
+
+                    <input
+                        type="text"
+                        name="phone"
+                        maxlength="50"
+                        value="{{ form_data.get('phone', '') if form_data else '' }}"
+                    >
+                </div>
+
+                <div class="section-title">
+                    Financial Breakdown
+                </div>
+
+                <div class="field">
+                    <label>Quantity</label>
+
+                    <input
+                        type="number"
+                        step="0.01"
+                        min="0"
+                        name="qty"
+                        value="{{ form_data.get('qty', '') if form_data else '' }}"
+                    >
+                </div>
+
+                <div class="field">
+                    <label>Amount</label>
+
+                    <input
+                        type="number"
+                        step="0.01"
+                        min="0"
+                        name="amount"
+                        value="{{ form_data.get('amount', '') if form_data else '' }}"
+                    >
+                </div>
+
+                <div class="field">
+                    <label>Transaction Cost</label>
+
+                    <input
+                        type="number"
+                        step="0.01"
+                        min="0"
+                        name="transaction_cost"
+                        value="{{ form_data.get('transaction_cost', 0) if form_data else 0 }}"
+                    >
+                </div>
+
+                <div class="field">
+                    <label>Receipt Reference / Link</label>
+
+                    <input
+                        type="text"
+                        name="receipt_link"
+                        maxlength="255"
+                        value="{{ form_data.get('receipt_link', '') if form_data else '' }}"
+                    >
+                </div>
+
+                <div class="section-title">
+                    Notes
+                </div>
+
+                <div class="field full">
+                    <label>Description</label>
+
+                    <textarea
+                        name="description"
+                    >{{ form_data.get('description', '') if form_data else '' }}</textarea>
+                </div>
+
+                <div class="actions">
+
+                    <a
+                        class="button cancel"
+                        href="/accounts/transactions/pages/list"
+                    >
+                        Cancel
+                    </a>
+
+                    <button
+                        class="button save"
+                        type="submit"
+                    >
+                        Save Transaction
+                    </button>
+
+                </div>
+
+            </div>
+
+        </form>
+
+    </section>
+
+</main>
+
+</body>
+</html>

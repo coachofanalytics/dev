@@ -1,0 +1,972 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>
+        Transaction Details | CODA
+    </title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: #f5f8f6;
+            color: #17251d;
+        }
+
+        /* ================================
+           HEADER
+        ================================= */
+
+        .header {
+            background: #073b24;
+            color: white;
+            padding: 18px 30px;
+        }
+
+        .header-inner {
+            max-width: 1100px;
+            margin: auto;
+
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .brand {
+            font-size: 21px;
+            font-weight: 800;
+        }
+
+        .header-link {
+            color: white;
+            text-decoration: none;
+            font-weight: 700;
+        }
+
+        /* ================================
+           MAIN CONTAINER
+        ================================= */
+
+        .container {
+            max-width: 1100px;
+            margin: 35px auto;
+            padding: 0 20px 60px;
+        }
+
+        .eyebrow {
+            color: #118c4f;
+            font-size: 12px;
+            font-weight: 800;
+            text-transform: uppercase;
+        }
+
+        h1 {
+            margin: 7px 0;
+            font-size: 32px;
+        }
+
+        .subtitle {
+            margin-top: 0;
+            margin-bottom: 25px;
+            color: #6d7972;
+        }
+
+        /* ================================
+           CARD
+        ================================= */
+
+        .card {
+            background: white;
+
+            border: 1px solid #dce5e0;
+            border-radius: 12px;
+
+            overflow: hidden;
+        }
+
+        .card-header {
+            padding: 22px 25px;
+
+            border-bottom: 1px solid #e1e8e4;
+
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .transaction-number {
+            font-size: 18px;
+            font-weight: 800;
+        }
+
+        .badge {
+            display: inline-block;
+
+            padding: 7px 11px;
+
+            border-radius: 6px;
+
+            font-size: 11px;
+            font-weight: 800;
+
+            text-transform: uppercase;
+        }
+
+        .badge-income {
+            background: #dcf7e5;
+            color: #087a3e;
+        }
+
+        .badge-expense {
+            background: #ffe7e7;
+            color: #b62222;
+        }
+
+        .badge-transfer {
+            background: #fff1cf;
+            color: #9a6000;
+        }
+
+        .badge-other {
+            background: #edf1ef;
+            color: #56635c;
+        }
+
+        /* ================================
+           DETAIL SECTIONS
+        ================================= */
+
+        .section {
+            padding: 25px;
+            border-bottom: 1px solid #edf1ef;
+        }
+
+        .section:last-child {
+            border-bottom: none;
+        }
+
+        .section-title {
+            margin-bottom: 18px;
+
+            color: #073b24;
+
+            font-size: 13px;
+            font-weight: 800;
+
+            text-transform: uppercase;
+        }
+
+        .details-grid {
+            display: grid;
+
+            grid-template-columns:
+                repeat(2, minmax(0, 1fr));
+
+            gap: 20px 35px;
+        }
+
+        .detail-item {
+            min-width: 0;
+        }
+
+        .detail-label {
+            margin-bottom: 6px;
+
+            color: #7a8780;
+
+            font-size: 11px;
+            font-weight: 800;
+
+            text-transform: uppercase;
+        }
+
+        .detail-value {
+            color: #17251d;
+
+            font-size: 15px;
+            font-weight: 700;
+
+            word-break: break-word;
+        }
+
+        .muted {
+            color: #87928c;
+            font-weight: 400;
+        }
+
+        /* ================================
+           TOTAL
+        ================================= */
+
+        .total-box {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+
+            padding: 20px;
+
+            border: 1px solid #9bdcb5;
+            border-radius: 9px;
+
+            background: #ecfbf1;
+        }
+
+        .total-label {
+            color: #08743c;
+
+            font-size: 13px;
+            font-weight: 800;
+
+            text-transform: uppercase;
+        }
+
+        .total-value {
+            color: #08743c;
+
+            font-size: 25px;
+            font-weight: 900;
+        }
+
+        /* ================================
+           DESCRIPTION
+        ================================= */
+
+        .description {
+            padding: 16px;
+
+            border: 1px solid #e0e7e3;
+            border-radius: 8px;
+
+            background: #fafcfb;
+
+            line-height: 1.6;
+        }
+
+        /* ================================
+           ACTION BUTTONS
+        ================================= */
+
+        .actions {
+            padding: 25px;
+
+            display: flex;
+            justify-content: flex-end;
+            gap: 12px;
+        }
+
+        .btn {
+            display: inline-flex;
+
+            align-items: center;
+            justify-content: center;
+
+            padding: 12px 20px;
+
+            border: none;
+            border-radius: 7px;
+
+            text-decoration: none;
+
+            font-size: 14px;
+            font-weight: 800;
+
+            cursor: pointer;
+        }
+
+        .btn-back {
+            background: #e5ebe8;
+            color: #073b24;
+        }
+
+        .btn-edit {
+            background: #118c4f;
+            color: white;
+        }
+
+        .btn-delete {
+            background: #dc2626;
+            color: white;
+        }
+
+        .delete-form {
+            margin: 0;
+        }
+
+        /* ================================
+           ERROR
+        ================================= */
+
+        .error-box {
+            padding: 30px;
+
+            background: white;
+
+            border: 1px solid #fecaca;
+            border-radius: 10px;
+
+            color: #991b1b;
+        }
+
+        /* ================================
+           RESPONSIVE
+        ================================= */
+
+        @media (max-width: 700px) {
+
+            .header-inner {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .details-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .card-header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .total-box {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 10px;
+            }
+
+            .actions {
+                flex-direction: column;
+            }
+
+            .btn,
+            .delete-form {
+                width: 100%;
+            }
+
+            .delete-form .btn {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+
+
+<body>
+
+
+<!-- ======================================
+     HEADER
+======================================= -->
+
+<header class="header">
+
+    <div class="header-inner">
+
+        <div class="brand">
+            CODA Transaction Management
+        </div>
+
+        <a
+            href="/accounts/transactions/pages/list"
+            class="header-link"
+        >
+            Back to Ledger
+        </a>
+
+    </div>
+
+</header>
+
+
+<!-- ======================================
+     MAIN
+======================================= -->
+
+<main class="container">
+
+
+    {% if transaction %}
+
+
+        <div class="eyebrow">
+            Accounts Module • Transaction Details
+        </div>
+
+
+        <h1>
+            Transaction #{{ transaction.id }}
+        </h1>
+
+
+        <p class="subtitle">
+            View the complete information for this transaction.
+        </p>
+
+
+        <div class="card">
+
+
+            <!-- ============================
+                 HEADER
+            ============================= -->
+
+            <div class="card-header">
+
+                <div class="transaction-number">
+
+                    Transaction ID:
+                    #{{ transaction.id }}
+
+                </div>
+
+
+                <div>
+
+                    {% if transaction.category == "Income" %}
+
+                        <span class="badge badge-income">
+                            {{ transaction.category }}
+                        </span>
+
+                    {% elif transaction.category == "Expense" %}
+
+                        <span class="badge badge-expense">
+                            {{ transaction.category }}
+                        </span>
+
+                    {% elif transaction.category == "Transfer" %}
+
+                        <span class="badge badge-transfer">
+                            {{ transaction.category }}
+                        </span>
+
+                    {% else %}
+
+                        <span class="badge badge-other">
+                            {{ transaction.category or "Other" }}
+                        </span>
+
+                    {% endif %}
+
+                </div>
+
+            </div>
+
+
+            <!-- ============================
+                 BASIC INFORMATION
+            ============================= -->
+
+            <div class="section">
+
+                <div class="section-title">
+                    Transaction Information
+                </div>
+
+
+                <div class="details-grid">
+
+
+                    <div class="detail-item">
+
+                        <div class="detail-label">
+                            Activity Date
+                        </div>
+
+                        <div class="detail-value">
+
+                            {% if transaction.activity_date %}
+
+                                {{ transaction.activity_date.strftime(
+                                    '%Y-%m-%d %H:%M'
+                                ) }}
+
+                            {% else %}
+
+                                <span class="muted">
+                                    Not provided
+                                </span>
+
+                            {% endif %}
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="detail-item">
+
+                        <div class="detail-label">
+                            Transaction Type
+                        </div>
+
+                        <div class="detail-value">
+                            {{ transaction.type or "Not provided" }}
+                        </div>
+
+                    </div>
+
+
+                    <div class="detail-item">
+
+                        <div class="detail-label">
+                            Category
+                        </div>
+
+                        <div class="detail-value">
+                            {{ transaction.category or "Not provided" }}
+                        </div>
+
+                    </div>
+
+
+                    <div class="detail-item">
+
+                        <div class="detail-label">
+                            Payment Method
+                        </div>
+
+                        <div class="detail-value">
+                            {{ transaction.payment_method or "Not provided" }}
+                        </div>
+
+                    </div>
+
+
+                </div>
+
+            </div>
+
+
+            <!-- ============================
+                 SENDER / DEPARTMENT
+            ============================= -->
+
+            <div class="section">
+
+                <div class="section-title">
+                    Sender & Department
+                </div>
+
+
+                <div class="details-grid">
+
+
+                    <div class="detail-item">
+
+                        <div class="detail-label">
+                            Sender ID
+                        </div>
+
+                        <div class="detail-value">
+
+                            {% if transaction.sender_id %}
+
+                                {{ transaction.sender_id }}
+
+                            {% else %}
+
+                                <span class="muted">
+                                    Not assigned
+                                </span>
+
+                            {% endif %}
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="detail-item">
+
+                        <div class="detail-label">
+                            Department ID
+                        </div>
+
+                        <div class="detail-value">
+
+                            {% if transaction.department_id %}
+
+                                {{ transaction.department_id }}
+
+                            {% else %}
+
+                                <span class="muted">
+                                    Not assigned
+                                </span>
+
+                            {% endif %}
+
+                        </div>
+
+                    </div>
+
+
+                </div>
+
+            </div>
+
+
+            <!-- ============================
+                 RECEIVER
+            ============================= -->
+
+            <div class="section">
+
+                <div class="section-title">
+                    Receiver Information
+                </div>
+
+
+                <div class="details-grid">
+
+
+                    <div class="detail-item">
+
+                        <div class="detail-label">
+                            Receiver
+                        </div>
+
+                        <div class="detail-value">
+                            {{ transaction.receiver or "Not provided" }}
+                        </div>
+
+                    </div>
+
+
+                    <div class="detail-item">
+
+                        <div class="detail-label">
+                            Phone Number
+                        </div>
+
+                        <div class="detail-value">
+                            {{ transaction.phone or "Not provided" }}
+                        </div>
+
+                    </div>
+
+
+                </div>
+
+            </div>
+
+
+            <!-- ============================
+                 FINANCIAL INFORMATION
+            ============================= -->
+
+            <div class="section">
+
+                <div class="section-title">
+                    Financial Information
+                </div>
+
+
+                <div class="details-grid">
+
+
+                    <div class="detail-item">
+
+                        <div class="detail-label">
+                            Quantity
+                        </div>
+
+                        <div class="detail-value">
+
+                            {% if transaction.qty is not none %}
+
+                                {{ transaction.qty }}
+
+                            {% else %}
+
+                                0
+
+                            {% endif %}
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="detail-item">
+
+                        <div class="detail-label">
+                            Amount
+                        </div>
+
+                        <div class="detail-value">
+
+                            {% if transaction.amount is not none %}
+
+                                {{ transaction.amount }}
+
+                            {% else %}
+
+                                0.00
+
+                            {% endif %}
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="detail-item">
+
+                        <div class="detail-label">
+                            Transaction Cost
+                        </div>
+
+                        <div class="detail-value">
+
+                            {% if transaction.transaction_cost is not none %}
+
+                                {{ transaction.transaction_cost }}
+
+                            {% else %}
+
+                                0.00
+
+                            {% endif %}
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="detail-item">
+
+                        <div class="detail-label">
+                            Receipt Reference
+                        </div>
+
+                        <div class="detail-value">
+                            {{ transaction.receipt_link or "Not provided" }}
+                        </div>
+
+                    </div>
+
+
+                </div>
+
+            </div>
+
+
+            <!-- ============================
+                 DERIVED TOTAL
+            ============================= -->
+
+            <div class="section">
+
+                <div class="total-box">
+
+                    <div class="total-label">
+                        Derived Transaction Total
+                    </div>
+
+                    <div class="total-value">
+
+                        {% if transaction.total_transactions_amt is not none %}
+
+                            {{ transaction.total_transactions_amt }}
+
+                        {% else %}
+
+                            0.00
+
+                        {% endif %}
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <!-- ============================
+                 DESCRIPTION
+            ============================= -->
+
+            <div class="section">
+
+                <div class="section-title">
+                    Description
+                </div>
+
+
+                <div class="description">
+
+                    {% if transaction.description %}
+
+                        {{ transaction.description }}
+
+                    {% else %}
+
+                        <span class="muted">
+                            No description provided.
+                        </span>
+
+                    {% endif %}
+
+                </div>
+
+            </div>
+
+
+            <!-- ============================
+                 AUDIT INFORMATION
+            ============================= -->
+
+            <div class="section">
+
+                <div class="section-title">
+                    Audit Information
+                </div>
+
+
+                <div class="details-grid">
+
+
+                    <div class="detail-item">
+
+                        <div class="detail-label">
+                            Created At
+                        </div>
+
+                        <div class="detail-value">
+
+                            {% if transaction.created_at %}
+
+                                {{ transaction.created_at }}
+
+                            {% else %}
+
+                                Not available
+
+                            {% endif %}
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="detail-item">
+
+                        <div class="detail-label">
+                            Updated At
+                        </div>
+
+                        <div class="detail-value">
+
+                            {% if transaction.updated_at %}
+
+                                {{ transaction.updated_at }}
+
+                            {% else %}
+
+                                Not available
+
+                            {% endif %}
+
+                        </div>
+
+                    </div>
+
+
+                </div>
+
+            </div>
+
+
+            <!-- ============================
+                 ACTIONS
+            ============================= -->
+
+            <div class="actions">
+
+
+                <a
+                    href="/accounts/transactions/pages/list"
+                    class="btn btn-back"
+                >
+                    Back to Ledger
+                </a>
+
+
+                <a
+                    href="/accounts/transactions/pages/edit?id={{ transaction.id }}"
+                    class="btn btn-edit"
+                >
+                    Edit Transaction
+                </a>
+
+
+                <form
+                    method="post"
+                    action="/accounts/transactions/pages/delete?id={{ transaction.id }}"
+                    class="delete-form"
+                    onsubmit="return confirm(
+                        'Are you sure you want to delete this transaction?'
+                    );"
+                >
+
+                    <button
+                        type="submit"
+                        class="btn btn-delete"
+                    >
+                        Delete Transaction
+                    </button>
+
+                </form>
+
+
+            </div>
+
+
+        </div>
+
+
+    {% else %}
+
+
+        <div class="error-box">
+
+            <h2>
+                Transaction Not Found
+            </h2>
+
+            <p>
+                The requested transaction could not be loaded.
+            </p>
+
+            <a
+                href="/accounts/transactions/pages/list"
+                class="btn btn-back"
+            >
+                Back to Ledger
+            </a>
+
+        </div>
+
+
+    {% endif %}
+
+
+</main>
+
+
+</body>
+</html>

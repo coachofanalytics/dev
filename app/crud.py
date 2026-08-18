@@ -499,3 +499,353 @@ def delete_customer_user(db: Session, customer_user: models.CustomerUser) -> Non
     except Exception:
         db.rollback()
         raise
+
+
+        
+        
+def create_career_vacancy(
+    db: Session,
+    payload: schemas.CareerVacancyCreate,
+):
+    existing = db.exec(
+        select(models.CareerVacancy).where(
+            models.CareerVacancy.slug == payload.slug
+        )
+    ).first()
+
+    if existing:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="A vacancy with this slug already exists.",
+        )
+
+    vacancy = models.CareerVacancy(
+        **payload.model_dump()
+    )
+
+    db.add(vacancy)
+    db.commit()
+    db.refresh(vacancy)
+
+    return vacancy
+
+
+def list_career_vacancies(
+    db: Session,
+    *,
+    vacancy_status: str | None = None,
+    environment_status: str | None = None,
+    active_only: bool = False,
+):
+    statement = select(
+        models.CareerVacancy
+    )
+
+    if vacancy_status:
+        statement = statement.where(
+            models.CareerVacancy.vacancy_status
+            == vacancy_status
+        )
+
+    if environment_status:
+        statement = statement.where(
+            models.CareerVacancy.environment_status
+            == environment_status
+        )
+
+    if active_only:
+        statement = statement.where(
+            models.CareerVacancy.is_active
+            == True
+        )
+
+    statement = statement.order_by(
+        models.CareerVacancy.created_at.desc()
+    )
+
+    return db.exec(
+        statement
+    ).all()
+
+
+def get_career_vacancy_or_404(
+    db: Session,
+    vacancy_id: int,
+):
+    vacancy = db.get(
+        models.CareerVacancy,
+        vacancy_id,
+    )
+
+    if vacancy is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Vacancy not found.",
+        )
+
+    return vacancy
+
+
+def get_career_vacancy_by_slug(
+    db: Session,
+    slug: str,
+):
+    vacancy = db.exec(
+        select(models.CareerVacancy).where(
+            models.CareerVacancy.slug == slug
+        )
+    ).first()
+
+    if vacancy is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Vacancy not found.",
+        )
+
+    return vacancy
+
+
+def create_career_application(
+    db: Session,
+    vacancy_id: int,
+    payload: schemas.CareerApplicationCreate,
+    resume_path: str,
+):
+    vacancy = get_career_vacancy_or_404(
+        db,
+        vacancy_id,
+    )
+
+    application = models.CareerApplication(
+        vacancy_id=vacancy.id,
+        full_name=payload.full_name,
+        email=str(payload.email),
+        phone=payload.phone,
+        location=payload.location,
+        cover_letter=payload.cover_letter,
+        privacy_confirmed=payload.privacy_confirmed,
+        resume_file=resume_path,
+    )
+
+    db.add(application)
+    db.commit()
+    db.refresh(application)
+
+    return application
+# ==========================================================
+# TRANSACTION CRUD
+# ==========================================================
+
+
+def get_transaction(
+    db: Session,
+    transaction_id: int,
+):
+    return db.get(
+        models.Transaction,
+        transaction_id,
+    )
+
+
+def get_transaction_or_404(
+    db: Session,
+    transaction_id: int,
+):
+    transaction = get_transaction(
+        db,
+        transaction_id,
+    )
+
+    if transaction is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Transaction not found.",
+        )
+
+    return transaction
+
+
+def validate_transaction_relations(
+    db: Session,
+    sender_id: int | None,
+    department_id: int | None,
+):
+    if sender_id is not None:
+        sender = db.get(
+            models.CustomerUser,
+            sender_id,
+        )
+
+        if sender is None:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Selected sender does not exist.",
+            )
+
+    if department_id is not None:
+        department = db.get(
+            models.Departments,
+            department_id,
+        )
+
+        if department is None:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Selected department does not exist.",
+            )
+
+
+def create_transaction(
+    db: Session,
+    payload: schemas.TransactionCreate,
+):
+    validate_transaction_relations(
+        db,
+        payload.sender_id,
+        payload.department_id,
+    )
+
+    transaction = models.Transaction(
+        **payload.model_dump()
+    )
+
+    db.add(transaction)
+
+    try:
+        db.commit()
+        db.refresh(transaction)
+
+    except Exception:
+        db.rollback()
+        raise
+
+    return transaction
+
+def list_transactions(
+    db: Session,
+    sender_id: int | None = None,
+    department_id: int | None = None,
+    receiver: str | None = None,
+    payment_method: str | None = None,
+    category: str | None = None,
+    skip: int = 0,
+    limit: int = 100,
+):
+    statement = select(models.Transaction)
+
+    if sender_id is not None:
+        statement = statement.where(
+            models.Transaction.sender_id == sender_id
+        )
+
+    if department_id is not None:
+        statement = statement.where(
+            models.Transaction.department_id == department_id
+        )
+
+    if receiver:
+        statement = statement.where(
+            models.Transaction.receiver.ilike(
+                f"%{receiver}%"
+            )
+        )
+
+    if payment_method:
+        statement = statement.where(
+            models.Transaction.payment_method == payment_method
+        )
+
+    if category:
+        statement = statement.where(
+            models.Transaction.category == category
+        )
+
+    statement = (
+        statement
+        .order_by(
+            models.Transaction.activity_date.desc()
+        )
+        .offset(skip)
+        .limit(limit)
+    )
+
+    return list(
+        db.exec(statement).all()
+    )
+
+def update_transaction(
+    db: Session,
+    transaction_id: int,
+    payload: schemas.TransactionUpdate,
+):
+    transaction = get_transaction_or_404(
+        db,
+        transaction_id,
+    )
+
+    update_data = payload.model_dump(
+        exclude_unset=True
+    )
+
+    sender_id = update_data.get(
+        "sender_id",
+        transaction.sender_id,
+    )
+
+    department_id = update_data.get(
+        "department_id",
+        transaction.department_id,
+    )
+
+    validate_transaction_relations(
+        db,
+        sender_id,
+        department_id,
+    )
+
+    for field_name, value in update_data.items():
+        setattr(
+            transaction,
+            field_name,
+            value,
+        )
+
+    transaction.updated_at = datetime.now(
+        timezone.utc
+    )
+
+    db.add(transaction)
+
+    try:
+        db.commit()
+        db.refresh(transaction)
+
+    except Exception:
+        db.rollback()
+        raise
+
+    return transaction
+
+
+def delete_transaction(
+    db: Session,
+    transaction_id: int,
+):
+    transaction = get_transaction(
+        db,
+        transaction_id,
+    )
+
+    if transaction is None:
+        return None
+
+    db.delete(transaction)
+
+    try:
+        db.commit()
+
+    except Exception:
+        db.rollback()
+        raise
+
+    return transaction

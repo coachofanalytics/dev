@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>CODA Careers</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        :root {
+            --coda-blue: #243f73;
+            --coda-gold: #efac3b;
+            --page-bg: #f7f8fb;
+            --card-bg: #ffffff;
+            --border: #dce3ec;
+            --text: #17356b;
+            --muted: #64748b;
+        }
+
+        body {
+            margin: 0;
+            background: var(--page-bg);
+            color: var(--text);
+            font-family: Arial, sans-serif;
+        }
+
+        .hero {
+            padding: 65px 8%;
+            background: var(--coda-blue);
+            color: white;
+        }
+
+        .hero h1 {
+            margin: 0 0 15px;
+            font-size: 42px;
+        }
+
+        .hero p {
+            max-width: 750px;
+            margin: 0;
+            font-size: 18px;
+            line-height: 1.6;
+        }
+
+        .hero-button {
+            display: inline-block;
+            margin-top: 24px;
+            padding: 14px 22px;
+            border-radius: 8px;
+            background: var(--coda-gold);
+            color: white;
+            font-weight: 800;
+            text-decoration: none;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 40px 24px 60px;
+        }
+
+        .section-title {
+            margin-bottom: 25px;
+        }
+
+        .section-title h2 {
+            margin: 0 0 8px;
+            font-size: 30px;
+        }
+
+        .section-title p {
+            margin: 0;
+            color: var(--muted);
+        }
+
+        .vacancy-card {
+            margin-bottom: 22px;
+            padding: 25px;
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            box-shadow: 0 2px 5px rgba(15, 23, 42, 0.04);
+        }
+
+        .status-badge {
+            display: inline-block;
+            margin-bottom: 12px;
+            padding: 6px 10px;
+            border-radius: 20px;
+            background: #fff3cd;
+            color: #8a5a00;
+            font-size: 12px;
+            font-weight: 800;
+        }
+
+        .vacancy-card h3 {
+            margin: 0 0 8px;
+            font-size: 24px;
+        }
+
+        .meta {
+            margin-bottom: 14px;
+            color: var(--muted);
+        }
+
+        .summary {
+            margin-bottom: 18px;
+            color: #334155;
+            line-height: 1.6;
+        }
+
+        .details-button {
+            display: inline-block;
+            padding: 11px 18px;
+            border-radius: 7px;
+            background: var(--coda-blue);
+            color: white;
+            font-weight: 700;
+            text-decoration: none;
+        }
+
+        .empty-state {
+            padding: 40px;
+            background: white;
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            text-align: center;
+            color: var(--muted);
+        }
+
+        @media (max-width: 700px) {
+            .hero {
+                padding: 45px 20px;
+            }
+
+            .hero h1 {
+                font-size: 32px;
+            }
+
+            .hero-button {
+                width: 100%;
+                text-align: center;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <section class="hero">
+
+        <h1>
+            Build Your Career with CODA
+        </h1>
+
+        <p>
+            Explore approved career opportunities,
+            review role details, and understand the
+            application process before submitting
+            your information.
+        </p>
+
+        <a
+            class="hero-button"
+            href="#open-positions"
+        >
+            View Open Positions
+        </a>
+
+    </section>
+
+    <main
+        class="container"
+        id="open-positions"
+    >
+
+        <div class="section-title">
+
+            <h2>
+                Open Positions
+            </h2>
+
+            <p>
+                Review current, approved, or training
+                vacancies and their status.
+            </p>
+
+        </div>
+
+        {% if vacancies %}
+
+            {% for vacancy in vacancies %}
+
+                <article class="vacancy-card">
+
+                    <span class="status-badge">
+                        {{ vacancy.environment_status | upper }}
+                        /
+                        {{ vacancy.vacancy_status | upper }}
+                    </span>
+
+                    <h3>
+                        {{ vacancy.title }}
+                    </h3>
+
+                    <div class="meta">
+                        {{ vacancy.location }}
+                        ·
+                        {{ vacancy.employment_type }}
+                    </div>
+
+                    <div class="summary">
+                        {{ vacancy.summary }}
+                    </div>
+
+                    <a
+                        class="details-button"
+                        href="/careers/{{ vacancy.slug }}"
+                    >
+                        View Position
+                    </a>
+
+                </article>
+
+            {% endfor %}
+
+        {% else %}
+
+            <div class="empty-state">
+
+                <h3>
+                    No career vacancies available
+                </h3>
+
+                <p>
+                    There are currently no active
+                    vacancies to display.
+                </p>
+
+            </div>
+
+        {% endif %}
+
+    </main>
+
+</body>
+</html>
