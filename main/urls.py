@@ -4,7 +4,7 @@ from . import views
 app_name = "main"
 
 urlpatterns = [
-<<<<<<< HEAD
+# <<<<<<< HEAD
     path("service-categories/", views.all_service_categories, name="all_service_categories"),
     path("service-categories/create/", views.servicecategory_create, name="servicecategory_create"),
 
@@ -14,7 +14,8 @@ urlpatterns = [
 
     path("services/<int:service_id>/categories/", views.service_category_list, name="servicecategory_by_service"),
 ]
-=======
+# ======
+[
     path('', views.layout, name='layout'),
    
     #=======================SERVICES=====================================
@@ -84,4 +85,4 @@ path('companylist/', views.company_list, name='company_list'),
 
 
 ]
->>>>>>> e79fe45578418c384fbb84ca7760d91bef020a33
+# >>>>>>> e79fe45578418c384fbb84ca7760d91bef020a33

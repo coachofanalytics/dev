@@ -1,4 +1,4 @@
-<<<<<<< HEAD
+# <<<<<<< HEAD
 from django.shortcuts import render
 
 
@@ -16,7 +16,7 @@ from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 
-from .forms import ServiceCategoryForm
+# from .forms import ServiceCategoryForm
 
 
 from django.urls import reverse_lazy
@@ -26,22 +26,22 @@ from .models import ServiceCategory
 
 
 from django.db.models import Sum
-from .models import Service,Assets,Readme
-=======
+from .models import Assets,Readme
+# =======
 from django.http import JsonResponse
 from django.shortcuts import redirect, render
 from .models import Assets,Readme,Location,ClientAvailability,Search
 
 
->>>>>>> e79fe45578418c384fbb84ca7760d91bef020a33
+# >>>>>>> e79fe45578418c384fbb84ca7760d91bef020a33
 from .utils import *
-from .forms import LocationForm,SearchForm
+from .forms import LocationForm
 from django.shortcuts import render, get_object_or_404, redirect
 # from main.models import Testimonials
 # Testimonials.objects.all()
 # Testimonials.objects.count()
 from django.shortcuts import render, redirect
-from main.forms import PlanForm,ClientAvailabilityForm
+from main.forms import PlanForm
 from datetime import datetime
 
 from coda_project import settings
@@ -56,7 +56,7 @@ def layout(request):
 
 from .forms import *
 from django.apps import apps
-<<<<<<< HEAD
+# <<<<<<< HEAD
 from langchain_community.llms import OpenAI
 from langchain_community.chat_models import ChatOpenAI
 from langchain.schema import HumanMessage
@@ -71,8 +71,8 @@ from django.views.generic import CreateView
 from .models import ServiceCategory
 from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
-from .forms import ServiceCategoryForm
-=======
+# from .forms import ServiceCategoryForm
+# =======
 from django.contrib.auth import get_user_model
 from django.shortcuts import render
 # from .models import Testimonials
@@ -81,7 +81,7 @@ from django.shortcuts import render, redirect
 from django.urls import reverse_lazy
 from django.views.generic import UpdateView
 # from .models import Testimonials
->>>>>>> e79fe45578418c384fbb84ca7760d91bef020a33
+# >>>>>>> e79fe45578418c384fbb84ca7760d91bef020a33
 
 
 from accounts.choices import CategoryChoices
@@ -137,7 +137,7 @@ def data_policy(request):
 # def layout(request):
 #     # testimonials, selected_class = get_testimonials()
 
-<<<<<<< HEAD
+# <<<<<<< HEAD
     services = Service.objects.filter(is_active=True).order_by('serial')
     context = {
         "services": services,
@@ -146,7 +146,7 @@ def data_policy(request):
         "selected_class": None,
     }
     return render(request, "main/home_templates/layout.html", context)
-=======
+# =======
 #     services = Service.objects.filter(is_active=True).order_by('serial')
 #     context = {
 #         "services": services,
@@ -155,7 +155,7 @@ def data_policy(request):
 #         "selected_class": None,
 #     }
 #     return render(request, "main/home_templates/newlayout.html", context)
->>>>>>> e79fe45578418c384fbb84ca7760d91bef020a33
+# >>>>>>> e79fe45578418c384fbb84ca7760d91bef020a33
 
 # def fetch_model_table_names(request):
 #     app_name = request.GET.get('category', None)  # Replace with the actual app name
@@ -165,8 +165,8 @@ def data_policy(request):
 #     table_names = [{'value': model.__name__, 'display_text': model._meta.verbose_name.replace('_', ' ').capitalize()} for model in app_models]
 #     return JsonResponse({'model_table_names': table_names})
 
-<<<<<<< HEAD
-=======
+# <<<<<<< HEAD
+# =======
 
 # # =====================SERVICES  VIEWS=======================================
 # class ServiceCreateView(LoginRequiredMixin, CreateView):
@@ -280,7 +280,7 @@ def data_policy(request):
     # return render(request, "main/services/service_plan.html", context)
 
 
->>>>>>> e79fe45578418c384fbb84ca7760d91bef020a33
+# >>>>>>> e79fe45578418c384fbb84ca7760d91bef020a33
 # =====================README VIEWS=======================================
 # class UseCaseCreateView(LoginRequiredMixin, CreateView):
 #     model = Readme
@@ -624,7 +624,7 @@ def company_list(request):
     return render(request, "main/company_list.html", {"companies": companies})
 
     
-<<<<<<< HEAD
+# <<<<<<< HEAD
 #========================Internal Team & Clients==============================
 
 def it(request):
@@ -763,8 +763,8 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 
-from .models import Service, ServiceCategory
-from .forms import ServiceCategoryForm
+# from .models import  ServiceCategory
+# from .forms import ServiceCategoryForm
 
 
 # ✅ 1) LIST ALL CATEGORIES
@@ -798,8 +798,7 @@ def servicecategory_create(request):
             messages.success(request, "Service Category created successfully ✅")
             return redirect("main:servicecategory_create")  # ✅ back to create page
     else:
-        form = ServiceCategoryForm()
-
+        form = ServiceCategoryForm() 
     return render(request, "main/servicecategory_createviews.html", {"form": form})
 
 
@@ -838,5 +837,5 @@ def servicecategory_delete(request, pk):
         return redirect("main:servicecategory_list")
 
     return render(request, "main/servicecategory_delete.html", {"category": category})
-=======
->>>>>>> e79fe45578418c384fbb84ca7760d91bef020a33
+# =======
+# >>>>>>> e79fe45578418c384fbb84ca7760d91bef020a33

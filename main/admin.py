@@ -1,36 +1,28 @@
 from django.contrib import admin
-from .models import Assets, Readme, Location,Pricing,Plan,ClientAvailability,Search,Company
 
-<<<<<<< HEAD
 from .models import (
-    Company,
-    Service,
-    ServiceCategory,
-    Assets,
+    # Assets,
     Readme,
-    Volunteer,
     Location,
+    Pricing,
+    Plan,
+    ClientAvailability,
+    Search,
+    Company,
+    # ServiceAdmin,
+    Testimonials,
+    ServiceCategory,
+    Volunteer,
     MembershipRegistration,
+    Event,
 )
-
-
-# ========================= LOCATION =========================
-@admin.register(Location)
-class LocationAdmin(admin.ModelAdmin):
-    list_display = ("id", "city", "state", "country", "zipcode")
-    search_fields = ("city", "state", "country")
-    list_filter = ("country",)
-    ordering = ("city",)
 
 
 # ========================= SERVICE CATEGORY =========================
 @admin.register(ServiceCategory)
 class ServiceCategoryAdmin(admin.ModelAdmin):
-    list_display = ("id", "name", "slug", "service", "is_active", "is_featured")
-    list_filter = ("is_active", "is_featured")
-    search_fields = ("name", "slug", "description")
-    prepopulated_fields = {"slug": ("name",)}
-    ordering = ("-id",)
+    list_display = ("id", "name")
+    search_fields = ("name",)
 
 
 # ========================= COMPANY =========================
@@ -38,75 +30,98 @@ class ServiceCategoryAdmin(admin.ModelAdmin):
 class CompanyAdmin(admin.ModelAdmin):
     list_display = ("id", "name")
     search_fields = ("name",)
-    ordering = ("name",)
 
 
-# ========================= SERVICE =========================
-@admin.register(Service)
-class ServiceAdmin(admin.ModelAdmin):
-    list_display = ("id", "title", "company", "is_active", "is_featured")
-    list_filter = ("is_active", "company", "is_featured")
-    search_fields = ("title", "description")
-    prepopulated_fields = {"slug": ("title",)}
-    ordering = ("title",)
+# # ========================= SERVICE ADMIN MODEL =========================
+# @admin.register(ServiceAdmin)
+# class ServiceAdminAdmin(admin.ModelAdmin):
+#     list_display = ("id",)
+#     search_fields = ()
 
+from django.contrib import admin
+from .models import Assets
 
-# ========================= ASSETS =========================
-@admin.register(Assets)
-class AssetsAdmin(admin.ModelAdmin):
-    list_display = ("id", "name", "category", "is_active")
-    search_fields = ("name", "category")
-    list_filter = ("category", "is_active")
+# @admin.register(Assets)
+# class AssetsAdmin(admin.ModelAdmin):
+#     list_display = ("name", "category", "created_at", "updated_at")
+#     search_fields = ("name", "category", "description")
+#     list_filter = ("category", "created_at")# ========================= ASSETS =========================
+# @admin.register(Assets)
+# class AssetsAdmin(admin.ModelAdmin):
+#     list_display = ("id", "name")
+#     search_fields = ("name",)
 
 
 # ========================= README =========================
 @admin.register(Readme)
 class ReadmeAdmin(admin.ModelAdmin):
-    list_display = ("id", "title", "is_active", "created_at")
-    search_fields = ("title", "description")
-    prepopulated_fields = {"slug": ("title",)}
+    list_display = ("id", "title")
+    search_fields = ("title",)
+
+
+# ========================= LOCATION =========================
+@admin.register(Location)
+class LocationAdmin(admin.ModelAdmin):
+    list_display = ("id",)
+    search_fields = ()
+
+
+# ========================= PRICING =========================
+@admin.register(Pricing)
+class PricingAdmin(admin.ModelAdmin):
+    list_display = ("id",)
+
+
+# ========================= PLAN =========================
+@admin.register(Plan)
+class PlanAdmin(admin.ModelAdmin):
+    list_display = ("id",)
+
+
+# ========================= CLIENT AVAILABILITY =========================
+@admin.register(ClientAvailability)
+class ClientAvailabilityAdmin(admin.ModelAdmin):
+    list_display = ("id",)
+
+
+# ========================= SEARCH =========================
+@admin.register(Search)
+class SearchAdmin(admin.ModelAdmin):
+    list_display = ("id",)
+
+
+# ========================= TESTIMONIALS =========================
+@admin.register(Testimonials)
+class TestimonialsAdmin(admin.ModelAdmin):
+    list_display = ("id",)
 
 
 # ========================= VOLUNTEER =========================
 @admin.register(Volunteer)
 class VolunteerAdmin(admin.ModelAdmin):
-    list_display = ("id", "name", "email", "created_at")
+    list_display = ("id", "name", "email")
     search_fields = ("name", "email")
 
 
-# ========================= MEMBERSHIP =========================
+# ========================= MEMBERSHIP REGISTRATION =========================
 @admin.register(MembershipRegistration)
 class MembershipRegistrationAdmin(admin.ModelAdmin):
-    list_display = ("id", "first_name", "last_name", "email", "is_active")
+    list_display = ("id", "first_name", "last_name", "email")
     search_fields = ("first_name", "last_name", "email")
-    list_filter = ("is_active",)
-=======
-
-# Simple registrations (no custom admin needed)
-# admin.site.register(Service)
-admin.site.register(Assets)
-admin.site.register(Readme)
-admin.site.register(Pricing)
-# admin.site.register(Testimonials)
-admin.site.register(Plan)
-admin.site.register(ClientAvailability)
-# admin.site.register(Search)
-admin.site.register(Company)
 
 
-# Custom admin for Location
-@admin.register(Location)
-class LocationAdmin(admin.ModelAdmin):
-    list_display = ("zipcode", "city", "state", "country")
-    search_fields = ("city", "state", "country")
-    list_filter = ("country",)
-    ordering = ("country", "city")
+# # ========================= CATEGORY =========================
+# @admin.register(category)
+class CategoryAdmin(admin.ModelAdmin):
+    list_display = ("id",)
 
- 
 
-@admin.register(Search)
-class SearchAdmin(admin.ModelAdmin):
-    list_display = ("topic", "uploaded", "created_at")
-    search_fields = ("topic", "question")
-    list_filter = ("uploaded",)
->>>>>>> e79fe45578418c384fbb84ca7760d91bef020a33
+from django.contrib import admin
+from .models import Event
+
+@admin.register(Event)
+class EventAdmin(admin.ModelAdmin):
+    # These settings make the admin panel look much cleaner
+    list_display = ('title', 'event_date', 'location', 'created_at')
+    list_filter = ('event_date',)
+    search_fields = ('title', 'description', 'location')

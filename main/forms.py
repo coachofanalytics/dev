@@ -5,15 +5,15 @@ from django import forms
 from main.models import Plan
 # from .models import Expenses
 from .models import *
-<<<<<<< HEAD
+# <<<<<<< HEAD
 # from django.db import transaction
 from multiupload.fields import MultiFileField
 from django import forms
 from .models import ServiceCategory
-=======
+# =======
 # from django.db import transactionfrom django import forms
 from main.models import Location
->>>>>>> e79fe45578418c384fbb84ca7760d91bef020a33
+# >>>>>>> e79fe45578418c384fbb84ca7760d91bef020a33
 
 class ClientNameForm(forms.Form):
     client = forms.ModelChoiceField(
@@ -21,28 +21,28 @@ class ClientNameForm(forms.Form):
         label='Select a client'
 
     )
-<<<<<<< HEAD
+# <<<<<<< HEAD
 from django import forms
 from .models import Location
-=======
->>>>>>> e79fe45578418c384fbb84ca7760d91bef020a33
+# =======
+# >>>>>>> e79fe45578418c384fbb84ca7760d91bef020a33
 
 class LocationForm(forms.ModelForm):
     class Meta:
         model = Location
-<<<<<<< HEAD
+# <<<<<<< HEAD
         fields = ['zipcode', 'city', 'state', 'country']
 
 
 
-class ServiceCategoryForm(forms.ModelForm):
-    class Meta:
-        model = ServiceCategory
-        fields = ["service", "name", "slug", "description", "is_active", "is_featured"]
-=======
-        fields = ["country", "state", "city", "zipcode"]
+# # class ServiceCategoryForm(forms.ModelForm):
+#     class Meta:
+#         model = ServiceCategory
+#         fields = ['name', 'description', 'is_active', 'is_featured']
+# # =======
+#         fields = ["country", "state", "city", "zipcode"]
 
-        from django import forms
+#         from django import forms
 from .models import Testimonials
 
 class TestimonialForm(forms.ModelForm):
@@ -60,4 +60,4 @@ class PlanForm(forms.ModelForm):
     class Meta:
         model = Plan
         fields = "__all__"
->>>>>>> e79fe45578418c384fbb84ca7760d91bef020a33
+# >>>>>>> e79fe45578418c384fbb84ca7760d91bef020a33
