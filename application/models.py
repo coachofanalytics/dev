@@ -1,127 +1,215 @@
-# from coda_project.application.views import first_interview
-from datetime import datetime
+from django.conf import settings
 from django.db import models
-from django.utils import timezone
+
 from main.models import Assets
-from django.db.models import Q
-from django.contrib.auth import get_user_model
-from django.contrib.auth.models import User
-# from finance.utils import get_exchange_rate
-User = get_user_model()
-# from coda_project.storage import GoogleDriveStorage
 
-# Create your models here.
+
 class UserProfile(models.Model):
-
     user = models.OneToOneField(
-        "accounts.CustomerUser", related_name="profile", on_delete=models.CASCADE
+        settings.AUTH_USER_MODEL,
+        related_name="profile",
+        on_delete=models.CASCADE,
     )
-    position = models.CharField(max_length=255,blank=True,null=True)
-    description = models.TextField(blank=True,null=True)
-    company = models.CharField(max_length=254, null=True, blank=True)
-    linkedin = models.CharField(max_length=500, null=True, blank=True)
-    section = models.CharField(max_length=2, default="A", blank=True)
+
+    position = models.CharField(
+        max_length=255,
+        blank=True,
+        null=True,
+    )
+    description = models.TextField(
+        blank=True,
+        null=True,
+    )
+    company = models.CharField(
+        max_length=254,
+        blank=True,
+        null=True,
+    )
+    linkedin = models.CharField(
+        max_length=500,
+        blank=True,
+        null=True,
+    )
+    section = models.CharField(
+        max_length=2,
+        default="A",
+        blank=True,
+        null=True,
+    )
 
     image = models.ImageField(
-        default="default.jpg", upload_to="Application_Profile_pics", blank=True
+        default="default.jpg",
+        upload_to="Application_Profile_pics/",
+        blank=True,
     )
+
     image2 = models.ForeignKey(
-        Assets, related_name="profile_image", on_delete=models.CASCADE,default=1
+        Assets,
+        related_name="application_profiles",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
     )
 
-    upload_a = models.FileField(upload_to="Application_Profile/uploads", null=True, blank=True)
-    upload_b = models.FileField(upload_to="Application_Profile/uploads", null=True, blank=True)
-    upload_c = models.FileField(upload_to="Application_Profile/uploads", null=True, blank=True)
+    upload_a = models.FileField(
+        upload_to="Application_Profile/uploads/",
+        null=True,
+        blank=True,
+    )
+    upload_b = models.FileField(
+        upload_to="Application_Profile/uploads/",
+        null=True,
+        blank=True,
+    )
+    upload_c = models.FileField(
+        upload_to="Application_Profile/uploads/",
+        null=True,
+        blank=True,
+    )
 
-    is_active = models.BooleanField("Is featured", default=True)
-    laptop_status= models.BooleanField("Is lap_status", default=True)
+    is_active = models.BooleanField(
+        "Is active",
+        default=True,
+    )
+    laptop_status = models.BooleanField(
+        "Is laptop status",
+        default=True,
+    )
 
-    national_id_no = models.CharField(max_length=254, null=True, blank=True)
-    id_file = models.ImageField(upload_to='id_files/', null=True, blank=True)
+    national_id_no = models.CharField(
+        max_length=254,
+        blank=True,
+        null=True,
+    )
+    id_file = models.ImageField(
+        upload_to="id_files/",
+        null=True,
+        blank=True,
+    )
 
-    emergency_name = models.CharField(max_length=254, null=True, blank=True)
-    emergency_address = models.CharField(max_length=254, null=True, blank=True)
-    emergency_citizenship = models.CharField(max_length=254, null=True, blank=True)
-    emergency_national_id_no = models.CharField(max_length=254, null=True, blank=True)
-    emergency_phone = models.CharField(max_length=254, null=True, blank=True)
-    emergency_email = models.CharField(max_length=254, null=True, blank=True)
+    emergency_name = models.CharField(
+        max_length=254,
+        blank=True,
+        null=True,
+    )
+    emergency_address = models.CharField(
+        max_length=254,
+        blank=True,
+        null=True,
+    )
+    emergency_citizenship = models.CharField(
+        max_length=254,
+        blank=True,
+        null=True,
+    )
+    emergency_national_id_no = models.CharField(
+        max_length=254,
+        blank=True,
+        null=True,
+    )
+    emergency_phone = models.CharField(
+        max_length=254,
+        blank=True,
+        null=True,
+    )
+    emergency_email = models.EmailField(
+        blank=True,
+        null=True,
+    )
 
+    class Meta:
+        verbose_name = "User Profile"
+        verbose_name_plural = "User Profiles"
 
     def __str__(self):
-        return f"{self.user.username} Applicant Profile"
+        username = getattr(self.user, "username", str(self.user))
+        return f"{username} Applicant Profile"
 
     @property
     def img_url(self):
-        if self.image2:
+        if self.image2 and self.image2.image_url:
             return self.image2.image_url
-        else:
-            return "default_image_url.jpg"
+
+        if self.image:
+            try:
+                return self.image.url
+            except ValueError:
+                pass
+
+        return ""
 
     @property
     def img_category(self):
-        img_cat=self.image2.category
-        return img_cat
+        if self.image2 and self.image2.category:
+            return self.image2.category
 
+        return ""
 
-
-
-from django.db import models
 
 class Reporting(models.Model):
     internal = models.AutoField(primary_key=True)
+
     first_interview = models.CharField(max_length=255)
     second_interview = models.CharField(max_length=255)
     third_interview = models.CharField(max_length=255)
+
     first_name = models.CharField(max_length=100)
     last_name = models.CharField(max_length=100)
     gender = models.CharField(max_length=10)
     interview_type = models.CharField(max_length=100)
 
-    def __str__(self):
-        return f"{self.first_name} {self.last_name} - {self.interview_type}"
+    class Meta:
+        verbose_name = "Reporting Record"
+        verbose_name_plural = "Reporting Records"
 
+    def __str__(self):
+        return (
+            f"{self.first_name} "
+            f"{self.last_name} - "
+            f"{self.interview_type}"
+        )
 
 
 class JobDetails(models.Model):
-    job_description = models.TextField(null=False)
-    skills_expertise = models.TextField(null=False)
-    number_of_connects =models.IntegerField(null=False)
-    min_payment =models.DecimalField(max_digits=10,decimal_places=2, null=False)
-    max_payment = models.DecimalField(max_digits=10,decimal_places=2,null=False)
-    min_duration = models.IntegerField(null=False)
-    max_duration = models.IntegerField(null=False)
-    project_type = models.TextField(null=False)
-from django.db import models
-from django.conf import settings
+    job_description = models.TextField()
+    skills_expertise = models.TextField()
+    number_of_connects = models.PositiveIntegerField()
 
-class UserProfile(models.Model):
-    user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, null=False)
+    min_payment = models.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+    )
+    max_payment = models.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+    )
 
-    company = models.CharField(max_length=225, null=True, blank=True)
-    description = models.TextField(null=True, blank=True)
-    email = models.CharField(max_length=254, null=True, blank=True)
-    linkedin = models.CharField(max_length=500, null=True, blank=True)
-    section = models.CharField(max_length=2, null=True, blank=True)
+    min_duration = models.PositiveIntegerField()
+    max_duration = models.PositiveIntegerField()
 
-    image = models.ImageField(upload_to='profile_images/', null=True, blank=True)
-    upload_a = models.FileField(upload_to='profile_files/', null=True, blank=True)
-    upload_b = models.FileField(upload_to='profile_files/', null=True, blank=True)
-    upload_c = models.FileField(upload_to='profile_files/', null=True, blank=True)
+    project_type = models.TextField()
 
-    is_active = models.BooleanField(default=True)
-    laptop_status = models.BooleanField(default=False)
-
-    national_id_no = models.CharField(max_length=100, null=True, blank=True)
-    id_file = models.ImageField(upload_to='id_files/', null=True, blank=True)
-
-    # Emergency contact details
-    emergency_name = models.CharField(max_length=150, null=True, blank=True)
-    emergency_address = models.CharField(max_length=254, null=True, blank=True)
-    emergency_citizenship = models.CharField(max_length=254, null=True, blank=True)
-    emergency_national_id_no = models.CharField(max_length=254, null=True, blank=True)
-    emergency_phone = models.CharField(max_length=254, null=True, blank=True)
-    emergency_email = models.CharField(max_length=254, null=True, blank=True)
+    class Meta:
+        verbose_name = "Job Detail"
+        verbose_name_plural = "Job Details"
 
     def __str__(self):
-        return f"{self.user}"
+        return (
+            f"{self.project_type} "
+            f"({self.min_payment} - {self.max_payment})"
+        )
 
+
+class MyModel(models.Model):
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="application_mymodels",
+    )
+
+    class Meta:
+        verbose_name = "Application User Model"
+        verbose_name_plural = "Application User Models"
+
+    def __str__(self):
+        return str(self.user)
