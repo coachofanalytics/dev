@@ -35,7 +35,7 @@ deactivate () {
 # unset irrelevant variables
 deactivate nondestructive
 
-VIRTUAL_ENV="C:\Users\CODA\Desktop\DC\CODA\CODA_TRAINING\DEVELOPMENT\dev\coda_venv"
+VIRTUAL_ENV="C:\Users\CODA\Desktop\PROJECT\dev\coda_venv"
 export VIRTUAL_ENV
 
 _OLD_VIRTUAL_PATH="$PATH"

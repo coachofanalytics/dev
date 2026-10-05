@@ -1,6 +1,6 @@
 from django import forms
 from django.forms import  Textarea
-from .models import CustomerUser
+# from .models import CustomerUser
 from django.utils.translation import gettext_lazy as _
 from django.core.validators import  RegexValidator,validate_email
 from django.core.exceptions import ValidationError
@@ -143,3 +143,12 @@ class LoginForm(forms.Form):
             self.add_error('enter_your_username_or_email', "This field is required.")
         if not password:
             self.add_error('password', "This field is required.")    
+
+
+from django.contrib.auth.forms import UserCreationForm  # <--- THIS IS THE MISSING LINE
+from .models import CustomerUser
+
+class CustomerCreationForm(UserCreationForm):
+    class Meta:
+        model = CustomerUser
+        fields = ("email", "first_name", "last_name", "gender", "category", "phone", "address", "city", "state", "country", "resume_file")

@@ -1,144 +1,26 @@
 from django.contrib import admin
-from django.contrib.auth.afrom django.contrib.auth.admin import UserAdmin
-from django.contrib.auth.forms import UserChangeForm, UserCreationForm
-from django.contrib import admin
+# from django.contrib.auth.admin import UserAdmin
+from .models import  UserGroups, PaymentHistory, Tracker, LoginHistory
 
-from .models import CustomerUser, PaymentHistory, LoginHistory
-mport Tracker
+# Registering CustomerUser with Django's built-in UserAdmin for a clean UI
+# @admin.register(CustomerUser)
+# class CustomUserAdmin(UserAdmin):
+#     # Add your custom fields to the admin display and edit panels
+#     fieldsets = UserAdmin.fieldsets + (
+#         ("Additional Info", {
+#             "fields": (
+#                 "gender", "phone", "address", "city", "state", 
+#                 "zipcode", "country", "category", "sub_category",
+#                 "is_admin", "is_client", "is_applicant", 
+#                 "is_employee_contract_signed", "resume_file"
+#             )
+#         }),
+#     )
+#     list_display = ("username", "email", "first_name", "last_name", "is_staff", "is_client", "is_applicant")
+#     list_filter = ("is_staff", "is_client", "is_applicant", "category", "is_active")
 
-# admin.site.register(CustomerUser)
-class CustomerAdmin(UserAdmin):
-    add_form = UserCreationForm
-    form = UserChangeForm
-    list_display = ("email", "first_name", "last_name")
-
-    fieldsets = UserAdmin.fieldsets + (
-        (
-            None,
-            {
-                "fields": (
-                    "gender",
-                    "phone",
-                    "address",
-                    "city",
-                    "state",
-                    "country",
-                    "is_admin",
-                    # "is_staff",
-                    "is_client",
-                    "is_applicant",
-                    "is_employee_contract_signed",
-                    "resume_file",
-                )
-            },
-        ),
-    )
-
-    add_fieldsets = UserAdmin.add_fieldsets + (
-        (
-            None,
-            {
-                "fields": (
-                    "email",
-                    "first_name",
-                    "last_name",
-                    "password1",
-                    "password2",
-                    "gender",
-                    "category",
-                    "phone",
-                    "address",
-                    "city",
-                    "state",
-                    "country",
-                    "is_admin",
-                    "resume_file",
-                )
-            },
-        ),
-    )
-    search_fields = ("email",)
-    filter_horizontal = ()
-
-
-class LoginHistoryAdmin(admin.ModelAdmin):
-    list_display = ('user', 'login_time', 'logout_time')
-    list_filter = ('user', 'login_time', 'logout_time')
-    search_fields = ('user__username',)
-
-
-
-# Now register the new UserAdmin...
-admin.site.register(CustomerUser, CustomerAdmin)
-# admin.site.register(CustomerUser)
-
-# Register your models here.
-<<<<<<< HEAD
-
-
-
-# app/admin.py
-
-
-
-@admin.register(PaymentHistory)
-class PaymentHistoryAdmin(admin.ModelAdmin):
-    list_display = (
-        "reference_code",
-        "user",
-        "amount",
-        "currency",
-        "provider",
-        "status",
-        "created_at",
-    )
-
-    list_filter = (
-        "provider",
-        "status",
-        "currency",
-        "created_at",
-    )
-
-    search_fields = (
-        "reference_code",
-        "provider_payment_id",
-        "provider_customer_id",
-        "user__username",
-        "user__email",
-    )
-
-    readonly_fields = (
-        "created_at",
-        "updated_at",
-        "completed_at",
-    )
-
-    ordering = ("-created_at",)
-
-    fieldsets = (
-        ("User & Reference", {
-            "fields": ("user", "purpose", "reference_code")
-        }),
-        ("Payment Details", {
-            "fields": ("amount", "currency", "provider", "payment_method")
-        }),
-        ("Gateway Info", {
-            "fields": ("provider_payment_id", "provider_customer_id", "provider_payload")
-        }),
-        ("Status & Dates", {
-            "fields": ("status", "initiated_at", "completed_at")
-        }),
-        ("Financial Breakdown", {
-            "fields": ("transaction_fee", "net_amount")
-        }),
-        ("Additional", {
-            "fields": ("receipt_url", "notes")
-        }),
-        ("Audit", {
-            "fields": ("created_at", "updated_at")
-        }),
-    )
-=======
-admin.site.register(LoginHistory, LoginHistoryAdmin)
->>>>>>> e79fe45578418c384fbb84ca7760d91bef020a33
+# Registering the rest of your models normally
+admin.site.register(UserGroups)
+admin.site.register(PaymentHistory)
+admin.site.register(Tracker)
+admin.site.register(LoginHistory)
