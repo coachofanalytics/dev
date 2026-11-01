@@ -34,6 +34,7 @@ INSTALLED_APPS = [
     'application',
     'finance',
     'shareholders',
+    "crispy_forms",
 ]
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",

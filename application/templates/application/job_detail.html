@@ -1,0 +1,137 @@
+
+{% extends "main/base_templates/analysis_index.html" %}
+{% load static %}
+
+{% block content %}
+
+<style>
+    .job-detail-container {
+        max-width: 950px;
+        margin: 40px auto 70px;
+        padding: 0 20px;
+    }
+
+    .job-detail-card {
+        background: #ffffff;
+        border: 1px solid #dee2e6;
+        border-radius: 10px;
+        padding: 35px;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.06);
+    }
+
+    .job-detail-title {
+        color: #087cff;
+        font-size: 30px;
+        font-weight: 600;
+        margin-bottom: 20px;
+    }
+
+    .job-meta {
+        margin-bottom: 20px;
+    }
+
+    .job-meta p {
+        margin-bottom: 10px;
+    }
+
+    .job-section {
+        margin-top: 25px;
+    }
+
+    .job-section h4 {
+        font-size: 21px;
+        font-weight: 600;
+        margin-bottom: 15px;
+    }
+
+    .job-apply-btn {
+        display: inline-block;
+        padding: 12px 25px;
+        background: #087cff;
+        color: white;
+        border-radius: 5px;
+        text-decoration: none;
+        margin-top: 25px;
+    }
+
+    .job-apply-btn:hover {
+        background: #005fc5;
+        color: white;
+    }
+</style>
+
+<div class="job-detail-container">
+
+    <a
+        href="{% url 'data:job_list' %}"
+        class="btn btn-outline-secondary mb-4"
+    >
+        Back to Job Listings
+    </a>
+
+    <div class="job-detail-card">
+
+        <h2 class="job-detail-title">
+            {{ job.title }}
+        </h2>
+
+        <div class="job-meta">
+
+            <p>
+                <strong>Location:</strong>
+                {{ job.location }}
+            </p>
+
+            <p>
+                <strong>Department:</strong>
+                {{ job.department }}
+            </p>
+
+            <p>
+                <strong>Employment Type:</strong>
+                {{ job.get_employment_type_display }}
+            </p>
+
+            <p>
+                <strong>Posted On:</strong>
+                {{ job.posted_on|date:"d M Y" }}
+            </p>
+
+        </div>
+
+        <hr>
+
+        <div class="job-section">
+
+            <h4>Job Description</h4>
+
+            <div>
+                {{ job.description|linebreaks }}
+            </div>
+
+        </div>
+
+        <div class="job-section">
+
+            <h4>Job Requirements</h4>
+
+            <div>
+                {{ job.requirements|default:"Not specified."|linebreaks }}
+            </div>
+
+        </div>
+
+        <hr>
+
+        <a
+         href="{% url 'data:job_apply' job.pk %}"
+            class="job-apply-btn"
+        >
+            Apply Now
+        </a>
+
+    </div>
+
+</div>
+
+{% endblock %}

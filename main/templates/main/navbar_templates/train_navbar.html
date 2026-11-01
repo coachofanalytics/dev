@@ -1,141 +1,305 @@
+
+{% load static %}
+
 <nav class="navbar navbar-expand-sm bg-light navbar-light sticky-top">
   <div class="container-fluid">
-      <a class="navbar-brand logo-text" href="{% url 'main:layout'%}">CODA</a>
-      <button class="navbar-toggler nav-btn" type="button" data-bs-toggle="coll apse"
-          data-bs-target="#collapsibleNavbar">
-          <span class="navbar-toggler-icon"></span>
-      </button>
-      <div class="collapse navbar-collapse" id="collapsibleNavbar">
-          <ul class="navbar-nav mr-auto w-100 justify-content-end">
-              <li class="nav-item active">
-                  <a class="nav-link" href="{% url 'main:layout'%}">Home</a>
-              </li>
-              <li class="nav-item">
-                  <a class="nav-link" href="{% url 'main:layout'%}">About</a>
+
+    <!-- CODA Logo -->
+    <a class="navbar-brand logo-text"
+       href="{% url 'main:home' %}">
+      CODA
+    </a>
+
+    <!-- Mobile Menu -->
+    <button class="navbar-toggler nav-btn"
+            type="button"
+            data-bs-toggle="collapse"
+            data-bs-target="#collapsibleNavbar"
+            aria-controls="collapsibleNavbar"
+            aria-expanded="false"
+            aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+
+    <div class="collapse navbar-collapse"
+         id="collapsibleNavbar">
+
+      <ul class="navbar-nav ms-auto w-100 justify-content-end align-items-sm-center">
+
+        <!-- Home -->
+        <li class="nav-item">
+          <a class="nav-link"
+             href="{% url 'main:home' %}">
+            Home
+          </a>
+        </li>
+
+        <!-- About -->
+        <li class="nav-item">
+          <a class="nav-link"
+             href="{% url 'main:home' %}">
+            About
+          </a>
+        </li>
+
+        <!-- Training -->
+        <li class="nav-item dropdown">
+
+          <a class="nav-link dropdown-toggle"
+             href="#"
+             id="trainingDropdown"
+             role="button"
+             data-bs-toggle="dropdown"
+             aria-expanded="false">
+            Training
+          </a>
+
+          <ul class="dropdown-menu"
+              aria-labelledby="trainingDropdown">
+
+            {% if user.is_admin or user.category == 3 or user.is_staff or user.is_superuser %}
+
+              {% for category in categories %}
+                <li>
+                  <a class="dropdown-item"
+                     href="{{ category.get_url }}">
+                    {{ category.title|capfirst }}
+                  </a>
+                </li>
+              {% empty %}
+                <li>
+                  <span class="dropdown-item-text">
+                    No training categories available
+                  </span>
+                </li>
+              {% endfor %}
+
+              <li><hr class="dropdown-divider"></li>
+
+              <li>
+                <span class="dropdown-item disabled"
+                      aria-disabled="true">
+                  Add/Edit
+                </span>
               </li>
 
-              <li class="nav-item dropdown">
-                  <a
-                    class="nav-link dropdown-toggle"
-                    href="#"
-                    id="navbarDropdown"
-                    role="button"
-                    data-toggle="dropdown"
-                    aria-haspopup="true"
-                    aria-expanded="false"
-                  >
-                  Training
-                  </a>
-                 
-                  <div class="dropdown-menu" aria-labelledby="navbarDropDown">
-                    {% if user.is_admin or user.category == 3 or user.is_staff or  user.is_superuser %}
-                      {% for category in categories %}
-                      <div class="dropdown-divider"></div>
-                      <a class="dropdown-item" href="{{category.get_url}}"
-                        >{{category.title|capfirst}}</a>
-                      {% endfor%}
-                      <div class="dropdown-divider"></div>
-                      <a class="dropdown-item" href="{% url 'data:training-list'%}"
-                      >Add/Edit</a>
-                      {% else%}
-                    
-                      >training</a>
-                      {% endif %}
-                  </div>
-                  
-                 
-                </li>
+            {% else %}
 
-              <li class="nav-item dropdown">
-                  <a
-                    class="nav-link dropdown-toggle"
-                    href="#"
-                    id="navbarDropdown"
-                    role="button"
-                    data-toggle="dropdown"
-                    aria-haspopup="true"
-                    aria-expanded="false"
-                  >
-                    Interview
-                  </a>
-                  
-                  <div class="dropdown-menu" aria-labelledby="navbarDropDown">
-                    {% if user.is_admin or  user.is_staff or  user.is_superuser %}
-                    <div class="dropdown-divider"></div>
-                    <a class="dropdown-item" href="{% url 'data:start_training' slug='interview' %}"
-                    >Interview</a>
-                      {% for role in roles %}
-                      <div class="dropdown-divider"></div>
-                      <a class="dropdown-item" href="{{role.get_url}}"
-                        >{{role.question_type|capfirst}}</a>
-                      {% endfor%}
-                      <div class="dropdown-divider"></div>
-                      <a class="dropdown-item" href="{% url 'data:jobroles' %}"
-                      >Add/Edit</a>
-                      {% else%}
-                      <div class="dropdown-divider"></div>
-                      <a class="dropdown-item" href="{% url 'data:start_training' slug='interview' %}"
-                      >interview</a>
-                      <div class="dropdown-divider"></div>
-                      <a class="dropdown-item" href="{% url 'data:interviewlist'%}"
-                      >Transcripts</a>
-                      <div class="dropdown-divider"></div>
-                      <a class="dropdown-item" href="{% url 'management:user_session' request.user %}"
-                      >Practice Session</a>
-                      <div class="dropdown-divider"></div>
-                      <a class="dropdown-item" href="{% url 'data:prepquestions'%}"
-                      >Prep Questions</a>
-                      <div class="dropdown-divider"></div>
-                      <a class="dropdown-item" href="{% url 'data:prep_reponses' %}"
-                      >Interview Responses</a>
-                      {% endif %}
-                  </div>
-                </li>
-              <li class="nav-item dropdown">
-                  <a
-                    class="nav-link dropdown-toggle"
-                    href="#"
-                    id="navbarDropdown"
-                    role="button"
-                    data-toggle="dropdown"
-                    aria-haspopup="true"
-                    aria-expanded="false"
-                  >
-                    Job Support
-                  </a>
-                  
-                  <div class="dropdown-menu" aria-labelledby="navbarDropDown">
-                      <div class="dropdown-divider"></div>
-                      <a class="dropdown-item" href="{% url 'data:start_training' slug='job-support' %}"
-                      >Overview</a>
-                      <div class="dropdown-divider"></div>
-                      <a class="dropdown-item" href="{% url 'data:category-detail' title='Course Overview' %}"
-                      >Onboarding</a>
-                      <div class="dropdown-divider"></div>
-                      <a class="dropdown-item" href="https://app.box.com/s/fqdxfywn8c0uixarpuvoo2o7gx18lwdw"
-                      >Project Definition</a>
-                      <div class="dropdown-divider"></div>
-                      <a class="dropdown-item" href="{% url 'data:category-detail' title='Development' %}"
-                      >Technical Support</a>
-                      <div class="dropdown-divider"></div>
-                  </div>
-                </li>
+              <li>
+                <a class="dropdown-item"
+                   href="{% url 'main:home' %}">
+                  Training Overview
+                </a>
+              </li>
 
-              <li class="nav-item">
-                  <p class="mb-1" style="font-size: 8px;text-align: right;">MODULE PROGRESS %</p>
-                  <div class="progress" style="border-radius: 20px;width: 150px;">
-                      <div class="progress-bar" role="progressbar" style="width: 60%" aria-valuenow="60"
-                          aria-valuemin="0" aria-valuemax="100"></div>
-                  </div>
-              </li>
-              <li class="nav-item">
-                  <div>
-                    <a class="nav-link" href="{% url 'management:companyagenda'%}">
-                      <i class="fa fa-user-circle-o fa-2x" aria-hidden="true"></i>
-                    </a>
-                  </div>
-              </li>
+            {% endif %}
+
           </ul>
-      </div>
+        </li>
+
+        <!-- Interview -->
+        <li class="nav-item dropdown">
+
+          <a class="nav-link dropdown-toggle"
+             href="#"
+             id="interviewDropdown"
+             role="button"
+             data-bs-toggle="dropdown"
+             aria-expanded="false">
+            Interview
+          </a>
+
+          <ul class="dropdown-menu"
+              aria-labelledby="interviewDropdown">
+
+            <li>
+              <span class="dropdown-item disabled"
+                    aria-disabled="true">
+                Interview Overview
+              </span>
+            </li>
+
+            {% if user.is_admin or user.is_staff or user.is_superuser %}
+
+              {% for role in roles %}
+                <li>
+                  <a class="dropdown-item"
+                     href="{{ role.get_url }}">
+                    {{ role.question_type|capfirst }}
+                  </a>
+                </li>
+              {% endfor %}
+
+              <li><hr class="dropdown-divider"></li>
+
+              <li>
+                <span class="dropdown-item disabled"
+                      aria-disabled="true">
+                  Add/Edit
+                </span>
+              </li>
+
+            {% else %}
+
+              <li>
+                <span class="dropdown-item disabled"
+                      aria-disabled="true">
+                  Transcripts
+                </span>
+              </li>
+
+              <li>
+                <span class="dropdown-item disabled"
+                      aria-disabled="true">
+                  Practice Session
+                </span>
+              </li>
+
+              <li>
+                <span class="dropdown-item disabled"
+                      aria-disabled="true">
+                  Prep Questions
+                </span>
+              </li>
+
+              <li>
+                <span class="dropdown-item disabled"
+                      aria-disabled="true">
+                  Interview Responses
+                </span>
+              </li>
+
+            {% endif %}
+
+          </ul>
+        </li>
+
+        <!-- Job Support -->
+        <li class="nav-item dropdown">
+
+          <a class="nav-link dropdown-toggle"
+             href="#"
+             id="jobSupportDropdown"
+             role="button"
+             data-bs-toggle="dropdown"
+             aria-expanded="false">
+            Job Support
+          </a>
+
+          <ul class="dropdown-menu"
+              aria-labelledby="jobSupportDropdown">
+
+            <li>
+              <span class="dropdown-item disabled"
+                    aria-disabled="true">
+                Overview
+              </span>
+            </li>
+
+            <li>
+              <span class="dropdown-item disabled"
+                    aria-disabled="true">
+                Onboarding
+              </span>
+            </li>
+
+            <li>
+              <a class="dropdown-item"
+                 href="https://app.box.com/s/fqdxfywn8c0uixarpuvoo2o7gx18lwdw"
+                 target="_blank"
+                 rel="noopener noreferrer">
+                Project Definition
+              </a>
+            </li>
+
+            <li>
+              <span class="dropdown-item disabled"
+                    aria-disabled="true">
+                Technical Support
+              </span>
+            </li>
+
+          </ul>
+        </li>
+
+        <!-- Careers -->
+        <li class="nav-item dropdown">
+
+          <a class="nav-link dropdown-toggle"
+             href="#"
+             id="careersDropdown"
+             role="button"
+             data-bs-toggle="dropdown"
+             aria-expanded="false">
+            Careers
+          </a>
+
+          <ul class="dropdown-menu"
+              aria-labelledby="careersDropdown">
+
+            <li>
+              <a class="dropdown-item"
+                 href="{% url 'data:career' %}">
+                Career Overview
+              </a>
+            </li>
+
+            <li>
+              <a class="dropdown-item"
+                 href="{% url 'data:job_list' %}">
+                Job Listings
+              </a>
+            </li>
+
+            <li>
+              <a class="dropdown-item"
+                 href="{% url 'data:apply' %}">
+                Apply for a Job
+              </a>
+            </li>
+
+          </ul>
+        </li>
+
+        <!-- Module Progress -->
+        <li class="nav-item ms-sm-3">
+
+          <p class="mb-1"
+             style="font-size: 10px; text-align: right;">
+            MODULE PROGRESS %
+          </p>
+
+          <div class="progress"
+               style="border-radius: 20px; width: 150px;">
+
+            <div class="progress-bar"
+                 role="progressbar"
+                 style="width: 60%"
+                 aria-valuenow="60"
+                 aria-valuemin="0"
+                 aria-valuemax="100">
+              60%
+            </div>
+
+          </div>
+
+        </li>
+
+        <!-- Account -->
+        <li class="nav-item ms-sm-3">
+
+          <a class="nav-link"
+             href="{% url 'main:home' %}"
+             title="Account">
+
+            <i class="fa fa-user-circle-o fa-2x"
+               aria-hidden="true"></i>
+
+          </a>
+
+        </li>
+
+      </ul>
+    </div>
   </div>
 </nav>

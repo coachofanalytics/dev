@@ -1,34 +1,154 @@
+
 {% extends "main/base_templates/analysis_index.html" %}
-{% load crispy_forms_tags %}
 {% load static %}
 
 {% block content %}
-<div class="container mt-4">
-    <h2>Available Job Listings</h2>
-    <a href="{% url 'application:apply' %}" class="btn btn-primary mb-3">Apply for a Job</a>
-    <table class="table table-bordered">
-        <thead>
-            <tr>
-                <th>Title</th>
-                <th>Location</th>
-                <th>Department</th>
-                <th>Type</th>
-                <th>Posted On</th>
-            </tr>
-        </thead>
-        <tbody>
-        {% for job in jobs %}
-            <tr>
-                <td>{{ job.title }}</td>
-                <td>{{ job.location }}</td>
-                <td>{{ job.department }}</td>
-                <td>{{ job.job_type }}</td>
-                <td>{{ job.posted_date }}</td>
-            </tr>
-        {% empty %}
-            <tr><td colspan="5">No job openings at the moment.</td></tr>
-        {% endfor %}
-        </tbody>
-    </table>
+
+<style>
+    .job-container {
+        max-width: 1150px;
+        margin: 35px auto 60px;
+        padding: 0 20px;
+    }
+
+    .job-heading {
+        text-align: center;
+        color: #087cff;
+        margin-bottom: 25px;
+        font-size: 30px;
+        font-weight: 600;
+    }
+
+    .job-actions {
+        margin-bottom: 20px;
+    }
+
+    .job-table {
+        width: 100%;
+        border-collapse: collapse;
+        background: white;
+    }
+
+    .job-table th,
+    .job-table td {
+        padding: 13px;
+        border: 1px solid #dee2e6;
+        vertical-align: middle;
+    }
+
+    .job-table th {
+        background: #f8f9fa;
+        font-weight: 600;
+    }
+
+    .job-table tbody tr:hover {
+        background: #f5f9ff;
+    }
+
+    .job-empty {
+        text-align: center;
+        padding: 25px;
+        color: #6c757d;
+    }
+
+    .job-btn {
+        display: inline-block;
+        background: #087cff;
+        color: white;
+        padding: 9px 16px;
+        border-radius: 5px;
+        text-decoration: none;
+    }
+
+    .job-btn:hover {
+        background: #005fc5;
+        color: white;
+    }
+</style>
+
+<div class="job-container">
+
+    <h2 class="job-heading">
+        Available Job Listings
+    </h2>
+
+    <div class="job-actions">
+        <a
+            href="{% url 'data:apply' %}"
+            class="job-btn"
+        >
+            Apply for a Job
+        </a>
+    </div>
+
+    <div class="table-responsive">
+
+        <table class="job-table">
+
+            <thead>
+                <tr>
+                    <th>Title</th>
+                    <th>Location</th>
+                    <th>Department</th>
+                    <th>Type</th>
+                    <th>Posted On</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+
+            <tbody>
+
+                {% for job in jobs %}
+
+                <tr>
+
+                    <td>
+                        {{ job.title }}
+                    </td>
+
+                    <td>
+                        {{ job.location }}
+                    </td>
+
+                    <td>
+                        {{ job.department }}
+                    </td>
+
+                    <td>
+                        {{ job.get_employment_type_display }}
+                    </td>
+
+                    <td>
+                        {{ job.posted_on|date:"d M Y" }}
+                    </td>
+
+                    <td>
+                        <a
+                            href="{% url 'data:job_detail' job.pk %}"
+                            class="btn btn-sm btn-outline-primary"
+                        >
+                            View Details
+                        </a>
+                    </td>
+
+                </tr>
+
+                {% empty %}
+
+                <tr>
+                    <td colspan="6" class="job-empty">
+                        No job openings at the moment.
+                    </td>
+                </tr>
+
+                {% endfor %}
+
+            </tbody>
+
+        </table>
+
+    </div>
+
 </div>
+
 {% endblock %}

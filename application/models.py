@@ -213,3 +213,80 @@ class MyModel(models.Model):
 
     def __str__(self):
         return str(self.user)
+
+
+
+
+class JobOpening(models.Model):
+    EMPLOYMENT_TYPES = [
+        ("full_time", "Full Time"),
+        ("part_time", "Part Time"),
+        ("contract", "Contract"),
+        ("internship", "Internship"),
+    ]
+
+    title = models.CharField(max_length=255)
+    location = models.CharField(max_length=255)
+    department = models.CharField(max_length=255)
+
+    employment_type = models.CharField(
+        max_length=20,
+        choices=EMPLOYMENT_TYPES,
+        default="full_time",
+    )
+
+    description = models.TextField()
+    requirements = models.TextField(blank=True)
+
+    posted_on = models.DateTimeField(auto_now_add=True)
+    is_active = models.BooleanField(default=True)
+
+    class Meta:
+        ordering = ["-posted_on"]
+
+    def __str__(self):
+        return self.title
+
+
+
+
+class JobApplication(models.Model):
+
+    STATUS_CHOICES = [
+        ("submitted", "Submitted"),
+        ("reviewing", "Under Review"),
+        ("shortlisted", "Shortlisted"),
+        ("rejected", "Rejected"),
+        ("accepted", "Accepted"),
+    ]
+
+    job = models.ForeignKey(
+        JobOpening,
+        on_delete=models.PROTECT,
+        related_name="applications",
+    )
+
+    full_name = models.CharField(max_length=255)
+    email = models.EmailField()
+    phone = models.CharField(max_length=30)
+
+    cv = models.FileField(
+        upload_to="job_applications/cvs/"
+    )
+
+    cover_letter = models.TextField(blank=True)
+
+    status = models.CharField(
+        max_length=20,
+        choices=STATUS_CHOICES,
+        default="submitted",
+    )
+
+    applied_on = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["-applied_on"]
+
+    def __str__(self):
+        return f"{self.full_name} - {self.job.title}"
+
